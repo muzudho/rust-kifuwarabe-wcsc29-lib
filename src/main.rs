@@ -57,7 +57,7 @@ fn main() {
             position.parse(&line);
         } else if line.starts_with("go") {
             let thought = Thought::new();
-            println!("{}", thought.think());
+            println!("{}", thought.think(&position));
             // println!("bestmove resign");
         }
     }
