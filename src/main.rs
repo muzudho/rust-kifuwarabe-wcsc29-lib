@@ -1,5 +1,8 @@
 use std::io;
 
+mod position;
+use position::Position;
+
 /// Computer shogi engine Kifuwarabe for WCSC29.
 ///
 /// Windows 10.
@@ -22,6 +25,9 @@ use std::io;
 /// Execution file.
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
 fn main() {
+
+    let mut position = Position::new();
+
     loop {
         // Standard input.
         // Be sure to add "info" before the output message.
@@ -46,6 +52,7 @@ fn main() {
         } else if line == "usinewgame" {
         } else if line.starts_with("position") {
             println!("info What is position?");
+            position.parse(&line);
         } else if line.starts_with("go") {
             println!("bestmove resign");
         }
