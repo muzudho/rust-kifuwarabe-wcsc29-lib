@@ -2,6 +2,8 @@ use std::io;
 
 mod position;
 use position::Position;
+mod thought;
+use thought::Thought;
 
 /// Computer shogi engine Kifuwarabe for WCSC29.
 ///
@@ -54,7 +56,9 @@ fn main() {
             println!("info What is position?");
             position.parse(&line);
         } else if line.starts_with("go") {
-            println!("bestmove resign");
+            let thought = Thought::new();
+            println!("{}", thought.think());
+            // println!("bestmove resign");
         }
     }
 }
