@@ -1,2 +1,6 @@
+usi
+isready
 position startpos moves 2g2f
 position startpos moves 2g2f 8c8d
+
+go btime 180000 wtime 180000 byoyomi 0

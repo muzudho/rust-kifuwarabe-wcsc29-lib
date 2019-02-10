@@ -56,10 +56,11 @@ fn main() {
         } else if line == "usinewgame" {
         } else if line.starts_with("position") {
             println!("info What is position?");
-            position.parse(&line);
+            position = Position::parse(&line);
+            position.show_board();
         } else if line.starts_with("go") {
             let thought = Thought::new();
-            println!("{}", thought.think(&position));
+            println!("{}", thought.think(&mut position));
             // println!("bestmove resign");
         }
     }

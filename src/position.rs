@@ -1,4 +1,5 @@
 use moves::*;
+use std::*;
 
 /// First turn player is 0.
 /// Second turn player is 1.
@@ -50,6 +51,44 @@ pub enum Piece{
     Empty,
     // Num is size or error.
     Num
+}
+impl fmt::Display for Piece{
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        // 文字列リテラルでないとダメみたいなんで、他に似たようなコードがあるのに、また書くことに☆（＾～＾）
+        use position::Piece::*;
+        match *self {
+            K0 => { write!(f,"▲ら")},
+            R0 => { write!(f,"▲き")},
+            B0 => { write!(f,"▲ぞ")},
+            G0 => { write!(f,"▲い")},
+            S0 => { write!(f,"▲ね")},
+            N0 => { write!(f,"▲う")},
+            L0 => { write!(f,"▲し")},
+            P0 => { write!(f,"▲ひ")},
+            PR0 => { write!(f,"★き")},
+            PB0 => { write!(f,"★ぞ")},
+            PS0 => { write!(f,"★ね")},
+            PN0 => { write!(f,"★う")},
+            PL0 => { write!(f,"★し")},
+            PP0 => { write!(f,"★ひ")},
+            K1 => { write!(f,"▽ラ")},
+            R1 => { write!(f,"▽キ")},
+            B1 => { write!(f,"▽ゾ")},
+            G1 => { write!(f,"▽イ")},
+            S1 => { write!(f,"▽ネ")},
+            N1 => { write!(f,"▽ウ")},
+            L1 => { write!(f,"▽シ")},
+            P1 => { write!(f,"▽ヒ")},
+            PR1 => { write!(f,"☆キ")},
+            PB1 => { write!(f,"☆ゾ")},
+            PS1 => { write!(f,"☆ネ")},
+            PN1 => { write!(f,"☆ウ")},
+            PL1 => { write!(f,"☆シ")},
+            PP1 => { write!(f,"☆ヒ")},
+            Empty => { write!(f,"　　")},
+            Num => { write!(f,"××")},
+        }
+    }
 }
 
 pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
@@ -107,7 +146,12 @@ pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
     }
 }
 
-#[derive(Clone, Copy)]
+pub fn file_rank_to_index(file:i8, rank:i8) -> usize {
+    ((10 - rank)*11 + file) as usize
+}
+
+// TODO
+// #[derive(Clone, Copy)]
 pub struct Position {
     // With frame. 11x11.
     pub board : [Piece;121],
@@ -132,20 +176,27 @@ impl Position {
         }
     }
 
-    pub fn get_piece(self, file:i8, rank:i8) -> Piece {
-        self.board[((rank-8)*11 + file) as usize]
-    }
-
-    pub fn set_piece(mut self, file:i8, rank:i8, piece:Piece) {
-        self.board[((rank-8)*11 + file) as usize] = piece;
-    }
-
-    pub fn parse(mut self, line:&str) {
+    pub fn parse(line:&str) -> Position {
         use position::Piece::*;
+
+        let mut board : [Piece;121] = [
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+            ];
+
         let mut start = 0;
 
         if line.starts_with("position startpos") {
-            self.board  = [
+            board  = [
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
                 Empty, L1, N1, S1, G1, K1, G1, S1, N1, L1, Empty,
                 Empty, Empty, R1, Empty, Empty, Empty, Empty, Empty, B1, Empty, Empty, 
@@ -159,19 +210,16 @@ impl Position {
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
             ];
             
-            if line.len() == 17 {
-                return;
+            if line.len() > 17 {
+                // `position startpos moves `. [0]p, [1]o, ...
+                start = 24;
+
+                // Examples.
+                // position startpos moves 2g2f 8c8d
+                let mut moves = Moves::new();
+                moves.parse(line, &mut start);
+                // println!("Moves count: {}", &moves.items.len());
             }
-
-            // `position startpos moves `. [0]p, [1]o, ...
-            start = 24;
-
-            // Examples.
-            // position startpos moves 2g2f 8c8d
-            let mut moves = Moves::new();
-            moves.parse(line, &mut start);
-            // println!("Moves count: {}", &moves.items.len());
-
         } else if line.starts_with("position sfen ") {
             // TODO sfen under construction.
 
@@ -196,14 +244,14 @@ impl Position {
             };
 
             if spaces == 0 {
-                self.set_piece(rank, file, parse_sign_to_piece(line, &mut start));
+                board[file_rank_to_index(file, rank)] = parse_sign_to_piece(line, &mut start);
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    self.set_piece(rank, file, Empty);
+                    board[file_rank_to_index(file, rank)] = Empty;
                     file += 1;
                     spaces -= 1;
                 }
@@ -216,5 +264,36 @@ impl Position {
                 }
             }
         }
+
+        Position {
+            board : board,
+        }
+    }
+
+    pub fn show_board(&self) {
+        println!("info show_board begin...");
+        
+        for rank in (1..10).rev() {
+            println!(
+                "info {}{}{}{}{}{}{}{}{}",
+                self.get_piece(1, rank),
+                self.get_piece(2, rank),
+                self.get_piece(3, rank),
+                self.get_piece(4, rank),
+                self.get_piece(5, rank),
+                self.get_piece(6, rank),
+                self.get_piece(7, rank),
+                self.get_piece(8, rank),
+                self.get_piece(9, rank));
+        }
+        println!("info show_board end...");
+    }
+
+    pub fn get_piece(&self, file:i8, rank:i8) -> Piece {
+        self.board[file_rank_to_index(file, rank)]
+    }
+
+    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Piece) {
+        self.board[file_rank_to_index(file, rank)] = piece;
     }
 }
