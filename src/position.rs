@@ -1,3 +1,5 @@
+use moves::*;
+
 /// First turn player is 0.
 /// Second turn player is 1.
 #[derive(Clone, Copy, PartialEq)]
@@ -50,38 +52,58 @@ pub enum Piece{
     Num
 }
 
-pub fn sign_to_piece(character:&str) -> Piece {
+pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
     use position::Piece::*;
-    match character {
-        "K" => K0,
-        "R" => R0,
-        "B" => B0,
-        "G" => G0,
-        "S" => S0,
-        "N" => N0,
-        "L" => L0,
-        "P" => P0,
-        "+R" => PR0,
-        "+B" => PB0,
-        "+S" => PS0,
-        "+N" => PN0,
-        "+L" => PL0,
-        "+P" => PP0,
-        "k" => K1,
-        "r" => R1,
-        "b" => B1,
-        "g" => G1,
-        "s" => S1,
-        "n" => N1,
-        "l" => L1,
-        "p" => P1,
-        "+r" => PR1,
-        "+b" => PB1,
-        "+s" => PS1,
-        "+n" => PN1,
-        "+l" => PL1,
-        "+p" => PP1,
-        _ => Num,
+
+    if line.len() <= *start as usize + 1 {
+        return Empty;
+    }
+
+    let sign = line.to_string().chars().next().unwrap();
+    let pieceType = match sign {
+        'K' => K0,
+        'R' => R0,
+        'B' => B0,
+        'G' => G0,
+        'S' => S0,
+        'N' => N0,
+        'L' => L0,
+        'P' => P0,
+        'k' => K1,
+        'r' => R1,
+        'b' => B1,
+        'g' => G1,
+        's' => S1,
+        'n' => N1,
+        'l' => L1,
+        'p' => P1,
+        '+' => {
+            let sign = line.to_string().chars().next().unwrap();
+            match sign {
+                'R' => PR0,
+                'B' => PB0,
+                'S' => PS0,
+                'N' => PN0,
+                'L' => PL0,
+                'P' => PP0,
+                'r' => PR1,
+                'b' => PB1,
+                's' => PS1,
+                'n' => PN1,
+                'l' => PL1,
+                'p' => PP1,
+                _ => panic!("Failed: Sfen unexpected piece."),
+            }
+        },
+        _ => panic!("Failed: Sfen unexpected piece."),
+    };
+
+    let sign = line.to_string().chars().next().unwrap();
+    if sign == '*' {
+        *start += 2;
+        pieceType
+    } else {
+        panic!("Failed: Sfen unexpected drop.");
     }
 }
 
@@ -120,7 +142,7 @@ impl Position {
 
     pub fn parse(mut self, line:&str) {
         use position::Piece::*;
-        let mut index = 0;
+        let mut start = 0;
 
         if line.starts_with("position startpos") {
             self.board  = [
@@ -141,35 +163,40 @@ impl Position {
                 return;
             }
 
-            // `position startpos moves `
-            index = 25;
+            // `position startpos moves `. [0]p, [1]o, ...
+            start = 24;
 
             // Examples.
             // position startpos moves 2g2f 8c8d
+            let mut moves = Moves::new();
+            moves.parse(line, &mut start);
+            // println!("Moves count: {}", &moves.items.len());
 
         } else if line.starts_with("position sfen ") {
-            // TODO
-            index = 14;
+            // TODO sfen under construction.
+
+            // `position sfen `. [0]p, [1]o, ...
+            start = 14;
             let mut rank=9;
             let mut file=1;
 
-            let pieceCharacter = &line[index..index+1];
-            let mut spaces = match pieceCharacter {
-                "1" => {1},
-                "2" => {2},
-                "3" => {3},
-                "4" => {4},
-                "5" => {5},
-                "6" => {6},
-                "7" => {7},
-                "8" => {8},
-                "9" => {9},
-                "/" => {-1},
+            let sign = line.to_string().chars().next().unwrap();
+            let mut spaces = match sign {
+                '1' => {1},
+                '2' => {2},
+                '3' => {3},
+                '4' => {4},
+                '5' => {5},
+                '6' => {6},
+                '7' => {7},
+                '8' => {8},
+                '9' => {9},
+                '/' => {-1},
                 _ => {0},
             };
 
             if spaces == 0 {
-                self.set_piece(rank, file, sign_to_piece(pieceCharacter));
+                self.set_piece(rank, file, parse_sign_to_piece(line, &mut start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
@@ -183,7 +210,8 @@ impl Position {
             }
 
             loop {
-                if &line[index..index+1] == " " {
+                let sign = line.to_string().chars().next().unwrap();
+                if sign == ' ' {
                     break;
                 }
             }

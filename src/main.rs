@@ -1,8 +1,10 @@
 use std::io;
 
+mod moves;
 mod position;
-use position::Position;
 mod thought;
+
+use position::Position;
 use thought::Thought;
 
 /// Computer shogi engine Kifuwarabe for WCSC29.

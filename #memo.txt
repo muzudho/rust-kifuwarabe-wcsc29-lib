@@ -1,0 +1,2 @@
+position startpos moves 2g2f
+position startpos moves 2g2f 8c8d
