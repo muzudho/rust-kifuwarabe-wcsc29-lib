@@ -155,7 +155,7 @@ impl Moves {
         }
     }
 
-    pub fn parse(mut self, line:&str, start:&mut i8) {
+    pub fn parse(&mut self, line:&str, start:&mut i8) {
         loop {
             let drop = parse_sign_to_drop(line, start);
 

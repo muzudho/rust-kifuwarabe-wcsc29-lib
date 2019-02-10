@@ -176,27 +176,13 @@ impl Position {
         }
     }
 
-    pub fn parse(line:&str) -> Position {
+    pub fn parse(&mut self, line:&str) {
         use position::Piece::*;
-
-        let mut board : [Piece;121] = [
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-            ];
 
         let mut start = 0;
 
         if line.starts_with("position startpos") {
-            board  = [
+            self.board  = [
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
                 Empty, L1, N1, S1, G1, K1, G1, S1, N1, L1, Empty,
                 Empty, Empty, R1, Empty, Empty, Empty, Empty, Empty, B1, Empty, Empty, 
@@ -218,7 +204,12 @@ impl Position {
                 // position startpos moves 2g2f 8c8d
                 let mut moves = Moves::new();
                 moves.parse(line, &mut start);
-                // println!("Moves count: {}", &moves.items.len());
+                println!("Moves count: {}", moves.items.len());
+
+                // TODO 指し手通り、進めたい。
+                for mov in &moves.items {
+                    self.make_move(mov);
+                }
             }
         } else if line.starts_with("position sfen ") {
             // TODO sfen under construction.
@@ -244,14 +235,14 @@ impl Position {
             };
 
             if spaces == 0 {
-                board[file_rank_to_index(file, rank)] = parse_sign_to_piece(line, &mut start);
+                self.set_piece(file, rank, parse_sign_to_piece(line, &mut start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    board[file_rank_to_index(file, rank)] = Empty;
+                    self.set_piece(file, rank, Empty);
                     file += 1;
                     spaces -= 1;
                 }
@@ -263,10 +254,6 @@ impl Position {
                     break;
                 }
             }
-        }
-
-        Position {
-            board : board,
         }
     }
 
@@ -295,5 +282,9 @@ impl Position {
 
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Piece) {
         self.board[file_rank_to_index(file, rank)] = piece;
+    }
+
+    pub fn make_move(&mut self, mov:&Move){
+
     }
 }

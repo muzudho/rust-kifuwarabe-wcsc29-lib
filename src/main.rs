@@ -56,7 +56,7 @@ fn main() {
         } else if line == "usinewgame" {
         } else if line.starts_with("position") {
             println!("info What is position?");
-            position = Position::parse(&line);
+            position.parse(&line);
             position.show_board();
         } else if line.starts_with("go") {
             let thought = Thought::new();
