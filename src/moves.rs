@@ -124,12 +124,12 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
 }
 
 pub struct Move {
-    sourceFile:i8,
-    sourceRank:i8,
-    destinationFile:i8,
-    destinationRank:i8,
-    promotion:bool,
-    drop:PieceType
+    pub sourceFile:i8,
+    pub sourceRank:i8,
+    pub destinationFile:i8,
+    pub destinationRank:i8,
+    pub promotion:bool,
+    pub drop:PieceType
 }
 impl Move {
     pub fn new() -> Move {

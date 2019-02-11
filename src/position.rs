@@ -146,6 +146,26 @@ pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
     }
 }
 
+pub fn promotion_piece(piece:&Piece) -> Piece {
+    use position::Piece::*;
+
+    match piece {
+        R0 => PR0,
+        B0 => PB0,
+        S0 => PS0,
+        N0 => PN0,
+        L0 => PL0,
+        P0 => PP0,
+        R1 => PR1,
+        B1 => PB1,
+        S1 => PS1,
+        N1 => PN1,
+        L1 => PL1,
+        P1 => PP1,
+        _ => panic!("Failed: Sfen unexpected promotion.")
+    }
+}
+
 pub fn file_rank_to_index(file:i8, rank:i8) -> usize {
     ((10 - rank)*11 + file) as usize
 }
@@ -209,6 +229,7 @@ impl Position {
                 // TODO 指し手通り、進めたい。
                 for mov in &moves.items {
                     self.make_move(mov);
+                    self.show_board();
                 }
             }
         } else if line.starts_with("position sfen ") {
@@ -280,11 +301,29 @@ impl Position {
         self.board[file_rank_to_index(file, rank)]
     }
 
+    fn remove_piece(&mut self, file:i8, rank:i8) -> Piece {
+        use position::Piece::*;
+        let piece = self.board[file_rank_to_index(file, rank)];
+        self.set_piece(file, rank, Empty);
+        piece
+    }
+
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Piece) {
         self.board[file_rank_to_index(file, rank)] = piece;
     }
 
     pub fn make_move(&mut self, mov:&Move){
+        use moves::PieceType::*;
+        
+        if mov.drop != Empty {
+            // TODO drop
 
+        } else {
+            let mut source_piece = self.remove_piece(mov.sourceFile, mov.sourceRank);
+            if mov.promotion {
+                source_piece = promotion_piece(&source_piece);
+            }
+            self.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
+        }
     }
 }
