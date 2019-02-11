@@ -57,36 +57,36 @@ impl fmt::Display for Piece{
         // 文字列リテラルでないとダメみたいなんで、他に似たようなコードがあるのに、また書くことに☆（＾～＾）
         use position::Piece::*;
         match *self {
-            K0 => { write!(f,"▲ら")},
-            R0 => { write!(f,"▲き")},
-            B0 => { write!(f,"▲ぞ")},
-            G0 => { write!(f,"▲い")},
-            S0 => { write!(f,"▲ね")},
-            N0 => { write!(f,"▲う")},
-            L0 => { write!(f,"▲し")},
-            P0 => { write!(f,"▲ひ")},
-            PR0 => { write!(f,"★き")},
-            PB0 => { write!(f,"★ぞ")},
-            PS0 => { write!(f,"★ね")},
-            PN0 => { write!(f,"★う")},
-            PL0 => { write!(f,"★し")},
-            PP0 => { write!(f,"★ひ")},
-            K1 => { write!(f,"▽ラ")},
-            R1 => { write!(f,"▽キ")},
-            B1 => { write!(f,"▽ゾ")},
-            G1 => { write!(f,"▽イ")},
-            S1 => { write!(f,"▽ネ")},
-            N1 => { write!(f,"▽ウ")},
-            L1 => { write!(f,"▽シ")},
-            P1 => { write!(f,"▽ヒ")},
-            PR1 => { write!(f,"☆キ")},
-            PB1 => { write!(f,"☆ゾ")},
-            PS1 => { write!(f,"☆ネ")},
-            PN1 => { write!(f,"☆ウ")},
-            PL1 => { write!(f,"☆シ")},
-            PP1 => { write!(f,"☆ヒ")},
-            Empty => { write!(f,"　　")},
-            Num => { write!(f,"××")},
+            K0 => { write!(f," K")},
+            R0 => { write!(f," R")},
+            B0 => { write!(f," B")},
+            G0 => { write!(f," G")},
+            S0 => { write!(f," S")},
+            N0 => { write!(f," N")},
+            L0 => { write!(f," L")},
+            P0 => { write!(f," P")},
+            PR0 => { write!(f,"+R")},
+            PB0 => { write!(f,"+B")},
+            PS0 => { write!(f,"+S")},
+            PN0 => { write!(f,"+N")},
+            PL0 => { write!(f,"+L")},
+            PP0 => { write!(f,"+P")},
+            K1 => { write!(f," k")},
+            R1 => { write!(f," r")},
+            B1 => { write!(f," b")},
+            G1 => { write!(f," g")},
+            S1 => { write!(f," s")},
+            N1 => { write!(f," n")},
+            L1 => { write!(f," l")},
+            P1 => { write!(f," p")},
+            PR1 => { write!(f,"+r")},
+            PB1 => { write!(f,"+b")},
+            PS1 => { write!(f,"+s")},
+            PN1 => { write!(f,"+n")},
+            PL1 => { write!(f,"+l")},
+            PP1 => { write!(f,"+p")},
+            Empty => { write!(f,"  ")},
+            Num => { write!(f,"??")},
         }
     }
 }
@@ -281,9 +281,12 @@ impl Position {
     pub fn show_board(&self) {
         println!("info show_board begin...");
         
+        let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+
         for rank in (1..10).rev() {
             println!(
-                "info {}{}{}{}{}{}{}{}{}",
+                "info {} {}{}{}{}{}{}{}{}{}",
+                rank_array[rank as usize],
                 self.get_piece(1, rank),
                 self.get_piece(2, rank),
                 self.get_piece(3, rank),
@@ -294,6 +297,7 @@ impl Position {
                 self.get_piece(8, rank),
                 self.get_piece(9, rank));
         }
+        println!("info    1 2 3 4 5 6 7 8 9");
         println!("info show_board end...");
     }
 

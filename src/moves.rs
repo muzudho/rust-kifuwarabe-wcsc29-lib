@@ -1,3 +1,5 @@
+use std::*;
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
     // King is 玉.
@@ -32,6 +34,30 @@ pub enum PieceType{
     Empty,
     // Num is size or error.
     Num
+}
+impl fmt::Display for PieceType{
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        // 文字列リテラルでないとダメみたいなんで、他に似たようなコードがあるのに、また書くことに☆（＾～＾）
+        use moves::PieceType::*;
+        match *self {
+            K => { write!(f," K")},
+            R => { write!(f," R")},
+            B => { write!(f," B")},
+            G => { write!(f," G")},
+            S => { write!(f," S")},
+            N => { write!(f," N")},
+            L => { write!(f," L")},
+            P => { write!(f," P")},
+            PR => { write!(f,"+R")},
+            PB => { write!(f,"+B")},
+            PS => { write!(f,"+S")},
+            PN => { write!(f,"+N")},
+            PL => { write!(f,"+L")},
+            PP => { write!(f,"+P")},
+            Empty => { write!(f,"  ")},
+            Num => { write!(f,"??")},
+        }
+    }
 }
 
 pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> PieceType {

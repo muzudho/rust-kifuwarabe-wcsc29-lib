@@ -16,6 +16,7 @@ impl Thought {
         position.show_board();
 
         let piece = position.get_piece(2, 7);
+        println!("Piece: `{}`.", piece);
 
         if piece == Empty {
             "bestmove 2f2e".to_string()
