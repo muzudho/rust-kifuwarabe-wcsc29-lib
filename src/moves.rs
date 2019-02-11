@@ -35,28 +35,25 @@ pub enum PieceType{
     // Num is size or error.
     Num
 }
-impl fmt::Display for PieceType{
-    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        // 文字列リテラルでないとダメみたいなんで、他に似たようなコードがあるのに、また書くことに☆（＾～＾）
-        use moves::PieceType::*;
-        match *self {
-            K => { write!(f," K")},
-            R => { write!(f," R")},
-            B => { write!(f," B")},
-            G => { write!(f," G")},
-            S => { write!(f," S")},
-            N => { write!(f," N")},
-            L => { write!(f," L")},
-            P => { write!(f," P")},
-            PR => { write!(f,"+R")},
-            PB => { write!(f,"+B")},
-            PS => { write!(f,"+S")},
-            PN => { write!(f,"+N")},
-            PL => { write!(f,"+L")},
-            PP => { write!(f,"+P")},
-            Empty => { write!(f,"  ")},
-            Num => { write!(f,"??")},
-        }
+pub fn piece_type_to_sign(piece_type:&PieceType) -> String {
+    use moves::PieceType::*;
+    match *piece_type {
+        K => "K".to_string(),
+        R => "R".to_string(),
+        B => "B".to_string(),
+        G => "G".to_string(),
+        S => "S".to_string(),
+        N => "N".to_string(),
+        L => "L".to_string(),
+        P => "P".to_string(),
+        PR => "+R".to_string(),
+        PB => "+B".to_string(),
+        PS => "+S".to_string(),
+        PN => "+N".to_string(),
+        PL => "+L".to_string(),
+        PP => "+P".to_string(),
+        Empty => "".to_string(),
+        Num => "?".to_string(),
     }
 }
 
@@ -109,6 +106,21 @@ pub fn parse_sign_to_rank(line:&str, start:&mut i8) -> i8 {
         'h' => 8,
         'i' => 9,
         _ => panic!("Failed: Unexpected rank.")
+    }
+}
+
+pub fn rank_to_sign(sign:i8) -> char {
+    match sign {
+        1 => 'a',
+        2 => 'b',
+        3 => 'c',
+        4 => 'd',
+        5 => 'e',
+        6 => 'f',
+        7 => 'g',
+        8 => 'h',
+        9 => 'i',
+        _ => panic!("Failed: Unexpected rank number.")
     }
 }
 
@@ -168,6 +180,26 @@ impl Move {
             promotion:false,
             drop:Empty,
         }
+    }
+
+    pub fn to_sign(&self) -> String {
+        use moves::PieceType::*;
+
+        let mut sign = String::new();
+
+        if self.drop != Empty {
+            sign.push_str(&format!("{}*", piece_type_to_sign(&self.drop)));
+        } else {
+            sign.push_str(&format!("{}{}", self.sourceFile, rank_to_sign(self.sourceRank)));
+        }
+
+        sign.push_str(&format!("{}{}", self.destinationFile, rank_to_sign(self.destinationRank)));
+
+        if self.promotion {
+            sign.push_str("+");
+        }
+
+        sign
     }
 }
 

@@ -52,42 +52,39 @@ pub enum Piece{
     // Num is size or error.
     Num
 }
-impl fmt::Display for Piece{
-    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        // 文字列リテラルでないとダメみたいなんで、他に似たようなコードがあるのに、また書くことに☆（＾～＾）
-        use position::Piece::*;
-        match *self {
-            K0 => { write!(f," K")},
-            R0 => { write!(f," R")},
-            B0 => { write!(f," B")},
-            G0 => { write!(f," G")},
-            S0 => { write!(f," S")},
-            N0 => { write!(f," N")},
-            L0 => { write!(f," L")},
-            P0 => { write!(f," P")},
-            PR0 => { write!(f,"+R")},
-            PB0 => { write!(f,"+B")},
-            PS0 => { write!(f,"+S")},
-            PN0 => { write!(f,"+N")},
-            PL0 => { write!(f,"+L")},
-            PP0 => { write!(f,"+P")},
-            K1 => { write!(f," k")},
-            R1 => { write!(f," r")},
-            B1 => { write!(f," b")},
-            G1 => { write!(f," g")},
-            S1 => { write!(f," s")},
-            N1 => { write!(f," n")},
-            L1 => { write!(f," l")},
-            P1 => { write!(f," p")},
-            PR1 => { write!(f,"+r")},
-            PB1 => { write!(f,"+b")},
-            PS1 => { write!(f,"+s")},
-            PN1 => { write!(f,"+n")},
-            PL1 => { write!(f,"+l")},
-            PP1 => { write!(f,"+p")},
-            Empty => { write!(f,"  ")},
-            Num => { write!(f,"??")},
-        }
+pub fn piece_to_sign(piece:&Piece) -> String {
+    use position::Piece::*;
+    match *piece {
+        K0 => "K".to_string(),
+        R0 => "R".to_string(),
+        B0 => "B".to_string(),
+        G0 => "G".to_string(),
+        S0 => "S".to_string(),
+        N0 => "N".to_string(),
+        L0 => "L".to_string(),
+        P0 => "P".to_string(),
+        PR0 => "+R".to_string(),
+        PB0 => "+B".to_string(),
+        PS0 => "+S".to_string(),
+        PN0 => "+N".to_string(),
+        PL0 => "+L".to_string(),
+        PP0 => "+P".to_string(),
+        K1 => "k".to_string(),
+        R1 => "r".to_string(),
+        B1 => "b".to_string(),
+        G1 => "g".to_string(),
+        S1 => "s".to_string(),
+        N1 => "n".to_string(),
+        L1 => "l".to_string(),
+        P1 => "p".to_string(),
+        PR1 => "+r".to_string(),
+        PB1 => "+b".to_string(),
+        PS1 => "+s".to_string(),
+        PN1 => "+n".to_string(),
+        PL1 => "+l".to_string(),
+        PP1 => "+p".to_string(),
+        Empty => "".to_string(),
+        Num => "?".to_string(),
     }
 }
 
@@ -224,10 +221,11 @@ impl Position {
                 // position startpos moves 2g2f 8c8d
                 let mut moves = Moves::new();
                 moves.parse(line, &mut start);
-                println!("Moves count: {}", moves.items.len());
+                println!("info Moves count: {}", moves.items.len());
 
                 // TODO 指し手通り、進めたい。
                 for mov in &moves.items {
+                    println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(mov);
                     self.show_board();
                 }
@@ -285,17 +283,17 @@ impl Position {
 
         for rank in (1..10).rev() {
             println!(
-                "info {} {}{}{}{}{}{}{}{}{}",
+                "info {0} {1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
                 rank_array[rank as usize],
-                self.get_piece(1, rank),
-                self.get_piece(2, rank),
-                self.get_piece(3, rank),
-                self.get_piece(4, rank),
-                self.get_piece(5, rank),
-                self.get_piece(6, rank),
-                self.get_piece(7, rank),
-                self.get_piece(8, rank),
-                self.get_piece(9, rank));
+                piece_to_sign(&self.get_piece(1, rank)),
+                piece_to_sign(&self.get_piece(2, rank)),
+                piece_to_sign(&self.get_piece(3, rank)),
+                piece_to_sign(&self.get_piece(4, rank)),
+                piece_to_sign(&self.get_piece(5, rank)),
+                piece_to_sign(&self.get_piece(6, rank)),
+                piece_to_sign(&self.get_piece(7, rank)),
+                piece_to_sign(&self.get_piece(8, rank)),
+                piece_to_sign(&self.get_piece(9, rank)));
         }
         println!("info    1 2 3 4 5 6 7 8 9");
         println!("info show_board end...");

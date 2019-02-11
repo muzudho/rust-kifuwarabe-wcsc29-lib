@@ -7,8 +7,12 @@ mod thought;
 use position::Position;
 use thought::Thought;
 
-/// Computer shogi engine Kifuwarabe for WCSC29.
+/// My name is Kifuwarabe.
+/// I am a computer shogi engine.
+/// I will go to WCSC29 this year.
 ///
+/// Let's explain how to use me.
+/// 
 /// Windows 10.
 /// 
 /// [Windows] + [R].
