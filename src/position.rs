@@ -10,8 +10,8 @@ pub enum Player {
 pub fn player_to_sign(player:&Player) -> String {
     use position::Player::*;
     match *player {
-        First => "B".to_string(),
-        Second => "W".to_string(),
+        First => "b".to_string(),
+        Second => "w".to_string(),
         Empty => "x".to_string(),
         _ => panic!("Unexpected player. *player as usize = {}.", *player as usize),
     }
@@ -189,7 +189,7 @@ pub fn promotion_piece(piece:&Piece) -> Piece {
 }
 
 pub fn file_rank_to_index(file:i8, rank:i8) -> usize {
-    ((10 - rank)*11 + file) as usize
+    (rank*11 + file) as usize
 }
 
 // TODO
@@ -197,6 +197,7 @@ pub fn file_rank_to_index(file:i8, rank:i8) -> usize {
 pub struct Position {
     // With frame. 11x11.
     pub board : [Piece;121],
+    pub moves : Moves,
 }
 impl Position {
     pub fn new() -> Position {
@@ -215,11 +216,14 @@ impl Position {
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
             ],
+            moves: Moves::new(),
         }
     }
 
     pub fn parse(&mut self, line:&str) {
         use position::Piece::*;
+
+        self.moves.clear();
 
         let mut start = 0;
 
@@ -244,12 +248,12 @@ impl Position {
 
                 // Examples.
                 // position startpos moves 2g2f 8c8d
-                let mut moves = Moves::new();
-                moves.parse(line, &mut start);
-                println!("info Moves count: {}", moves.items.len());
+                let mut record_moves = Moves::new();
+                record_moves.parse(line, &mut start);
+                println!("info Moves count: {}", record_moves.items.len());
 
                 // TODO 指し手通り、進めたい。
-                for mov in &moves.items {
+                for mov in &record_moves.items {
                     println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(mov);
                     self.show_board();
@@ -306,10 +310,10 @@ impl Position {
         
         let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
-        for rank in (1..10).rev() {
+        for rank in 1..=9 {
             println!(
                 "info {0} {1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
-                rank_array[rank as usize],
+                rank_array[(10-rank) as usize],
                 piece_to_sign(&self.get_piece(1, rank)),
                 piece_to_sign(&self.get_piece(2, rank)),
                 piece_to_sign(&self.get_piece(3, rank)),
@@ -351,6 +355,7 @@ impl Position {
                 source_piece = promotion_piece(&source_piece);
             }
             self.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
+            self.moves.push(mov);
         }
     }
 }

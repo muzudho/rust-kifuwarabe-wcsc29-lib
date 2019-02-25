@@ -15,7 +15,7 @@ impl Thought {
         use position::Piece::*;
 
         position.show_board();
-
+        println!("info Current player: `{}`.", player_to_sign(&position.moves.get_current_player()));
 
         /*
         // 後手の動き。飛車先の歩。
@@ -36,13 +36,12 @@ impl Thought {
                 let mut srcFile = 0;
                 let mut srcRank = 0;
                 'search: for rank in 1..=9 {
-                    println!("info Rank: `{}`.", rank);
+                    // println!("info Rank: `{}`.", rank);
                     for file in 1..=9 {
-                        println!("info File: `{}`.", file);
                         piece = position.get_piece(file, rank);
-                        println!("info Piece: `{}`.", piece_to_sign(&piece));
-                        println!("info Piece to player: `{}`.", player_to_sign(&piece_to_player(&piece)));
-                        if piece != Empty {
+                        let player = &piece_to_player(&piece);
+                        println!("info Find: {}-{} {}.{}.", file, rank, player_to_sign(player), piece_to_sign(&piece));
+                        if *player == position.moves.get_current_player() {
                             // TODO 自分の駒に限り。
                             srcFile = file;
                             srcRank = rank;
@@ -50,11 +49,9 @@ impl Thought {
                         }
                     }
                 }
-                println!("info SrcFile: `{}`.", srcFile);
-                println!("info SrcRank: `{}`.", srcRank);
-                println!("info Piece: `{}`.", piece_to_sign(&piece));
-                println!("info Piece to player: `{}`.", player_to_sign(&piece_to_player(&piece)));
+                println!("info Src: {}-{} {}.{}", srcFile, srcRank, player_to_sign(&piece_to_player(&piece)), piece_to_sign(&piece));
 
+                // その駒の動き方から、行き先の升。
                 let dstRank = if 1 < srcRank {
                     srcRank - 1
                 } else {

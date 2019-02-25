@@ -1,4 +1,5 @@
 use std::*;
+use position::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
@@ -161,6 +162,7 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
     }
 }
 
+#[derive(Clone, Copy, PartialEq)]
 pub struct Move {
     pub sourceFile:i8,
     pub sourceRank:i8,
@@ -213,7 +215,17 @@ impl Moves {
         }
     }
 
+    pub fn push(&mut self, mov:&Move) {
+        self.items.push(*mov);
+    }
+
+    pub fn clear(&mut self) {
+        self.items.clear();
+    }
+
     pub fn parse(&mut self, line:&str, start:&mut i8) {
+        self.items.clear();
+
         loop {
             let drop = parse_sign_to_drop(line, start);
 
@@ -248,6 +260,13 @@ impl Moves {
             } else {
                 break;
             }
+        }
+    }
+
+    pub fn get_current_player(&self) -> Player {
+        match self.items.len() % 2 {
+            0 => Player::First,
+            _ => Player::Second,
         }
     }
 }

@@ -52,7 +52,7 @@ fn main() {
         if line == "quit" {
             break;
         } else if line == "usi" {
-            println!("id name Kifuwarabe No.1");
+            println!("id name Kifuwarabe Build.6");
             println!("id author Satoshi TAKAHASHI");
             println!("usiok");
         } else if line == "isready" {
