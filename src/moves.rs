@@ -105,7 +105,7 @@ pub fn parse_sign_to_rank(line:&str, start:&mut i8) -> i8 {
         'g' => 7,
         'h' => 8,
         'i' => 9,
-        _ => panic!("Failed: Unexpected rank.")
+        _ => panic!("Failed: Unexpected rank. line `{}` at {}, `{}`.", line, *start-1, sign)
     }
 }
 
@@ -120,7 +120,7 @@ pub fn rank_to_sign(sign:i8) -> char {
         7 => 'g',
         8 => 'h',
         9 => 'i',
-        _ => panic!("Failed: Unexpected rank number.")
+        _ => panic!("Failed: Unexpected rank number `{}`.", sign)
     }
 }
 
@@ -142,7 +142,7 @@ pub fn parse_sign_to_file(line:&str, start:&mut i8) -> i8 {
         '7' => 7,
         '8' => 8,
         '9' => 9,
-        _ => panic!("Failed: Unexpected file. line '{}' at {}, '{}'.", line, *start-1, sign)
+        _ => panic!("Failed: Unexpected file. line `{}` at {}, `{}`.", line, *start-1, sign)
     }
 }
 

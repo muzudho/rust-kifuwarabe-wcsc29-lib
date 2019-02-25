@@ -1,10 +1,26 @@
 use moves::*;
 use std::*;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum Player {
+    First,
+    Second,
+    Empty
+}
+pub fn player_to_sign(player:&Player) -> String {
+    use position::Player::*;
+    match *player {
+        First => "B".to_string(),
+        Second => "W".to_string(),
+        Empty => "x".to_string(),
+        _ => panic!("Unexpected player. *player as usize = {}.", *player as usize),
+    }
+}
+
 /// First turn player is 0.
 /// Second turn player is 1.
 #[derive(Clone, Copy, PartialEq)]
-pub enum Piece{
+pub enum Piece {
     // King is 玉.
     K0 = 0,
     // Rook is 飛.
@@ -85,6 +101,15 @@ pub fn piece_to_sign(piece:&Piece) -> String {
         PP1 => "+p".to_string(),
         Empty => "".to_string(),
         Num => "?".to_string(),
+    }
+}
+pub fn piece_to_player(piece:&Piece) -> Player {
+    use position::Piece::*;
+    match *piece {
+        K0 | R0 | B0 | G0 | S0 | N0 | L0 | P0 | PR0 | PB0 | PS0 | PN0 | PL0 | PP0 => Player::First,
+        K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Player::Second,
+        Empty => Player::Empty,
+        Num => panic!("Unexpected player. *piece as usize = {}.", *piece as usize),
     }
 }
 
