@@ -1,4 +1,4 @@
-use moves::*;
+use record::*;
 use std::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -117,7 +117,7 @@ pub fn piece_to_sign(piece:&Piece) -> String {
 }
 pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
     use position::Piece::*;
-    use moves::PieceType::*;
+    use record::PieceType::*;
     match *piece {
         K0 => K,
         R0 => R,
@@ -241,7 +241,7 @@ pub fn promotion_piece(piece:&Piece) -> Piece {
 pub struct Position {
     // With frame. 11x11.
     pub board : [Piece;121],
-    pub moves : Moves,
+    pub record : Record,
 }
 impl Position {
     pub fn new() -> Position {
@@ -260,14 +260,14 @@ impl Position {
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
                 Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
             ],
-            moves: Moves::new(),
+            record: Record::new(),
         }
     }
 
     pub fn parse(&mut self, line:&str) {
         use position::Piece::*;
 
-        self.moves.clear();
+        self.record.clear();
 
         let mut start = 0;
 
@@ -292,12 +292,12 @@ impl Position {
 
                 // Examples.
                 // position startpos moves 2g2f 8c8d
-                let mut record_moves = Moves::new();
-                record_moves.parse(line, &mut start);
-                println!("info Moves count: {}", record_moves.items.len());
+                let mut temp_record = Record::new();
+                temp_record.parse(line, &mut start);
+                println!("info temp_record.items.len: {}", temp_record.items.len());
 
                 // TODO 指し手通り、進めたい。
-                for mov in &record_moves.items {
+                for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(mov);
                     self.show_board();
@@ -388,7 +388,7 @@ impl Position {
     }
 
     pub fn make_move(&mut self, mov:&Move){
-        use moves::PieceType::*;
+        use record::PieceType::*;
         
         if mov.drop != Empty {
             // TODO drop
@@ -399,7 +399,7 @@ impl Position {
                 source_piece = promotion_piece(&source_piece);
             }
             self.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
-            self.moves.push(mov);
+            self.record.push(mov);
         }
     }
 }

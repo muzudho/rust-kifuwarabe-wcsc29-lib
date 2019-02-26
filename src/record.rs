@@ -37,7 +37,7 @@ pub enum PieceType{
     Num
 }
 pub fn piece_type_to_sign(piece_type:&PieceType) -> String {
-    use moves::PieceType::*;
+    use record::PieceType::*;
     match *piece_type {
         K => "K".to_string(),
         R => "R".to_string(),
@@ -59,7 +59,7 @@ pub fn piece_type_to_sign(piece_type:&PieceType) -> String {
 }
 
 pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> PieceType {
-    use moves::PieceType::*;
+    use record::PieceType::*;
 
     if line.len() < *start as usize + 2 {
         return Empty;
@@ -173,7 +173,7 @@ pub struct Move {
 }
 impl Move {
     pub fn new() -> Move {
-        use moves::PieceType::*;
+        use record::PieceType::*;
         Move {
             sourceFile:0,
             sourceRank:0,
@@ -185,7 +185,7 @@ impl Move {
     }
 
     pub fn to_sign(&self) -> String {
-        use moves::PieceType::*;
+        use record::PieceType::*;
 
         let mut sign = String::new();
 
@@ -205,12 +205,12 @@ impl Move {
     }
 }
 
-pub struct Moves {
+pub struct Record {
     pub items : Vec<Move>,
 }
-impl Moves {
-    pub fn new() -> Moves {
-        Moves {
+impl Record {
+    pub fn new() -> Record {
+        Record {
             items:Vec::new(),
         }
     }

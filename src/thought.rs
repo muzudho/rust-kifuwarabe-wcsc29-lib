@@ -1,5 +1,5 @@
 use position::*;
-use moves::*;
+use record::*;
 
 pub struct Thought {
 
@@ -15,7 +15,7 @@ impl Thought {
         use position::Piece::*;
 
         position.show_board();
-        println!("info Current player: `{}`.", player_to_sign(&position.moves.get_current_player()));
+        println!("info Current player: `{}`.", player_to_sign(&position.record.get_current_player()));
 
         /*
         // 後手の動き。飛車先の歩。
@@ -41,7 +41,7 @@ impl Thought {
                         piece = position.get_piece(file, rank);
                         let player = &piece_to_player(&piece);
                         println!("info Find: {}-{} {}.{}.", file, rank, player_to_sign(player), piece_to_sign(&piece));
-                        if *player == position.moves.get_current_player() {
+                        if *player == position.record.get_current_player() {
                             // TODO 自分の駒に限り。
                             srcFile = file;
                             srcRank = rank;
