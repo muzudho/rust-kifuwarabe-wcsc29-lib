@@ -5,7 +5,7 @@ use std::*;
 pub enum Player {
     First,
     Second,
-    Empty
+    Empty,
 }
 pub fn player_to_sign(player:&Player) -> String {
     use position::Player::*;
@@ -15,6 +15,18 @@ pub fn player_to_sign(player:&Player) -> String {
         Empty => "x".to_string(),
         _ => panic!("Unexpected player. *player as usize = {}.", *player as usize),
     }
+}
+
+pub const FILE_LEN: i8 = 9;
+pub const RANK_LEN: i8 = 9;
+pub fn file_rank_to_cell(file:i8, rank:i8) -> usize {
+    (rank*FILE_LEN + file) as usize
+}
+pub fn cell_to_file_rank(cell:usize) -> (i8, i8) {
+    ((cell%FILE_LEN as usize) as i8, (cell/FILE_LEN as usize) as i8)
+}
+pub fn reverse_cell(cell:usize) -> usize {
+    RANK_LEN as usize * FILE_LEN as usize - cell
 }
 
 /// First turn player is 0.
@@ -66,7 +78,7 @@ pub enum Piece {
     // Empty square.
     Empty,
     // Num is size or error.
-    Num
+    Num,
 }
 pub fn piece_to_sign(piece:&Piece) -> String {
     use position::Piece::*;
@@ -101,6 +113,42 @@ pub fn piece_to_sign(piece:&Piece) -> String {
         PP1 => "+p".to_string(),
         Empty => "".to_string(),
         Num => "?".to_string(),
+    }
+}
+pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
+    use position::Piece::*;
+    use moves::PieceType::*;
+    match *piece {
+        K0 => K,
+        R0 => R,
+        B0 => B,
+        G0 => G,
+        S0 => S,
+        N0 => N,
+        L0 => L,
+        P0 => P,
+        PR0 => PR,
+        PB0 => PB,
+        PS0 => PS,
+        PN0 => PN,
+        PL0 => PL,
+        PP0 => PP,
+        K1 => K,
+        R1 => R,
+        B1 => B,
+        G1 => G,
+        S1 => S,
+        N1 => N,
+        L1 => L,
+        P1 => P,
+        PR1 => PR,
+        PB1 => PB,
+        PS1 => PS,
+        PN1 => PN,
+        PL1 => PL,
+        PP1 => PP,
+        Piece::Empty => PieceType::Empty,
+        Piece::Num => PieceType::Empty,
     }
 }
 pub fn piece_to_player(piece:&Piece) -> Player {
@@ -186,10 +234,6 @@ pub fn promotion_piece(piece:&Piece) -> Piece {
         P1 => PP1,
         _ => panic!("Failed: Sfen unexpected promotion.")
     }
-}
-
-pub fn file_rank_to_index(file:i8, rank:i8) -> usize {
-    (rank*11 + file) as usize
 }
 
 // TODO
@@ -329,18 +373,18 @@ impl Position {
     }
 
     pub fn get_piece(&self, file:i8, rank:i8) -> Piece {
-        self.board[file_rank_to_index(file, rank)]
+        self.board[file_rank_to_cell(file, rank)]
     }
 
     fn remove_piece(&mut self, file:i8, rank:i8) -> Piece {
         use position::Piece::*;
-        let piece = self.board[file_rank_to_index(file, rank)];
+        let piece = self.board[file_rank_to_cell(file, rank)];
         self.set_piece(file, rank, Empty);
         piece
     }
 
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Piece) {
-        self.board[file_rank_to_index(file, rank)] = piece;
+        self.board[file_rank_to_cell(file, rank)] = piece;
     }
 
     pub fn make_move(&mut self, mov:&Move){
