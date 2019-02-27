@@ -1,0 +1,16 @@
+{
+	"comment": "本将棋盤　初期局面",
+	"ply": 1,
+    "board": [
+        "lnsgkgsnl",
+        " r     b ",
+        "ppppppppp",
+        "         ",
+        "         ",
+        "         ",
+        "PPPPPPPPP",
+        " B     R ",
+        "LNSGKGSNL"
+    ],
+    "turn": "black"
+}

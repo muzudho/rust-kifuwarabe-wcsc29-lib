@@ -21,7 +21,7 @@ pub const FILE_LEN: i8 = 9;
 pub const RANK_LEN: i8 = 9;
 pub const BOARD_SIZE: usize = (FILE_LEN * RANK_LEN) as usize;
 pub fn file_rank_to_cell(file:i8, rank:i8) -> usize {
-    (rank*FILE_LEN + file) as usize
+    ((rank-1)*FILE_LEN + (file-1)) as usize
 }
 pub fn cell_to_file_rank(cell:usize) -> (i8, i8) {
     ((cell%FILE_LEN as usize) as i8, (cell/FILE_LEN as usize) as i8)
@@ -162,33 +162,28 @@ pub fn piece_to_player(piece:&Piece) -> Player {
     }
 }
 
-pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
+// フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。前空白埋め2文字固定。
+pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
     use position::Piece::*;
 
-    if line.len() <= *start as usize + 1 {
+    // スタートが文字列の終端を読み終わっていれば、結果は空。
+    if line.len() < *start as usize {
         return Empty;
     }
 
-    let sign = line.to_string().chars().next().unwrap();
-    let pieceType = match sign {
-        'K' => K0,
-        'R' => R0,
-        'B' => B0,
-        'G' => G0,
-        'S' => S0,
-        'N' => N0,
-        'L' => L0,
-        'P' => P0,
-        'k' => K1,
-        'r' => R1,
-        'b' => B1,
-        'g' => G1,
-        's' => S1,
-        'n' => N1,
-        'l' => L1,
-        'p' => P1,
+    let chars = line.to_string().chars();
+
+    // とりあえず スタートの数だけ進める。
+    let mut sign;
+    for i in 0..*start {
+        sign = chars.next().unwrap();
+    };
+
+    match sign {
         '+' => {
-            let sign = line.to_string().chars().next().unwrap();
+            // 1文字目が + なら２文字。
+            let sign = chars.next().unwrap();
+            *start += 2;
             match sign {
                 'R' => PR0,
                 'B' => PB0,
@@ -205,15 +200,94 @@ pub fn parse_sign_to_piece(line:&str, start:&mut i8) -> Piece {
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
+        ' ' => {
+            // 前空白埋めの符号。
+            *start += 2;
+            match sign {
+                'K' => K0,
+                'R' => R0,
+                'B' => B0,
+                'G' => G0,
+                'S' => S0,
+                'N' => N0,
+                'L' => L0,
+                'P' => P0,
+                'k' => K1,
+                'r' => R1,
+                'b' => B1,
+                'g' => G1,
+                's' => S1,
+                'n' => N1,
+                'l' => L1,
+                'p' => P1,
+                _ => panic!("Failed: Sfen unexpected piece."),
+            }
+        },
         _ => panic!("Failed: Sfen unexpected piece."),
+    }
+}
+
+// フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
+pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Piece {
+    use position::Piece::*;
+
+    // スタートが文字列の終端を読み終わっていれば、結果は空。
+    if line.len() < *start as usize {
+        return Empty;
+    }
+
+    let chars = line.to_string().chars();
+
+    // とりあえず スタートの数だけ進める。
+    let mut sign;
+    for i in 0..*start {
+        sign = chars.next().unwrap();
     };
 
-    let sign = line.to_string().chars().next().unwrap();
-    if sign == '*' {
-        *start += 2;
-        pieceType
-    } else {
-        panic!("Failed: Sfen unexpected drop.");
+    match sign {
+        '+' => {
+            // 1文字目が + なら２文字。
+            let sign = chars.next().unwrap();
+            *start += 2;
+            match sign {
+                'R' => PR0,
+                'B' => PB0,
+                'S' => PS0,
+                'N' => PN0,
+                'L' => PL0,
+                'P' => PP0,
+                'r' => PR1,
+                'b' => PB1,
+                's' => PS1,
+                'n' => PN1,
+                'l' => PL1,
+                'p' => PP1,
+                _ => panic!("Failed: Sfen unexpected piece."),
+            }
+        },
+        _ => {
+            // 1文字の符号。
+            *start += 1;
+            match sign {
+                'K' => K0,
+                'R' => R0,
+                'B' => B0,
+                'G' => G0,
+                'S' => S0,
+                'N' => N0,
+                'L' => L0,
+                'P' => P0,
+                'k' => K1,
+                'r' => R1,
+                'b' => B1,
+                'g' => G1,
+                's' => S1,
+                'n' => N1,
+                'l' => L1,
+                'p' => P1,
+                _ => panic!("Failed: Sfen unexpected piece."),
+            }
+        },
     }
 }
 
@@ -311,7 +385,7 @@ impl Position {
             };
 
             if spaces == 0 {
-                self.set_piece(file, rank, parse_sign_to_piece(line, &mut start));
+                self.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;

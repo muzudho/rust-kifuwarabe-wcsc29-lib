@@ -1,15 +1,5 @@
 use position::*;
 
-pub file_rank_to_cell_by_offset(file:i8, file_offset:i8, rank:i8, rank_offset:i8) -> usize {
-    let new_file = file + file_offset;
-    let new_rank = rank + rank_offset;
-    if new_file < 1 || 9 < new_file || new_rank < 1 || 9 < new_rank {
-        -1
-    } else {
-        file_rank_to_cell(new_file, new_rank)
-    }
-}
-
 pub reverse_cell_vec(player:&Player, cell_vec:&Vec<i8>) -> Vec<i8> {
     let v = Vec::new();
 
@@ -28,6 +18,16 @@ pub reverse_cell_vec(player:&Player, cell_vec:&Vec<i8>) -> Vec<i8> {
     }
 
     v
+}
+
+pub file_rank_to_cell_by_offset(file:i8, file_offset:i8, rank:i8, rank_offset:i8) -> usize {
+    let new_file = file + file_offset;
+    let new_rank = rank + rank_offset;
+    if new_file < 1 || 9 < new_file || new_rank < 1 || 9 < new_rank {
+        -1
+    } else {
+        file_rank_to_cell(new_file, new_rank)
+    }
 }
 
 pub generate_pawn_cell_vec(cell:i8) -> Vec<i8> {

@@ -1,0 +1,11 @@
+{
+	"comment": "どうぶつしょうぎ盤",
+	"ply": 0,
+    "board": [
+        "krz",
+        " h ",
+        " H ",
+        "ZRK"
+    ],
+    "turn": "black"
+}

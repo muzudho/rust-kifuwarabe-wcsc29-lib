@@ -2,6 +2,7 @@ use std::io;
 
 mod communication;
 mod record;
+mod position_file;
 mod position;
 mod thought;
 
@@ -72,6 +73,9 @@ fn main() {
             // println!("bestmove 7g7f");
             // println!("bestmove win");
             // println!("bestmove resign");
+            
+        } else if line.starts_with("show") {
+            position.show_board();
         }
     }
 }

@@ -14,8 +14,8 @@ impl Thought {
     pub fn get_best_move(self, position:&mut Position) -> Move {
         use position::Piece::*;
 
-        position.show_board();
-        println!("info Current player: `{}`.", player_to_sign(&position.record.get_current_player()));
+        // position.show_board();
+        // println!("info Current player: `{}`.", player_to_sign(&position.record.get_current_player()));
 
         // 盤上の自分の駒を１つ選ぶ。
         let mut piece = Empty;
@@ -26,7 +26,7 @@ impl Thought {
             for file in 1..=9 {
                 piece = position.get_piece(file, rank);
                 let player = &piece_to_player(&piece);
-                println!("info Find: {}-{} {}.{}.", file, rank, player_to_sign(player), piece_to_sign(&piece));
+                // println!("info Find: {}-{} {}.{}.", file, rank, player_to_sign(player), piece_to_sign(&piece));
                 if *player == position.record.get_current_player() {
                     // TODO 自分の駒に限り。
                     srcFile = file;
@@ -35,7 +35,7 @@ impl Thought {
                 }
             }
         }
-        println!("info Src: {}-{} {}.{}", srcFile, srcRank, player_to_sign(&piece_to_player(&piece)), piece_to_sign(&piece));
+        // println!("info Src: {}-{} {}.{}", srcFile, srcRank, player_to_sign(&piece_to_player(&piece)), piece_to_sign(&piece));
 
         // その駒の動き方から、行き先の升。
         let dstRank = if 1 < srcRank {
