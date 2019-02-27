@@ -19,6 +19,7 @@ pub fn player_to_sign(player:&Player) -> String {
 
 pub const FILE_LEN: i8 = 9;
 pub const RANK_LEN: i8 = 9;
+pub const BOARD_SIZE: usize = (FILE_LEN * RANK_LEN) as usize;
 pub fn file_rank_to_cell(file:i8, rank:i8) -> usize {
     (rank*FILE_LEN + file) as usize
 }
@@ -236,30 +237,15 @@ pub fn promotion_piece(piece:&Piece) -> Piece {
     }
 }
 
-// TODO
-// #[derive(Clone, Copy)]
 pub struct Position {
-    // With frame. 11x11.
-    pub board : [Piece;121],
+    pub board : [Piece; BOARD_SIZE],
     pub record : Record,
 }
 impl Position {
     pub fn new() -> Position {
         use position::Piece::*;
         Position {
-            board : [
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-            ],
+            board : [Empty; BOARD_SIZE],
             record: Record::new(),
         }
     }
@@ -273,17 +259,15 @@ impl Position {
 
         if line.starts_with("position startpos") {
             self.board  = [
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, L1, N1, S1, G1, K1, G1, S1, N1, L1, Empty,
-                Empty, Empty, R1, Empty, Empty, Empty, Empty, Empty, B1, Empty, Empty, 
-                Empty, P1, P1, P1, P1, P1, P1, P1, P1, P1, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
-                Empty, P0, P0, P0, P0, P0, P0, P0, P0, P0, Empty, 
-                Empty, Empty, B0, Empty, Empty, Empty, Empty, Empty, R0, Empty, Empty, 
-                Empty, L0, N0, S0, G0, K0, G0, S0, N0, L0, Empty, 
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, 
+                L1, N1, S1, G1, K1, G1, S1, N1, L1,
+                Empty, R1, Empty, Empty, Empty, Empty, Empty, B1, Empty,
+                P1, P1, P1, P1, P1, P1, P1, P1, P1,
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+                P0, P0, P0, P0, P0, P0, P0, P0, P0,
+                Empty, B0, Empty, Empty, Empty, Empty, Empty, R0, Empty,
+                L0, N0, S0, G0, K0, G0, S0, N0, L0,
             ];
             
             if line.len() > 17 {

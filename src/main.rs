@@ -1,9 +1,11 @@
 use std::io;
 
+mod communication;
 mod record;
 mod position;
 mod thought;
 
+use communication::*;
 use position::Position;
 use thought::Thought;
 
@@ -34,6 +36,7 @@ use thought::Thought;
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
 fn main() {
 
+    let mut comm = Communication::new();
     let mut position = Position::new();
 
     loop {
@@ -52,19 +55,22 @@ fn main() {
         if line == "quit" {
             break;
         } else if line == "usi" {
-            println!("id name Kifuwarabe Build.7");
-            println!("id author Satoshi TAKAHASHI");
-            println!("usiok");
+            comm.println("id name Kifuwarabe Build.8");
+            comm.println("id author Satoshi TAKAHASHI");
+            comm.println("usiok");
         } else if line == "isready" {
-            println!("readyok");
+            comm.println("readyok");
         } else if line == "usinewgame" {
         } else if line.starts_with("position") {
-            println!("info What is position?");
+            comm.println("info What is position?");
             position.parse(&line);
             position.show_board();
         } else if line.starts_with("go") {
             let thought = Thought::new();
-            println!("{}", thought.think(&mut position));
+            comm.println(&format!("bestmove {}", thought.get_best_move(&mut position).to_sign()));
+            // Examples.
+            // println!("bestmove 7g7f");
+            // println!("bestmove win");
             // println!("bestmove resign");
         }
     }
