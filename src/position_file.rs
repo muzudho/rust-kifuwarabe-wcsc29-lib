@@ -1,7 +1,5 @@
 /// 局面ファイル☆（＾～＾）
 
-/// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
-extern crate serde_json;
 use serde_json::Value;
 
 use std::fs::File;
@@ -40,8 +38,10 @@ impl PositionFile {
         // 盤面作成。
         let mut temp_board = [Piece::Empty; BOARD_SIZE];
         let mut start = 0i8;
+        let mut cell = 0;
         for line in document["board"].as_array().unwrap().iter() {
-            parse_sign_2char_to_piece(line, &mut start);
+            temp_board[cell] = parse_sign_2char_to_piece(line.as_str().unwrap(), &mut start);
+            cell += 1;
             // println!("Line: '{}'.", line);
         }
 

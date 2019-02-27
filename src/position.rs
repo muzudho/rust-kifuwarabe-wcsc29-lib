@@ -171,18 +171,16 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
         return Empty;
     }
 
-    let chars = line.to_string().chars();
-
     // とりあえず スタートの数だけ進める。
-    let mut sign;
+    let mut sign = '?';
     for i in 0..*start {
-        sign = chars.next().unwrap();
+        sign = line.to_string().chars().next().unwrap();
     };
 
     match sign {
         '+' => {
             // 1文字目が + なら２文字。
-            let sign = chars.next().unwrap();
+            let sign = line.to_string().chars().next().unwrap();
             *start += 2;
             match sign {
                 'R' => PR0,
@@ -236,18 +234,16 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Piece {
         return Empty;
     }
 
-    let chars = line.to_string().chars();
-
     // とりあえず スタートの数だけ進める。
-    let mut sign;
+    let mut sign = '?';
     for i in 0..*start {
-        sign = chars.next().unwrap();
+        sign = line.to_string().chars().next().unwrap();
     };
 
     match sign {
         '+' => {
             // 1文字目が + なら２文字。
-            let sign = chars.next().unwrap();
+            let sign = line.to_string().chars().next().unwrap();
             *start += 2;
             match sign {
                 'R' => PR0,

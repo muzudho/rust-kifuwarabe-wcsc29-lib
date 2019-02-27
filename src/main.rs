@@ -1,3 +1,7 @@
+/// extern crate は main.rs か lib.rs に入れる。
+/// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
+extern crate serde_json;
+
 use std::io;
 
 mod communication;
@@ -56,7 +60,7 @@ fn main() {
         if line == "quit" {
             break;
         } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.8");
+            comm.println("id name Kifuwarabe Build.9");
             comm.println("id author Satoshi TAKAHASHI");
             comm.println("usiok");
         } else if line == "isready" {
