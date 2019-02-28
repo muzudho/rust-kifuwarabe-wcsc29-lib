@@ -1,37 +1,25 @@
+use board::*;
 use record::*;
 use std::*;
 
 #[derive(Clone, Copy, PartialEq)]
-pub enum Player {
+pub enum Phase {
     /// Starting first.
     First,
     /// Starting second.
     Second,
 }
-pub fn player_to_sign(player:&Player) -> String {
-    use position::Player::*;
-    match *player {
+pub fn phase_to_sign(phase:&Phase) -> String {
+    use position::Phase::*;
+    match *phase {
         First => "b".to_string(),
         Second => "w".to_string(),
-        _ => panic!("Unexpected player. *player as usize = {}.", *player as usize),
+        _ => panic!("Unexpected phase. *phase as usize = {}.", *phase as usize),
     }
 }
 
-pub const FILE_LEN: i8 = 9;
-pub const RANK_LEN: i8 = 9;
-pub const BOARD_SIZE: usize = (FILE_LEN * RANK_LEN) as usize;
-pub fn file_rank_to_cell(file:i8, rank:i8) -> usize {
-    ((rank-1)*FILE_LEN + (file-1)) as usize
-}
-pub fn cell_to_file_rank(cell:usize) -> (i8, i8) {
-    ((cell%FILE_LEN as usize) as i8, (cell/FILE_LEN as usize) as i8)
-}
-pub fn reverse_cell(cell:usize) -> usize {
-    RANK_LEN as usize * FILE_LEN as usize - cell
-}
-
-/// First turn player is 0.
-/// Second turn player is 1.
+/// First turn phase is 0.
+/// Second turn phase is 1.
 #[derive(Clone, Copy, PartialEq)]
 pub enum Piece {
     // King is 玉.
@@ -151,14 +139,14 @@ pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
         PP1 => PP,
     }
 }
-pub fn piece_to_player(piece:&Option<Piece>) -> Option<Player> {
+pub fn piece_to_phase(piece:&Option<Piece>) -> Option<Phase> {
     match piece {
         Some(x) => {
             use position::Piece::*;
             match x {
-                K0 | R0 | B0 | G0 | S0 | N0 | L0 | P0 | PR0 | PB0 | PS0 | PN0 | PL0 | PP0 => Some(Player::First),
-                K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Some(Player::Second),
-                _ => panic!("Unexpected player. *piece as usize = {}.", *x as usize),
+                K0 | R0 | B0 | G0 | S0 | N0 | L0 | P0 | PR0 | PB0 | PS0 | PN0 | PL0 | PP0 => Some(Phase::First),
+                K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Some(Phase::Second),
+                _ => panic!("Unexpected phase. *piece as usize = {}.", *x as usize),
             }
         },
         None => None,
@@ -315,37 +303,25 @@ pub fn promotion_piece(piece:&Option<Piece>) -> Option<Piece> {
 }
 
 pub struct Position {
-    pub board : [Option<Piece>; BOARD_SIZE],
+    pub board : Board,
     pub record : Record,
 }
 impl Position {
     pub fn new() -> Position {
-        use position::Piece::*;
         Position {
-            board : [None; BOARD_SIZE],
+            board : Board::new(),
             record: Record::new(),
         }
     }
 
     pub fn parse(&mut self, line:&str) {
-        use position::Piece::*;
 
         self.record.clear();
 
         let mut start = 0;
 
         if line.starts_with("position startpos") {
-            self.board  = [
-                Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
-                None, Some(R1), None, None, None, None, None, Some(B1), None,
-                Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
-                None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None, None,
-                Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0),
-                None, Some(B0), None, None, None, None, None, Some(R0), None,
-                Some(L0), Some(N0), Some(S0), Some(G0), Some(K0), Some(G0), Some(S0), Some(N0), Some(L0),
-            ];
+            self.board.set_startpos();
             
             if line.len() > 17 {
                 // `position startpos moves `. [0]p, [1]o, ...
@@ -434,18 +410,20 @@ impl Position {
     }
 
     pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
-        self.board[file_rank_to_cell(file, rank)]
+        let cell = self.board.file_rank_to_cell(file, rank);
+        self.board.pieces[cell]
     }
 
     fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
-        use position::Piece::*;
-        let piece = self.board[file_rank_to_cell(file, rank)];
+        let cell = self.board.file_rank_to_cell(file, rank);
+        let piece = self.board.pieces[cell];
         self.set_piece(file, rank, None);
         piece
     }
 
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
-        self.board[file_rank_to_cell(file, rank)] = piece;
+        let cell = self.board.file_rank_to_cell(file, rank);
+        self.board.pieces[cell] = piece;
     }
 
     pub fn make_move(&mut self, mov:&Move){

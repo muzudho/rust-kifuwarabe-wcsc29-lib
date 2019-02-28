@@ -263,10 +263,10 @@ impl Record {
         }
     }
 
-    pub fn get_current_player(&self) -> Player {
+    pub fn get_current_phase(&self) -> Phase {
         match self.items.len() % 2 {
-            0 => Player::First,
-            _ => Player::Second,
+            0 => Phase::First,
+            _ => Phase::Second,
         }
     }
 }

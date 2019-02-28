@@ -15,7 +15,7 @@ impl Thought {
         use position::Piece::*;
 
         // position.show_board();
-        // println!("info Current player: `{}`.", player_to_sign(&position.record.get_current_player()));
+        // println!("info Current phase: `{}`.", phase_to_sign(&position.record.get_current_phase()));
 
         // 盤上の自分の駒を１つ選ぶ。
         let mut piece = None;
@@ -25,10 +25,10 @@ impl Thought {
             // println!("info Rank: `{}`.", rank);
             for file in 1..=9 {
                 piece = position.get_piece(file, rank);
-                let player = piece_to_player(&piece);
-                if player.is_some() {
-                    if player.unwrap() == position.record.get_current_player() {
-                        // println!("info Find: {}-{} {}.{}.", file, rank, player_to_sign(player), piece_to_sign(&piece));
+                let phase = piece_to_phase(&piece);
+                if phase.is_some() {
+                    if phase.unwrap() == position.record.get_current_phase() {
+                        // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
                         // TODO 自分の駒に限り。
                         srcFile = file;
                         srcRank = rank;
@@ -37,7 +37,7 @@ impl Thought {
                 }
             }
         }
-        // println!("info Src: {}-{} {}.{}", srcFile, srcRank, player_to_sign(&piece_to_player(&piece)), piece_to_sign(&piece));
+        // println!("info Src: {}-{} {}.{}", srcFile, srcRank, phase_to_sign(&piece_to_phase(&piece)), piece_to_sign(&piece));
 
         // その駒の動き方から、行き先の升。
         let dstRank = if 1 < srcRank {
