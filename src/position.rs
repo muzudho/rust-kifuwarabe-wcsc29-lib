@@ -3,16 +3,16 @@ use std::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Player {
+    /// Starting first.
     First,
+    /// Starting second.
     Second,
-    Empty,
 }
 pub fn player_to_sign(player:&Player) -> String {
     use position::Player::*;
     match *player {
         First => "b".to_string(),
         Second => "w".to_string(),
-        Empty => "x".to_string(),
         _ => panic!("Unexpected player. *player as usize = {}.", *player as usize),
     }
 }
@@ -76,45 +76,46 @@ pub enum Piece {
     PN1,
     PL1,
     PP1,
-    // Empty square.
-    Empty,
-    // Num is size or error.
-    Num,
 }
-pub fn piece_to_sign(piece:&Piece) -> String {
-    use position::Piece::*;
-    match *piece {
-        K0 => "K".to_string(),
-        R0 => "R".to_string(),
-        B0 => "B".to_string(),
-        G0 => "G".to_string(),
-        S0 => "S".to_string(),
-        N0 => "N".to_string(),
-        L0 => "L".to_string(),
-        P0 => "P".to_string(),
-        PR0 => "+R".to_string(),
-        PB0 => "+B".to_string(),
-        PS0 => "+S".to_string(),
-        PN0 => "+N".to_string(),
-        PL0 => "+L".to_string(),
-        PP0 => "+P".to_string(),
-        K1 => "k".to_string(),
-        R1 => "r".to_string(),
-        B1 => "b".to_string(),
-        G1 => "g".to_string(),
-        S1 => "s".to_string(),
-        N1 => "n".to_string(),
-        L1 => "l".to_string(),
-        P1 => "p".to_string(),
-        PR1 => "+r".to_string(),
-        PB1 => "+b".to_string(),
-        PS1 => "+s".to_string(),
-        PN1 => "+n".to_string(),
-        PL1 => "+l".to_string(),
-        PP1 => "+p".to_string(),
-        Empty => "".to_string(),
-        Num => "?".to_string(),
-    }
+pub fn piece_to_sign(piece:&Option<Piece>) -> String {
+    match piece {
+        Some(x) => {
+            use position::Piece::*;
+            match x {
+                K0 => "K",
+                R0 => "R",
+                B0 => "B",
+                G0 => "G",
+                S0 => "S",
+                N0 => "N",
+                L0 => "L",
+                P0 => "P",
+                PR0 => "+R",
+                PB0 => "+B",
+                PS0 => "+S",
+                PN0 => "+N",
+                PL0 => "+L",
+                PP0 => "+P",
+                K1 => "k",
+                R1 => "r",
+                B1 => "b",
+                G1 => "g",
+                S1 => "s",
+                N1 => "n",
+                L1 => "l",
+                P1 => "p",
+                PR1 => "+r",
+                PB1 => "+b",
+                PS1 => "+s",
+                PN1 => "+n",
+                PL1 => "+l",
+                PP1 => "+p",
+                Empty => "",
+                Num => "?",
+            }
+        },
+        None => { "" }
+    }.to_string()
 }
 pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
     use position::Piece::*;
@@ -148,27 +149,29 @@ pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
         PN1 => PN,
         PL1 => PL,
         PP1 => PP,
-        Piece::Empty => PieceType::Empty,
-        Piece::Num => PieceType::Empty,
     }
 }
-pub fn piece_to_player(piece:&Piece) -> Player {
-    use position::Piece::*;
-    match *piece {
-        K0 | R0 | B0 | G0 | S0 | N0 | L0 | P0 | PR0 | PB0 | PS0 | PN0 | PL0 | PP0 => Player::First,
-        K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Player::Second,
-        Empty => Player::Empty,
-        Num => panic!("Unexpected player. *piece as usize = {}.", *piece as usize),
+pub fn piece_to_player(piece:&Option<Piece>) -> Option<Player> {
+    match piece {
+        Some(x) => {
+            use position::Piece::*;
+            match x {
+                K0 | R0 | B0 | G0 | S0 | N0 | L0 | P0 | PR0 | PB0 | PS0 | PN0 | PL0 | PP0 => Some(Player::First),
+                K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Some(Player::Second),
+                _ => panic!("Unexpected player. *piece as usize = {}.", *x as usize),
+            }
+        },
+        None => None,
     }
 }
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。前空白埋め2文字固定。
-pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
+pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() < *start as usize {
-        return Empty;
+        return None;
     }
 
     // とりあえず スタートの数だけ進める。
@@ -183,18 +186,18 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
             let sign = line.to_string().chars().next().unwrap();
             *start += 2;
             match sign {
-                'R' => PR0,
-                'B' => PB0,
-                'S' => PS0,
-                'N' => PN0,
-                'L' => PL0,
-                'P' => PP0,
-                'r' => PR1,
-                'b' => PB1,
-                's' => PS1,
-                'n' => PN1,
-                'l' => PL1,
-                'p' => PP1,
+                'R' => Some(PR0),
+                'B' => Some(PB0),
+                'S' => Some(PS0),
+                'N' => Some(PN0),
+                'L' => Some(PL0),
+                'P' => Some(PP0),
+                'r' => Some(PR1),
+                'b' => Some(PB1),
+                's' => Some(PS1),
+                'n' => Some(PN1),
+                'l' => Some(PL1),
+                'p' => Some(PP1),
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
@@ -202,22 +205,22 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
             // 前空白埋めの符号。
             *start += 2;
             match sign {
-                'K' => K0,
-                'R' => R0,
-                'B' => B0,
-                'G' => G0,
-                'S' => S0,
-                'N' => N0,
-                'L' => L0,
-                'P' => P0,
-                'k' => K1,
-                'r' => R1,
-                'b' => B1,
-                'g' => G1,
-                's' => S1,
-                'n' => N1,
-                'l' => L1,
-                'p' => P1,
+                'K' => Some(K0),
+                'R' => Some(R0),
+                'B' => Some(B0),
+                'G' => Some(G0),
+                'S' => Some(S0),
+                'N' => Some(N0),
+                'L' => Some(L0),
+                'P' => Some(P0),
+                'k' => Some(K1),
+                'r' => Some(R1),
+                'b' => Some(B1),
+                'g' => Some(G1),
+                's' => Some(S1),
+                'n' => Some(N1),
+                'l' => Some(L1),
+                'p' => Some(P1),
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
@@ -226,12 +229,12 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Piece {
 }
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
-pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Piece {
+pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() < *start as usize {
-        return Empty;
+        return None;
     }
 
     // とりあえず スタートの数だけ進める。
@@ -246,18 +249,18 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Piece {
             let sign = line.to_string().chars().next().unwrap();
             *start += 2;
             match sign {
-                'R' => PR0,
-                'B' => PB0,
-                'S' => PS0,
-                'N' => PN0,
-                'L' => PL0,
-                'P' => PP0,
-                'r' => PR1,
-                'b' => PB1,
-                's' => PS1,
-                'n' => PN1,
-                'l' => PL1,
-                'p' => PP1,
+                'R' => Some(PR0),
+                'B' => Some(PB0),
+                'S' => Some(PS0),
+                'N' => Some(PN0),
+                'L' => Some(PL0),
+                'P' => Some(PP0),
+                'r' => Some(PR1),
+                'b' => Some(PB1),
+                's' => Some(PS1),
+                'n' => Some(PN1),
+                'l' => Some(PL1),
+                'p' => Some(PP1),
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
@@ -265,57 +268,61 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Piece {
             // 1文字の符号。
             *start += 1;
             match sign {
-                'K' => K0,
-                'R' => R0,
-                'B' => B0,
-                'G' => G0,
-                'S' => S0,
-                'N' => N0,
-                'L' => L0,
-                'P' => P0,
-                'k' => K1,
-                'r' => R1,
-                'b' => B1,
-                'g' => G1,
-                's' => S1,
-                'n' => N1,
-                'l' => L1,
-                'p' => P1,
+                'K' => Some(K0),
+                'R' => Some(R0),
+                'B' => Some(B0),
+                'G' => Some(G0),
+                'S' => Some(S0),
+                'N' => Some(N0),
+                'L' => Some(L0),
+                'P' => Some(P0),
+                'k' => Some(K1),
+                'r' => Some(R1),
+                'b' => Some(B1),
+                'g' => Some(G1),
+                's' => Some(S1),
+                'n' => Some(N1),
+                'l' => Some(L1),
+                'p' => Some(P1),
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
     }
 }
 
-pub fn promotion_piece(piece:&Piece) -> Piece {
-    use position::Piece::*;
-
+pub fn promotion_piece(piece:&Option<Piece>) -> Option<Piece> {
     match piece {
-        R0 => PR0,
-        B0 => PB0,
-        S0 => PS0,
-        N0 => PN0,
-        L0 => PL0,
-        P0 => PP0,
-        R1 => PR1,
-        B1 => PB1,
-        S1 => PS1,
-        N1 => PN1,
-        L1 => PL1,
-        P1 => PP1,
-        _ => panic!("Failed: Sfen unexpected promotion.")
+        Some(x) => {
+            use position::Piece::*;
+            match x {
+                R0 => Some(PR0),
+                B0 => Some(PB0),
+                S0 => Some(PS0),
+                N0 => Some(PN0),
+                L0 => Some(PL0),
+                P0 => Some(PP0),
+                R1 => Some(PR1),
+                B1 => Some(PB1),
+                S1 => Some(PS1),
+                N1 => Some(PN1),
+                L1 => Some(PL1),
+                P1 => Some(PP1),
+                _ => panic!("Failed: Sfen unexpected promotion.")
+            }
+        },
+        None => None,
     }
 }
 
 pub struct Position {
-    pub board : [Piece; BOARD_SIZE],
+    pub board : [Option<Piece>; BOARD_SIZE],
     pub record : Record,
 }
 impl Position {
     pub fn new() -> Position {
         use position::Piece::*;
         Position {
-            board : [Empty; BOARD_SIZE],
+            board : [None; BOARD_SIZE],
             record: Record::new(),
         }
     }
@@ -329,15 +336,15 @@ impl Position {
 
         if line.starts_with("position startpos") {
             self.board  = [
-                L1, N1, S1, G1, K1, G1, S1, N1, L1,
-                Empty, R1, Empty, Empty, Empty, Empty, Empty, B1, Empty,
-                P1, P1, P1, P1, P1, P1, P1, P1, P1,
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
-                Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
-                P0, P0, P0, P0, P0, P0, P0, P0, P0,
-                Empty, B0, Empty, Empty, Empty, Empty, Empty, R0, Empty,
-                L0, N0, S0, G0, K0, G0, S0, N0, L0,
+                Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
+                None, Some(R1), None, None, None, None, None, Some(B1), None,
+                Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0),
+                None, Some(B0), None, None, None, None, None, Some(R0), None,
+                Some(L0), Some(N0), Some(S0), Some(G0), Some(K0), Some(G0), Some(S0), Some(N0), Some(L0),
             ];
             
             if line.len() > 17 {
@@ -388,7 +395,7 @@ impl Position {
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    self.set_piece(file, rank, Empty);
+                    self.set_piece(file, rank, None);
                     file += 1;
                     spaces -= 1;
                 }
@@ -426,18 +433,18 @@ impl Position {
         println!("info show_board end...");
     }
 
-    pub fn get_piece(&self, file:i8, rank:i8) -> Piece {
+    pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
         self.board[file_rank_to_cell(file, rank)]
     }
 
-    fn remove_piece(&mut self, file:i8, rank:i8) -> Piece {
+    fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
         use position::Piece::*;
         let piece = self.board[file_rank_to_cell(file, rank)];
-        self.set_piece(file, rank, Empty);
+        self.set_piece(file, rank, None);
         piece
     }
 
-    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Piece) {
+    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
         self.board[file_rank_to_cell(file, rank)] = piece;
     }
 

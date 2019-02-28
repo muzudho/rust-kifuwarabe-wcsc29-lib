@@ -14,7 +14,7 @@ pub struct PositionFile {
     /// 手番の石の色☆（＾～＾） 1:黒, 2:白。
     pub turn: i8,
     /// 設定上１番大きなサイズを確保しておく。使ってない数字で埋める☆（＾～＾）
-    pub board: [Piece; BOARD_SIZE],
+    pub board: [Option<Piece>; BOARD_SIZE],
 }
 impl PositionFile {
     pub fn load(board_size:usize, path:&str) -> PositionFile {
@@ -36,7 +36,7 @@ impl PositionFile {
 
 
         // 盤面作成。
-        let mut temp_board = [Piece::Empty; BOARD_SIZE];
+        let mut temp_board = [None; BOARD_SIZE];
         let mut start = 0i8;
         let mut cell = 0;
         for line in document["board"].as_array().unwrap().iter() {
