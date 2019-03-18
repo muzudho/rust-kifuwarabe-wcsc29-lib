@@ -3,12 +3,15 @@ use position::*;
 pub const DEFAULT_FILE_LEN: i8 = 9;
 pub const DEFAULT_RANK_LEN: i8 = 9;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as usize;
+pub const HANDS_SIZE: usize = 14;
 
 pub struct Board {
     pub file_len: i8,
     pub rank_len: i8,
     pub board_size: usize,
     pub pieces: [Option<Piece>; DEFAULT_BOARD_SIZE],
+    /// R, B, G, S, N, L, P, r, b, g, s, n, l, p.
+    pub hands: [i8; HANDS_SIZE],
 }
 impl Board {
     pub fn new() -> Board {
@@ -16,7 +19,8 @@ impl Board {
             file_len: DEFAULT_FILE_LEN,
             rank_len: DEFAULT_RANK_LEN,
             board_size: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
-            pieces : [None; DEFAULT_BOARD_SIZE],
+            pieces: [None; DEFAULT_BOARD_SIZE],
+            hands: [0; HANDS_SIZE],
         }
     }
 
@@ -51,9 +55,92 @@ impl Board {
         self.pieces[cell]
     }
 
+    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
+        let cell = self.file_rank_to_cell(file, rank);
+        self.pieces[cell] = piece;
+    }
+
+    pub fn get_hand(&self, piece:&Piece) -> i8 {
+        use position::Piece::*;
+        match *piece {
+            R0 => {self.hands[0]},
+            B0 => {self.hands[1]},
+            G0 => {self.hands[2]},
+            S0 => {self.hands[3]},
+            N0 => {self.hands[4]},
+            L0 => {self.hands[5]},
+            P0 => {self.hands[6]},
+            R1 => {self.hands[7]},
+            B1 => {self.hands[8]},
+            G1 => {self.hands[9]},
+            S1 => {self.hands[10]},
+            N1 => {self.hands[11]},
+            L1 => {self.hands[12]},
+            P1 => {self.hands[13]},
+            _ => panic!("Unexpected hand '{}'.", piece_to_sign(&Some(*piece))),
+        }
+    }
+
+    pub fn set_hand(&mut self, piece:&Piece, num:i8) {
+        use position::Piece::*;
+        match *piece {
+            R0 => {self.hands[0] = num},
+            B0 => {self.hands[1] = num},
+            G0 => {self.hands[2] = num},
+            S0 => {self.hands[3] = num},
+            N0 => {self.hands[4] = num},
+            L0 => {self.hands[5] = num},
+            P0 => {self.hands[6] = num},
+            R1 => {self.hands[7] = num},
+            B1 => {self.hands[8] = num},
+            G1 => {self.hands[9] = num},
+            S1 => {self.hands[10] = num},
+            N1 => {self.hands[11] = num},
+            L1 => {self.hands[12] = num},
+            P1 => {self.hands[13] = num},
+            _ => panic!("Unexpected hand '{}'.", piece_to_sign(&Some(*piece))),
+        }
+    }
+
     /// Point of symmetory.
     pub fn print(&self) {
+        use position::Piece::*;
         let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+
+        // First phase hand.
+        let h = [
+            self.get_hand(&R0),
+            self.get_hand(&B0),
+            self.get_hand(&G0),
+            self.get_hand(&S0),
+            self.get_hand(&N0),
+            self.get_hand(&L0),
+            self.get_hand(&P0),
+            self.get_hand(&R1),
+            self.get_hand(&B1),
+            self.get_hand(&G1),
+            self.get_hand(&S1),
+            self.get_hand(&N1),
+            self.get_hand(&L1),
+            self.get_hand(&P1),
+        ];
+        println!("  {}{} {}{} {}{} {}{} {}{} {}{} {:2>}{}",
+            if 1 < h[0] { h[0].to_string() } else {" ".to_string()},
+            if 0 < h[0] { "R"} else {" "},
+            if 1 < h[1] { h[1].to_string() } else {" ".to_string()},
+            if 0 < h[1] { "B"} else {" "},
+            if 1 < h[2] { h[2].to_string() } else {" ".to_string()},
+            if 0 < h[2] { "G"} else {" "},
+            if 1 < h[3] { h[3].to_string() } else {" ".to_string()},
+            if 0 < h[3] { "S"} else {" "},
+            if 1 < h[4] { h[4].to_string() } else {" ".to_string()},
+            if 0 < h[4] { "N"} else {" "},
+            if 1 < h[5] { h[5].to_string() } else {" ".to_string()},
+            if 0 < h[5] { "L"} else {" "},
+            if 1 < h[6] { h[6].to_string() } else {"  ".to_string()},
+            if 0 < h[6] { "P"} else {" "}
+            );
+        println!("  ------------------");
 
         for y in 0..=8 {
             let rank = 9 - y;
@@ -71,5 +158,24 @@ impl Board {
                 piece_to_sign(&self.get_piece(9, rank)));
         }
         println!("   1 2 3 4 5 6 7 8 9");
+        println!("  ------------------");
+        println!("  {}{} {}{} {}{} {}{} {}{} {}{} {:2>}{}",
+            if 1 < h[7] { h[0].to_string() } else {" ".to_string()},
+            if 0 < h[7] { "r"} else {" "},
+            if 1 < h[8] { h[1].to_string() } else {" ".to_string()},
+            if 0 < h[8] { "b"} else {" "},
+            if 1 < h[9] { h[2].to_string() } else {" ".to_string()},
+            if 0 < h[9] { "g"} else {" "},
+            if 1 < h[10] { h[3].to_string() } else {" ".to_string()},
+            if 0 < h[10] { "s"} else {" "},
+            if 1 < h[11] { h[4].to_string() } else {" ".to_string()},
+            if 0 < h[11] { "n"} else {" "},
+            if 1 < h[12] { h[5].to_string() } else {" ".to_string()},
+            if 0 < h[12] { "l"} else {" "},
+            if 1 < h[13] { h[6].to_string() } else {"  ".to_string()},
+            if 0 < h[13] { "p"} else {" "}
+            );
+
+        // Second phase hand.
     }
 }

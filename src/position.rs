@@ -364,14 +364,14 @@ impl Position {
             };
 
             if spaces == 0 {
-                self.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
+                self.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    self.set_piece(file, rank, None);
+                    self.board.set_piece(file, rank, None);
                     file += 1;
                     spaces -= 1;
                 }
@@ -389,13 +389,8 @@ impl Position {
     fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
         let cell = self.board.file_rank_to_cell(file, rank);
         let piece = self.board.pieces[cell];
-        self.set_piece(file, rank, None);
+        self.board.set_piece(file, rank, None);
         piece
-    }
-
-    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
-        let cell = self.board.file_rank_to_cell(file, rank);
-        self.board.pieces[cell] = piece;
     }
 
     pub fn make_move(&mut self, mov:&Move){
@@ -409,7 +404,7 @@ impl Position {
             if mov.promotion {
                 source_piece = promotion_piece(&source_piece);
             }
-            self.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
+            self.board.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
             self.record.push(mov);
         }
     }
