@@ -1,3 +1,4 @@
+use address::*;
 use position::*;
 
 pub const DEFAULT_FILE_LEN: i8 = 9;
@@ -55,6 +56,7 @@ impl Board {
         self.pieces[cell]
     }
 
+    /// Obsolute. new --> add().
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
         let cell = self.file_rank_to_cell(file, rank);
         self.pieces[cell] = piece;
@@ -81,6 +83,7 @@ impl Board {
         }
     }
 
+    /// Obsolute. new --> add().
     pub fn set_hand(&mut self, piece:&Piece, num:i8) {
         use position::Piece::*;
         match *piece {
@@ -99,6 +102,52 @@ impl Board {
             L1 => {self.hands[12] = num},
             P1 => {self.hands[13] = num},
             _ => panic!("Unexpected hand '{}'.", piece_to_sign(&Some(*piece))),
+        }
+    }
+
+    /// latest.
+    pub fn add(&mut self, address:&Address, piece:Piece) {
+        match address.hand {
+            Some(phase) => {
+                use position::Phase::*;
+                use position::Piece::*;
+                match phase {
+                    First => {
+                        match piece {
+                            R0 | R1 => {self.hands[0] += 1},
+                            B0 | B1 => {self.hands[1] += 1},
+                            G0 | G1 => {self.hands[2] += 1},
+                            S0 | S1 => {self.hands[3] += 1},
+                            N0 | N1 => {self.hands[4] += 1},
+                            L0 | L1 => {self.hands[5] += 1},
+                            P0 | P1 => {self.hands[6] += 1},
+                            _ => panic!("Unexpected hand '{}' on first.", piece_to_sign(&Some(piece))),
+                        }
+                    },
+                    Second => {
+                        match piece {
+                            R0 | R1 => {self.hands[7] += 1},
+                            B0 | B1 => {self.hands[8] += 1},
+                            G0 | G1 => {self.hands[9] += 1},
+                            S0 | S1 => {self.hands[10] += 1},
+                            N0 | N1 => {self.hands[11] += 1},
+                            L0 | L1 => {self.hands[12] += 1},
+                            P0 | P1 => {self.hands[13] += 1},
+                            _ => panic!("Unexpected hand '{}' on second.", piece_to_sign(&Some(piece))),
+                        }
+                    },
+                    _ => panic!("Unexpected phase: {}.", phase_to_sign(&phase)),
+                }
+            },
+            None => {
+                let cell = self.file_rank_to_cell(address.file, address.rank);
+                match self.pieces[cell] {
+                    Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(&Some(piece2))),
+                    None => {
+                        self.pieces[cell] = Some(piece);
+                    },
+                }
+            },
         }
     }
 

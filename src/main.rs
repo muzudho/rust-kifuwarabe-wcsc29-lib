@@ -4,6 +4,7 @@ extern crate serde_json;
 
 use std::io;
 
+mod address;
 mod board;
 mod communication;
 mod record;
