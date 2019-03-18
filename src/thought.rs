@@ -24,7 +24,7 @@ impl Thought {
         'search: for rank in 1..=9 {
             // println!("info Rank: `{}`.", rank);
             for file in 1..=9 {
-                piece = position.get_piece(file, rank);
+                piece = position.board.get_piece(file, rank);
                 let phase = piece_to_phase(&piece);
                 if phase.is_some() {
                     if phase.unwrap() == position.record.get_current_phase() {

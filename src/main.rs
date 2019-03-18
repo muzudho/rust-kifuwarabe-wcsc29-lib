@@ -58,19 +58,15 @@ fn main() {
             .parse()
             .expect("info Failed: stdin parse.");
 
-        if line == "quit" {
-            break;
-        } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.11");
-            comm.println("id author Satoshi TAKAHASHI");
-            comm.println("usiok");
-        } else if line == "isready" {
-            comm.println("readyok");
-        } else if line == "usinewgame" {
-        } else if line.starts_with("position") {
-            comm.println("info What is position?");
-            position.parse(&line);
-            position.show_board();
+        // #####
+        // # B #
+        // #####
+        if line.starts_with("bo") {
+            // board.
+            position.board.print();
+        // #####
+        // # G #
+        // #####
         } else if line.starts_with("go") {
             let thought = Thought::new();
             comm.println(&format!("bestmove {}", thought.get_best_move(&mut position).to_sign()));
@@ -79,8 +75,34 @@ fn main() {
             // println!("bestmove win");
             // println!("bestmove resign");
             
+        // #####
+        // # I #
+        // #####
+        } else if line == "isready" {
+            comm.println("readyok");
+        // #####
+        // # Q #
+        // #####
+        } else if line == "quit" {
+            break;
+        // #####
+        // # U #
+        // #####
+        } else if line == "usi" {
+            comm.println("id name Kifuwarabe Build.11");
+            comm.println("id author Satoshi TAKAHASHI");
+            comm.println("usiok");
+        } else if line == "usinewgame" {
+        // #####
+        // # P #
+        // #####
+        } else if line.starts_with("position") {
+            position.parse(&line);
+        // #####
+        // # S #
+        // #####
         } else if line.starts_with("show") {
-            position.show_board();
+            position.board.print();
         }
     }
 }

@@ -337,7 +337,7 @@ impl Position {
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(mov);
-                    self.show_board();
+                    self.board.print();
                 }
             }
         } else if line.starts_with("position sfen ") {
@@ -384,34 +384,6 @@ impl Position {
                 }
             }
         }
-    }
-
-    pub fn show_board(&self) {
-        println!("info show_board begin...");
-        
-        let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
-
-        for rank in 1..=9 {
-            println!(
-                "info {0} {1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
-                rank_array[(10-rank) as usize],
-                piece_to_sign(&self.get_piece(1, rank)),
-                piece_to_sign(&self.get_piece(2, rank)),
-                piece_to_sign(&self.get_piece(3, rank)),
-                piece_to_sign(&self.get_piece(4, rank)),
-                piece_to_sign(&self.get_piece(5, rank)),
-                piece_to_sign(&self.get_piece(6, rank)),
-                piece_to_sign(&self.get_piece(7, rank)),
-                piece_to_sign(&self.get_piece(8, rank)),
-                piece_to_sign(&self.get_piece(9, rank)));
-        }
-        println!("info    1 2 3 4 5 6 7 8 9");
-        println!("info show_board end...");
-    }
-
-    pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
-        let cell = self.board.file_rank_to_cell(file, rank);
-        self.board.pieces[cell]
     }
 
     fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
