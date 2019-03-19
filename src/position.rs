@@ -366,7 +366,7 @@ impl Position {
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(mov);
-                    self.board.print();
+                    self.board.print(&self.record.get_current_phase());
                 }
             }
         } else if line.starts_with("position sfen ") {

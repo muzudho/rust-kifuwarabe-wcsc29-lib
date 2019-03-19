@@ -15,6 +15,7 @@ mod thought;
 use address::*;
 use communication::*;
 use position::Position;
+use record::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -70,16 +71,52 @@ fn main() {
                     let address = Address::create_by_cell(3, 3, &position.board);
                     position.board.touch(&address);
                 },
+                "3d" => {
+                    let address = Address::create_by_cell(3, 4, &position.board);
+                    position.board.touch(&address);
+                },
                 _ => {},
             };
-            position.board.print();
-            
+            position.board.print(&position.record.get_current_phase());
+
+        // #####
+        // # 4 #
+        // #####
+        } else if line.starts_with("4") {
+            // Sign.
+            match line.as_str() {
+                "4c" => {
+                    let address = Address::create_by_cell(4, 3, &position.board);
+                    position.board.touch(&address);
+                },
+                _ => {},
+            };
+            position.board.print(&position.record.get_current_phase());
+
+        // #####
+        // # 7 #
+        // #####
+        } else if line.starts_with("7") {
+            // Sign.
+            match line.as_str() {
+                "7g" => {
+                    let address = Address::create_by_cell(7, 7, &position.board);
+                    position.board.touch(&address);
+                },
+                "7f" => {
+                    let address = Address::create_by_cell(7, 6, &position.board);
+                    position.board.touch(&address);
+                },
+                _ => {},
+            };
+            position.board.print(&position.record.get_current_phase());
+
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            position.board.print();
+            position.board.print(&position.record.get_current_phase());
 
         // #####
         // # G #
@@ -115,11 +152,6 @@ fn main() {
         // #####
         } else if line.starts_with("position") {
             position.parse(&line);
-        // #####
-        // # S #
-        // #####
-        } else if line.starts_with("show") {
-            position.board.print();
         }
     }
 }

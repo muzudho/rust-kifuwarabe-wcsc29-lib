@@ -149,7 +149,16 @@ impl Board {
                     },
                 }
             },
-            None => {},
+            None => {
+                match self.pieces[SKY_ADDRESS] {
+                    Some(piece) => {
+                        self.pieces[SKY_ADDRESS] = None;
+                        self.pieces[address.index] = Some(piece);
+                    },
+                    None => {
+                    },
+                }
+            },
         }
     }
 
@@ -217,28 +226,11 @@ impl Board {
     }
 
     /// Point of symmetory.
-    pub fn print(&self) {
-        use position::Piece::*;
+    pub fn print(&self, phase:&Phase) {
+        use position::Phase::*;
         let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
-        // First phase hand.
-        let h = [
-            self.get_hand(&R1),
-            self.get_hand(&B1),
-            self.get_hand(&G1),
-            self.get_hand(&S1),
-            self.get_hand(&N1),
-            self.get_hand(&L1),
-            self.get_hand(&P1),
-            self.get_hand(&R2),
-            self.get_hand(&B2),
-            self.get_hand(&G2),
-            self.get_hand(&S2),
-            self.get_hand(&N2),
-            self.get_hand(&L2),
-            self.get_hand(&P2),
-        ];
-        println!("  {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(&Some(Phase::First), &PieceType::K),
             self.print_hand(&Some(Phase::First), &PieceType::R),
             self.print_hand(&Some(Phase::First), &PieceType::B),
@@ -248,10 +240,39 @@ impl Board {
             self.print_hand(&Some(Phase::First), &PieceType::L),
             self.print_hand(&Some(Phase::First), &PieceType::P)
             );
-        println!(" +-------------------+");
+
+        match *phase {
+            First => {
+                // hand.
+                println!("|         |  +-------------------+");
+            },
+            Second => {
+                println!("             +-------------------+");
+            },
+        }
 
         for y in 0..=8 {
             let rank = 9 - y;
+
+            // 先手の手。
+            match *phase {
+                First => {
+                    match rank {
+                        9 => {print!("|         | ")},
+                        8 => {print!("+---+ +-+ | ")},
+                        7 => {print!("    | | | | ")},
+                        6 => {print!("    | | | | ")},
+                        5 => {print!("    +-+ +-+ ")},
+                        4 => {print!("       {:1}    ", piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        3 => {print!("            ")},
+                        2 => {print!("            ")},
+                        1 => {print!("            ")},
+                        _ => {},
+                    };
+                },
+                Second => {print!("            ")},
+            }
+
             print!(
                 "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
                 rank_array[rank as usize],
@@ -265,26 +286,55 @@ impl Board {
                 piece_to_sign(&self.get_piece(8, rank)),
                 piece_to_sign(&self.get_piece(9, rank)));
 
+            // Right boarder and None phase hands.
             match rank {
-                9 => {print!(" |")},
+                9 => {print!(" |   ")},
                 8 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::K))},
                 7 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::R))},
-                6 => {print!(" |{:>3}    {:1}", self.print_hand(&None, &PieceType::B), piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS as i8)))},
-                5 => {print!(" |{:>3} +-+ +-+", self.print_hand(&None, &PieceType::G))},
-                4 => {print!(" |{:>3} | | | |", self.print_hand(&None, &PieceType::S))},
-                3 => {print!(" |{:>3} | | | |", self.print_hand(&None, &PieceType::N))},
-                2 => {print!(" |{:>3} | +-+ +---+", self.print_hand(&None, &PieceType::L))},
-                1 => {print!(" |{:>3} |         |", self.print_hand(&None, &PieceType::P))},
+                6 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::B))},
+                5 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::G))},
+                4 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::S))},
+                3 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::N))},
+                2 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::L))},
+                1 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::P))},
                 _ => {},
             };
 
+            // Second player finger.
+            match *phase {
+                First => {},
+                Second => {
+                    match rank {
+                        9 => {},
+                        8 => {},
+                        6 => {print!("    {:1}", piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        5 => {print!(" +-+ +-+")},
+                        4 => {print!(" | | | |")},
+                        3 => {print!(" | | | |")},
+                        2 => {print!(" | +-+ +---+")},
+                        1 => {print!(" |         |")},
+                        _ => {},
+                    };                    
+                },
+            }
+
             println!();
         }
-        println!(" +-------------------+    |         |");
-        println!("   1 2 3 4 5 6 7 8 9");
+
+        match *phase {
+            First => {
+                println!("             +-------------------+");
+            },
+            Second => {
+                // hand.
+                println!("             +-------------------+    |         |");
+            },
+        }
+
+        println!("               1 2 3 4 5 6 7 8 9");
 
         // Second phase hand.
-        println!("  {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(&Some(Phase::Second), &PieceType::K),
             self.print_hand(&Some(Phase::Second), &PieceType::R),
             self.print_hand(&Some(Phase::Second), &PieceType::B),
