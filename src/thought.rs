@@ -12,7 +12,7 @@ impl Thought {
     }
 
     pub fn get_best_move(self, position:&mut Position) -> Move {
-        use position::Piece::*;
+        // use position::Piece::*;
 
         // position.show_board();
         // println!("info Current phase: `{}`.", phase_to_sign(&position.record.get_current_phase()));

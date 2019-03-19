@@ -3,7 +3,10 @@ use position::*;
 
 pub const DEFAULT_FILE_LEN: i8 = 9;
 pub const DEFAULT_RANK_LEN: i8 = 9;
-pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as usize;
+pub const HANDS_LEN: i8 = 14;
+pub const SKY_LEN: i8 = 1;
+pub const SKY_ADDRESS: i8 = 89;
+pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + HANDS_LEN + SKY_LEN) as usize;
 pub const HANDS_SIZE: usize = 14;
 
 pub struct Board {
@@ -38,6 +41,9 @@ impl Board {
             Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0), Some(P0),
             None, Some(R0), None, None, None, None, None, Some(B0), None,
             Some(L0), Some(N0), Some(S0), Some(G0), Some(K0), Some(G0), Some(S0), Some(N0), Some(L0),
+            None, None, None, None, None, None, None, // Do not use.
+            None, None, None, None, None, None, None, // Do not use.
+            None, // Sky
         ];
     }
 
@@ -52,8 +58,12 @@ impl Board {
     }
 
     pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
-        let cell = self.file_rank_to_cell(file, rank);
-        self.pieces[cell]
+        let address = self.file_rank_to_cell(file, rank);
+        self.pieces[address]
+    }
+
+    pub fn get_piece_by_address(&self, address:i8) -> Option<Piece> {
+        self.pieces[address as usize]
     }
 
     /// Obsolute. new --> add().
@@ -193,7 +203,7 @@ impl Board {
 
         for y in 0..=8 {
             let rank = 9 - y;
-            println!(
+            print!(
                 "{0} {1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
                 rank_array[rank as usize],
                 piece_to_sign(&self.get_piece(1, rank)),
@@ -205,6 +215,16 @@ impl Board {
                 piece_to_sign(&self.get_piece(7, rank)),
                 piece_to_sign(&self.get_piece(8, rank)),
                 piece_to_sign(&self.get_piece(9, rank)));
+            
+            if rank == 6 {
+                print!(" +--+");
+            } else if rank == 5 {
+                print!(" |{:>2}|", piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS)));
+            } else if rank == 4 {
+                print!(" +--+");
+            }
+
+            println!();
         }
         println!("   1 2 3 4 5 6 7 8 9");
         println!("  ------------------");
