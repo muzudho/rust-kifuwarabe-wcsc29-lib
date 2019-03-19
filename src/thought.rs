@@ -52,7 +52,7 @@ impl Thought {
             destinationFile: srcFile,
             destinationRank: dstRank,
             promotion: false,
-            drop: PieceType::Empty,
+            drop: None,
         }
     }
 }

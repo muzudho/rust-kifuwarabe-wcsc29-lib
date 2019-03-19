@@ -31,38 +31,84 @@ pub enum PieceType{
     PL,
     // Promoted pawn is と.
     PP,
-    // No drop.
-    Empty,
-    // Num is size or error.
-    Num
 }
-pub fn piece_type_to_sign(piece_type:&PieceType) -> String {
+pub fn piece_type_to_sign(piece_type_opt:&Option<PieceType>) -> String {
     use record::PieceType::*;
-    match *piece_type {
-        K => "K".to_string(),
-        R => "R".to_string(),
-        B => "B".to_string(),
-        G => "G".to_string(),
-        S => "S".to_string(),
-        N => "N".to_string(),
-        L => "L".to_string(),
-        P => "P".to_string(),
-        PR => "+R".to_string(),
-        PB => "+B".to_string(),
-        PS => "+S".to_string(),
-        PN => "+N".to_string(),
-        PL => "+L".to_string(),
-        PP => "+P".to_string(),
-        Empty => "".to_string(),
-        Num => "?".to_string(),
+    match *piece_type_opt {
+        Some(piece_type) => {
+            match piece_type {
+                K => "K".to_string(),
+                R => "R".to_string(),
+                B => "B".to_string(),
+                G => "G".to_string(),
+                S => "S".to_string(),
+                N => "N".to_string(),
+                L => "L".to_string(),
+                P => "P".to_string(),
+                PR => "+R".to_string(),
+                PB => "+B".to_string(),
+                PS => "+S".to_string(),
+                PN => "+N".to_string(),
+                PL => "+L".to_string(),
+                PP => "+P".to_string(),
+                Empty => "".to_string(),
+                Num => "?".to_string(),
+            }
+        },
+        None => {"".to_string()},
+    }
+}
+pub fn piece_type_to_piece(phase:&Phase, piece_type:&PieceType) -> Piece {
+    use position::Phase::*;
+    use position::Piece::*;
+    use record::PieceType::*;
+    match *phase {
+        First => {
+            match *piece_type {
+                K => K1,
+                R => R1,
+                B => B1,
+                G => G1,
+                S => S1,
+                N => N1,
+                L => L1,
+                P => P1,
+                PR => PR1,
+                PB => PB1,
+                PS => PS1,
+                PN => PN1,
+                PL => PL1,
+                PP => PP1,
+                _ => K1, // TODO Error
+            }
+        },
+        Second => {
+            match *piece_type {
+                K => K2,
+                R => R2,
+                B => B2,
+                G => G2,
+                S => S2,
+                N => N2,
+                L => L2,
+                P => P2,
+                PR => PR2,
+                PB => PB2,
+                PS => PS2,
+                PN => PN2,
+                PL => PL2,
+                PP => PP2,
+                _ => K2, // TODO Error
+            }
+        },
     }
 }
 
-pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> PieceType {
+pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
     use record::PieceType::*;
 
     if line.len() < *start as usize + 2 {
-        return Empty;
+        return None;
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
@@ -75,14 +121,14 @@ pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> PieceType {
         'N' => {N},
         'L' => {L},
         'P' => {P},
-        _ => {return Empty;},
+        _ => {return None;},
     };
 
     let v: Vec<char> = line.to_string().chars().collect();
     let sign = v[*start as usize];
     if sign == '*' {
         *start += 2;
-        pieceType
+        Some(pieceType)
     } else {
         panic!("Failed: Sfen unexpected drop.");
     }
@@ -169,7 +215,7 @@ pub struct Move {
     pub destinationFile:i8,
     pub destinationRank:i8,
     pub promotion:bool,
-    pub drop:PieceType
+    pub drop:Option<PieceType>,
 }
 impl Move {
     pub fn new() -> Move {
@@ -180,7 +226,7 @@ impl Move {
             destinationFile:0,
             destinationRank:0,
             promotion:false,
-            drop:Empty,
+            drop:None,
         }
     }
 
@@ -189,7 +235,7 @@ impl Move {
 
         let mut sign = String::new();
 
-        if self.drop != Empty {
+        if self.drop != None {
             sign.push_str(&format!("{}*", piece_type_to_sign(&self.drop)));
         } else {
             sign.push_str(&format!("{}{}", self.sourceFile, rank_to_sign(self.sourceRank)));
@@ -231,7 +277,7 @@ impl Record {
 
             let mut sourceFile = 0;
             let mut sourceRank = 0;
-            if drop == PieceType::Empty {
+            if drop == None {
                 sourceFile = parse_sign_to_file(line, start);
                 sourceRank = parse_sign_to_rank(line, start);
             }
@@ -240,7 +286,7 @@ impl Record {
             let destinationRank = parse_sign_to_rank(line, start);
 
             let mut promotion =
-                if drop == PieceType::Empty {
+                if drop == None {
                     parse_sign_to_promotion(line, start)
                 } else {
                     false
