@@ -136,6 +136,22 @@ impl Board {
         }
     }
 
+    pub fn touch(&mut self, address:&Address) {
+        match self.pieces[address.index] {
+            Some(piece) => {
+                match self.pieces[SKY_ADDRESS] {
+                    Some(piece) => {
+
+                    },
+                    None => {
+                        self.pieces[SKY_ADDRESS] = Some(piece);
+                    },
+                }
+            },
+            None => {},
+        }
+    }
+
     /// latest.
     pub fn add(&mut self, address:&Address, piece:Piece) {
         match address.hand {
@@ -170,11 +186,10 @@ impl Board {
                 }
             },
             None => {
-                let cell = self.file_rank_to_cell(address.file, address.rank);
-                match self.pieces[cell] {
+                match self.pieces[address.index] {
                     Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(&Some(piece2))),
                     None => {
-                        self.pieces[cell] = Some(piece);
+                        self.pieces[address.index] = Some(piece);
                     },
                 }
             },
@@ -232,12 +247,12 @@ impl Board {
             self.print_hand(&Some(Phase::First), &PieceType::L),
             self.print_hand(&Some(Phase::First), &PieceType::P)
             );
-        println!("  ------------------");
+        println!(" +-------------------+");
 
         for y in 0..=8 {
             let rank = 9 - y;
             print!(
-                "{0} {1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
+                "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
                 rank_array[rank as usize],
                 piece_to_sign(&self.get_piece(1, rank)),
                 piece_to_sign(&self.get_piece(2, rank)),
@@ -250,6 +265,7 @@ impl Board {
                 piece_to_sign(&self.get_piece(9, rank)));
 
             match rank {
+                9 => {print!(" |")},
                 8 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::K))},
                 7 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::R))},
                 6 => {print!(" |{:>3} +--+", self.print_hand(&None, &PieceType::B))},
@@ -263,10 +279,10 @@ impl Board {
 
             println!();
         }
+        println!(" +-------------------+");
         println!("   1 2 3 4 5 6 7 8 9");
 
         // Second phase hand.
-        println!("  ------------------");
         println!("  {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(&Some(Phase::Second), &PieceType::K),
             self.print_hand(&Some(Phase::Second), &PieceType::R),

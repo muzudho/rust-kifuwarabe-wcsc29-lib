@@ -12,6 +12,7 @@ mod position_file;
 mod position;
 mod thought;
 
+use address::*;
 use communication::*;
 use position::Position;
 use thought::Thought;
@@ -60,11 +61,26 @@ fn main() {
             .expect("info Failed: stdin parse.");
 
         // #####
+        // # 3 #
+        // #####
+        if line.starts_with("3") {
+            // Sign.
+            match line.as_str() {
+                "3c" => {
+                    let address = Address::create_by_cell(3, 3, &position.board);
+                    position.board.touch(&address);
+                },
+                _ => {},
+            };
+            position.board.print();
+            
+        // #####
         // # B #
         // #####
-        if line.starts_with("bo") {
+        } else if line.starts_with("bo") {
             // board.
             position.board.print();
+
         // #####
         // # G #
         // #####

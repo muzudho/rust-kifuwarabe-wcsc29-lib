@@ -1,23 +1,28 @@
+use board::*;
 use position::*;
 
 pub struct Address {
-    pub file: i8,
-    pub rank: i8,
+    pub index: usize,
     pub hand: Option<Phase>,
 }
 impl Address {
-    pub fn create_on_board(file_num:i8, rank_num:i8) -> Address {
+    pub fn create_by_index(index_num:usize) -> Address {
         Address {
-            file: file_num,
-            rank: rank_num,
+            index: index_num,
+            hand: None,
+        }
+    }
+
+    pub fn create_by_cell(file_num:i8, rank_num:i8, board:&Board) -> Address {
+        Address {
+            index: board.file_rank_to_cell(file_num, rank_num),
             hand: None,
         }
     }
 
     pub fn create_hand(hand_phase:&Phase) -> Address {
         Address {
-            file: 0,
-            rank: 0,
+            index: 0 as usize,
             hand: Some(*hand_phase),
         }
     }
