@@ -145,6 +145,7 @@ impl Board {
                     },
                     None => {
                         self.pieces[SKY_ADDRESS] = Some(piece);
+                        self.pieces[address.index] = None;
                     },
                 }
             },
@@ -268,18 +269,18 @@ impl Board {
                 9 => {print!(" |")},
                 8 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::K))},
                 7 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::R))},
-                6 => {print!(" |{:>3} +--+", self.print_hand(&None, &PieceType::B))},
-                5 => {print!(" |{:>3} |{:>2}|", self.print_hand(&None, &PieceType::G), piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS as i8)))},
-                4 => {print!(" |{:>3} +--+", self.print_hand(&None, &PieceType::S))},
-                3 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::N))},
-                2 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::L))},
-                1 => {print!(" |{:>3}", self.print_hand(&None, &PieceType::P))},
+                6 => {print!(" |{:>3}    {:1}", self.print_hand(&None, &PieceType::B), piece_to_sign(&self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                5 => {print!(" |{:>3} +-+ +-+", self.print_hand(&None, &PieceType::G))},
+                4 => {print!(" |{:>3} | | | |", self.print_hand(&None, &PieceType::S))},
+                3 => {print!(" |{:>3} | | | |", self.print_hand(&None, &PieceType::N))},
+                2 => {print!(" |{:>3} | +-+ +---+", self.print_hand(&None, &PieceType::L))},
+                1 => {print!(" |{:>3} |         |", self.print_hand(&None, &PieceType::P))},
                 _ => {},
             };
 
             println!();
         }
-        println!(" +-------------------+");
+        println!(" +-------------------+    |         |");
         println!("   1 2 3 4 5 6 7 8 9");
 
         // Second phase hand.
