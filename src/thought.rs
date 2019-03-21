@@ -47,10 +47,10 @@ impl Thought {
         };
 
         Move {
-            sourceFile: src_file,
-            sourceRank: src_rank,
-            destinationFile: src_file,
-            destinationRank: dst_rank,
+            source_file: src_file,
+            source_rank: src_rank,
+            destination_file: src_file,
+            destination_rank: dst_rank,
             promotion: false,
             drop: None,
         }

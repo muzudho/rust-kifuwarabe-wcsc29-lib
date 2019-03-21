@@ -9,12 +9,12 @@ pub enum Phase {
     /// Starting second.
     Second,
 }
-pub fn phase_to_sign(phase:&Phase) -> String {
+pub fn phase_to_sign(phase:Phase) -> String {
     use position::Phase::*;
-    match *phase {
+    match phase {
         First => "b".to_string(),
         Second => "w".to_string(),
-        _ => panic!("Unexpected phase. *phase as usize = {}.", *phase as usize),
+        _ => panic!("Unexpected phase. *phase as usize = {}.", phase as usize),
     }
 }
 
@@ -80,7 +80,7 @@ pub enum Piece {
     PL3,
     PP3,
 }
-pub fn piece_to_sign(piece:&Option<Piece>) -> String {
+pub fn piece_to_sign(piece:Option<Piece>) -> String {
     match piece {
         Some(x) => {
             use position::Piece::*;
@@ -113,17 +113,29 @@ pub fn piece_to_sign(piece:&Option<Piece>) -> String {
                 PN2 => "+n",
                 PL2 => "+l",
                 PP2 => "+p",
-                Empty => "",
-                Num => "?",
+                K3 => "K",
+                R3 => "R",
+                B3 => "B",
+                G3 => "G",
+                S3 => "S",
+                N3 => "N",
+                L3 => "L",
+                P3 => "P",
+                PR3 => "+R",
+                PB3 => "+B",
+                PS3 => "+S",
+                PN3 => "+N",
+                PL3 => "+L",
+                PP3 => "+P",
             }
         },
         None => { "" }
     }.to_string()
 }
-pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
+pub fn piece_to_piece_type(piece:Piece) -> PieceType {
     use position::Piece::*;
     use record::PieceType::*;
-    match *piece {
+    match piece {
         K1 => K,
         R1 => R,
         B1 => B,
@@ -366,7 +378,7 @@ impl Position {
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
                     self.make_move(*mov);
-                    self.board.print(&self.record.get_current_phase());
+                    self.board.print(self.record.get_current_phase());
                 }
             }
         } else if line.starts_with("position sfen ") {
@@ -429,12 +441,12 @@ impl Position {
             // TODO drop
 
         } else {
-            let mut source_piece = self.remove_piece(mov.sourceFile, mov.sourceRank);
+            let mut source_piece = self.remove_piece(mov.source_file, mov.source_rank);
             if mov.promotion {
                 source_piece = promotion_piece(source_piece);
             }
-            self.board.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
-            self.record.push(&mov);
+            self.board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
+            self.record.push(mov);
         }
     }
 }

@@ -82,7 +82,7 @@ fn main() {
         // #####
         } else if line.starts_with("bo") {
             // board.
-            position.board.print(&position.record.get_current_phase());
+            position.board.print(position.record.get_current_phase());
 
         // #####
         // # G #
@@ -127,5 +127,5 @@ fn do_touch_command(line:&str, position:&mut Position) {
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &position.board);
     position.board.touch(&address);
-    position.board.print(&position.record.get_current_phase());
+    position.board.print(position.record.get_current_phase());
 }

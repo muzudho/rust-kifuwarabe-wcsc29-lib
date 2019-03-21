@@ -32,9 +32,9 @@ pub enum PieceType{
     // Promoted pawn is と.
     PP,
 }
-pub fn piece_type_to_sign(piece_type_opt:&Option<PieceType>) -> String {
+pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
     use record::PieceType::*;
-    match *piece_type_opt {
+    match piece_type_opt {
         Some(piece_type) => {
             match piece_type {
                 K => "K".to_string(),
@@ -51,20 +51,18 @@ pub fn piece_type_to_sign(piece_type_opt:&Option<PieceType>) -> String {
                 PN => "+N".to_string(),
                 PL => "+L".to_string(),
                 PP => "+P".to_string(),
-                Empty => "".to_string(),
-                Num => "?".to_string(),
             }
         },
         None => {"".to_string()},
     }
 }
-pub fn piece_type_to_piece(phase:&Phase, piece_type:&PieceType) -> Piece {
+pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
     use position::Phase::*;
     use position::Piece::*;
     use record::PieceType::*;
-    match *phase {
+    match phase {
         First => {
-            match *piece_type {
+            match piece_type {
                 K => K1,
                 R => R1,
                 B => B1,
@@ -83,7 +81,7 @@ pub fn piece_type_to_piece(phase:&Phase, piece_type:&PieceType) -> Piece {
             }
         },
         Second => {
-            match *piece_type {
+            match piece_type {
                 K => K2,
                 R => R2,
                 B => B2,
@@ -113,7 +111,7 @@ pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
 
     let v: Vec<char> = line.to_string().chars().collect();
     let sign = v[*start as usize];
-    let pieceType = match sign {
+    let piece_type = match sign {
         'R' => {R},
         'B' => {B},
         'G' => {G},
@@ -128,7 +126,7 @@ pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
     let sign = v[*start as usize];
     if sign == '*' {
         *start += 2;
-        Some(pieceType)
+        Some(piece_type)
     } else {
         panic!("Failed: Sfen unexpected drop.");
     }
@@ -210,10 +208,10 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Move {
-    pub sourceFile:i8,
-    pub sourceRank:i8,
-    pub destinationFile:i8,
-    pub destinationRank:i8,
+    pub source_file:i8,
+    pub source_rank:i8,
+    pub destination_file:i8,
+    pub destination_rank:i8,
     pub promotion:bool,
     pub drop:Option<PieceType>,
 }
@@ -221,27 +219,25 @@ impl Move {
     pub fn new() -> Move {
         use record::PieceType::*;
         Move {
-            sourceFile:0,
-            sourceRank:0,
-            destinationFile:0,
-            destinationRank:0,
+            source_file:0,
+            source_rank:0,
+            destination_file:0,
+            destination_rank:0,
             promotion:false,
             drop:None,
         }
     }
 
-    pub fn to_sign(&self) -> String {
-        use record::PieceType::*;
-
+    pub fn to_sign(self) -> String {
         let mut sign = String::new();
 
         if self.drop != None {
-            sign.push_str(&format!("{}*", piece_type_to_sign(&self.drop)));
+            sign.push_str(&format!("{}*", piece_type_to_sign(self.drop)));
         } else {
-            sign.push_str(&format!("{}{}", self.sourceFile, rank_to_sign(self.sourceRank)));
+            sign.push_str(&format!("{}{}", self.source_file, rank_to_sign(self.source_rank)));
         }
 
-        sign.push_str(&format!("{}{}", self.destinationFile, rank_to_sign(self.destinationRank)));
+        sign.push_str(&format!("{}{}", self.destination_file, rank_to_sign(self.destination_rank)));
 
         if self.promotion {
             sign.push_str("+");
@@ -261,8 +257,8 @@ impl Record {
         }
     }
 
-    pub fn push(&mut self, mov:&Move) {
-        self.items.push(*mov);
+    pub fn push(&mut self, mov:Move) {
+        self.items.push(mov);
     }
 
     pub fn clear(&mut self) {
@@ -275,15 +271,15 @@ impl Record {
         loop {
             let drop = parse_sign_to_drop(line, start);
 
-            let mut sourceFile = 0;
-            let mut sourceRank = 0;
+            let mut source_file = 0;
+            let mut source_rank = 0;
             if drop == None {
-                sourceFile = parse_sign_to_file(line, start);
-                sourceRank = parse_sign_to_rank(line, start);
+                source_file = parse_sign_to_file(line, start);
+                source_rank = parse_sign_to_rank(line, start);
             }
 
-            let destinationFile = parse_sign_to_file(line, start);
-            let destinationRank = parse_sign_to_rank(line, start);
+            let destination_file = parse_sign_to_file(line, start);
+            let destination_rank = parse_sign_to_rank(line, start);
 
             let mut promotion =
                 if drop == None {
@@ -293,10 +289,10 @@ impl Record {
                 };
 
             self.items.push(Move {
-                sourceFile: sourceFile,
-                sourceRank: sourceRank,
-                destinationFile: destinationFile,
-                destinationRank: destinationRank,
+                source_file: source_file,
+                source_rank: source_rank,
+                destination_file: destination_file,
+                destination_rank: destination_rank,
                 promotion: promotion,
                 drop: drop,
             });
