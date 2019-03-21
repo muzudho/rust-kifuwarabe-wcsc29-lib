@@ -345,108 +345,18 @@ pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
 
 pub struct Position {
     pub board : Board,
-    pub record : Record,
 }
 impl Position {
     pub fn new() -> Position {
         Position {
             board : Board::new(),
-            record: Record::new(),
         }
     }
 
-    pub fn parse(&mut self, line:&str) {
-
-        self.record.clear();
-
-        let mut start = 0;
-
-        if line.starts_with("position startpos") {
-            self.board.set_startpos();
-            
-            if line.len() > 17 {
-                // `position startpos moves `. [0]p, [1]o, ...
-                start = 24;
-
-                // Examples.
-                // position startpos moves 2g2f 8c8d
-                let mut temp_record = Record::new();
-                temp_record.parse(line, &mut start);
-                println!("info temp_record.items.len: {}", temp_record.items.len());
-
-                // TODO 指し手通り、進めたい。
-                for mov in &temp_record.items {
-                    println!("info Move: `{}`.", mov.to_sign());
-                    self.make_move(*mov);
-                    self.board.print(self.record.get_current_phase());
-                }
-            }
-        } else if line.starts_with("position sfen ") {
-            // TODO sfen under construction.
-
-            // `position sfen `. [0]p, [1]o, ...
-            start = 14;
-            let mut rank=9;
-            let mut file=1;
-
-            let sign = line.to_string().chars().next().unwrap();
-            let mut spaces = match sign {
-                '1' => {1},
-                '2' => {2},
-                '3' => {3},
-                '4' => {4},
-                '5' => {5},
-                '6' => {6},
-                '7' => {7},
-                '8' => {8},
-                '9' => {9},
-                '/' => {-1},
-                _ => {0},
-            };
-
-            if spaces == 0 {
-                self.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
-                file += 1;
-            } else if spaces == -1 {
-                file = 1;
-                rank = 9;
-            } else {
-                while spaces > 0 {
-                    self.board.set_piece(file, rank, None);
-                    file += 1;
-                    spaces -= 1;
-                }
-            }
-
-            loop {
-                let sign = line.to_string().chars().next().unwrap();
-                if sign == ' ' {
-                    break;
-                }
-            }
-        }
-    }
-
-    fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
+    pub fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
         let cell = self.board.file_rank_to_cell(file, rank);
         let piece = self.board.pieces[cell];
         self.board.set_piece(file, rank, None);
         piece
-    }
-
-    pub fn make_move(&mut self, mov:Move){
-        use record::PieceType::*;
-        
-        if mov.drop != None {
-            // TODO drop
-
-        } else {
-            let mut source_piece = self.remove_piece(mov.source_file, mov.source_rank);
-            if mov.promotion {
-                source_piece = promotion_piece(source_piece);
-            }
-            self.board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
-            self.record.push(mov);
-        }
     }
 }

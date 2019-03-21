@@ -15,8 +15,8 @@ mod thought;
 use address::*;
 use board::*;
 use communication::*;
-use position::Position;
-// use record::*;
+use position::*;
+use record::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -47,7 +47,7 @@ use thought::Thought;
 fn main() {
 
     let mut comm = Communication::new();
-    let mut position = Position::new();
+    let mut record = Record::new();
 
     loop {
         // Standard input.
@@ -75,21 +75,21 @@ fn main() {
             line.starts_with('8') ||
             line.starts_with('9')
         {
-            do_touch_command(&line, &mut position);
+            do_touch_command(&line, &mut record);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            position.board.print(position.record.get_current_phase());
+            record.position.board.print(record.get_current_phase());
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
             let thought = Thought::new();
-            comm.println(&format!("bestmove {}", thought.get_best_move(&mut position).to_sign()));
+            comm.println(&format!("bestmove {}", thought.get_best_move(&mut record).to_sign()));
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
@@ -117,15 +117,15 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            position.parse(&line);
+            record.parse1(&line);
         }
     }
 }
 
-fn do_touch_command(line:&str, position:&mut Position) {
+fn do_touch_command(line:&str, record:&mut Record) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, &position.board);
-    position.board.touch(&address);
-    position.board.print(position.record.get_current_phase());
+    let address = Address::create_by_cell(file, rank, &record.position.board);
+    record.position.board.touch(&address);
+    record.position.board.print(record.get_current_phase());
 }

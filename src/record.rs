@@ -248,12 +248,86 @@ impl Move {
 }
 
 pub struct Record {
+    pub position: Position,
     pub items : Vec<Move>,
 }
 impl Record {
     pub fn new() -> Record {
         Record {
-            items:Vec::new(),
+            position: Position::new(),
+            items: Vec::new(),
+        }
+    }
+
+    pub fn parse1(&mut self, line:&str) {
+
+        self.clear();
+
+        let mut start = 0;
+
+        if line.starts_with("position startpos") {
+            self.position.board.set_startpos();
+            
+            if line.len() > 17 {
+                // `position startpos moves `. [0]p, [1]o, ...
+                start = 24;
+
+                // Examples.
+                // position startpos moves 2g2f 8c8d
+                let mut temp_record = Record::new();
+                temp_record.parse2(line, &mut start);
+                println!("info temp_record.items.len: {}", temp_record.items.len());
+
+                // TODO 指し手通り、進めたい。
+                for mov in &temp_record.items {
+                    println!("info Move: `{}`.", mov.to_sign());
+                    self.make_move(*mov);
+                    self.position.board.print(self.get_current_phase());
+                }
+            }
+        } else if line.starts_with("position sfen ") {
+            // TODO sfen under construction.
+
+            // `position sfen `. [0]p, [1]o, ...
+            start = 14;
+            let mut rank=9;
+            let mut file=1;
+
+            let sign = line.to_string().chars().next().unwrap();
+            let mut spaces = match sign {
+                '1' => {1},
+                '2' => {2},
+                '3' => {3},
+                '4' => {4},
+                '5' => {5},
+                '6' => {6},
+                '7' => {7},
+                '8' => {8},
+                '9' => {9},
+                '/' => {-1},
+                _ => {0},
+            };
+
+            if spaces == 0 {
+                self.position.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
+                file += 1;
+            } else if spaces == -1 {
+                file = 1;
+                rank = 9;
+            } else {
+                while spaces > 0 {
+                    self.position.board.set_piece(file, rank, None);
+                    file += 1;
+                    spaces -= 1;
+                }
+            }
+
+            loop {
+                let sign = line.to_string().chars().next().unwrap();
+                if sign == ' ' {
+                    break;
+                }
+            }
         }
     }
 
@@ -265,7 +339,7 @@ impl Record {
         self.items.clear();
     }
 
-    pub fn parse(&mut self, line:&str, start:&mut i8) {
+    pub fn parse2(&mut self, line:&str, start:&mut i8) {
         self.items.clear();
 
         loop {
@@ -309,6 +383,22 @@ impl Record {
         match self.items.len() % 2 {
             0 => Phase::First,
             _ => Phase::Second,
+        }
+    }
+
+    pub fn make_move(&mut self, mov:Move){
+        use record::PieceType::*;
+        
+        if mov.drop != None {
+            // TODO drop
+
+        } else {
+            let mut source_piece = self.position.remove_piece(mov.source_file, mov.source_rank);
+            if mov.promotion {
+                source_piece = promotion_piece(source_piece);
+            }
+            self.position.board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
+            self.push(mov);
         }
     }
 }
