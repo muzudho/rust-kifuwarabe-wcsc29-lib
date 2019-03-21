@@ -1,3 +1,4 @@
+use fen::*;
 use std::*;
 use position::*;
 use logical_move::*;
@@ -304,33 +305,8 @@ impl LogicalRecord {
         self.items.clear();
 
         loop {
-            let drop = parse_sign_to_drop(line, start);
-
-            let mut source_file = 0;
-            let mut source_rank = 0;
-            if drop == None {
-                source_file = parse_sign_to_file(line, start);
-                source_rank = parse_sign_to_rank(line, start);
-            }
-
-            let destination_file = parse_sign_to_file(line, start);
-            let destination_rank = parse_sign_to_rank(line, start);
-
-            let mut promotion =
-                if drop == None {
-                    parse_sign_to_promotion(line, start)
-                } else {
-                    false
-                };
-
-            self.items.push(LogicalMove {
-                source_file: source_file,
-                source_rank: source_rank,
-                destination_file: destination_file,
-                destination_rank: destination_rank,
-                promotion: promotion,
-                drop: drop,
-            });
+            let lmove = Fen::parse3(&line, start);
+            self.items.push(lmove);
 
             if *start as usize + 1 < line.len() {
                 *start += 1;

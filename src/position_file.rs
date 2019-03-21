@@ -1,12 +1,10 @@
 /// 局面ファイル☆（＾～＾）
-
 use serde_json::Value;
-
-use std::fs::File;
-use std::io::Read;
-
+use fen::*;
 use board::*;
 use position::*;
+use std::fs::File;
+use std::io::Read;
 
 pub struct PositionFile {
     /// コメント。

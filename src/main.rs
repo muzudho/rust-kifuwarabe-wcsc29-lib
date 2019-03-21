@@ -7,6 +7,7 @@ use std::io;
 mod address;
 mod board;
 mod communication;
+mod fen;
 mod logical_move;
 mod logical_record;
 mod physical_move;
