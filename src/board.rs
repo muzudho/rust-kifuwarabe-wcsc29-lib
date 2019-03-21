@@ -2,6 +2,35 @@ use address::*;
 use position::*;
 use record::*;
 
+pub fn file_char_to_i8(ch:char) -> i8 {
+    match ch {
+        '1' => {1},
+        '2' => {2},
+        '3' => {3},
+        '4' => {4},
+        '5' => {5},
+        '6' => {6},
+        '7' => {7},
+        '8' => {8},
+        '9' => {9},
+        _ => {panic!("Unexpected file char: '{0}'", ch)},
+    }
+}
+pub fn rank_char_to_i8(ch:char) -> i8 {
+    match ch {
+        'a' => {1},
+        'b' => {2},
+        'c' => {3},
+        'd' => {4},
+        'e' => {5},
+        'f' => {6},
+        'g' => {7},
+        'h' => {8},
+        'i' => {9},
+        _ => {panic!("Unexpected rank char: '{0}'", ch)},
+    }
+}
+
 pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
 pub const HANDS_LEN: usize = 3 * 8;

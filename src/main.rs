@@ -13,9 +13,10 @@ mod position;
 mod thought;
 
 use address::*;
+use board::*;
 use communication::*;
 use position::Position;
-use record::*;
+// use record::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -61,55 +62,20 @@ fn main() {
             .parse()
             .expect("info Failed: stdin parse.");
 
-        // #####
-        // # 3 #
-        // #####
-        if line.starts_with("3") {
-            // Sign.
-            match line.as_str() {
-                "3c" => {
-                    let address = Address::create_by_cell(3, 3, &position.board);
-                    position.board.touch(&address);
-                },
-                "3d" => {
-                    let address = Address::create_by_cell(3, 4, &position.board);
-                    position.board.touch(&address);
-                },
-                _ => {},
-            };
-            position.board.print(&position.record.get_current_phase());
-
-        // #####
-        // # 4 #
-        // #####
-        } else if line.starts_with("4") {
-            // Sign.
-            match line.as_str() {
-                "4c" => {
-                    let address = Address::create_by_cell(4, 3, &position.board);
-                    position.board.touch(&address);
-                },
-                _ => {},
-            };
-            position.board.print(&position.record.get_current_phase());
-
-        // #####
-        // # 7 #
-        // #####
-        } else if line.starts_with("7") {
-            // Sign.
-            match line.as_str() {
-                "7g" => {
-                    let address = Address::create_by_cell(7, 7, &position.board);
-                    position.board.touch(&address);
-                },
-                "7f" => {
-                    let address = Address::create_by_cell(7, 6, &position.board);
-                    position.board.touch(&address);
-                },
-                _ => {},
-            };
-            position.board.print(&position.record.get_current_phase());
+        // ######
+        // # 数 #
+        // ######
+        if line.starts_with('1') || 
+            line.starts_with('2') ||
+            line.starts_with('3') ||
+            line.starts_with('4') ||
+            line.starts_with('5') ||
+            line.starts_with('6') ||
+            line.starts_with('7') ||
+            line.starts_with('8') ||
+            line.starts_with('9')
+        {
+            do_touch_command(&line, &mut position);
 
         // #####
         // # B #
@@ -154,4 +120,12 @@ fn main() {
             position.parse(&line);
         }
     }
+}
+
+fn do_touch_command(line:&str, position:&mut Position) {
+    let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
+    let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
+    let address = Address::create_by_cell(file, rank, &position.board);
+    position.board.touch(&address);
+    position.board.print(&position.record.get_current_phase());
 }

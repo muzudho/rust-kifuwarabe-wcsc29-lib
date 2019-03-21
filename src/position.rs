@@ -168,14 +168,14 @@ pub fn piece_to_piece_type(piece:&Piece) -> PieceType {
         PP3 => PP,
     }
 }
-pub fn piece_to_phase(piece:&Option<Piece>) -> Option<Phase> {
+pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
     match piece {
         Some(x) => {
             use position::Piece::*;
             match x {
                 K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Some(Phase::First),
                 K2 | R2 | B2 | G2 | S2 | N2 | L2 | P2 | PR2 | PB2 | PS2 | PN2 | PL2 | PP2 => Some(Phase::Second),
-                _ => panic!("Unexpected phase. *piece as usize = {}.", *x as usize),
+                _ => panic!("Unexpected phase. *piece as usize = {}.", x as usize),
             }
         },
         None => None,
@@ -307,7 +307,7 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
     }
 }
 
-pub fn promotion_piece(piece:&Option<Piece>) -> Option<Piece> {
+pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
     match piece {
         Some(x) => {
             use position::Piece::*;
@@ -365,7 +365,7 @@ impl Position {
                 // TODO 指し手通り、進めたい。
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
-                    self.make_move(mov);
+                    self.make_move(*mov);
                     self.board.print(&self.record.get_current_phase());
                 }
             }
@@ -422,7 +422,7 @@ impl Position {
         piece
     }
 
-    pub fn make_move(&mut self, mov:&Move){
+    pub fn make_move(&mut self, mov:Move){
         use record::PieceType::*;
         
         if mov.drop != None {
@@ -431,10 +431,10 @@ impl Position {
         } else {
             let mut source_piece = self.remove_piece(mov.sourceFile, mov.sourceRank);
             if mov.promotion {
-                source_piece = promotion_piece(&source_piece);
+                source_piece = promotion_piece(source_piece);
             }
             self.board.set_piece(mov.destinationFile, mov.destinationRank, source_piece);
-            self.record.push(mov);
+            self.record.push(&mov);
         }
     }
 }
