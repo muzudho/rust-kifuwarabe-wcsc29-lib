@@ -28,7 +28,7 @@ impl Address {
         }
     }
 
-    pub fn print(&self, board_size:&BoardSize) -> String {
+    pub fn to_physical_sign(&self, board_size:&BoardSize) -> String {
         if 0 <= self.index && self.index <= 80 {
             // 盤上
             let (file, rank) = board_size.cell_to_file_rank(self.index);

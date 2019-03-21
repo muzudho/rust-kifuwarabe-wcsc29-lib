@@ -97,12 +97,16 @@ fn main() {
         // ########
         } else if line.starts_with('+') {
             // 成り。
-            board.touch(&PhysicalMove::turn_over());
+            let pmove = PhysicalMove::turn_over();
+            board.touch(&pmove);
+            physical_record.add(&pmove);
             board.println(physical_record.get_phase());
 
         } else if line.starts_with('-') {
             // １８０°回転。
-            board.touch(&PhysicalMove::rotate());
+            let pmove = PhysicalMove::rotate();
+            board.touch(&pmove);
+            physical_record.add(&pmove);
             board.println(physical_record.get_phase());
 
         // #####
@@ -150,26 +154,17 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            println!("pos1 ok");
             let mut logical_record = LogicalRecord::new();
             let mut start = 0;
-            println!("pos2 start: {0}.", start);
             if Fen::parse_board(&line, &mut start, &mut board) {
-                println!("pos3 start: {0}.", start);
-                board.println(Phase::First);
                 match Fen::parse_moves(&line, &mut start, &mut board) {
                     Some(lrecords) => {
-                        println!("pos4");
                         logical_record = lrecords;
                     },
                     None => {
-                        println!("pos5 No moves. start: {0}.", start);
                     },
                 };
-            } else {
-                println!("pos6");
             }
-            println!("pos7");
 
             RecordConverter::convert_logical_to_physical(
                 &mut board,
@@ -183,6 +178,9 @@ fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &board.get_board_size());
-    board.touch(&PhysicalMove::create_by_address(address));
+    let pmove = PhysicalMove::create_by_address(address);
+    board.touch(&pmove);
+    physical_record.add(&pmove);
     board.println(physical_record.get_phase());
+    physical_record.println(&board.get_board_size());
 }

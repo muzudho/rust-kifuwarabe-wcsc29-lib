@@ -235,9 +235,9 @@ impl PhysicalRecord {
     }
 
     pub fn println(&self, board_size:&BoardSize) {
-        print!("Physical record: ");
+        print!("Physical record({}): ", self.items.len());
         for physical_move in &self.items {
-            physical_move.print(&board_size);
+            print!("{}", physical_move.to_physical_sign(&board_size));
         }
         println!();
     }

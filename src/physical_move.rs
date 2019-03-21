@@ -33,10 +33,10 @@ impl PhysicalMove {
         }
     }
 
-    pub fn print(&self, board_size:&BoardSize) -> String {
+    pub fn to_physical_sign(&self, board_size:&BoardSize) -> String {
         match self.address {
             Some(address) => {
-                address.print(board_size)
+                address.to_physical_sign(board_size)
             },
             None => {
                 if self.sky_turn {

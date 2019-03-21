@@ -59,14 +59,9 @@ impl Fen {
     }
 
     pub fn parse_moves(line:&str, start:&mut usize, board:&mut Board) -> Option<LogicalRecord> {
-        println!("moves1 start: {0}.", start);
-
-        if Parser::match_keyword(&line, "moves", start) {
-            println!("moves2 start: {0}.", start);
-        } else if Parser::match_keyword(&line, " moves", start) {
-            println!("moves3 start: {0}.", start);
+        if Parser::match_keyword(&line, "moves", start) || 
+            Parser::match_keyword(&line, " moves", start) {
         } else {
-            println!("moves4 start: {0}.", start);
             return None;
         }
 

@@ -340,7 +340,7 @@ impl BoardSize {
         ((rank-1)*self.file_len + (file-1)) as usize
     }
     pub fn cell_to_file_rank(&self, cell:usize) -> (i8, i8) {
-        ((cell%self.file_len as usize) as i8, (cell/self.file_len as usize) as i8)
+        ((cell%self.file_len as usize) as i8 + 1, (cell/self.file_len as usize) as i8 + 1)
     }
     pub fn reverse_cell(&self, cell:usize) -> usize {
         self.rank_len as usize * self.file_len as usize - cell
