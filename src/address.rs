@@ -15,9 +15,9 @@ impl Address {
         }
     }
 
-    pub fn create_by_cell(file_num:i8, rank_num:i8, board:&Board) -> Address {
+    pub fn create_by_cell(file_num:i8, rank_num:i8, board_size:&BoardSize) -> Address {
         Address {
-            index: board.file_rank_to_cell(file_num, rank_num),
+            index: board_size.file_rank_to_cell(file_num, rank_num),
             hand: None,
         }
     }
@@ -29,10 +29,10 @@ impl Address {
         }
     }
 
-    pub fn print(&self, board:&Board) -> String {
+    pub fn print(&self, board_size:&BoardSize) -> String {
         if 0 <= self.index && self.index <= 80 {
             // 盤上
-            let (file, rank) = board.cell_to_file_rank(self.index);
+            let (file, rank) = board_size.cell_to_file_rank(self.index);
             format!("{}{}", file, i8_to_rank_char(rank))
         } else if 81 <= self.index && self.index <= 104 {
             // 持ち駒

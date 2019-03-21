@@ -54,8 +54,13 @@ use thought::Thought;
 /// 
 /// Execution file.
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
-fn main() {
 
+/*
+fn test(cursor:&mut usize) {
+    *cursor += 13;
+}
+*/
+fn main() {
     let mut comm = Communication::new();
     let mut logical_record = LogicalRecord::new();
     let mut physical_record = PhysicalRecord::new();
@@ -131,11 +136,24 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            logical_record = Fen::parse1(&line);
+            let mut start = 0;
+            match Fen::parse_position(&line, &mut start) {
+                Some(mut pos) => {
+                    match Fen::parse_moves(&line, &mut start, &mut pos) {
+                        Some(lrecords) => {
+                            logical_record = lrecords;
+                        },
+                        None => {
+                        },
+                    };
+                },
+                None => {
+                },
+            }
 
             RecordConverter::ConvertLogicalToPhysical(
                 &logical_record,
-                &mut physical_record.get_mut_position());
+                &mut physical_record);
         }
     }
 }
@@ -143,7 +161,7 @@ fn main() {
 fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, &physical_record.get_position().board);
+    let address = Address::create_by_cell(file, rank, &physical_record.get_position().board.get_board_size());
     physical_record.get_mut_position().board.touch(&PhysicalMove::create_by_address(address));
     physical_record.get_position().board.print(physical_record.get_phase());
 }

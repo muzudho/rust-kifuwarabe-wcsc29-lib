@@ -234,7 +234,7 @@ impl Position {
     }
 
     pub fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
-        let cell = self.board.file_rank_to_cell(file, rank);
+        let cell = self.board.get_board_size().file_rank_to_cell(file, rank);
         let piece = self.board.pieces[cell];
         self.board.set_piece(file, rank, None);
         piece

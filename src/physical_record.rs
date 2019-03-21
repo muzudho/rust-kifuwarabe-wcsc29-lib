@@ -103,15 +103,15 @@ pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
     }
 }
 
-pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
+pub fn parse_sign_to_drop(line:&str, start:&mut usize) -> Option<PieceType> {
     use physical_record::PieceType::*;
 
-    if line.len() < *start as usize + 2 {
+    if line.len() < *start + 2 {
         return None;
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
-    let sign = v[*start as usize];
+    let sign = v[*start];
     let piece_type = match sign {
         'R' => {R},
         'B' => {B},
@@ -124,7 +124,7 @@ pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
     };
 
     let v: Vec<char> = line.to_string().chars().collect();
-    let sign = v[*start as usize];
+    let sign = v[*start];
     if sign == '*' {
         *start += 2;
         Some(piece_type)
@@ -133,13 +133,13 @@ pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
     }
 }
 
-pub fn parse_sign_to_rank(line:&str, start:&mut i8) -> i8 {
-    if line.len() < *start as usize + 1 {
-        panic!("Failed: Unexpected file. len: {}, start: {}.", line.len(), *start);
+pub fn parse_sign_to_rank(line:&str, start:&mut usize) -> i8 {
+    if line.len() < *start + 1 {
+        panic!("Failed: Unexpected file. len: {}, start: {}.", line.len(), start);
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
-    let sign = v[*start as usize];
+    let sign = v[*start];
     *start += 1;
     match sign {
         'a' => 1,
@@ -170,13 +170,13 @@ pub fn rank_to_sign(sign:i8) -> char {
     }
 }
 
-pub fn parse_sign_to_file(line:&str, start:&mut i8) -> i8 {
+pub fn parse_sign_to_file(line:&str, start:&mut usize) -> i8 {
     if line.len() < *start as usize + 1 {
         panic!("Failed: Nothing file.");
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
-    let sign = v[*start as usize];
+    let sign = v[*start];
     *start += 1;
     match sign {
         '1' => 1,
@@ -192,13 +192,13 @@ pub fn parse_sign_to_file(line:&str, start:&mut i8) -> i8 {
     }
 }
 
-pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
+pub fn parse_sign_to_promotion(line:&str, start:&mut usize) -> bool {
     if line.len() < *start as usize + 1 {
         return false;
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
-    let sign = v[*start as usize];
+    let sign = v[*start];
     if sign == '+' {
         *start += 1;
         true
@@ -247,7 +247,7 @@ impl PhysicalRecord {
     pub fn println(&self) {
         print!("Physical record: ");
         for physical_move in &self.items {
-            physical_move.print(&self.get_position().board);
+            physical_move.print(&self.get_position().board.get_board_size());
         }
         println!();
     }

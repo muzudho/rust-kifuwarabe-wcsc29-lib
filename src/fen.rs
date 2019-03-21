@@ -9,38 +9,16 @@ pub struct Fen {
 
 }
 impl Fen {
-    pub fn parse1(line:&str) -> LogicalRecord {
-
-        let mut logical_record = LogicalRecord::new();
-
-        let mut start = 0;
-
+    pub fn parse_position(line:&str, start:&mut usize) -> Option<Position> {
         if line.starts_with("position startpos") {
-            let mut position = Position::startpos();
-            
-            if line.len() > 17 {
-                // `position startpos moves `. [0]p, [1]o, ...
-                start = 24;
-
-                // Examples.
-                // position startpos moves 2g2f 8c8d
-                let mut temp_record = LogicalRecord::new();
-                temp_record.parse2(line, &mut start);
-                println!("info temp_record.items.len: {}", temp_record.items.len());
-
-                // TODO 指し手通り、進めたい。
-                for mov in &temp_record.items {
-                    println!("info Move: `{}`.", mov.to_sign());
-                    logical_record.make_move(*mov, &mut position);
-                    position.board.print(logical_record.get_current_phase());
-                }
-            }
+            *start = "position startpos".len();
+            Some(Position::startpos())
         } else if line.starts_with("position sfen ") {
             let mut position = Position::default();
             // TODO sfen under construction.
 
             // `position sfen `. [0]p, [1]o, ...
-            start = 14;
+            *start = 14;
             let mut rank=9;
             let mut file=1;
 
@@ -60,7 +38,7 @@ impl Fen {
             };
 
             if spaces == 0 {
-                position.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
+                position.board.set_piece(file, rank, parse_sign_line_to_piece(line, start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
@@ -73,18 +51,53 @@ impl Fen {
                 }
             }
 
-            loop {
-                let sign = line.to_string().chars().next().unwrap();
-                if sign == ' ' {
-                    break;
-                }
-            }
+            Some(position)
+        } else {
+            None
         }
-
-        logical_record
     }
 
-    pub fn parse3(line:&str, start:&mut i8) -> LogicalMove {
+    pub fn parse_moves(line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
+
+        // スタートが文字列の終端を読み終わっていれば、結果は空。
+        if line.len() < *start {
+            return None;
+        }
+
+        // とりあえず スタートの数だけ進める。
+        for i in 0..*start {
+            line.to_string().chars().next().unwrap();
+        };
+
+        if line.starts_with("moves") {
+            *start += "moves".len();
+        } else if line.starts_with(" moves") {
+            *start += " moves".len();
+        } else {
+            return None;
+        }
+
+        let mut logical_record = LogicalRecord::new();
+
+        // `position startpos moves `. [0]p, [1]o, ...
+
+        // Examples.
+        // position startpos moves 2g2f 8c8d
+        let mut temp_record = LogicalRecord::new();
+        temp_record.parse2(line, start);
+        println!("info temp_record.items.len: {}", temp_record.items.len());
+
+        // TODO 指し手通り、進めたい。
+        for mov in &temp_record.items {
+            println!("info Move: `{}`.", mov.to_sign());
+            logical_record.make_move(*mov, position);
+            position.board.print(logical_record.get_current_phase());
+        }
+
+        Some(logical_record)
+    }
+
+    pub fn parse3(line:&str, start:&mut usize) -> LogicalMove {
         let drop = parse_sign_to_drop(line, start);
 
         let mut source_file = 0;
@@ -116,7 +129,7 @@ impl Fen {
 }
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。前空白埋め2文字固定。
-pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
+pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
@@ -179,7 +192,7 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
 }
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
-pub fn parse_sign_line_to_piece(line:&str, start:&mut i8) -> Option<Piece> {
+pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。

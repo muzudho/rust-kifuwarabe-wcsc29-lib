@@ -25,10 +25,10 @@ impl PhysicalMove {
         }
     }
 
-    pub fn print(&self, board:&Board) -> String {
+    pub fn print(&self, board_size:&BoardSize) -> String {
         match self.address {
             Some(address) => {
-                address.print(board)
+                address.print(board_size)
             },
             None => {
                 if self.sky_turn {

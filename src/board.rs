@@ -53,16 +53,34 @@ pub const SKY_LEN: usize = 1;
 pub const SKY_ADDRESS: usize = 89;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + HANDS_LEN + SKY_LEN) as usize;
 
-/*
+#[derive(Clone, Copy, PartialEq)]
 pub struct BoardSize {
-
-}
- */
-
-pub struct Board {
     pub file_len: i8,
     pub rank_len: i8,
-    pub board_size: usize,
+    pub board_len: usize,
+}
+impl BoardSize {
+    pub fn create_hon_shogi() -> BoardSize {
+        BoardSize {
+            file_len: DEFAULT_FILE_LEN as i8,
+            rank_len: DEFAULT_RANK_LEN as i8,
+            board_len: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
+        }
+    }
+
+    pub fn file_rank_to_cell(&self, file:i8, rank:i8) -> usize {
+        ((rank-1)*self.file_len + (file-1)) as usize
+    }
+    pub fn cell_to_file_rank(&self, cell:usize) -> (i8, i8) {
+        ((cell%self.file_len as usize) as i8, (cell/self.file_len as usize) as i8)
+    }
+    pub fn reverse_cell(&self, cell:usize) -> usize {
+        self.rank_len as usize * self.file_len as usize - cell
+    }
+}
+
+pub struct Board {
+    board_size: BoardSize,
     pub pieces: [Option<Piece>; DEFAULT_BOARD_SIZE],
     /// R, B, G, S, N, L, P, r, b, g, s, n, l, p.
     pub hands: [i8; HANDS_LEN],
@@ -70,9 +88,7 @@ pub struct Board {
 impl Board {
     pub fn default() -> Board {
         Board {
-            file_len: DEFAULT_FILE_LEN as i8,
-            rank_len: DEFAULT_RANK_LEN as i8,
-            board_size: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
+            board_size: BoardSize::create_hon_shogi(),
             pieces: [None; DEFAULT_BOARD_SIZE],
             hands: [
                 0, 0, 0, 0, 0, 0, 0, 0, // First phase.
@@ -84,9 +100,7 @@ impl Board {
     pub fn startpos() -> Board {
         use position::Piece::*;
         Board {
-            file_len: DEFAULT_FILE_LEN as i8,
-            rank_len: DEFAULT_RANK_LEN as i8,
-            board_size: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
+            board_size: BoardSize::create_hon_shogi(),
             // Flip horizontal.
             pieces: [
                 Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
@@ -107,18 +121,12 @@ impl Board {
         }
     }
 
-    pub fn file_rank_to_cell(&self, file:i8, rank:i8) -> usize {
-        ((rank-1)*self.file_len + (file-1)) as usize
-    }
-    pub fn cell_to_file_rank(&self, cell:usize) -> (i8, i8) {
-        ((cell%self.file_len as usize) as i8, (cell/self.file_len as usize) as i8)
-    }
-    pub fn reverse_cell(&self, cell:usize) -> usize {
-        self.rank_len as usize * self.file_len as usize - cell
+    pub fn get_board_size(&self) -> BoardSize {
+        self.board_size
     }
 
     pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
-        let address = self.file_rank_to_cell(file, rank);
+        let address = self.board_size.file_rank_to_cell(file, rank);
         self.pieces[address]
     }
 
@@ -128,7 +136,7 @@ impl Board {
 
     /// Obsolute. new --> add().
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
-        let cell = self.file_rank_to_cell(file, rank);
+        let cell = self.board_size.file_rank_to_cell(file, rank);
         self.pieces[cell] = piece;
     }
 

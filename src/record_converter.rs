@@ -30,7 +30,7 @@ impl RecordConverter {
             let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
                 logical_move.source_file,
                 logical_move.source_rank,
-                &position.board
+                &position.board.get_board_size()
             ));
             
             if logical_move.promotion {
@@ -40,7 +40,7 @@ impl RecordConverter {
             let board_on = PhysicalMove::create_by_address(Address::create_by_cell(
                 logical_move.destination_file,
                 logical_move.destination_rank,
-                &position.board
+                &position.board.get_board_size()
             ));
         }
 
@@ -48,18 +48,17 @@ impl RecordConverter {
     }
 
     /// 変換には、初期局面が必要。
-    pub fn ConvertLogicalToPhysical(logical_record:&LogicalRecord, position:&mut Position) -> PhysicalRecord {
-        let mut physical_record = PhysicalRecord::new();
+    pub fn ConvertLogicalToPhysical(
+        logical_record:&LogicalRecord,
+        physical_record:&mut PhysicalRecord) {
 
         for logical_move in &logical_record.items {
-            let physical_moves = RecordConverter::ConvertLogicalMove(logical_move, position);
+            let physical_moves = RecordConverter::ConvertLogicalMove(logical_move, physical_record.get_mut_position());
 
             for physical_move in physical_moves {
                 physical_record.add(&physical_move);
-                position.board.touch(&physical_move);
+                physical_record.get_mut_position().board.touch(&physical_move);
             }
         }
-
-        physical_record
     }
 }

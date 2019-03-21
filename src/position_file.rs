@@ -37,7 +37,7 @@ impl PositionFile {
 
         // 盤面作成。
         let mut temp_board = [None; DEFAULT_BOARD_SIZE];
-        let mut start = 0i8;
+        let mut start = 0usize;
         let mut cell = 0;
         for line in document["board"].as_array().unwrap().iter() {
             temp_board[cell] = parse_sign_2char_to_piece(line.as_str().unwrap(), &mut start);

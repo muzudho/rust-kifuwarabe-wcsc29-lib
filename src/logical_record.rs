@@ -23,14 +23,14 @@ impl LogicalRecord {
     }
      */
 
-    pub fn parse2(&mut self, line:&str, start:&mut i8) {
+    pub fn parse2(&mut self, line:&str, start:&mut usize) {
         self.items.clear();
 
         loop {
             let lmove = Fen::parse3(&line, start);
             self.items.push(lmove);
 
-            if *start as usize + 1 < line.len() {
+            if *start + 1 < line.len() {
                 *start += 1;
             } else {
                 break;
