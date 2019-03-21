@@ -1,5 +1,5 @@
 use std::*;
-use logical_record::*;
+use physical_record::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct LogicalMove {

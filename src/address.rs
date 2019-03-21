@@ -1,6 +1,8 @@
 use board::*;
 use position::*;
 
+/// Vector に入れるときコピーする。
+#[derive(Clone, Copy, PartialEq)]
 pub struct Address {
     pub index: usize,
     pub hand: Option<Phase>,

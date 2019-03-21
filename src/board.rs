@@ -1,7 +1,7 @@
 use address::*;
 use position::*;
-use logical_record::*;
 use physical_move::*;
+use physical_record::*;
 
 pub fn file_char_to_i8(ch:char) -> i8 {
     match ch {
@@ -166,7 +166,7 @@ impl Board {
         }
     }
 
-    pub fn touch(&mut self, physical_move:PhysicalMove) {
+    pub fn touch(&mut self, physical_move:&PhysicalMove) {
         match physical_move.address {
             Some(address) => {
                 match self.pieces[address.index] {

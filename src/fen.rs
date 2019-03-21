@@ -1,6 +1,7 @@
 /// フォーサイス エドワーズ記法
 use logical_move::*;
 use logical_record::*;
+use physical_record::*;
 use position::*;
 use std::*;
 
@@ -8,9 +9,9 @@ pub struct Fen {
 
 }
 impl Fen {
-    pub fn parse1(line:&str, position:&mut Position, logical_record:&mut LogicalRecord) {
+    pub fn parse1(line:&str, position:&mut Position) -> LogicalRecord {
 
-        logical_record.clear();
+        let mut logical_record = LogicalRecord::new();
 
         let mut start = 0;
 
@@ -78,6 +79,8 @@ impl Fen {
                 }
             }
         }
+
+        logical_record
     }
 
     pub fn parse3(line:&str, start:&mut i8) -> LogicalMove {

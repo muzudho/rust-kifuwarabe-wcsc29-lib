@@ -14,6 +14,7 @@ mod physical_move;
 mod physical_record;
 mod position_file;
 mod position;
+mod record_converter;
 mod thought;
 
 use address::*;
@@ -25,6 +26,7 @@ use fen::*;
 use logical_record::*;
 use physical_move::*;
 use physical_record::*;
+use record_converter::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -128,7 +130,7 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            Fen::parse1(&line, &mut physical_record.get_mut_position(), &mut logical_record);
+            logical_record = Fen::parse1(&line, &mut physical_record.get_mut_position());
         }
     }
 }
@@ -137,6 +139,6 @@ fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &physical_record.get_position().board);
-    physical_record.get_mut_position().board.touch(PhysicalMove::create_by_address(address));
+    physical_record.get_mut_position().board.touch(&PhysicalMove::create_by_address(address));
     physical_record.get_position().board.print(physical_record.get_phase());
 }
