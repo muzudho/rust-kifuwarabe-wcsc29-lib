@@ -300,7 +300,7 @@ impl Board {
     }
 
     /// Point of symmetory.
-    pub fn print(&self, phase:Phase) {
+    pub fn println(&self, phase:Phase) {
         use position::Phase::*;
 
         println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",

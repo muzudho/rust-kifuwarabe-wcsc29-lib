@@ -209,27 +209,18 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut usize) -> bool {
 
 pub struct PhysicalRecord {
     phase: Phase,
-    position: Position,
     items : Vec<PhysicalMove>,
 }
 impl PhysicalRecord {
     pub fn new() -> PhysicalRecord {
         PhysicalRecord {
             phase: Phase::First,
-            position: Position::default(),
             items: Vec::new(),
         }
     }
 
     pub fn get_phase(&self) -> Phase {
         self.phase
-    }
-
-    pub fn get_position(&self) -> &Position {
-        &self.position
-    }
-    pub fn get_mut_position(&mut self) -> &mut Position {
-        &mut self.position
     }
 
     pub fn add(&mut self, physical_move:&PhysicalMove) {
@@ -244,10 +235,10 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn println(&self) {
+    pub fn println(&self, board_size:&BoardSize) {
         print!("Physical record: ");
         for physical_move in &self.items {
-            physical_move.print(&self.get_position().board.get_board_size());
+            physical_move.print(&board_size);
         }
         println!();
     }

@@ -10,7 +10,7 @@ pub struct RecordConverter {
 }
 impl RecordConverter {
     /// 変換には、現局面が必要。
-    pub fn ConvertLogicalMove(logical_move:&LogicalMove, position:&mut Position) -> Vec<PhysicalMove> {
+    pub fn convert_logical_move(logical_move:&LogicalMove, position:&mut Position) -> Vec<PhysicalMove> {
         let result = Vec::new();
 
         match logical_move.drop
@@ -48,16 +48,17 @@ impl RecordConverter {
     }
 
     /// 変換には、初期局面が必要。
-    pub fn ConvertLogicalToPhysical(
+    pub fn convert_logical_to_physical(
+        position:&mut Position,
         logical_record:&LogicalRecord,
         physical_record:&mut PhysicalRecord) {
 
         for logical_move in &logical_record.items {
-            let physical_moves = RecordConverter::ConvertLogicalMove(logical_move, physical_record.get_mut_position());
+            let physical_moves = RecordConverter::convert_logical_move(logical_move, position);
 
             for physical_move in physical_moves {
                 physical_record.add(&physical_move);
-                physical_record.get_mut_position().board.touch(&physical_move);
+                position.board.touch(&physical_move);
             }
         }
     }

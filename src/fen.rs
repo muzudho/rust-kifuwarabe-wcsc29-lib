@@ -1,6 +1,7 @@
 /// フォーサイス エドワーズ記法
 use logical_move::*;
 use logical_record::*;
+use parser::*;
 use physical_record::*;
 use position::*;
 use std::*;
@@ -58,22 +59,14 @@ impl Fen {
     }
 
     pub fn parse_moves(line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
+        println!("moves1 start: {0}.", start);
 
-        // スタートが文字列の終端を読み終わっていれば、結果は空。
-        if line.len() < *start {
-            return None;
-        }
-
-        // とりあえず スタートの数だけ進める。
-        for i in 0..*start {
-            line.to_string().chars().next().unwrap();
-        };
-
-        if line.starts_with("moves") {
-            *start += "moves".len();
-        } else if line.starts_with(" moves") {
-            *start += " moves".len();
+        if Parser::match_keyword(&line, "moves", start) {
+            println!("moves2 start: {0}.", start);
+        } else if Parser::match_keyword(&line, " moves", start) {
+            println!("moves3 start: {0}.", start);
         } else {
+            println!("moves4 start: {0}.", start);
             return None;
         }
 
@@ -91,13 +84,14 @@ impl Fen {
         for mov in &temp_record.items {
             println!("info Move: `{}`.", mov.to_sign());
             logical_record.make_move(*mov, position);
-            position.board.print(logical_record.get_current_phase());
+            position.board.println(logical_record.get_current_phase());
         }
 
         Some(logical_record)
     }
 
     pub fn parse3(line:&str, start:&mut usize) -> LogicalMove {
+        println!("parse3 start: {0}.", start);
         let drop = parse_sign_to_drop(line, start);
 
         let mut source_file = 0;
@@ -133,57 +127,50 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
-    if line.len() < *start as usize {
+    if line.len() <= *start {
         return None;
     }
 
-    // とりあえず スタートの数だけ進める。
-    let mut sign = '?';
-    for i in 0..*start {
-        sign = line.to_string().chars().next().unwrap();
-    };
-
-    match sign {
-        '+' => {
+    match &line[*start..*start+1] {
+        "+" => {
             // 1文字目が + なら２文字。
-            let sign = line.to_string().chars().next().unwrap();
-            *start += 2;
-            match sign {
-                'R' => Some(PR1),
-                'B' => Some(PB1),
-                'S' => Some(PS1),
-                'N' => Some(PN1),
-                'L' => Some(PL1),
-                'P' => Some(PP1),
-                'r' => Some(PR2),
-                'b' => Some(PB2),
-                's' => Some(PS2),
-                'n' => Some(PN2),
-                'l' => Some(PL2),
-                'p' => Some(PP2),
+            *start += 1;
+            match &line[*start..*start+1] {
+                "R" => {*start += 1; Some(PR1)},
+                "B" => {*start += 1; Some(PB1)},
+                "S" => {*start += 1; Some(PS1)},
+                "N" => {*start += 1; Some(PN1)},
+                "L" => {*start += 1; Some(PL1)},
+                "P" => {*start += 1; Some(PP1)},
+                "r" => {*start += 1; Some(PR2)},
+                "b" => {*start += 1; Some(PB2)},
+                "s" => {*start += 1; Some(PS2)},
+                "n" => {*start += 1; Some(PN2)},
+                "l" => {*start += 1; Some(PL2)},
+                "p" => {*start += 1; Some(PP2)},
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
-        ' ' => {
+        " " => {
             // 前空白埋めの符号。
-            *start += 2;
-            match sign {
-                'K' => Some(K1),
-                'R' => Some(R1),
-                'B' => Some(B1),
-                'G' => Some(G1),
-                'S' => Some(S1),
-                'N' => Some(N1),
-                'L' => Some(L1),
-                'P' => Some(P1),
-                'k' => Some(K2),
-                'r' => Some(R2),
-                'b' => Some(B2),
-                'g' => Some(G2),
-                's' => Some(S2),
-                'n' => Some(N2),
-                'l' => Some(L2),
-                'p' => Some(P2),
+            *start += 1;
+            match &line[*start..*start+1] {
+                "K" => {*start += 1; Some(K1)},
+                "R" => {*start += 1; Some(R1)},
+                "B" => {*start += 1; Some(B1)},
+                "G" => {*start += 1; Some(G1)},
+                "S" => {*start += 1; Some(S1)},
+                "N" => {*start += 1; Some(N1)},
+                "L" => {*start += 1; Some(L1)},
+                "P" => {*start += 1; Some(P1)},
+                "k" => {*start += 1; Some(K2)},
+                "r" => {*start += 1; Some(R2)},
+                "b" => {*start += 1; Some(B2)},
+                "g" => {*start += 1; Some(G2)},
+                "s" => {*start += 1; Some(S2)},
+                "n" => {*start += 1; Some(N2)},
+                "l" => {*start += 1; Some(L2)},
+                "p" => {*start += 1; Some(P2)},
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
@@ -196,57 +183,50 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
     use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
-    if line.len() < *start as usize {
+    if line.len() <= *start as usize {
         return None;
     }
 
-    // とりあえず スタートの数だけ進める。
-    let mut sign = '?';
-    for i in 0..*start {
-        sign = line.to_string().chars().next().unwrap();
-    };
-
-    match sign {
-        '+' => {
+    match &line[*start..*start+1] {
+        "+" => {
             // 1文字目が + なら２文字。
-            let sign = line.to_string().chars().next().unwrap();
-            *start += 2;
-            match sign {
-                'R' => Some(PR1),
-                'B' => Some(PB1),
-                'S' => Some(PS1),
-                'N' => Some(PN1),
-                'L' => Some(PL1),
-                'P' => Some(PP1),
-                'r' => Some(PR2),
-                'b' => Some(PB2),
-                's' => Some(PS2),
-                'n' => Some(PN2),
-                'l' => Some(PL2),
-                'p' => Some(PP2),
+            *start += 1;
+            match &line[*start..*start+1] {
+                "R" => {*start += 1; Some(PR1)},
+                "B" => {*start += 1; Some(PB1)},
+                "S" => {*start += 1; Some(PS1)},
+                "N" => {*start += 1; Some(PN1)},
+                "L" => {*start += 1; Some(PL1)},
+                "P" => {*start += 1; Some(PP1)},
+                "r" => {*start += 1; Some(PR2)},
+                "b" => {*start += 1; Some(PB2)},
+                "s" => {*start += 1; Some(PS2)},
+                "n" => {*start += 1; Some(PN2)},
+                "l" => {*start += 1; Some(PL2)},
+                "p" => {*start += 1; Some(PP2)},
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
         _ => {
             // 1文字の符号。
             *start += 1;
-            match sign {
-                'K' => Some(K1),
-                'R' => Some(R1),
-                'B' => Some(B1),
-                'G' => Some(G1),
-                'S' => Some(S1),
-                'N' => Some(N1),
-                'L' => Some(L1),
-                'P' => Some(P1),
-                'k' => Some(K2),
-                'r' => Some(R2),
-                'b' => Some(B2),
-                'g' => Some(G2),
-                's' => Some(S2),
-                'n' => Some(N2),
-                'l' => Some(L2),
-                'p' => Some(P2),
+            match &line[*start..*start+1] {
+                "K" => {*start += 1; Some(K1)},
+                "R" => {*start += 1; Some(R1)},
+                "B" => {*start += 1; Some(B1)},
+                "G" => {*start += 1; Some(G1)},
+                "S" => {*start += 1; Some(S1)},
+                "N" => {*start += 1; Some(N1)},
+                "L" => {*start += 1; Some(L1)},
+                "P" => {*start += 1; Some(P1)},
+                "k" => {*start += 1; Some(K2)},
+                "r" => {*start += 1; Some(R2)},
+                "b" => {*start += 1; Some(B2)},
+                "g" => {*start += 1; Some(G2)},
+                "s" => {*start += 1; Some(S2)},
+                "n" => {*start += 1; Some(N2)},
+                "l" => {*start += 1; Some(L2)},
+                "p" => {*start += 1; Some(P2)},
                 _ => panic!("Failed: Sfen unexpected piece."),
             }
         },
