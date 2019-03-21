@@ -1,6 +1,7 @@
 use address::*;
 use position::*;
 use logical_record::*;
+use physical_move::*;
 
 pub fn file_char_to_i8(ch:char) -> i8 {
     match ch {
@@ -165,29 +166,36 @@ impl Board {
         }
     }
 
-    pub fn touch(&mut self, address:&Address) {
-        match self.pieces[address.index] {
-            Some(piece) => {
-                match self.pieces[SKY_ADDRESS] {
+    pub fn touch(&mut self, physical_move:PhysicalMove) {
+        match physical_move.address {
+            Some(address) => {
+                match self.pieces[address.index] {
                     Some(piece) => {
+                        match self.pieces[SKY_ADDRESS] {
+                            Some(piece) => {
 
+                            },
+                            None => {
+                                self.pieces[SKY_ADDRESS] = Some(piece);
+                                self.pieces[address.index] = None;
+                            },
+                        }
                     },
                     None => {
-                        self.pieces[SKY_ADDRESS] = Some(piece);
-                        self.pieces[address.index] = None;
+                        match self.pieces[SKY_ADDRESS] {
+                            Some(piece) => {
+                                self.pieces[SKY_ADDRESS] = None;
+                                self.pieces[address.index] = Some(piece);
+                            },
+                            None => {
+                            },
+                        }
                     },
                 }
             },
             None => {
-                match self.pieces[SKY_ADDRESS] {
-                    Some(piece) => {
-                        self.pieces[SKY_ADDRESS] = None;
-                        self.pieces[address.index] = Some(piece);
-                    },
-                    None => {
-                    },
-                }
-            },
+
+            }
         }
     }
 

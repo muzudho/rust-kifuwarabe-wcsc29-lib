@@ -9,6 +9,78 @@ pub struct Fen {
 
 }
 impl Fen {
+    pub fn parse1(line:&str, record:&mut LogicalRecord) {
+
+        record.clear();
+
+        let mut start = 0;
+
+        if line.starts_with("position startpos") {
+            record.position.board.set_startpos();
+            
+            if line.len() > 17 {
+                // `position startpos moves `. [0]p, [1]o, ...
+                start = 24;
+
+                // Examples.
+                // position startpos moves 2g2f 8c8d
+                let mut temp_record = LogicalRecord::new();
+                temp_record.parse2(line, &mut start);
+                println!("info temp_record.items.len: {}", temp_record.items.len());
+
+                // TODO 指し手通り、進めたい。
+                for mov in &temp_record.items {
+                    println!("info Move: `{}`.", mov.to_sign());
+                    record.make_move(*mov);
+                    record.position.board.print(record.get_current_phase());
+                }
+            }
+        } else if line.starts_with("position sfen ") {
+            // TODO sfen under construction.
+
+            // `position sfen `. [0]p, [1]o, ...
+            start = 14;
+            let mut rank=9;
+            let mut file=1;
+
+            let sign = line.to_string().chars().next().unwrap();
+            let mut spaces = match sign {
+                '1' => {1},
+                '2' => {2},
+                '3' => {3},
+                '4' => {4},
+                '5' => {5},
+                '6' => {6},
+                '7' => {7},
+                '8' => {8},
+                '9' => {9},
+                '/' => {-1},
+                _ => {0},
+            };
+
+            if spaces == 0 {
+                record.position.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
+                file += 1;
+            } else if spaces == -1 {
+                file = 1;
+                rank = 9;
+            } else {
+                while spaces > 0 {
+                    record.position.board.set_piece(file, rank, None);
+                    file += 1;
+                    spaces -= 1;
+                }
+            }
+
+            loop {
+                let sign = line.to_string().chars().next().unwrap();
+                if sign == ' ' {
+                    break;
+                }
+            }
+        }
+    }
+
     pub fn parse3(line:&str, start:&mut i8) -> LogicalMove {
         let drop = parse_sign_to_drop(line, start);
 
