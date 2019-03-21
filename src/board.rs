@@ -316,10 +316,10 @@ pub fn i8_to_rank_char(rank:i8) -> char {
 
 pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
-pub const HANDS_LEN: usize = 3 * 8;
 pub const SKY_LEN: usize = 1;
-pub const SKY_ADDRESS: usize = 89;
-pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + HANDS_LEN + SKY_LEN) as usize;
+pub const SKY_ADDRESS: usize = 81;
+pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + SKY_LEN) as usize;
+pub const HANDS_LEN: usize = 3 * 8;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct BoardSize {
@@ -385,9 +385,6 @@ impl Board {
                 Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
                 None, Some(R1), None, None, None, None, None, Some(B1), None,
                 Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
-                None, None, None, None, None, None, None, None, // First phase is not use.
-                None, None, None, None, None, None, None, None, // Second phase is not use.
-                None, None, None, None, None, None, None, None, // None phase is not use.
                 None, // Sky
         ];
         self.hands = [0; HANDS_LEN];
@@ -482,18 +479,27 @@ impl Board {
         }
     }
 
-    pub fn touch(&mut self, physical_move:&PhysicalMove) {
+    /// # Returns
+    ///
+    /// Phase change is true.
+    pub fn touch(&mut self, physical_move:&PhysicalMove) -> bool {
         match physical_move.address {
             Some(address) => {
                 match self.pieces[address.index] {
                     Some(piece) => {
                         match self.pieces[SKY_ADDRESS] {
                             Some(piece) => {
-
+                                false
                             },
                             None => {
+                                // 駒をどこかに置いた。
                                 self.pieces[SKY_ADDRESS] = Some(piece);
                                 self.pieces[address.index] = None;
+                                if address.is_on_board() {
+                                    true
+                                } else {
+                                    false
+                                }
                             },
                         }
                     },
@@ -502,8 +508,10 @@ impl Board {
                             Some(piece) => {
                                 self.pieces[SKY_ADDRESS] = None;
                                 self.pieces[address.index] = Some(piece);
+                                false
                             },
                             None => {
+                                false
                             },
                         }
                     },
@@ -514,11 +522,16 @@ impl Board {
                     Some(piece) => {
                         if physical_move.sky_turn {
                             self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
+                            false
                         } else if physical_move.sky_rotate {
                             self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
+                            false
+                        } else {
+                            false
                         }
                     },
                     None => {
+                        false
                     },
                 }
             }
@@ -527,45 +540,15 @@ impl Board {
 
     /// latest.
     pub fn add(&mut self, address:&Address, piece:Piece) {
-        match address.hand {
-            Some(phase) => {
-                use board::Phase::*;
-                use board::Piece::*;
-                match phase {
-                    First => {
-                        match piece {
-                            R1 | R2 => {self.hands[0] += 1},
-                            B1 | B2 => {self.hands[1] += 1},
-                            G1 | G2 => {self.hands[2] += 1},
-                            S1 | S2 => {self.hands[3] += 1},
-                            N1 | N2 => {self.hands[4] += 1},
-                            L1 | L2 => {self.hands[5] += 1},
-                            P1 | P2 => {self.hands[6] += 1},
-                            _ => panic!("Unexpected hand '{}' on first.", piece_to_sign(Some(piece))),
-                        }
-                    },
-                    Second => {
-                        match piece {
-                            R1 | R2 => {self.hands[7] += 1},
-                            B1 | B2 => {self.hands[8] += 1},
-                            G1 | G2 => {self.hands[9] += 1},
-                            S1 | S2 => {self.hands[10] += 1},
-                            N1 | N2 => {self.hands[11] += 1},
-                            L1 | L2 => {self.hands[12] += 1},
-                            P1 | P2 => {self.hands[13] += 1},
-                            _ => panic!("Unexpected hand '{}' on second.", piece_to_sign(Some(piece))),
-                        }
-                    },
-                }
-            },
-            None => {
-                match self.pieces[address.index] {
-                    Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
-                    None => {
-                        self.pieces[address.index] = Some(piece);
-                    },
-                }
-            },
+        if address.is_on_board() {
+            match self.pieces[address.index] {
+                Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
+                None => {
+                    self.pieces[address.index] = Some(piece);
+                },
+            }
+        } else if address.is_hand() {
+            self.hands[address.index - self.board_size.board_len] += 1
         }
     }
 
