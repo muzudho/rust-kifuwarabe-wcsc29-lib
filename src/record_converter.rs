@@ -34,7 +34,7 @@ impl RecordConverter {
             ));
             
             if logical_move.promotion {
-                let board_turn = PhysicalMove::create_turn();
+                let board_turn = PhysicalMove::turn_over();
             }
 
             let board_on = PhysicalMove::create_by_address(Address::create_by_cell(

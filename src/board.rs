@@ -218,6 +218,58 @@ pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
         None => None,
     }
 }
+pub fn rotate_piece(piece:Option<Piece>) -> Option<Piece> {
+    match piece {
+        Some(x) => {
+            use board::Piece::*;
+            match x {
+                K1 => Some(K2),
+                R1 => Some(R2),
+                B1 => Some(B2),
+                G1 => Some(G2),
+                S1 => Some(S2),
+                N1 => Some(N2),
+                L1 => Some(L2),
+                P1 => Some(P2),
+                PR1 => Some(PR2),
+                PB1 => Some(PB2),
+                PS1 => Some(PS2),
+                PN1 => Some(PN2),
+                PL1 => Some(PL2),
+                PP1 => Some(PP2),
+                K2 => Some(K1),
+                R2 => Some(R1),
+                B2 => Some(B1),
+                G2 => Some(G1),
+                S2 => Some(S1),
+                N2 => Some(N1),
+                L2 => Some(L1),
+                P2 => Some(P1),
+                PR2 => Some(PR1),
+                PB2 => Some(PB1),
+                PS2 => Some(PS1),
+                PN2 => Some(PN1),
+                PL2 => Some(PL1),
+                PP2 => Some(PP1),
+                K3 => Some(K3),
+                R3 => Some(R3),
+                B3 => Some(B3),
+                G3 => Some(G3),
+                S3 => Some(S3),
+                N3 => Some(N3),
+                L3 => Some(L3),
+                P3 => Some(P3),
+                PR3 => Some(PR3),
+                PB3 => Some(PB3),
+                PS3 => Some(PS3),
+                PN3 => Some(PN3),
+                PL3 => Some(PL3),
+                PP3 => Some(PP3),
+            }
+        },
+        None => { None }
+    }
+}
 
 pub fn file_char_to_i8(ch:char) -> i8 {
     match ch {
@@ -400,7 +452,7 @@ impl Board {
 
     /// Obsolute. new --> add().
     pub fn set_hand(&mut self, piece:Piece, num:i8) {
-        // use board::Piece::*;
+        use board::Piece::*;
         match piece {
             K1 => {self.hands[0] = num},
             R1 => {self.hands[1] = num},
@@ -458,7 +510,17 @@ impl Board {
                 }
             },
             None => {
-
+                match self.pieces[SKY_ADDRESS] {
+                    Some(piece) => {
+                        if physical_move.sky_turn {
+                            self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
+                        } else if physical_move.sky_rotate {
+                            self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
+                        }
+                    },
+                    None => {
+                    },
+                }
             }
         }
     }
@@ -563,7 +625,7 @@ impl Board {
                         7 => {print!("    | | | | ")},
                         6 => {print!("    | | | | ")},
                         5 => {print!("    +-+ +-+ ")},
-                        4 => {print!("       {:1}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        4 => {print!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
                         3 => {print!("            ")},
                         2 => {print!("            ")},
                         1 => {print!("            ")},
@@ -607,7 +669,7 @@ impl Board {
                     match rank {
                         9 => {},
                         8 => {},
-                        6 => {print!("    {:1}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        6 => {print!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
                         5 => {print!(" +-+ +-+")},
                         4 => {print!(" | | | |")},
                         3 => {print!(" | | | |")},

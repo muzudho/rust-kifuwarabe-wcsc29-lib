@@ -17,11 +17,19 @@ impl PhysicalMove {
         }
     }
 
-    pub fn create_turn() -> PhysicalMove {
+    pub fn turn_over() -> PhysicalMove {
         PhysicalMove {
             address: None,
             sky_turn: true,
             sky_rotate: false,
+        }
+    }
+
+    pub fn rotate() -> PhysicalMove {
+        PhysicalMove {
+            address: None,
+            sky_turn: false,
+            sky_rotate: true,
         }
     }
 

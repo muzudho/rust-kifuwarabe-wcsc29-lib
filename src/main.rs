@@ -61,7 +61,6 @@ fn test(cursor:&mut usize) {
 */
 fn main() {
     let mut comm = Communication::new();
-    // let mut logical_record = LogicalRecord::new();
     let mut physical_record = PhysicalRecord::new();
     let mut board = Board::default();
 
@@ -91,7 +90,20 @@ fn main() {
             line.starts_with('8') ||
             line.starts_with('9')
         {
-            do_touch_command(&line, &mut physical_record, &mut board);
+            do_touch_cell_command(&line, &mut physical_record, &mut board);
+
+        // ########
+        // # 記号 #
+        // ########
+        } else if line.starts_with('+') {
+            // 成り。
+            board.touch(&PhysicalMove::turn_over());
+            board.println(physical_record.get_phase());
+
+        } else if line.starts_with('-') {
+            // １８０°回転。
+            board.touch(&PhysicalMove::rotate());
+            board.println(physical_record.get_phase());
 
         // #####
         // # B #
@@ -167,7 +179,7 @@ fn main() {
     }
 }
 
-fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Board) {
+fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Board) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &board.get_board_size());
