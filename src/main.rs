@@ -179,8 +179,11 @@ fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &board.get_board_size());
     let pmove = PhysicalMove::create_by_address(address);
-    board.touch(&pmove);
     physical_record.add(&pmove);
+    if board.touch(&pmove) {
+        // Phase change.
+        physical_record.add(&PhysicalMove::phase_change());
+    }
     board.println(physical_record.get_phase());
     physical_record.println(&board.get_board_size());
 }

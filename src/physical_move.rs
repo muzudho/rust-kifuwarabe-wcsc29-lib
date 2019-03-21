@@ -7,6 +7,7 @@ pub struct PhysicalMove {
     pub address: Option<Address>,
     pub sky_turn: bool,
     pub sky_rotate: bool,
+    pub phase_change: bool,
 }
 impl PhysicalMove {
     pub fn create_by_address(address:Address) -> PhysicalMove {
@@ -14,6 +15,7 @@ impl PhysicalMove {
             address: Some(address),
             sky_turn: false,
             sky_rotate: false,
+            phase_change: false,
         }
     }
 
@@ -22,6 +24,7 @@ impl PhysicalMove {
             address: None,
             sky_turn: true,
             sky_rotate: false,
+            phase_change: false,
         }
     }
 
@@ -30,6 +33,16 @@ impl PhysicalMove {
             address: None,
             sky_turn: false,
             sky_rotate: true,
+            phase_change: false,
+        }
+    }
+
+    pub fn phase_change() -> PhysicalMove {
+        PhysicalMove {
+            address: None,
+            sky_turn: false,
+            sky_rotate: false,
+            phase_change: true,
         }
     }
 
@@ -43,6 +56,8 @@ impl PhysicalMove {
                     "+".to_string()
                 } else if self.sky_rotate {
                     "-".to_string()
+                } else if self.phase_change {
+                    "|".to_string()
                 } else {
                     panic!("Unexpected physical move print.")
                 }

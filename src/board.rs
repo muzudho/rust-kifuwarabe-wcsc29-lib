@@ -484,31 +484,37 @@ impl Board {
     /// Phase change is true.
     pub fn touch(&mut self, physical_move:&PhysicalMove) -> bool {
         match physical_move.address {
+            // どこかを指定した。
             Some(address) => {
                 match self.pieces[address.index] {
                     Some(piece) => {
+                        // 駒の場所を指定した。
                         match self.pieces[SKY_ADDRESS] {
                             Some(piece) => {
+                                // 指には何も持ってない。
                                 false
                             },
                             None => {
-                                // 駒をどこかに置いた。
+                                // 指で駒をつかむ。
                                 self.pieces[SKY_ADDRESS] = Some(piece);
                                 self.pieces[address.index] = None;
-                                if address.is_on_board() {
-                                    true
-                                } else {
-                                    false
-                                }
+                                false
                             },
                         }
                     },
                     None => {
+                        // 空き升を指定した。
                         match self.pieces[SKY_ADDRESS] {
                             Some(piece) => {
+                                // 指につまんでいる駒を置く。
                                 self.pieces[SKY_ADDRESS] = None;
                                 self.pieces[address.index] = Some(piece);
-                                false
+                                if address.is_on_board() {
+                                    // 駒を盤上に置いた。
+                                    true
+                                } else {
+                                    false
+                                }
                             },
                             None => {
                                 false

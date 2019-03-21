@@ -224,6 +224,13 @@ impl PhysicalRecord {
 
     pub fn add(&mut self, physical_move:&PhysicalMove) {
         self.items.push(*physical_move);
+        if physical_move.phase_change {
+            use board::Phase::*;
+            self.phase = match self.phase {
+                First => {Second},
+                Second => {First},
+            };
+        }
     }
 
     pub fn get_last_move(&self) -> Option<PhysicalMove> {
