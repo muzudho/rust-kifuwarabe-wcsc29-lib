@@ -12,11 +12,11 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, record:&mut LogicalRecord) -> LogicalMove {
+    pub fn get_best_move(self, position:&Position, logical_record:&mut LogicalRecord) -> LogicalMove {
         // use position::Piece::*;
 
         // position.show_board();
-        // println!("info Current phase: `{}`.", phase_to_sign(&position.record.get_current_phase()));
+        // println!("info Current phase: `{}`.", phase_to_sign(&logical_record.get_current_phase()));
 
         // 盤上の自分の駒を１つ選ぶ。
         let mut piece = None;
@@ -25,10 +25,10 @@ impl Thought {
         'search: for rank in 1..=9 {
             // println!("info Rank: `{}`.", rank);
             for file in 1..=9 {
-                piece = record.position.board.get_piece(file, rank);
+                piece = position.board.get_piece(file, rank);
                 let phase = piece_to_phase(piece);
                 if phase.is_some() {
-                    if phase.unwrap() == record.get_current_phase() {
+                    if phase.unwrap() == logical_record.get_current_phase() {
                         // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
                         // TODO 自分の駒に限り。
                         src_file = file;

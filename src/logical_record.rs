@@ -210,13 +210,11 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
 }
 
 pub struct LogicalRecord {
-    pub position: Position,
     pub items : Vec<LogicalMove>,
 }
 impl LogicalRecord {
     pub fn new() -> LogicalRecord {
         LogicalRecord {
-            position: Position::new(),
             items: Vec::new(),
         }
     }
@@ -251,18 +249,16 @@ impl LogicalRecord {
         }
     }
 
-    pub fn make_move(&mut self, mov:LogicalMove){
-        use logical_record::PieceType::*;
-        
+    pub fn make_move(&mut self, mov:LogicalMove, position:&mut Position){
         if mov.drop != None {
             // TODO drop
 
         } else {
-            let mut source_piece = self.position.remove_piece(mov.source_file, mov.source_rank);
+            let mut source_piece = position.remove_piece(mov.source_file, mov.source_rank);
             if mov.promotion {
                 source_piece = promotion_piece(source_piece);
             }
-            self.position.board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
+            position.board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
             self.push(mov);
         }
     }

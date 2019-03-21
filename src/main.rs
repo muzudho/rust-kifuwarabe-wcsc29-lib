@@ -24,6 +24,7 @@ use fen::*;
 // use position::*;
 use logical_record::*;
 use physical_move::*;
+use physical_record::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -54,7 +55,8 @@ use thought::Thought;
 fn main() {
 
     let mut comm = Communication::new();
-    let mut record = LogicalRecord::new();
+    let mut logical_record = LogicalRecord::new();
+    let mut physical_record = PhysicalRecord::new();
 
     loop {
         // Standard input.
@@ -82,21 +84,23 @@ fn main() {
             line.starts_with('8') ||
             line.starts_with('9')
         {
-            do_touch_command(&line, &mut record);
+            do_touch_command(&line, &mut physical_record);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            record.position.board.print(record.get_current_phase());
+            physical_record.get_position().board.print(logical_record.get_current_phase());
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
             let thought = Thought::new();
-            comm.println(&format!("bestmove {}", thought.get_best_move(&mut record).to_sign()));
+            comm.println(&format!("bestmove {}", thought.get_best_move(
+                &physical_record.get_position(),
+                &mut logical_record).to_sign()));
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
@@ -124,15 +128,15 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            Fen::parse1(&line, &mut record);
+            Fen::parse1(&line, &mut physical_record.get_mut_position(), &mut logical_record);
         }
     }
 }
 
-fn do_touch_command(line:&str, logical_record:&mut LogicalRecord) {
+fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, &logical_record.position.board);
-    logical_record.position.board.touch(PhysicalMove::create_by_address(address));
-    logical_record.position.board.print(logical_record.get_current_phase());
+    let address = Address::create_by_cell(file, rank, &physical_record.get_position().board);
+    physical_record.get_mut_position().board.touch(PhysicalMove::create_by_address(address));
+    physical_record.get_position().board.print(physical_record.get_phase());
 }

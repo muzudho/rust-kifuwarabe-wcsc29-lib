@@ -1,5 +1,4 @@
 /// フォーサイス エドワーズ記法
-use board::*;
 use logical_move::*;
 use logical_record::*;
 use position::*;
@@ -9,14 +8,14 @@ pub struct Fen {
 
 }
 impl Fen {
-    pub fn parse1(line:&str, record:&mut LogicalRecord) {
+    pub fn parse1(line:&str, position:&mut Position, logical_record:&mut LogicalRecord) {
 
-        record.clear();
+        logical_record.clear();
 
         let mut start = 0;
 
         if line.starts_with("position startpos") {
-            record.position.board.set_startpos();
+            position.board.set_startpos();
             
             if line.len() > 17 {
                 // `position startpos moves `. [0]p, [1]o, ...
@@ -31,8 +30,8 @@ impl Fen {
                 // TODO 指し手通り、進めたい。
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
-                    record.make_move(*mov);
-                    record.position.board.print(record.get_current_phase());
+                    logical_record.make_move(*mov, position);
+                    position.board.print(logical_record.get_current_phase());
                 }
             }
         } else if line.starts_with("position sfen ") {
@@ -59,14 +58,14 @@ impl Fen {
             };
 
             if spaces == 0 {
-                record.position.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
+                position.board.set_piece(file, rank, parse_sign_line_to_piece(line, &mut start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    record.position.board.set_piece(file, rank, None);
+                    position.board.set_piece(file, rank, None);
                     file += 1;
                     spaces -= 1;
                 }
