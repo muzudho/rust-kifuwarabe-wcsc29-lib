@@ -1,4 +1,4 @@
-use position::*;
+use board::*;
 use logical_record::*;
 use logical_move::*;
 
@@ -12,7 +12,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, position:&Position, logical_record:&mut LogicalRecord) -> LogicalMove {
+    pub fn get_best_move(self, board:&Board, logical_record:&mut LogicalRecord) -> LogicalMove {
         // use position::Piece::*;
 
         // position.show_board();
@@ -25,7 +25,7 @@ impl Thought {
         'search: for rank in 1..=9 {
             // println!("info Rank: `{}`.", rank);
             for file in 1..=9 {
-                piece = position.board.get_piece(file, rank);
+                piece = board.get_piece(file, rank);
                 let phase = piece_to_phase(piece);
                 if phase.is_some() {
                     if phase.unwrap() == logical_record.get_current_phase() {

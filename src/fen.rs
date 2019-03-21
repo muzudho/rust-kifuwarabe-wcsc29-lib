@@ -1,21 +1,22 @@
 /// フォーサイス エドワーズ記法
+use board::*;
 use logical_move::*;
 use logical_record::*;
 use parser::*;
 use physical_record::*;
-use position::*;
 use std::*;
 
 pub struct Fen {
 
 }
 impl Fen {
-    pub fn parse_position(line:&str, start:&mut usize) -> Option<Position> {
+    pub fn parse_board(line:&str, start:&mut usize, board:&mut Board) -> bool {
         if line.starts_with("position startpos") {
             *start = "position startpos".len();
-            Some(Position::startpos())
+            board.reset_startpos();
+            true
         } else if line.starts_with("position sfen ") {
-            let mut position = Position::default();
+            board.reset_default();
             // TODO sfen under construction.
 
             // `position sfen `. [0]p, [1]o, ...
@@ -39,26 +40,25 @@ impl Fen {
             };
 
             if spaces == 0 {
-                position.board.set_piece(file, rank, parse_sign_line_to_piece(line, start));
+                board.set_piece(file, rank, parse_sign_line_to_piece(line, start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    position.board.set_piece(file, rank, None);
+                    board.set_piece(file, rank, None);
                     file += 1;
                     spaces -= 1;
                 }
             }
-
-            Some(position)
+            true
         } else {
-            None
+            false
         }
     }
 
-    pub fn parse_moves(line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
+    pub fn parse_moves(line:&str, start:&mut usize, board:&mut Board) -> Option<LogicalRecord> {
         println!("moves1 start: {0}.", start);
 
         if Parser::match_keyword(&line, "moves", start) {
@@ -83,8 +83,8 @@ impl Fen {
         // TODO 指し手通り、進めたい。
         for mov in &temp_record.items {
             println!("info Move: `{}`.", mov.to_sign());
-            logical_record.make_move(*mov, position);
-            position.board.println(logical_record.get_current_phase());
+            logical_record.make_move(*mov, board);
+            board.println(logical_record.get_current_phase());
         }
 
         Some(logical_record)
@@ -124,7 +124,7 @@ impl Fen {
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。前空白埋め2文字固定。
 pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
-    use position::Piece::*;
+    use board::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() <= *start {
@@ -180,7 +180,7 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
 pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
-    use position::Piece::*;
+    use board::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() <= *start as usize {

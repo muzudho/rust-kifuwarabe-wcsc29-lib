@@ -1,5 +1,4 @@
 use board::*;
-use position::*;
 
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]
@@ -36,7 +35,7 @@ impl Address {
             format!("{}{}", file, i8_to_rank_char(rank))
         } else if 81 <= self.index && self.index <= 104 {
             // 持ち駒
-            use position::Piece::*;
+            use board::Piece::*;
             match self.index {
                 81 => { format!("{}*", piece_to_sign(Some(K1)))},
                 82 => { format!("{}*", piece_to_sign(Some(R1)))},

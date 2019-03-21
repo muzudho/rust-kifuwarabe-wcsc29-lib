@@ -2,7 +2,6 @@
 use serde_json::Value;
 use fen::*;
 use board::*;
-use position::*;
 use std::fs::File;
 use std::io::Read;
 

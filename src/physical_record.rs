@@ -1,6 +1,5 @@
 use board::*;
 use physical_move::*;
-use position::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
@@ -58,8 +57,8 @@ pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
     }
 }
 pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
-    use position::Phase::*;
-    use position::Piece::*;
+    use board::Phase::*;
+    use board::Piece::*;
     use physical_record::PieceType::*;
     match phase {
         First => {

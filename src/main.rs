@@ -14,7 +14,6 @@ mod parser;
 mod physical_move;
 mod physical_record;
 mod position_file;
-mod position;
 mod record_converter;
 mod thought;
 
@@ -23,9 +22,7 @@ use board::*;
 use communication::*;
 use fen::*;
 // use logical_move::*;
-// use position::*;
 use logical_record::*;
-use position::*;
 use physical_move::*;
 use physical_record::*;
 use record_converter::*;
@@ -66,7 +63,7 @@ fn main() {
     let mut comm = Communication::new();
     // let mut logical_record = LogicalRecord::new();
     let mut physical_record = PhysicalRecord::new();
-    let mut position = Position::default();
+    let mut board = Board::default();
 
     loop {
         // Standard input.
@@ -94,15 +91,15 @@ fn main() {
             line.starts_with('8') ||
             line.starts_with('9')
         {
-            do_touch_command(&line, &mut physical_record, &mut position);
+            do_touch_command(&line, &mut physical_record, &mut board);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            position.board.println(physical_record.get_phase());
-            physical_record.println(&position.board.get_board_size());
+            board.println(physical_record.get_phase());
+            physical_record.println(&board.get_board_size());
 
         // #####
         // # G #
@@ -145,38 +142,35 @@ fn main() {
             let mut logical_record = LogicalRecord::new();
             let mut start = 0;
             println!("pos2 start: {0}.", start);
-            match Fen::parse_position(&line, &mut start) {
-                Some(mut init_pos) => {
-                    println!("pos3 start: {0}.", start);
-                    init_pos.board.println(Phase::First);
-                    match Fen::parse_moves(&line, &mut start, &mut init_pos) {
-                        Some(lrecords) => {
-                            println!("pos4");
-                            logical_record = lrecords;
-                        },
-                        None => {
-                            println!("pos5 No moves. start: {0}.", start);
-                        },
-                    };
-                },
-                None => {
-                    println!("pos6");
-                },
+            if Fen::parse_board(&line, &mut start, &mut board) {
+                println!("pos3 start: {0}.", start);
+                board.println(Phase::First);
+                match Fen::parse_moves(&line, &mut start, &mut board) {
+                    Some(lrecords) => {
+                        println!("pos4");
+                        logical_record = lrecords;
+                    },
+                    None => {
+                        println!("pos5 No moves. start: {0}.", start);
+                    },
+                };
+            } else {
+                println!("pos6");
             }
             println!("pos7");
 
             RecordConverter::convert_logical_to_physical(
-                &mut position,
+                &mut board,
                 &logical_record,
                 &mut physical_record);
         }
     }
 }
 
-fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord, position:&mut Position) {
+fn do_touch_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Board) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, &position.board.get_board_size());
-    position.board.touch(&PhysicalMove::create_by_address(address));
-    position.board.println(physical_record.get_phase());
+    let address = Address::create_by_cell(file, rank, &board.get_board_size());
+    board.touch(&PhysicalMove::create_by_address(address));
+    board.println(physical_record.get_phase());
 }
