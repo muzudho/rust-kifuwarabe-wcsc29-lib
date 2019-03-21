@@ -1,5 +1,6 @@
 use std::*;
 use position::*;
+use logical_move::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
@@ -206,50 +207,9 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
-pub struct Move {
-    pub source_file:i8,
-    pub source_rank:i8,
-    pub destination_file:i8,
-    pub destination_rank:i8,
-    pub promotion:bool,
-    pub drop:Option<PieceType>,
-}
-impl Move {
-    pub fn new() -> Move {
-        use record::PieceType::*;
-        Move {
-            source_file:0,
-            source_rank:0,
-            destination_file:0,
-            destination_rank:0,
-            promotion:false,
-            drop:None,
-        }
-    }
-
-    pub fn to_sign(self) -> String {
-        let mut sign = String::new();
-
-        if self.drop != None {
-            sign.push_str(&format!("{}*", piece_type_to_sign(self.drop)));
-        } else {
-            sign.push_str(&format!("{}{}", self.source_file, rank_to_sign(self.source_rank)));
-        }
-
-        sign.push_str(&format!("{}{}", self.destination_file, rank_to_sign(self.destination_rank)));
-
-        if self.promotion {
-            sign.push_str("+");
-        }
-
-        sign
-    }
-}
-
 pub struct Record {
     pub position: Position,
-    pub items : Vec<Move>,
+    pub items : Vec<LogicalMove>,
 }
 impl Record {
     pub fn new() -> Record {
@@ -331,7 +291,7 @@ impl Record {
         }
     }
 
-    pub fn push(&mut self, mov:Move) {
+    pub fn push(&mut self, mov:LogicalMove) {
         self.items.push(mov);
     }
 
@@ -362,7 +322,7 @@ impl Record {
                     false
                 };
 
-            self.items.push(Move {
+            self.items.push(LogicalMove {
                 source_file: source_file,
                 source_rank: source_rank,
                 destination_file: destination_file,
@@ -386,7 +346,7 @@ impl Record {
         }
     }
 
-    pub fn make_move(&mut self, mov:Move){
+    pub fn make_move(&mut self, mov:LogicalMove){
         use record::PieceType::*;
         
         if mov.drop != None {

@@ -1,5 +1,6 @@
 use position::*;
 use record::*;
+use logical_move::*;
 
 pub struct Thought {
 
@@ -11,7 +12,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, record:&mut Record) -> Move {
+    pub fn get_best_move(self, record:&mut Record) -> LogicalMove {
         // use position::Piece::*;
 
         // position.show_board();
@@ -46,7 +47,7 @@ impl Thought {
             src_rank
         };
 
-        Move {
+        LogicalMove {
             source_file: src_file,
             source_rank: src_rank,
             destination_file: src_file,

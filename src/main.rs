@@ -7,6 +7,7 @@ use std::io;
 mod address;
 mod board;
 mod communication;
+mod logical_move;
 mod record;
 mod position_file;
 mod position;
@@ -15,7 +16,8 @@ mod thought;
 use address::*;
 use board::*;
 use communication::*;
-use position::*;
+// use logical_move::*;
+// use position::*;
 use record::*;
 use thought::Thought;
 
