@@ -270,6 +270,20 @@ pub fn rotate_piece(piece:Option<Piece>) -> Option<Piece> {
         None => { None }
     }
 }
+pub fn is_promotion_piece(piece_opt:Option<Piece>) -> bool {
+    match piece_opt {
+        Some(piece) => {
+            use board::Piece::*;
+            match piece {
+                PR1 | PB1 | PS1 | PN1 | PL1 | PP1 |
+                PR2 | PB2 | PS2 | PN2 | PL2 | PP2 |
+                PR3 | PB3 | PS3 | PN3 | PL3 | PP3 => true,
+                _ => false,
+            }
+        },
+        None => false,
+    }
+}
 
 pub fn file_char_to_i8(ch:char) -> i8 {
     match ch {
@@ -399,8 +413,8 @@ impl Board {
         self.pieces[address]
     }
 
-    pub fn get_piece_by_address(&self, address:i8) -> Option<Piece> {
-        self.pieces[address as usize]
+    pub fn get_piece_by_address(&self, address:usize) -> Option<Piece> {
+        self.pieces[address]
     }
 
     /// Obsolute. new --> add().
@@ -486,7 +500,7 @@ impl Board {
         match physical_move.address {
             // どこかを指定した。
             Some(address) => {
-                match self.pieces[address.index] {
+                match self.pieces[address.get_index()] {
                     Some(piece) => {
                         // 駒の場所を指定した。
                         match self.pieces[SKY_ADDRESS] {
@@ -497,7 +511,7 @@ impl Board {
                             None => {
                                 // 指で駒をつかむ。
                                 self.pieces[SKY_ADDRESS] = Some(piece);
-                                self.pieces[address.index] = None;
+                                self.pieces[address.get_index()] = None;
                                 false
                             },
                         }
@@ -508,7 +522,7 @@ impl Board {
                             Some(piece) => {
                                 // 指につまんでいる駒を置く。
                                 self.pieces[SKY_ADDRESS] = None;
-                                self.pieces[address.index] = Some(piece);
+                                self.pieces[address.get_index()] = Some(piece);
                                 if address.is_on_board() {
                                     // 駒を盤上に置いた。
                                     true
@@ -547,14 +561,14 @@ impl Board {
     /// latest.
     pub fn add(&mut self, address:&Address, piece:Piece) {
         if address.is_on_board() {
-            match self.pieces[address.index] {
+            match self.pieces[address.get_index()] {
                 Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
                 None => {
-                    self.pieces[address.index] = Some(piece);
+                    self.pieces[address.get_index()] = Some(piece);
                 },
             }
         } else if address.is_hand() {
-            self.hands[address.index - self.board_size.board_len] += 1
+            self.hands[address.get_index() - self.board_size.board_len] += 1
         }
     }
 
@@ -614,7 +628,7 @@ impl Board {
                         7 => {print!("    | | | | ")},
                         6 => {print!("    | | | | ")},
                         5 => {print!("    +-+ +-+ ")},
-                        4 => {print!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        4 => {print!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS)))},
                         3 => {print!("            ")},
                         2 => {print!("            ")},
                         1 => {print!("            ")},
@@ -658,7 +672,7 @@ impl Board {
                     match rank {
                         9 => {},
                         8 => {},
-                        6 => {print!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS as i8)))},
+                        6 => {print!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS)))},
                         5 => {print!(" +-+ +-+")},
                         4 => {print!(" | | | |")},
                         3 => {print!(" | | | |")},

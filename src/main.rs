@@ -121,16 +121,26 @@ fn main() {
         // # G #
         // #####
         } else if line.starts_with("go") {
-            /* TODO
             let thought = Thought::new();
-            comm.println(&format!("bestmove {}", thought.get_best_move(
-                &physical_record.get_position(),
-                &mut logical_record).to_sign()));
-             */
+            let best_logical_move = thought.get_best_move(
+                &board,
+                &mut physical_record);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
             // println!("bestmove resign");
+            comm.println(&format!("bestmove {}", best_logical_move.to_sign()));
+
+            let best_physical_moves = RecordConverter::convert_logical_move(
+                &best_logical_move, &mut board, &physical_record.get_phase());
+            for physical_move in best_physical_moves {
+                physical_record.add(&physical_move);
+                if board.touch(&physical_move) {
+                    // Phase change.
+                    physical_record.add(&PhysicalMove::phase_change());
+                }
+            }
+
             
         // #####
         // # I #
@@ -166,7 +176,7 @@ fn main() {
                 };
             }
 
-            RecordConverter::convert_logical_to_physical(
+            RecordConverter::convert_logical_record_to_physical_record(
                 &mut board,
                 &logical_record,
                 &mut physical_record);

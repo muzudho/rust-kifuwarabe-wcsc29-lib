@@ -1,6 +1,8 @@
 use board::*;
 use logical_record::*;
 use logical_move::*;
+use physical_record::*;
+use physical_move::*;
 
 pub struct Thought {
 
@@ -12,7 +14,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, board:&Board, logical_record:&mut LogicalRecord) -> LogicalMove {
+    pub fn get_best_move(self, board:&Board, physical_record:&mut PhysicalRecord) -> LogicalMove {
         // use position::Piece::*;
 
         // position.show_board();
@@ -28,7 +30,7 @@ impl Thought {
                 piece = board.get_piece(file, rank);
                 let phase = piece_to_phase(piece);
                 if phase.is_some() {
-                    if phase.unwrap() == logical_record.get_current_phase() {
+                    if phase.unwrap() == physical_record.get_phase() {
                         // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
                         // TODO 自分の駒に限り。
                         src_file = file;

@@ -4,7 +4,7 @@ use physical_record::*;
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]
 pub struct Address {
-    pub index: usize,
+    index: usize,
 }
 impl Address {
     pub fn create_by_index(index_num:usize) -> Address {
@@ -72,6 +72,10 @@ impl Address {
         Address {
             index: index_num,
         }
+    }
+
+    pub fn get_index(&self) -> usize {
+        self.index
     }
 
     /// 盤上。
