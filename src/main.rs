@@ -8,7 +8,8 @@ mod address;
 mod board;
 mod communication;
 mod logical_move;
-mod record;
+mod logical_record;
+mod physical_move;
 mod position_file;
 mod position;
 mod thought;
@@ -18,7 +19,7 @@ use board::*;
 use communication::*;
 // use logical_move::*;
 // use position::*;
-use record::*;
+use logical_record::*;
 use thought::Thought;
 
 /// My name is Kifuwarabe.
@@ -49,7 +50,7 @@ use thought::Thought;
 fn main() {
 
     let mut comm = Communication::new();
-    let mut record = Record::new();
+    let mut record = LogicalRecord::new();
 
     loop {
         // Standard input.
@@ -124,7 +125,7 @@ fn main() {
     }
 }
 
-fn do_touch_command(line:&str, record:&mut Record) {
+fn do_touch_command(line:&str, record:&mut LogicalRecord) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, &record.position.board);

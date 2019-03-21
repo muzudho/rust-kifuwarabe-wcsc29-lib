@@ -1,6 +1,6 @@
 use address::*;
 use position::*;
-use record::*;
+use logical_record::*;
 
 pub fn file_char_to_i8(ch:char) -> i8 {
     match ch {

@@ -1,6 +1,7 @@
 use std::*;
 use position::*;
 use logical_move::*;
+use physical_move::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
@@ -34,7 +35,7 @@ pub enum PieceType{
     PP,
 }
 pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
-    use record::PieceType::*;
+    use logical_record::PieceType::*;
     match piece_type_opt {
         Some(piece_type) => {
             match piece_type {
@@ -60,7 +61,7 @@ pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
 pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
     use position::Phase::*;
     use position::Piece::*;
-    use record::PieceType::*;
+    use logical_record::PieceType::*;
     match phase {
         First => {
             match piece_type {
@@ -104,7 +105,7 @@ pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
 }
 
 pub fn parse_sign_to_drop(line:&str, start:&mut i8) -> Option<PieceType> {
-    use record::PieceType::*;
+    use logical_record::PieceType::*;
 
     if line.len() < *start as usize + 2 {
         return None;
@@ -207,13 +208,13 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut i8) -> bool {
     }
 }
 
-pub struct Record {
+pub struct LogicalRecord {
     pub position: Position,
     pub items : Vec<LogicalMove>,
 }
-impl Record {
-    pub fn new() -> Record {
-        Record {
+impl LogicalRecord {
+    pub fn new() -> LogicalRecord {
+        LogicalRecord {
             position: Position::new(),
             items: Vec::new(),
         }
@@ -234,7 +235,7 @@ impl Record {
 
                 // Examples.
                 // position startpos moves 2g2f 8c8d
-                let mut temp_record = Record::new();
+                let mut temp_record = LogicalRecord::new();
                 temp_record.parse2(line, &mut start);
                 println!("info temp_record.items.len: {}", temp_record.items.len());
 
@@ -347,7 +348,7 @@ impl Record {
     }
 
     pub fn make_move(&mut self, mov:LogicalMove){
-        use record::PieceType::*;
+        use logical_record::PieceType::*;
         
         if mov.drop != None {
             // TODO drop

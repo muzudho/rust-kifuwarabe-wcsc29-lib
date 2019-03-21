@@ -1,5 +1,5 @@
 use position::*;
-use record::*;
+use logical_record::*;
 use logical_move::*;
 
 pub struct Thought {
@@ -12,7 +12,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, record:&mut Record) -> LogicalMove {
+    pub fn get_best_move(self, record:&mut LogicalRecord) -> LogicalMove {
         // use position::Piece::*;
 
         // position.show_board();

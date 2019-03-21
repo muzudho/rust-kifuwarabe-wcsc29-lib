@@ -1,5 +1,5 @@
 use board::*;
-use record::*;
+use logical_record::*;
 use std::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -134,7 +134,7 @@ pub fn piece_to_sign(piece:Option<Piece>) -> String {
 }
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {
     use position::Piece::*;
-    use record::PieceType::*;
+    use logical_record::PieceType::*;
     match piece {
         K1 => K,
         R1 => R,
