@@ -31,6 +31,20 @@ pub fn rank_char_to_i8(ch:char) -> i8 {
         _ => {panic!("Unexpected rank char: '{0}'", ch)},
     }
 }
+pub fn i8_to_rank_char(rank:i8) -> char {
+    match rank {
+        1 => 'a',
+        2 => 'b',
+        3 => 'c',
+        4 => 'd',
+        5 => 'e',
+        6 => 'f',
+        7 => 'g',
+        8 => 'h',
+        9 => 'i',
+        _ => {panic!("Unexpected rank: {0}", rank)},
+    }
+}
 
 pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
@@ -38,6 +52,12 @@ pub const HANDS_LEN: usize = 3 * 8;
 pub const SKY_LEN: usize = 1;
 pub const SKY_ADDRESS: usize = 89;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + HANDS_LEN + SKY_LEN) as usize;
+
+/*
+pub struct BoardSize {
+
+}
+ */
 
 pub struct Board {
     pub file_len: i8,
@@ -48,34 +68,43 @@ pub struct Board {
     pub hands: [i8; HANDS_LEN],
 }
 impl Board {
-    pub fn new() -> Board {
+    pub fn default() -> Board {
         Board {
             file_len: DEFAULT_FILE_LEN as i8,
             rank_len: DEFAULT_RANK_LEN as i8,
             board_size: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
             pieces: [None; DEFAULT_BOARD_SIZE],
-            hands: [0; HANDS_LEN],
+            hands: [
+                0, 0, 0, 0, 0, 0, 0, 0, // First phase.
+                0, 0, 0, 0, 0, 0, 0, 0, // Second phase.
+                2, 2, 2, 4, 4, 4, 4, 18,], // None phase.
         }
     }
 
-    pub fn set_startpos(&mut self) {
+    pub fn startpos() -> Board {
         use position::Piece::*;
-        // Flip horizontal.
-        self.pieces  = [
-            Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
-            None, Some(B2), None, None, None, None, None, Some(R2), None,
-            Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
-            None, None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None, None,
-            Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
-            None, Some(R1), None, None, None, None, None, Some(B1), None,
-            Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
-            None, None, None, None, None, None, None, None, // First phase.
-            None, None, None, None, None, None, None, None, // Second phase.
-            None, None, None, None, None, None, None, None, // None phase.
-            None, // Sky
-        ];
+        Board {
+            file_len: DEFAULT_FILE_LEN as i8,
+            rank_len: DEFAULT_RANK_LEN as i8,
+            board_size: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
+            // Flip horizontal.
+            pieces: [
+                Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
+                None, Some(B2), None, None, None, None, None, Some(R2), None,
+                Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                None, None, None, None, None, None, None, None, None,
+                Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
+                None, Some(R1), None, None, None, None, None, Some(B1), None,
+                Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
+                None, None, None, None, None, None, None, None, // First phase is not use.
+                None, None, None, None, None, None, None, None, // Second phase is not use.
+                None, None, None, None, None, None, None, None, // None phase is not use.
+                None, // Sky
+            ],
+            hands: [0; HANDS_LEN],
+        }
     }
 
     pub fn file_rank_to_cell(&self, file:i8, rank:i8) -> usize {
@@ -265,7 +294,6 @@ impl Board {
     /// Point of symmetory.
     pub fn print(&self, phase:Phase) {
         use position::Phase::*;
-        let rank_array = ['?', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
         println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(Some(Phase::First), PieceType::K),
@@ -312,7 +340,7 @@ impl Board {
 
             print!(
                 "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
-                rank_array[rank as usize],
+                i8_to_rank_char(rank),
                 piece_to_sign(self.get_piece(1, rank)),
                 piece_to_sign(self.get_piece(2, rank)),
                 piece_to_sign(self.get_piece(3, rank)),

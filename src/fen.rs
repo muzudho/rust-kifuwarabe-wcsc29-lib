@@ -9,14 +9,14 @@ pub struct Fen {
 
 }
 impl Fen {
-    pub fn parse1(line:&str, position:&mut Position) -> LogicalRecord {
+    pub fn parse1(line:&str) -> LogicalRecord {
 
         let mut logical_record = LogicalRecord::new();
 
         let mut start = 0;
 
         if line.starts_with("position startpos") {
-            position.board.set_startpos();
+            let mut position = Position::startpos();
             
             if line.len() > 17 {
                 // `position startpos moves `. [0]p, [1]o, ...
@@ -31,11 +31,12 @@ impl Fen {
                 // TODO 指し手通り、進めたい。
                 for mov in &temp_record.items {
                     println!("info Move: `{}`.", mov.to_sign());
-                    logical_record.make_move(*mov, position);
+                    logical_record.make_move(*mov, &mut position);
                     position.board.print(logical_record.get_current_phase());
                 }
             }
         } else if line.starts_with("position sfen ") {
+            let mut position = Position::default();
             // TODO sfen under construction.
 
             // `position sfen `. [0]p, [1]o, ...

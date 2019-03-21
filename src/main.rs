@@ -94,6 +94,7 @@ fn main() {
         } else if line.starts_with("bo") {
             // board.
             physical_record.get_position().board.print(logical_record.get_current_phase());
+            physical_record.println();
 
         // #####
         // # G #
@@ -130,7 +131,11 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            logical_record = Fen::parse1(&line, &mut physical_record.get_mut_position());
+            logical_record = Fen::parse1(&line);
+
+            RecordConverter::ConvertLogicalToPhysical(
+                &logical_record,
+                &mut physical_record.get_mut_position());
         }
     }
 }

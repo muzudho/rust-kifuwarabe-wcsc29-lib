@@ -222,9 +222,14 @@ pub struct Position {
     pub board : Board,
 }
 impl Position {
-    pub fn new() -> Position {
+    pub fn default() -> Position {
         Position {
-            board : Board::new(),
+            board : Board::default(),
+        }
+    }
+    pub fn startpos() -> Position {
+        Position {
+            board : Board::startpos(),
         }
     }
 

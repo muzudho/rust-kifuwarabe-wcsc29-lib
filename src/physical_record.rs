@@ -216,7 +216,7 @@ impl PhysicalRecord {
     pub fn new() -> PhysicalRecord {
         PhysicalRecord {
             phase: Phase::First,
-            position: Position::new(),
+            position: Position::default(),
             items: Vec::new(),
         }
     }
@@ -244,9 +244,11 @@ impl PhysicalRecord {
         }
     }
 
-    /*
-    pub fn touch(&self, physical_move:PhysicalMove, board:&mut Board) {
-        board.touch(physical_move);
+    pub fn println(&self) {
+        print!("Physical record: ");
+        for physical_move in &self.items {
+            physical_move.print(&self.get_position().board);
+        }
+        println!();
     }
-     */
 }
