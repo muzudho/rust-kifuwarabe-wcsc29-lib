@@ -251,10 +251,6 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.items.len()
-    }
-
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         for physical_move in &self.items {

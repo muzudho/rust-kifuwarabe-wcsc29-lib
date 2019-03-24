@@ -1,8 +1,8 @@
 /// フォーサイス エドワーズ記法
 use communication::*;
 use position::*;
-use logical_move::*;
-use logical_record::*;
+use usi_conv::usi_move::*;
+use usi_conv::usi_record::*;
 use parser::*;
 use physical_record::*;
 use std::*;
@@ -59,20 +59,20 @@ impl Fen {
         }
     }
 
-    pub fn parse_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
+    pub fn parse_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<UsiRecord> {
         if Parser::match_keyword(&line, "moves", start) || 
             Parser::match_keyword(&line, " moves", start) {
         } else {
             return None;
         }
 
-        let mut logical_record = LogicalRecord::new();
+        let mut logical_record = UsiRecord::new();
 
         // `position startpos moves `. [0]p, [1]o, ...
 
         // Examples.
         // position startpos moves 2g2f 8c8d
-        let mut temp_record = LogicalRecord::new();
+        let mut temp_record = UsiRecord::new();
         temp_record.parse2(line, start);
         comm.println(&format!("info temp_record.items.len: {}", temp_record.items.len()));
 
@@ -86,7 +86,7 @@ impl Fen {
         Some(logical_record)
     }
 
-    pub fn parse3(line:&str, start:&mut usize) -> LogicalMove {
+    pub fn parse3(line:&str, start:&mut usize) -> UsiMove {
         println!("parse3 start: {0}.", start);
         let drop_opt = parse_sign_to_drop(line, start);
 
@@ -107,7 +107,7 @@ impl Fen {
                 false
             };
 
-        LogicalMove {
+        UsiMove {
             source_file: source_file_num,
             source_rank: source_rank_num,
             destination_file: destination_file_num,

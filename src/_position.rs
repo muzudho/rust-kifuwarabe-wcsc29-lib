@@ -1,9 +1,69 @@
-pub fn phase_to_sign(phase:Phase) -> String {
+pub fn sign_to_piece(phase_opt:Option<Phase>, sign:String) -> Piece {
     use position::Phase::*;
-    match phase {
-        First => "b".to_string(),
-        Second => "w".to_string(),
-        _ => panic!("Unexpected phase. *phase as usize = {}.", phase as usize),
+    use position::Piece::*;
+    let s = sign.as_str();
+    match phase_opt {
+        Some(phase) => {
+            match phase {
+                First => {
+                    match s {
+                        "K" => K1,
+                        "R" => R1,
+                        "B" => B1,
+                        "G" => G1,
+                        "S" => S1,
+                        "N" => N1,
+                        "L" => L1,
+                        "P" => P1,
+                        "PR" => PR1,
+                        "PB" => PB1,
+                        "PS" => PS1,
+                        "PN" => PN1,
+                        "PL" => PL1,
+                        "PP" => PP1,
+                        _ => panic!("Unexpected sign of First: '{}'.", sign)
+                    }
+                },
+                Second => {
+                    match s{
+                        "K" => K2,
+                        "R" => R2,
+                        "B" => B2,
+                        "G" => G2,
+                        "S" => S2,
+                        "N" => N2,
+                        "L" => L2,
+                        "P" => P2,
+                        "PR" => PR2,
+                        "PB" => PB2,
+                        "PS" => PS2,
+                        "PN" => PN2,
+                        "PL" => PL2,
+                        "PP" => PP2,
+                        _ => panic!("Unexpected sign of Second: '{}'.", sign)
+                    }
+                },
+            }
+        },
+        None => {
+            match s {
+                "K" => K3,
+                "R" => R3,
+                "B" => B3,
+                "G" => G3,
+                "S" => S3,
+                "N" => N3,
+                "L" => L3,
+                "P" => P3,
+                "PR" => PR3,
+                "PB" => PB3,
+                "PS" => PS3,
+                "PN" => PN3,
+                "PL" => PL3,
+                "PP" => PP3,
+                _ => panic!("Unexpected sign on None: '{}'.", sign)
+            }
+        }
     }
 }
 

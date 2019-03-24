@@ -4,7 +4,7 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "rust-kifuwarabe-wcsc29"
+name = "kifuwarabe_wcsc29"
 version = "0.1.0"
 dependencies = [
  "serde 1.0.88 (registry+https://github.com/rust-lang/crates.io-index)",

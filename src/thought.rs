@@ -1,8 +1,6 @@
 use position::*;
-// use logical_record::*;
-use logical_move::*;
+use usi_conv::usi_move::*;
 use physical_record::*;
-// use physical_move::*;
 
 pub struct Thought {
 
@@ -14,7 +12,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, position:&Position, physical_record:&mut PhysicalRecord) -> LogicalMove {
+    pub fn get_best_move(self, position:&Position, physical_record:&mut PhysicalRecord) -> UsiMove {
         // use position::Piece::*;
 
         // position.show_position();
@@ -47,7 +45,7 @@ impl Thought {
             src_rank
         };
 
-        LogicalMove {
+        UsiMove {
             source_file: src_file,
             source_rank: src_rank,
             destination_file: src_file,

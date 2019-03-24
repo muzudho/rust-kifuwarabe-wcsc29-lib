@@ -1,8 +1,8 @@
 use address::*;
 use communication::*;
 use common_operation::*;
-use logical_move::*;
-use logical_record::*;
+use usi_conv::usi_move::*;
+use usi_conv::usi_record::*;
 use physical_move::*;
 use physical_record::*;
 use position::*;
@@ -12,7 +12,7 @@ pub struct RecordConverter {
 }
 impl RecordConverter {
     /// 変換には、現局面が必要。
-    pub fn convert_logical_move(logical_move:LogicalMove, position:&Position) -> Vec<PhysicalMove> {
+    pub fn convert_logical_move(logical_move:UsiMove, position:&Position) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
@@ -90,7 +90,7 @@ impl RecordConverter {
     pub fn convert_logical_record_to_physical_record(
         comm:&Communication,
         position:&mut Position,
-        logical_record:&LogicalRecord,
+        logical_record:&UsiRecord,
         physical_record:&mut PhysicalRecord) {
 
         for logical_move in &logical_record.items {

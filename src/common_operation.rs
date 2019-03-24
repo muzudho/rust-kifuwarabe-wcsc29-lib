@@ -14,7 +14,7 @@ impl CommonOperation {
     pub fn bo(comm:&Communication, physical_record:&PhysicalRecord, position:&Position) {
         comm.println(&position.to_text(comm, position.get_phase()));
         // comm.print(&format!("Physical record({}): ", physical_record.len()));
-        comm.println(&format!("{}", physical_record.to_sign(position.get_board_size())));
+        comm.println(&physical_record.to_sign(position.get_board_size()));
     }
 
     pub fn touch(comm:&Communication, physical_record:&mut PhysicalRecord, physical_move:&PhysicalMove, position:&mut Position) {

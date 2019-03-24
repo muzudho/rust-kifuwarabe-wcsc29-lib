@@ -33,33 +33,26 @@ use std::io;
 mod address;
 mod common_operation;
 mod communication;
-mod fen;
-mod logical_move;
-mod logical_record;
+mod csa_conv;
 mod parser;
 mod physical_move;
 mod physical_record;
 mod position;
-// mod position_file;
-mod record_converter;
+mod usi_conv;
 mod thought;
 
 use address::*;
 use common_operation::*;
 use communication::*;
-use fen::*;
-use logical_record::*;
+use usi_conv::fen::*;
+use usi_conv::usi_record::*;
 use physical_move::*;
 use physical_record::*;
+use parser::*;
 use position::*;
-use record_converter::*;
+use usi_conv::record_converter::*;
 use thought::Thought;
 
-/*
-fn test(cursor:&mut usize) {
-    *cursor += 13;
-}
-*/
 fn main() {
     let comm = Communication::new();
     let mut physical_record = PhysicalRecord::new();
@@ -106,9 +99,6 @@ fn main() {
             // board.
             CommonOperation::bo(&comm, &physical_record, &board);
 
-        } else if line.starts_with('B') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
-
         // #####
         // # D #
         // #####
@@ -136,9 +126,6 @@ fn main() {
             for physical_move in best_physical_moves {
                 CommonOperation::go(&comm, &mut physical_record, &physical_move, &mut board);
             }
-
-        } else if line.starts_with('G') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
             
         // #####
         // # I #
@@ -146,28 +133,11 @@ fn main() {
         } else if line == "isready" {
             comm.println("readyok");
 
-        // #####
-        // # K #
-        // #####
-        } else if line.starts_with('K') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
-
-        // #####
-        // # L #
-        // #####
-        } else if line.starts_with('L') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
-
-        // #####
-        // # N #
-        // #####
-        } else if line.starts_with('N') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
-
-        // #####
-        // # P #
-        // #####
-        } else if line.starts_with('P') {
+        // #########
+        // # Piece #
+        // #########
+        } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
+            line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
             read_tape(&comm, &line, &mut physical_record, &mut board);
 
         // #####
@@ -175,12 +145,6 @@ fn main() {
         // #####
         } else if line == "quit" {
             break;
-
-        // #####
-        // # S #
-        // #####
-        } else if line.starts_with('S') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
 
         // #####
         // # U #
@@ -194,7 +158,7 @@ fn main() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            let mut logical_record = LogicalRecord::new();
+            let mut logical_record = UsiRecord::new();
             let mut start = 0;
             if Fen::parse_position(&line, &mut start, &mut board) {
                 if let Some(lrecords) = Fen::parse_moves(&comm, &line, &mut start, &mut board) {
@@ -207,11 +171,6 @@ fn main() {
                 &mut board,
                 &logical_record,
                 &mut physical_record);
-        // #####
-        // # R #
-        // #####
-        } else if line.starts_with('R') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
         }
     }
 }
@@ -238,8 +197,8 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 let ch2 = line[start..=start].chars().nth(0).unwrap();
                 start += 1;
                 comm.print(&format!("{}{}", ch1, ch2));
-                let file = file_char_to_i8(ch1);
-                let rank = rank_char_to_i8(ch2);
+                let file = Parser::file_char_to_i8(ch1);
+                let rank = Parser::rank_char_to_i8(ch2);
                 let address = Address::create_by_cell(file, rank, board.get_board_size());
                 Some(PhysicalMove::create_by_address(address))
             },

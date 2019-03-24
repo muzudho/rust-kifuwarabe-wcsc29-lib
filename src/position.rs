@@ -11,6 +11,14 @@ pub enum Phase {
     /// Starting second.
     Second,
 }
+pub fn phase_to_sign(phase:Phase) -> String {
+    use position::Phase::*;
+    match phase {
+        First => "b".to_string(),
+        Second => "w".to_string(),
+        _ => panic!("Unexpected phase. *phase as usize = {}.", phase as usize),
+    }
+}
 
 /// First phase is 1.
 /// Second phase is 2.
@@ -125,74 +133,6 @@ pub fn piece_to_sign(piece:Option<Piece>) -> String {
         },
         None => { "" }
     }.to_string()
-}
-pub fn sign_to_piece(phase_opt:Option<Phase>, sign:String) -> Piece {
-    use position::Phase::*;
-    use position::Piece::*;
-    let s = sign.as_str();
-    match phase_opt {
-        Some(phase) => {
-            match phase {
-                First => {
-                    match s {
-                        "K" => K1,
-                        "R" => R1,
-                        "B" => B1,
-                        "G" => G1,
-                        "S" => S1,
-                        "N" => N1,
-                        "L" => L1,
-                        "P" => P1,
-                        "PR" => PR1,
-                        "PB" => PB1,
-                        "PS" => PS1,
-                        "PN" => PN1,
-                        "PL" => PL1,
-                        "PP" => PP1,
-                        _ => panic!("Unexpected sign of First: '{}'.", sign)
-                    }
-                },
-                Second => {
-                    match s{
-                        "K" => K2,
-                        "R" => R2,
-                        "B" => B2,
-                        "G" => G2,
-                        "S" => S2,
-                        "N" => N2,
-                        "L" => L2,
-                        "P" => P2,
-                        "PR" => PR2,
-                        "PB" => PB2,
-                        "PS" => PS2,
-                        "PN" => PN2,
-                        "PL" => PL2,
-                        "PP" => PP2,
-                        _ => panic!("Unexpected sign of Second: '{}'.", sign)
-                    }
-                },
-            }
-        },
-        None => {
-            match s {
-                "K" => K3,
-                "R" => R3,
-                "B" => B3,
-                "G" => G3,
-                "S" => S3,
-                "N" => N3,
-                "L" => L3,
-                "P" => P3,
-                "PR" => PR3,
-                "PB" => PB3,
-                "PS" => PS3,
-                "PN" => PN3,
-                "PL" => PL3,
-                "PP" => PP3,
-                _ => panic!("Unexpected sign on None: '{}'.", sign)
-            }
-        }
-    }
 }
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {
     use position::Piece::*;
@@ -397,49 +337,6 @@ pub fn is_promotion_piece(piece_opt:Option<Piece>) -> bool {
     }
 }
 
-pub fn file_char_to_i8(ch:char) -> i8 {
-    match ch {
-        '1' => {1},
-        '2' => {2},
-        '3' => {3},
-        '4' => {4},
-        '5' => {5},
-        '6' => {6},
-        '7' => {7},
-        '8' => {8},
-        '9' => {9},
-        _ => {panic!("Unexpected file char: '{0}'", ch)},
-    }
-}
-pub fn rank_char_to_i8(ch:char) -> i8 {
-    match ch {
-        '1' | 'a' => {1},
-        '2' | 'b' => {2},
-        '3' | 'c' => {3},
-        '4' | 'd' => {4},
-        '5' | 'e' => {5},
-        '6' | 'f' => {6},
-        '7' | 'g' => {7},
-        '8' | 'h' => {8},
-        '9' | 'i' => {9},
-        _ => {panic!("Unexpected rank char: '{0}'", ch)},
-    }
-}
-pub fn i8_to_rank_char(rank:i8) -> char {
-    match rank {
-        1 => 'a',
-        2 => 'b',
-        3 => 'c',
-        4 => 'd',
-        5 => 'e',
-        6 => 'f',
-        7 => 'g',
-        8 => 'h',
-        9 => 'i',
-        _ => {panic!("Unexpected rank: {0}", rank)},
-    }
-}
-
 pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
 pub const SKY_LEN: usize = 1;
@@ -551,7 +448,7 @@ impl Position {
         self.hands[hand_index as usize]
     }
 
-    pub fn touch(&mut self, comm:&Communication, physical_move:&PhysicalMove) {
+    pub fn touch(&mut self, _comm:&Communication, physical_move:&PhysicalMove) {
         match physical_move.address {
             Some(address) => {
                 // どこかを指定した。
@@ -573,24 +470,20 @@ impl Position {
                         },
                         None => {
                             // 空き升を指定した。
-                            match self.pieces[SKY_ADDRESS] {
-                                Some(piece) => {
-                                    // 指につまんでいる駒を置く。
-                                    self.pieces[SKY_ADDRESS] = None;
-                                    self.pieces[address.get_index()] = Some(piece);
-                                },
-                                None => {
-                                },
+                            if let Some(piece) = self.pieces[SKY_ADDRESS] {
+                                // 指につまんでいる駒を置く。
+                                self.pieces[SKY_ADDRESS] = None;
+                                self.pieces[address.get_index()] = Some(piece);
                             }
                         },
                     }
                 } else {
                     // 駒台。
                     match self.pieces[SKY_ADDRESS] {
-                        Some(piece) => {
+                        Some(_piece) => {
                             // 指に何か持っているので、駒台に置く。
                             self.pieces[SKY_ADDRESS] = None;
-                            comm.println(&format!("hand_index = {}.", address.get_hand_index()));
+                            // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
                             self.hands[address.get_hand_index()] += 1;
                         },
                         None => {
@@ -611,23 +504,19 @@ impl Position {
                         Second => {First},
                     };
                 } else {
-                    match self.pieces[SKY_ADDRESS] {
-                        Some(piece) => {
-                            if physical_move.sky_turn {
-                                self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
-                            } else if physical_move.sky_rotate {
-                                self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
-                            };
-                        },
-                        None => {
-                        },
+                    if let Some(piece) = self.pieces[SKY_ADDRESS] {
+                        if physical_move.sky_turn {
+                            self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
+                        } else if physical_move.sky_rotate {
+                            self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
+                        };
                     }
                 }
             }
         }
     }
 
-    fn to_hand_text(&self, comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
+    fn to_hand_text(&self, _comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
         let piece = piece_type_to_piece(phase_opt, piece_type);
         let count = self.get_hand(piece);
         let coefficient = if 1 < count {count.to_string()} else {"".to_string()};
@@ -659,10 +548,10 @@ impl Position {
         match phase {
             First => {
                 // hand.
-                Parser::appendln(&mut content, &format!("|         |  +-------------------+"));
+                Parser::appendln(&mut content, &"|         |  +-------------------+".to_string());
             },
             Second => {
-                Parser::appendln(&mut content, &format!("             +-------------------+"));
+                Parser::appendln(&mut content, &"             +-------------------+".to_string());
             },
         }
 
@@ -673,24 +562,24 @@ impl Position {
             match phase {
                 First => {
                     match rank {
-                        9 => {Parser::append(&mut content, &format!("|         | "))},
-                        8 => {Parser::append(&mut content, &format!("+---+ +-+ | "))},
-                        7 => {Parser::append(&mut content, &format!("    | | | | "))},
-                        6 => {Parser::append(&mut content, &format!("    | | | | ",))},
-                        5 => {Parser::append(&mut content, &format!("    +-+ +-+ ",))},
+                        9 => {Parser::append(&mut content, &"|         | ".to_string())},
+                        8 => {Parser::append(&mut content, &"+---+ +-+ | ".to_string())},
+                        7 => {Parser::append(&mut content, &"    | | | | ".to_string())},
+                        6 => {Parser::append(&mut content, &"    | | | | ".to_string())},
+                        5 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
                         4 => {Parser::append(&mut content, &format!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
-                        3 => {Parser::append(&mut content, &format!("            "))},
-                        2 => {Parser::append(&mut content, &format!("            "))},
-                        1 => {Parser::append(&mut content, &format!("            "))},
+                        3 => {Parser::append(&mut content, &"            ".to_string())},
+                        2 => {Parser::append(&mut content, &"            ".to_string())},
+                        1 => {Parser::append(&mut content, &"            ".to_string())},
                         _ => {},
                     };
                 },
-                Second => {Parser::append(&mut content, &format!("            "))},
+                Second => {Parser::append(&mut content, &"            ".to_string())},
             }
 
             Parser::append(&mut content, &format!(
                 "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
-                i8_to_rank_char(rank),
+                Parser::i8_to_rank_char(rank),
                 piece_to_sign(self.get_piece(1, rank)),
                 piece_to_sign(self.get_piece(2, rank)),
                 piece_to_sign(self.get_piece(3, rank)),
@@ -703,7 +592,7 @@ impl Position {
 
             // Right boarder and None phase hands.
             match rank {
-                9 => {Parser::append(&mut content, &format!(" |   "))},
+                9 => {Parser::append(&mut content, &" |   ".to_string())},
                 8 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::K)))},
                 7 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::R)))},
                 6 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::B)))},
@@ -723,11 +612,11 @@ impl Position {
                         9 => {},
                         8 => {},
                         6 => {Parser::append(&mut content, &format!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
-                        5 => {Parser::append(&mut content, &format!(" +-+ +-+"))},
-                        4 => {Parser::append(&mut content, &format!(" | | | |"))},
-                        3 => {Parser::append(&mut content, &format!(" | | | |"))},
-                        2 => {Parser::append(&mut content, &format!(" | +-+ +---+"))},
-                        1 => {Parser::append(&mut content, &format!(" |         |"))},
+                        5 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
+                        4 => {Parser::append(&mut content, &" | | | |".to_string())},
+                        3 => {Parser::append(&mut content, &" | | | |".to_string())},
+                        2 => {Parser::append(&mut content, &" | +-+ +---+".to_string())},
+                        1 => {Parser::append(&mut content, &" |         |".to_string())},
                         _ => {},
                     };                    
                 },
@@ -738,15 +627,15 @@ impl Position {
 
         match phase {
             First => {
-                Parser::appendln(&mut content, &format!("             +-------------------+"));
+                Parser::appendln(&mut content, &"             +-------------------+".to_string());
             },
             Second => {
                 // hand.
-                Parser::appendln(&mut content, &format!("             +-------------------+    |         |"));
+                Parser::appendln(&mut content, &"             +-------------------+    |         |".to_string());
             },
         }
 
-        Parser::appendln(&mut content, &format!("               1 2 3 4 5 6 7 8 9"));
+        Parser::appendln(&mut content, &"               1 2 3 4 5 6 7 8 9".to_string());
 
         // Second phase hand.
         Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",

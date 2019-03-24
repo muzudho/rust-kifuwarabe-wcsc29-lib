@@ -1,6 +1,6 @@
-impl LogicalMove {
-    pub fn new() -> LogicalMove {
-        LogicalMove {
+impl UsiMove {
+    pub fn new() -> UsiMove {
+        UsiMove {
             source_file:0,
             source_rank:0,
             destination_file:0,

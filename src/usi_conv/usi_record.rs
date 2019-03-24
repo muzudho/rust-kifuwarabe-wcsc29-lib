@@ -1,19 +1,19 @@
 use position::*;
-use fen::*;
+use usi_conv::fen::*;
 use std::*;
-use logical_move::*;
+use usi_conv::usi_move::*;
 
-pub struct LogicalRecord {
-    pub items : Vec<LogicalMove>,
+pub struct UsiRecord {
+    pub items : Vec<UsiMove>,
 }
-impl LogicalRecord {
-    pub fn new() -> LogicalRecord {
-        LogicalRecord {
+impl UsiRecord {
+    pub fn new() -> UsiRecord {
+        UsiRecord {
             items: Vec::new(),
         }
     }
 
-    pub fn push(&mut self, mov:LogicalMove) {
+    pub fn push(&mut self, mov:UsiMove) {
         self.items.push(mov);
     }
 
@@ -45,7 +45,7 @@ impl LogicalRecord {
         }
     }
 
-    pub fn make_move(&mut self, mov:LogicalMove, position:&mut Position){
+    pub fn make_move(&mut self, mov:UsiMove, position:&mut Position){
         if mov.drop != None {
             // TODO drop
 

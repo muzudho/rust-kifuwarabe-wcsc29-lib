@@ -2,7 +2,7 @@ use std::*;
 use physical_record::*;
 
 #[derive(Clone, Copy, PartialEq)]
-pub struct LogicalMove {
+pub struct UsiMove {
     pub source_file:i8,
     pub source_rank:i8,
     pub destination_file:i8,
@@ -10,7 +10,7 @@ pub struct LogicalMove {
     pub promotion:bool,
     pub drop:Option<PieceType>,
 }
-impl LogicalMove {
+impl UsiMove {
     pub fn to_sign(self) -> String {
         let mut sign = String::new();
 

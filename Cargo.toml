@@ -1,5 +1,5 @@
 [package]
-name = "rust-kifuwarabe-wcsc29"
+name = "kifuwarabe_wcsc29"
 version = "0.1.0"
 authors = ["むずでょ <muzudho1@gmail.com>"]
 
