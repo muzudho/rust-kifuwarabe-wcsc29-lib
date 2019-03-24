@@ -126,11 +126,11 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
         return None;
     }
 
-    match &line[*start..*start+1] {
+    match &line[*start..=*start] {
         "+" => {
             // 1文字目が + なら２文字。
             *start += 1;
-            match &line[*start..*start+1] {
+            match &line[*start..=*start] {
                 "R" => {*start += 1; Some(PR1)},
                 "B" => {*start += 1; Some(PB1)},
                 "S" => {*start += 1; Some(PS1)},
@@ -149,7 +149,7 @@ pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
         " " => {
             // 前空白埋めの符号。
             *start += 1;
-            match &line[*start..*start+1] {
+            match &line[*start..=*start] {
                 "K" => {*start += 1; Some(K1)},
                 "R" => {*start += 1; Some(R1)},
                 "B" => {*start += 1; Some(B1)},
@@ -182,11 +182,11 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
         return None;
     }
 
-    match &line[*start..*start+1] {
+    match &line[*start..=*start] {
         "+" => {
             // 1文字目が + なら２文字。
             *start += 1;
-            match &line[*start..*start+1] {
+            match &line[*start..=*start] {
                 "R" => {*start += 1; Some(PR1)},
                 "B" => {*start += 1; Some(PB1)},
                 "S" => {*start += 1; Some(PS1)},
@@ -205,7 +205,7 @@ pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
         _ => {
             // 1文字の符号。
             *start += 1;
-            match &line[*start..*start+1] {
+            match &line[*start..=*start] {
                 "K" => {*start += 1; Some(K1)},
                 "R" => {*start += 1; Some(R1)},
                 "B" => {*start += 1; Some(B1)},

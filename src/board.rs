@@ -559,7 +559,7 @@ impl Board {
     }
 
     /// latest.
-    pub fn add(&mut self, address:&Address, piece:Piece) {
+    pub fn add(&mut self, address:Address, piece:Piece) {
         if address.is_on_board() {
             match self.pieces[address.get_index()] {
                 Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),

@@ -132,7 +132,7 @@ fn main() {
             comm.println(&format!("bestmove {}", best_logical_move.to_sign()));
 
             let best_physical_moves = RecordConverter::convert_logical_move(
-                &best_logical_move, &mut board, &physical_record.get_phase());
+                best_logical_move, &mut board, physical_record.get_phase());
             for physical_move in best_physical_moves {
                 physical_record.add(&physical_move);
                 if board.touch(&physical_move) {

@@ -10,7 +10,7 @@ pub struct RecordConverter {
 }
 impl RecordConverter {
     /// 変換には、現局面が必要。
-    pub fn convert_logical_move(logical_move:&LogicalMove, board:&Board, phase:&Phase) -> Vec<PhysicalMove> {
+    pub fn convert_logical_move(logical_move:LogicalMove, board:&Board, phase:Phase) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
@@ -25,7 +25,7 @@ impl RecordConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = PhysicalMove::create_by_address(Address::create_hand(Some(*phase), drop));
+                let hand_off = PhysicalMove::create_by_address(Address::create_hand(Some(phase), drop));
                 physical_moves.push(hand_off);
 
                 // hand-on
@@ -53,7 +53,7 @@ impl RecordConverter {
 
                         // hand-on
                         let up = piece_to_piece_type(piece);
-                        let hand_on = PhysicalMove::create_by_address(Address::create_hand(Some(*phase), up));
+                        let hand_on = PhysicalMove::create_by_address(Address::create_hand(Some(phase), up));
                         physical_moves.push(hand_on);
                     },
                     None => {
@@ -91,7 +91,7 @@ impl RecordConverter {
         physical_record:&mut PhysicalRecord) {
 
         for logical_move in &logical_record.items {
-            let physical_moves = RecordConverter::convert_logical_move(logical_move, board, &physical_record.get_phase());
+            let physical_moves = RecordConverter::convert_logical_move(*logical_move, board, physical_record.get_phase());
 
             for physical_move in physical_moves {
                 physical_record.add(&physical_move);

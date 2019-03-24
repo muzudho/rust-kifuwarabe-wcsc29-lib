@@ -80,7 +80,7 @@ impl Address {
 
     /// 盤上。
     pub fn is_on_board(&self) -> bool {
-        0 <= self.index && self.index <= 80
+        self.index <= 80
     }
 
     /// 駒台
