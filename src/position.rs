@@ -276,20 +276,20 @@ pub fn sign_to_piece_type(sign:String) -> PieceType {
     use physical_record::PieceType::*;
     let s = sign.as_str();
     match s {
-        "K" => K,
-        "R" => R,
-        "B" => B,
-        "G" => G,
-        "S" => S,
-        "N" => N,
-        "L" => L,
-        "P" => P,
-        "PR" => PR,
-        "PB" => PB,
-        "PS" => PS,
-        "PN" => PN,
-        "PL" => PL,
-        "PP" => PP,
+        "K" | "k" => K,
+        "R" | "r" => R,
+        "B" | "b" => B,
+        "G" | "g" => G,
+        "S" | "s" => S,
+        "N" | "n" => N,
+        "L" | "l" => L,
+        "P" | "p" => P,
+        "PR" | "pr" => PR,
+        "PB" | "pb" => PB,
+        "PS" | "ps" => PS,
+        "PN" | "pn" => PN,
+        "PL" | "pl" => PL,
+        "PP" | "pp" => PP,
         _ => panic!("Unexpected sign: '{}'.", sign)
     }
 }

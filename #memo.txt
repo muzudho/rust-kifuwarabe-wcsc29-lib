@@ -5,3 +5,7 @@ position startpos moves 2g2f 8c8d
 position startpos moves 2g2f 8c8d 2f2e
 
 go btime 180000 wtime 180000 byoyomi 0
+
+
+ 7g 7f | 8c 8d | 2g 2f | 8d 8e | 8h 7g | 3c 3d | 7i 7h | 4a 3b | 2f 2e | 7a 7b | 6g 6f | 2b 3c | 4i 5h | 7c 7d | 3i 4h | 3a 2b | 3g 3f | 7b 7c | 7h 6g | 3c 4b | 5g 5f | 5c 5d | 6i 7h | 5a 4a | 7g 6h | 2b 3c | 5i 6i | 4a 3a | 7h 7g | 7c 8d | 6i 7h | 8a 7c | 4h 3g | 4c 4d | 3g 2f | 6a 5b | 3f 3e | 5b 4c | 3d P* 3e 3d |
+ 7g 7f | 8c 8d | 2g 2f | 8d 8e | 8h 7g | 3c 3d | 7i 7h | 4a 3b | 2f 2e | 7a 7b | 6g 6f | 2b 3c | 4i 5h | 7c 7d | 3i 4h | 3a 2b | 3g 3f | 7b 7c | 7h 6g | 3c 4b | 5g 5f | 5c 5d | 6i 7h | 5a 4a | 7g 6h | 2b 3c | 5i 6i | 4a 3a | 7h 7g | 7c 8d | 6i 7h | 8a 7c | 4h 3g | 4c 4d | 3g 2f | 6a 5b | 3f 3e | 5b 4c | 3d P* 3e 3d | 3d p* 3c 3d | 1g 1f | 8e 8f | 8f P* 8g 8f | 8d 9e | 7f 7e | 7e p* 4b 7e | 6h 4f | 9e 8d | 2h 3h | 7e 5c | 8f 8e | 4d 4e | 4f 2h | 2f s* 5c 2f | 8d S* 8e 8d | p* 3g |

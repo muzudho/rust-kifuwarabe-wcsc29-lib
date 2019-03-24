@@ -261,7 +261,14 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 start += 1;
                 Some(PhysicalMove::change_phase())
             },
-            'K' | 'R' | 'B' | 'G' | 'S' | 'N' | 'L' | 'P' => {
+            'K' | 'k' |
+            'R' | 'r' |
+            'B' | 'b' |
+            'G' | 'g' |
+            'S' | 's' |
+            'N' | 'n' |
+            'L' | 'l' |
+            'P' | 'p' => {
                 // ドロップ。
                 start += 1;
                 let ch2 = line[start..=start].chars().nth(0).unwrap();
@@ -276,7 +283,8 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 Some(PhysicalMove::create_by_address(address))
             },
             _ => {
-                panic!("Unexpected line '{}'.", line)
+                let last = line.len();
+                panic!("Unexpected line '{}'.", &line[start..last]);
             }
         };
 
