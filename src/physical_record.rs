@@ -1,4 +1,4 @@
-use board::*;
+use position::*;
 use physical_move::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -57,8 +57,8 @@ pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
     }
 }
 pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
-    use board::Phase::*;
-    use board::Piece::*;
+    use position::Phase::*;
+    use position::Piece::*;
     use physical_record::PieceType::*;
     match phase {
         First => {
@@ -205,30 +205,17 @@ pub fn parse_sign_to_promotion(line:&str, start:&mut usize) -> bool {
 }
 
 pub struct PhysicalRecord {
-    phase: Phase,
     items : Vec<PhysicalMove>,
 }
 impl PhysicalRecord {
     pub fn new() -> PhysicalRecord {
         PhysicalRecord {
-            phase: Phase::First,
             items: Vec::new(),
         }
     }
 
-    pub fn get_phase(&self) -> Phase {
-        self.phase
-    }
-
     pub fn add(&mut self, physical_move:&PhysicalMove) {
         self.items.push(*physical_move);
-        if physical_move.phase_change {
-            use board::Phase::*;
-            self.phase = match self.phase {
-                First => {Second},
-                Second => {First},
-            };
-        }
     }
 
     pub fn pop(&mut self) -> Option<PhysicalMove> {

@@ -1,5 +1,5 @@
 pub fn phase_to_sign(phase:Phase) -> String {
-    use board::Phase::*;
+    use position::Phase::*;
     match phase {
         First => "b".to_string(),
         Second => "w".to_string(),
@@ -12,7 +12,7 @@ impl BoardSize {
         self.rank_len as usize * self.file_len as usize - cell
     }
 }
-impl Board {
+impl Position {
     /// latest.
     pub fn add(&mut self, address:Address, piece:Piece) {
         if address.is_on_board(self.board_size) {
@@ -29,7 +29,7 @@ impl Board {
 
     /// Obsolute. new --> add().
     pub fn set_hand(&mut self, piece:Piece, num:i8) {
-        use board::Piece::*;
+        use position::Piece::*;
         match piece {
             K1 => {self.hands[0] = num},
             R1 => {self.hands[1] = num},

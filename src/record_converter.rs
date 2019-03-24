@@ -1,5 +1,5 @@
 use address::*;
-use board::*;
+use position::*;
 use common_operation::*;
 use logical_move::*;
 use logical_record::*;
@@ -11,13 +11,13 @@ pub struct RecordConverter {
 }
 impl RecordConverter {
     /// 変換には、現局面が必要。
-    pub fn convert_logical_move(logical_move:LogicalMove, board:&Board, phase:Phase) -> Vec<PhysicalMove> {
+    pub fn convert_logical_move(logical_move:LogicalMove, position:&Position) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
             logical_move.destination_file,
             logical_move.destination_rank,
-            board.get_board_size()
+            position.get_board_size()
         );
         
         match logical_move.drop
@@ -26,7 +26,7 @@ impl RecordConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = PhysicalMove::create_by_address(Address::create_hand(Some(phase), drop));
+                let hand_off = PhysicalMove::create_by_address(Address::create_hand(Some(position.get_phase()), drop));
                 physical_moves.push(hand_off);
 
                 // hand-on
@@ -34,7 +34,7 @@ impl RecordConverter {
                 physical_moves.push(hand_on);
             },
             None => {
-                match board.get_piece_by_address(destination_address.get_index()) {
+                match position.get_piece_by_address(destination_address.get_index()) {
                     Some(piece) => {
                         // 駒を取る動きの場合
 
@@ -54,7 +54,7 @@ impl RecordConverter {
 
                         // hand-on
                         let up = piece_to_piece_type(piece);
-                        let hand_on = PhysicalMove::create_by_address(Address::create_hand(Some(phase), up));
+                        let hand_on = PhysicalMove::create_by_address(Address::create_hand(Some(position.get_phase()), up));
                         physical_moves.push(hand_on);
                     },
                     None => {
@@ -64,7 +64,7 @@ impl RecordConverter {
                         let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
                             logical_move.source_file,
                             logical_move.source_rank,
-                            board.get_board_size()
+                            position.get_board_size()
                         ));
                         physical_moves.push(board_off);
 
@@ -87,15 +87,17 @@ impl RecordConverter {
 
     /// 変換には、初期局面が必要。
     pub fn convert_logical_record_to_physical_record(
-        board:&mut Board,
+        position:&mut Position,
         logical_record:&LogicalRecord,
         physical_record:&mut PhysicalRecord) {
 
         for logical_move in &logical_record.items {
-            let physical_moves = RecordConverter::convert_logical_move(*logical_move, board, physical_record.get_phase());
+            let physical_moves = RecordConverter::convert_logical_move(
+                *logical_move,
+                position);
 
             for physical_move in physical_moves {
-                CommonOperation::go(physical_record, &physical_move, board);
+                CommonOperation::go(physical_record, &physical_move, position);
             }
         }
     }

@@ -1,4 +1,4 @@
-use board::*;
+use position::*;
 use fen::*;
 use std::*;
 use logical_move::*;
@@ -45,16 +45,16 @@ impl LogicalRecord {
         }
     }
 
-    pub fn make_move(&mut self, mov:LogicalMove, board:&mut Board){
+    pub fn make_move(&mut self, mov:LogicalMove, position:&mut Position){
         if mov.drop != None {
             // TODO drop
 
         } else {
-            let mut source_piece = board.remove_piece(mov.source_file, mov.source_rank);
+            let mut source_piece = position.remove_piece(mov.source_file, mov.source_rank);
             if mov.promotion {
                 source_piece = promotion_piece(source_piece);
             }
-            board.set_piece(mov.destination_file, mov.destination_rank, source_piece);
+            position.set_piece(mov.destination_file, mov.destination_rank, source_piece);
             self.push(mov);
         }
     }

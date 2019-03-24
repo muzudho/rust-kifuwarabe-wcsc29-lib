@@ -76,7 +76,7 @@ pub enum Piece {
 pub fn piece_to_sign(piece:Option<Piece>) -> String {
     match piece {
         Some(x) => {
-            use board::Piece::*;
+            use position::Piece::*;
             match x {
                 K1 => "K",
                 R1 => "R",
@@ -126,7 +126,7 @@ pub fn piece_to_sign(piece:Option<Piece>) -> String {
     }.to_string()
 }
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {
-    use board::Piece::*;
+    use position::Piece::*;
     use physical_record::PieceType::*;
     match piece {
         K1 => K,
@@ -176,7 +176,7 @@ pub fn piece_to_piece_type(piece:Piece) -> PieceType {
 pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
     match piece {
         Some(x) => {
-            use board::Piece::*;
+            use position::Piece::*;
             match x {
                 K1 | R1 | B1 | G1 | S1 | N1 | L1 | P1 | PR1 | PB1 | PS1 | PN1 | PL1 | PP1 => Some(Phase::First),
                 K2 | R2 | B2 | G2 | S2 | N2 | L2 | P2 | PR2 | PB2 | PS2 | PN2 | PL2 | PP2 => Some(Phase::Second),
@@ -190,7 +190,7 @@ pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
 pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
     match piece {
         Some(x) => {
-            use board::Piece::*;
+            use position::Piece::*;
             match x {
                 R1 => Some(PR1),
                 B1 => Some(PB1),
@@ -213,7 +213,7 @@ pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
 pub fn rotate_piece(piece:Option<Piece>) -> Option<Piece> {
     match piece {
         Some(x) => {
-            use board::Piece::*;
+            use position::Piece::*;
             match x {
                 K1 => Some(K2),
                 R1 => Some(R2),
@@ -265,7 +265,7 @@ pub fn rotate_piece(piece:Option<Piece>) -> Option<Piece> {
 pub fn is_promotion_piece(piece_opt:Option<Piece>) -> bool {
     match piece_opt {
         Some(piece) => {
-            use board::Piece::*;
+            use position::Piece::*;
             match piece {
                 PR1 | PB1 | PS1 | PN1 | PL1 | PP1 |
                 PR2 | PB2 | PS2 | PN2 | PL2 | PP2 |
@@ -351,15 +351,17 @@ impl BoardSize {
     }
 }
 
-pub struct Board {
+pub struct Position {
+    phase: Phase,
     board_size: BoardSize,
     pub pieces: [Option<Piece>; DEFAULT_BOARD_SIZE],
     /// R, B, G, S, N, L, P, r, b, g, s, n, l, p.
     pub hands: [i8; HANDS_LEN],
 }
-impl Board {
-    pub fn default() -> Board {
-        Board {
+impl Position {
+    pub fn default() -> Position {
+        Position {
+            phase: Phase::First,
             board_size: BoardSize::create_hon_shogi(),
             pieces: [None; DEFAULT_BOARD_SIZE],
             hands: [0; HANDS_LEN],
@@ -376,7 +378,7 @@ impl Board {
     }
 
     pub fn reset_startpos(&mut self) {
-        use board::Piece::*;
+        use position::Piece::*;
         self.board_size = BoardSize::create_hon_shogi();
         // Flip horizontal.
         self.pieces = [
@@ -392,6 +394,10 @@ impl Board {
                 None, // Sky
         ];
         self.hands = [0; HANDS_LEN];
+    }
+
+    pub fn get_phase(&self) -> Phase {
+        self.phase
     }
 
     pub fn get_board_size(&self) -> BoardSize {
@@ -421,7 +427,7 @@ impl Board {
     }
 
     pub fn get_hand(&self, piece:Piece) -> i8 {
-        use board::Piece::*;
+        use position::Piece::*;
         match piece {
             K1 => {self.hands[0]},
             R1 => {self.hands[1]},
@@ -486,6 +492,11 @@ impl Board {
             None => {
                 if physical_move.phase_change {
                     // TODO phase change.
+                    use position::Phase::*;
+                    self.phase = match self.phase {
+                        First => {Second},
+                        Second => {First},
+                    };
                 } else {
                     match self.pieces[SKY_ADDRESS] {
                         Some(piece) => {
@@ -524,7 +535,7 @@ impl Board {
 
     /// Point of symmetory.
     pub fn println(&self, phase:Phase) {
-        use board::Phase::*;
+        use position::Phase::*;
 
         println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(Some(Phase::First), PieceType::K),

@@ -1,6 +1,6 @@
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。前空白埋め2文字固定。
 pub fn parse_sign_2char_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
-    use board::Piece::*;
+    use position::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() <= *start {

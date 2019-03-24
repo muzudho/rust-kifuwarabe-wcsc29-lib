@@ -1,5 +1,5 @@
 use address::*;
-use board::*;
+use position::*;
 
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]

@@ -5,7 +5,6 @@ extern crate serde_json;
 use std::io;
 
 mod address;
-mod board;
 mod common_operation;
 mod communication;
 mod fen;
@@ -14,18 +13,19 @@ mod logical_record;
 mod parser;
 mod physical_move;
 mod physical_record;
+mod position;
 // mod position_file;
 mod record_converter;
 mod thought;
 
 use address::*;
-use board::*;
 use common_operation::*;
 use communication::*;
 use fen::*;
 use logical_record::*;
 use physical_move::*;
 use physical_record::*;
+use position::*;
 use record_converter::*;
 use thought::Thought;
 
@@ -63,7 +63,7 @@ fn test(cursor:&mut usize) {
 fn main() {
     let comm = Communication::new();
     let mut physical_record = PhysicalRecord::new();
-    let mut board = Board::default();
+    let mut board = Position::default();
 
     loop {
         // Standard input.
@@ -137,7 +137,8 @@ fn main() {
             comm.println(&format!("bestmove {}", best_logical_move.to_sign()));
 
             let best_physical_moves = RecordConverter::convert_logical_move(
-                best_logical_move, &board, physical_record.get_phase());
+                best_logical_move,
+                &board);
             for physical_move in best_physical_moves {
                 CommonOperation::go(&mut physical_record, &physical_move, &mut board);
             }
@@ -166,7 +167,7 @@ fn main() {
         } else if line.starts_with("position") {
             let mut logical_record = LogicalRecord::new();
             let mut start = 0;
-            if Fen::parse_board(&line, &mut start, &mut board) {
+            if Fen::parse_position(&line, &mut start, &mut board) {
                 if let Some(lrecords) = Fen::parse_moves(&line, &mut start, &mut board) {
                     logical_record = lrecords;
                 };
@@ -180,7 +181,7 @@ fn main() {
     }
 }
 
-fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Board) {
+fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, board.get_board_size());

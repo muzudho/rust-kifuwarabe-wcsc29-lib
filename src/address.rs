@@ -1,5 +1,5 @@
-use board::*;
 use physical_record::*;
+use position::*;
 
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]
@@ -14,7 +14,7 @@ impl Address {
     }
 
     pub fn create_hand(phase_opt:Option<Phase>, piece_type:PieceType) -> Address {
-        use board::Phase::*;
+        use position::Phase::*;
         use physical_record::PieceType::*;
 
         let index_num = match phase_opt {
@@ -88,7 +88,7 @@ impl Address {
             format!("{}{}", file, i8_to_rank_char(rank))
         } else if self.is_hand() {
             // 持ち駒
-            use board::Piece::*;
+            use position::Piece::*;
             match self.index {
                 82 => { format!("{}*", piece_to_sign(Some(K1)))},
                 83 => { format!("{}*", piece_to_sign(Some(R1)))},
