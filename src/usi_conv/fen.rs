@@ -72,12 +72,12 @@ impl Fen {
 
         // Examples.
         // position startpos moves 2g2f 8c8d
-        let mut temp_record = UsiRecord::new();
-        temp_record.parse2(line, start);
-        comm.println(&format!("info temp_record.items.len: {}", temp_record.items.len()));
+        let mut temp_u_record = UsiRecord::new();
+        temp_u_record.parse2(line, start);
+        comm.println(&format!("info temp_record.items.len: {}", temp_u_record.items.len()));
 
         // TODO 指し手通り、進めたい。
-        for mov in &temp_record.items {
+        for mov in &temp_u_record.items {
             println!("info Move: `{}`.", mov.to_sign());
             logical_record.make_move(*mov, position);
             comm.println(&position.to_text(comm, logical_record.get_current_phase()));
@@ -107,14 +107,13 @@ impl Fen {
                 false
             };
 
-        UsiMove {
-            source_file: source_file_num,
-            source_rank: source_rank_num,
-            destination_file: destination_file_num,
-            destination_rank: destination_rank_num,
-            promotion: promotion_flag,
-            drop: drop_opt,
-        }
+        UsiMove::create(
+            source_file_num,
+            source_rank_num,
+            destination_file_num,
+            destination_rank_num,
+            promotion_flag,
+            drop_opt)
     }
 }
 

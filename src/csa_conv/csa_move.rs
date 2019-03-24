@@ -7,9 +7,11 @@ pub struct CsaMove {
     pub source_rank:i8,
     pub destination_file:i8,
     pub destination_rank:i8,
-    pub koma:String,
+    pub promotion:bool,
+    pub koma:Option<PieceType>,
 }
 impl CsaMove {
+
     pub fn parse(line:&str) -> Option<CsaMove> {
         if line.len() < 7 {
             return None
@@ -30,7 +32,6 @@ impl CsaMove {
         };
 
         let piece_type = CsaMove::koma_to_piece_type(str5);
-        let koma_sign = piece_type_to_sign(piece_type);
 
         Some(CsaMove {
             phase : match ch0 {
@@ -42,8 +43,21 @@ impl CsaMove {
             source_rank: src_r,
             destination_file: Parser::file_char_to_i8(ch3),
             destination_rank: Parser::rank_char_to_i8(ch4),
-            koma: koma_sign,
+            promotion:false, // TODO
+            koma: piece_type,
         })
+    }
+
+    pub fn is_drop(&self) -> bool {
+        self.source_file == 0 && self.source_rank == 0
+    }
+
+    pub fn get_drop(&self) -> Option<PieceType> {
+        if self.is_drop() {
+            self.koma
+        } else {
+            None
+        }
     }
 
     pub fn koma_to_piece_type(koma:&str) -> Option<PieceType> {
@@ -75,6 +89,6 @@ impl CsaMove {
             self.source_rank,
             self.destination_file,
             self.destination_rank,
-            self.koma)
+            piece_type_to_sign(self.koma))
     }
 }

@@ -8,9 +8,35 @@ pub struct UsiMove {
     pub destination_file:i8,
     pub destination_rank:i8,
     pub promotion:bool,
-    pub drop:Option<PieceType>,
+    drop:Option<PieceType>,
 }
 impl UsiMove {
+    pub fn create(
+        src_file:i8,
+        src_rank:i8,
+        dst_file:i8,
+        dst_rank:i8,
+        pro:bool,
+        dro:Option<PieceType>) -> UsiMove {
+
+        UsiMove {
+            source_file: src_file,
+            source_rank: src_rank,
+            destination_file: dst_file,
+            destination_rank: dst_rank,
+            promotion: pro,
+            drop: dro,
+        }
+    }
+
+    pub fn is_drop(self) -> bool {
+        self.drop != None
+    }
+
+    pub fn get_drop(self) -> Option<PieceType> {
+        self.drop
+    }
+
     pub fn to_sign(self) -> String {
         let mut sign = String::new();
 

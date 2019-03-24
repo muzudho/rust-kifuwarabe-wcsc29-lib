@@ -15,6 +15,12 @@ impl UsiRecord {
         }
     }
 
+    /*
+    pub fn get_items(self) -> Vec<UsiMove> {
+        self.items
+    }
+     */
+
     pub fn push(&mut self, mov:UsiMove) {
         self.items.push(mov);
     }
@@ -48,7 +54,7 @@ impl UsiRecord {
     }
 
     pub fn make_move(&mut self, mov:UsiMove, position:&mut Position){
-        if mov.drop != None {
+        if mov.is_drop() {
             // TODO drop
 
         } else {

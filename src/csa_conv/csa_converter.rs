@@ -1,28 +1,28 @@
 use address::*;
 use communication::*;
 use common_operation::*;
-use usi_conv::usi_move::*;
-use usi_conv::usi_record::*;
+use csa_conv::csa_move::*;
+use csa_conv::csa_record::*;
 use physical_move::*;
 use physical_record::*;
 use piece_etc::*;
 use position::*;
 
-pub struct RecordConverter {
+pub struct CsaConverter {
 
 }
-impl RecordConverter {
+impl CsaConverter {
     /// 変換には、現局面が必要。
-    pub fn convert_logical_move(logical_move:UsiMove, position:&Position) -> Vec<PhysicalMove> {
+    pub fn convert_move(cmove:&CsaMove, position:&Position) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
-            logical_move.destination_file,
-            logical_move.destination_rank,
+            cmove.destination_file,
+            cmove.destination_rank,
             position.get_board_size()
         );
         
-        match logical_move.drop
+        match cmove.get_drop()
         {
             Some(drop) => {
                 // 駒を打つ動きの場合
@@ -64,14 +64,14 @@ impl RecordConverter {
 
                         // board-off
                         let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
-                            logical_move.source_file,
-                            logical_move.source_rank,
+                            cmove.source_file,
+                            cmove.source_rank,
                             position.get_board_size()
                         ));
                         physical_moves.push(board_off);
 
                         // board-turn-over
-                        if logical_move.promotion {
+                        if cmove.promotion {
                             let board_turn = PhysicalMove::turn_over();
                             physical_moves.push(board_turn);
                         }
@@ -88,15 +88,15 @@ impl RecordConverter {
     }
 
     /// 変換には、初期局面が必要。
-    pub fn convert_logical_record_to_physical_record(
+    pub fn convert_record(
         comm:&Communication,
         position:&mut Position,
-        logical_record:&UsiRecord,
+        c_record:&CsaRecord,
         physical_record:&mut PhysicalRecord) {
 
-        for logical_move in &logical_record.items {
-            let physical_moves = RecordConverter::convert_logical_move(
-                *logical_move,
+        for cmove in &c_record.items {
+            let physical_moves = CsaConverter::convert_move(
+                cmove,
                 position);
 
             for physical_move in physical_moves {

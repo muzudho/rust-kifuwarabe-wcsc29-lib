@@ -65,7 +65,7 @@ impl Position {
     }
 
     pub fn reset_startpos(&mut self) {
-        use position::Piece::*;
+        use piece_etc::Piece::*;
         self.board_size = BoardSize::create_hon_shogi();
         // Flip horizontal.
         self.pieces = [
@@ -200,7 +200,7 @@ impl Position {
 
     /// Point of symmetory.
     pub fn to_text(&self, comm:&Communication, phase:Phase) -> String {
-        use position::Phase::*;
+        use piece_etc::Phase::*;
         let mut content = String::new();
 
         Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",

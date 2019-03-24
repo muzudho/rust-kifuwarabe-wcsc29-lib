@@ -47,13 +47,12 @@ impl Thought {
             src_rank
         };
 
-        UsiMove {
-            source_file: src_file,
-            source_rank: src_rank,
-            destination_file: src_file,
-            destination_rank: dst_rank,
-            promotion: false,
-            drop: None,
-        }
+        UsiMove::create(
+            src_file,
+            src_rank,
+            src_file,
+            dst_rank,
+            false,
+            None)
     }
 }

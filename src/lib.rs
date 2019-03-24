@@ -52,13 +52,13 @@ use physical_record::*;
 use piece_etc::*;
 use parser::*;
 use position::*;
-use usi_conv::record_converter::*;
+use usi_conv::usi_converter::*;
 use thought::Thought;
 
 fn main() {
     let comm = Communication::new();
     let mut physical_record = PhysicalRecord::new();
-    let mut board = Position::default();
+    let mut position = Position::default();
 
     loop {
         // Standard input.
@@ -92,21 +92,21 @@ fn main() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
+            read_tape(&comm, &line, &mut physical_record, &mut position);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            CommonOperation::bo(&comm, &physical_record, &board);
+            CommonOperation::bo(&comm, &physical_record, &position);
 
         // #####
         // # D #
         // #####
         } else if line == "d" {
             // Delete.
-            CommonOperation::detouch(&comm, &mut physical_record, &mut board);
+            CommonOperation::detouch(&comm, &mut physical_record, &mut position);
 
         // #####
         // # G #
@@ -114,7 +114,7 @@ fn main() {
         } else if line.starts_with("go") {
             let thought = Thought::new();
             let best_logical_move = thought.get_best_move(
-                &board,
+                &position,
                 &mut physical_record);
             // Examples.
             // println!("bestmove 7g7f");
@@ -122,11 +122,11 @@ fn main() {
             // println!("bestmove resign");
             comm.println(&format!("bestmove {}", best_logical_move.to_sign()));
 
-            let best_physical_moves = RecordConverter::convert_logical_move(
+            let best_physical_moves = UsiConverter::convert_move(
                 best_logical_move,
-                &board);
+                &position);
             for physical_move in best_physical_moves {
-                CommonOperation::go(&comm, &mut physical_record, &physical_move, &mut board);
+                CommonOperation::go(&comm, &mut physical_record, &physical_move, &mut position);
             }
             
         // #####
@@ -140,7 +140,7 @@ fn main() {
         // #########
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
-            read_tape(&comm, &line, &mut physical_record, &mut board);
+            read_tape(&comm, &line, &mut physical_record, &mut position);
 
         // #####
         // # Q #
@@ -162,15 +162,15 @@ fn main() {
         } else if line.starts_with("position") {
             let mut logical_record = UsiRecord::new();
             let mut start = 0;
-            if Fen::parse_position(&line, &mut start, &mut board) {
-                if let Some(lrecords) = Fen::parse_moves(&comm, &line, &mut start, &mut board) {
+            if Fen::parse_position(&line, &mut start, &mut position) {
+                if let Some(lrecords) = Fen::parse_moves(&comm, &line, &mut start, &mut position) {
                     logical_record = lrecords;
                 };
             }
 
-            RecordConverter::convert_logical_record_to_physical_record(
+            UsiConverter::convert_record(
                 &comm,
-                &mut board,
+                &mut position,
                 &logical_record,
                 &mut physical_record);
         }
@@ -178,7 +178,7 @@ fn main() {
 }
 
 /// 
-fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
+fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, position:&mut Position) {
     let mut start = 0;
 
     loop {
@@ -201,7 +201,7 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 comm.print(&format!("{}{}", ch1, ch2));
                 let file = Parser::file_char_to_i8(ch1);
                 let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_cell(file, rank, board.get_board_size());
+                let address = Address::create_by_cell(file, rank, position.get_board_size());
                 Some(PhysicalMove::create_by_address(address))
             },
             '+' => {
@@ -239,7 +239,7 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 };
                 comm.print(&format!("{}{}", ch1, ch2));
                 let piece_type = sign_to_piece_type(&ch1.to_string());
-                let address = Address::create_by_hand(Some(board.get_phase()), piece_type);
+                let address = Address::create_by_hand(Some(position.get_phase()), piece_type);
                 comm.println(&format!("address index = {}.", address.get_index()));
                 Some(PhysicalMove::create_by_address(address))
             },
@@ -250,7 +250,7 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
         };
 
         if let Some(pmove) = pmove_opt {
-            CommonOperation::touch(comm, physical_record, &pmove, board);
+            CommonOperation::touch(comm, physical_record, &pmove, position);
         }
     }
 }
