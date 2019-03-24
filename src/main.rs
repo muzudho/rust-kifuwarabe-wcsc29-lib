@@ -81,6 +81,9 @@ fn main() {
         // ######
         // # 数 #
         // ######
+        // ########
+        // # 記号 #
+        // ########
         if line.starts_with('1') || 
             line.starts_with('2') ||
             line.starts_with('3') ||
@@ -89,24 +92,12 @@ fn main() {
             line.starts_with('6') ||
             line.starts_with('7') ||
             line.starts_with('8') ||
-            line.starts_with('9')
+            line.starts_with('9') ||
+            line.starts_with('+') ||
+            line.starts_with('-') ||
+            line.starts_with('|')
         {
-            do_touch_cell_command(&comm, &line, &mut physical_record, &mut board);
-
-        // ########
-        // # 記号 #
-        // ########
-        } else if line.starts_with('+') {
-            // 成り。
-            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::turn_over(), &mut board);
-
-        } else if line.starts_with('-') {
-            // １８０°回転。
-            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::rotate(), &mut board);
-
-        } else if line.starts_with('|') {
-            // フェーズ交代。
-            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::change_phase(), &mut board);
+            do_touch_command(&comm, &line, &mut physical_record, &mut board);
 
         // #####
         // # B #
@@ -181,10 +172,50 @@ fn main() {
     }
 }
 
-fn do_touch_cell_command(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
-    let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
-    let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, board.get_board_size());
-    let pmove = PhysicalMove::create_by_address(address);
-    CommonOperation::touch(comm, physical_record, &pmove, board);
+fn do_touch_command(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
+    let mut start = 0;
+
+    loop {
+        if line.len() <= start {
+            return;
+        }
+
+        let pmove_opt = match line[start..=start].chars().nth(0).unwrap() {
+            ' ' => {
+                start += 1;
+                None
+            }
+            '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                let second = start + 1;
+                // セル
+                let file = file_char_to_i8(line[start..=start].chars().nth(0).unwrap());
+                let rank = rank_char_to_i8(line[second..=second].chars().nth(0).unwrap());
+                let address = Address::create_by_cell(file, rank, board.get_board_size());
+                start += 2;
+                Some(PhysicalMove::create_by_address(address))
+            },
+            '+' => {
+                // 成り。
+                start += 1;
+                Some(PhysicalMove::turn_over())
+            },
+            '-' => {
+                // １８０°回転。
+                start += 1;
+                Some(PhysicalMove::rotate())
+            },
+            '|' => {
+                // フェーズ交代。
+                start += 1;
+                Some(PhysicalMove::change_phase())
+            },
+            _ => {
+                panic!("Unexpected line '{}'.", line)
+            }
+        };
+
+        if let Some(pmove) = pmove_opt {
+            CommonOperation::touch(comm, physical_record, &pmove, board);
+        }
+    }
 }
