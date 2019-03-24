@@ -1,5 +1,5 @@
 use parser::*;
-use physical_record::*;
+use piece_etc::*;
 use position::*;
 
 /// Vector に入れるときコピーする。
@@ -15,8 +15,8 @@ impl Address {
     }
 
     pub fn create_by_hand(phase_opt:Option<Phase>, piece_type:PieceType) -> Address {
-        use position::Phase::*;
-        use physical_record::PieceType::*;
+        use piece_etc::Phase::*;
+        use piece_etc::PieceType::*;
 
         let index_num = match phase_opt {
             Some(phase) => {
@@ -79,7 +79,7 @@ impl Address {
 
     pub fn get_hand_piece(self) -> Option<Piece> {
         // 持ち駒
-        use position::Piece::*;
+        use piece_etc::Piece::*;
         match self.index {
             82 => { Some(K1)},
             83 => { Some(R1)},

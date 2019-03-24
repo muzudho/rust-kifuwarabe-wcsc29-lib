@@ -1,8 +1,10 @@
-use position::*;
-use usi_conv::fen::*;
 use std::*;
+use usi_conv::fen::*;
 use usi_conv::usi_move::*;
+use piece_etc::*;
+use position::*;
 
+ #[derive(Default)]
 pub struct UsiRecord {
     pub items : Vec<UsiMove>,
 }

@@ -1,7 +1,9 @@
 use position::*;
 use usi_conv::usi_move::*;
 use physical_record::*;
+use piece_etc::*;
 
+#[derive(Default)]
 pub struct Thought {
 
 }

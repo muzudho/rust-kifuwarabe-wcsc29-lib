@@ -4,7 +4,7 @@ use position::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 use parser::*;
-use physical_record::*;
+use piece_etc::*;
 use std::*;
 
 pub struct Fen {
@@ -120,7 +120,7 @@ impl Fen {
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
 pub fn parse_sign_line_to_piece(line:&str, start:&mut usize) -> Option<Piece> {
-    use position::Piece::*;
+    use piece_etc::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() <= *start as usize {

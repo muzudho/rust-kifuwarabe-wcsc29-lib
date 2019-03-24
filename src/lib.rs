@@ -37,6 +37,7 @@ pub mod csa_conv;
 pub mod parser;
 pub mod physical_move;
 pub mod physical_record;
+pub mod piece_etc;
 pub mod position;
 pub mod usi_conv;
 pub mod thought;
@@ -48,6 +49,7 @@ use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use physical_move::*;
 use physical_record::*;
+use piece_etc::*;
 use parser::*;
 use position::*;
 use usi_conv::record_converter::*;
@@ -236,7 +238,7 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                     panic!("Unexpected drop '{}'.", line)
                 };
                 comm.print(&format!("{}{}", ch1, ch2));
-                let piece_type = sign_to_piece_type(ch1.to_string());
+                let piece_type = sign_to_piece_type(&ch1.to_string());
                 let address = Address::create_by_hand(Some(board.get_phase()), piece_type);
                 comm.println(&format!("address index = {}.", address.get_index()));
                 Some(PhysicalMove::create_by_address(address))

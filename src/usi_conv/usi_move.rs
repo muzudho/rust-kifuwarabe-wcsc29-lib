@@ -1,5 +1,5 @@
 use std::*;
-use physical_record::*;
+use piece_etc::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {

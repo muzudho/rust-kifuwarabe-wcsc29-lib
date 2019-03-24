@@ -1,6 +1,7 @@
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
+#[derive(Default)]
 pub struct Communication {
     pub log_file : String,
 }

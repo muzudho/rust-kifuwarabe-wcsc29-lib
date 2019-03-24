@@ -1,6 +1,5 @@
 use parser::*;
-use position::*;
-use physical_record::*;
+use piece_etc::*;
 
 pub struct CsaMove {
     pub phase:Phase,
@@ -48,7 +47,7 @@ impl CsaMove {
     }
 
     pub fn koma_to_piece_type(koma:&str) -> Option<PieceType> {
-        use physical_record::PieceType::*;
+        use piece_etc::PieceType::*;
         match koma {
             "FU" => { Some(P) },
             "KY" => { Some(L) },

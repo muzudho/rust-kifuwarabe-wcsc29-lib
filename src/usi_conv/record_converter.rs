@@ -5,6 +5,7 @@ use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 use physical_move::*;
 use physical_record::*;
+use piece_etc::*;
 use position::*;
 
 pub struct RecordConverter {
