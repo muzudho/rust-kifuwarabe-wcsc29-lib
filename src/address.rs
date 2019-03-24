@@ -13,7 +13,7 @@ impl Address {
         }
     }
 
-    pub fn create_hand(phase_opt:Option<Phase>, piece_type:PieceType) -> Address {
+    pub fn create_by_hand(phase_opt:Option<Phase>, piece_type:PieceType) -> Address {
         use position::Phase::*;
         use physical_record::PieceType::*;
 
@@ -72,6 +72,42 @@ impl Address {
         self.index
     }
 
+    pub fn get_hand_index(self) -> usize {
+        self.index - SKY_ADDRESS - 1
+    }
+
+    pub fn get_hand_piece(self) -> Option<Piece> {
+        // 持ち駒
+        use position::Piece::*;
+        match self.index {
+            82 => { Some(K1)},
+            83 => { Some(R1)},
+            84 => { Some(B1)},
+            85 => { Some(G1)},
+            86 => { Some(S1)},
+            87 => { Some(N1)},
+            88 => { Some(L1)},
+            89 => { Some(P1)},
+            90 => { Some(K2)},
+            91 => { Some(R2)},
+            92 => { Some(B2)},
+            93 => { Some(G2)},
+            94 => { Some(S2)},
+            95 => { Some(N2)},
+            96 => { Some(L2)},
+            97 => { Some(P2)},
+            98 => { Some(K3)},
+            99 => { Some(R3)},
+            100 => { Some(B3)},
+            101 => { Some(G3)},
+            102 => { Some(S3)},
+            103 => { Some(N3)},
+            104 => { Some(L3)},
+            105 => { Some(P3)},
+            _ => {panic!("Unexpected index print: {0}.", self.index);}
+        }
+    }
+
     /// 盤上。
     pub fn is_on_board(self, board_size:BoardSize) -> bool {
         self.index < board_size.len()
@@ -88,34 +124,7 @@ impl Address {
             format!("{}{}", file, i8_to_rank_char(rank))
         } else if self.is_hand() {
             // 持ち駒
-            use position::Piece::*;
-            match self.index {
-                82 => { format!("{}*", piece_to_sign(Some(K1)))},
-                83 => { format!("{}*", piece_to_sign(Some(R1)))},
-                84 => { format!("{}*", piece_to_sign(Some(B1)))},
-                85 => { format!("{}*", piece_to_sign(Some(G1)))},
-                86 => { format!("{}*", piece_to_sign(Some(S1)))},
-                87 => { format!("{}*", piece_to_sign(Some(N1)))},
-                88 => { format!("{}*", piece_to_sign(Some(L1)))},
-                89 => { format!("{}*", piece_to_sign(Some(P1)))},
-                90 => { format!("{}*", piece_to_sign(Some(K2)))},
-                91 => { format!("{}*", piece_to_sign(Some(R2)))},
-                92 => { format!("{}*", piece_to_sign(Some(B2)))},
-                93 => { format!("{}*", piece_to_sign(Some(G2)))},
-                94 => { format!("{}*", piece_to_sign(Some(S2)))},
-                95 => { format!("{}*", piece_to_sign(Some(N2)))},
-                96 => { format!("{}*", piece_to_sign(Some(L2)))},
-                97 => { format!("{}*", piece_to_sign(Some(P2)))},
-                98 => { format!("{}*", piece_to_sign(Some(K3)))},
-                99 => { format!("{}*", piece_to_sign(Some(R3)))},
-                100 => { format!("{}*", piece_to_sign(Some(B3)))},
-                101 => { format!("{}*", piece_to_sign(Some(G3)))},
-                102 => { format!("{}*", piece_to_sign(Some(S3)))},
-                103 => { format!("{}*", piece_to_sign(Some(N3)))},
-                104 => { format!("{}*", piece_to_sign(Some(L3)))},
-                105 => { format!("{}*", piece_to_sign(Some(P3)))},
-                _ => {panic!("Unexpected index print: {0}.", self.index);}
-            }
+            format!("{}*", piece_to_sign(self.get_hand_piece()))
         } else if self.index == 105 {
             "Sky".to_string()
         } else {

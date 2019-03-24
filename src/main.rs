@@ -1,3 +1,29 @@
+/// My name is Kifuwarabe.
+/// I am a computer shogi engine.
+/// I will go to WCSC29 this year.
+///
+/// Let's explain how to use me.
+/// 
+/// Windows 10.
+/// 
+/// [Windows] + [R].
+/// `cmd`, [Enter].
+/// 
+/// ```Shell
+/// ### Example.
+/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29
+/// cls
+/// 
+/// ### Compile.
+/// cargo clippy
+/// 
+/// ### Run.
+/// cargo run --release
+/// ```
+/// 
+/// Execution file.
+/// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
+
 /// extern crate は main.rs か lib.rs に入れる。
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
 extern crate serde_json;
@@ -28,32 +54,6 @@ use physical_record::*;
 use position::*;
 use record_converter::*;
 use thought::Thought;
-
-/// My name is Kifuwarabe.
-/// I am a computer shogi engine.
-/// I will go to WCSC29 this year.
-///
-/// Let's explain how to use me.
-/// 
-/// Windows 10.
-/// 
-/// [Windows] + [R].
-/// `cmd`, [Enter].
-/// 
-/// ```Shell
-/// ### Example.
-/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29
-/// cls
-/// 
-/// ### Compile.
-/// cargo clippy
-/// 
-/// ### Run.
-/// cargo run --release
-/// ```
-/// 
-/// Execution file.
-/// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
 
 /*
 fn test(cursor:&mut usize) {
@@ -97,7 +97,7 @@ fn main() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            do_touch_command(&comm, &line, &mut physical_record, &mut board);
+            read_tape(&comm, &line, &mut physical_record, &mut board);
 
         // #####
         // # B #
@@ -105,6 +105,9 @@ fn main() {
         } else if line.starts_with("bo") {
             // board.
             CommonOperation::bo(&comm, &physical_record, &board);
+
+        } else if line.starts_with('B') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
 
         // #####
         // # D #
@@ -131,19 +134,54 @@ fn main() {
                 best_logical_move,
                 &board);
             for physical_move in best_physical_moves {
-                CommonOperation::go(&mut physical_record, &physical_move, &mut board);
+                CommonOperation::go(&comm, &mut physical_record, &physical_move, &mut board);
             }
+
+        } else if line.starts_with('G') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
             
         // #####
         // # I #
         // #####
         } else if line == "isready" {
             comm.println("readyok");
+
+        // #####
+        // # K #
+        // #####
+        } else if line.starts_with('K') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
+
+        // #####
+        // # L #
+        // #####
+        } else if line.starts_with('L') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
+
+        // #####
+        // # N #
+        // #####
+        } else if line.starts_with('N') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
+
+        // #####
+        // # P #
+        // #####
+        } else if line.starts_with('P') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
+
         // #####
         // # Q #
         // #####
         } else if line == "quit" {
             break;
+
+        // #####
+        // # S #
+        // #####
+        } else if line.starts_with('S') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
+
         // #####
         // # U #
         // #####
@@ -165,14 +203,21 @@ fn main() {
             }
 
             RecordConverter::convert_logical_record_to_physical_record(
+                &comm,
                 &mut board,
                 &logical_record,
                 &mut physical_record);
+        // #####
+        // # R #
+        // #####
+        } else if line.starts_with('R') {
+            read_tape(&comm, &line, &mut physical_record, &mut board);
         }
     }
 }
 
-fn do_touch_command(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
+/// 
+fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
     let mut start = 0;
 
     loop {
@@ -180,34 +225,55 @@ fn do_touch_command(comm:&Communication, line:&str, physical_record:&mut Physica
             return;
         }
 
-        let pmove_opt = match line[start..=start].chars().nth(0).unwrap() {
+        let ch1 = line[start..=start].chars().nth(0).unwrap();
+        let pmove_opt = match ch1 {
             ' ' => {
+                comm.print(&ch1.to_string());
                 start += 1;
                 None
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
-                let second = start + 1;
                 // セル
-                let file = file_char_to_i8(line[start..=start].chars().nth(0).unwrap());
-                let rank = rank_char_to_i8(line[second..=second].chars().nth(0).unwrap());
+                start += 1;
+                let ch2 = line[start..=start].chars().nth(0).unwrap();
+                start += 1;
+                comm.print(&format!("{}{}", ch1, ch2));
+                let file = file_char_to_i8(ch1);
+                let rank = rank_char_to_i8(ch2);
                 let address = Address::create_by_cell(file, rank, board.get_board_size());
-                start += 2;
                 Some(PhysicalMove::create_by_address(address))
             },
             '+' => {
                 // 成り。
+                comm.print(&ch1.to_string());
                 start += 1;
                 Some(PhysicalMove::turn_over())
             },
             '-' => {
                 // １８０°回転。
+                comm.print(&ch1.to_string());
                 start += 1;
                 Some(PhysicalMove::rotate())
             },
             '|' => {
                 // フェーズ交代。
+                comm.print(&ch1.to_string());
                 start += 1;
                 Some(PhysicalMove::change_phase())
+            },
+            'K' | 'R' | 'B' | 'G' | 'S' | 'N' | 'L' | 'P' => {
+                // ドロップ。
+                start += 1;
+                let ch2 = line[start..=start].chars().nth(0).unwrap();
+                start += 1;
+                if ch2 != '*' {
+                    panic!("Unexpected drop '{}'.", line)
+                };
+                comm.print(&format!("{}{}", ch1, ch2));
+                let piece_type = sign_to_piece_type(ch1.to_string());
+                let address = Address::create_by_hand(Some(board.get_phase()), piece_type);
+                comm.println(&format!("address index = {}.", address.get_index()));
+                Some(PhysicalMove::create_by_address(address))
             },
             _ => {
                 panic!("Unexpected line '{}'.", line)

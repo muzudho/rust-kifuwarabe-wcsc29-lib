@@ -1,3 +1,4 @@
+use communication::*;
 use parser::*;
 use physical_move::*;
 use physical_record::*;
@@ -125,6 +126,74 @@ pub fn piece_to_sign(piece:Option<Piece>) -> String {
         None => { "" }
     }.to_string()
 }
+pub fn sign_to_piece(phase_opt:Option<Phase>, sign:String) -> Piece {
+    use position::Phase::*;
+    use position::Piece::*;
+    let s = sign.as_str();
+    match phase_opt {
+        Some(phase) => {
+            match phase {
+                First => {
+                    match s {
+                        "K" => K1,
+                        "R" => R1,
+                        "B" => B1,
+                        "G" => G1,
+                        "S" => S1,
+                        "N" => N1,
+                        "L" => L1,
+                        "P" => P1,
+                        "PR" => PR1,
+                        "PB" => PB1,
+                        "PS" => PS1,
+                        "PN" => PN1,
+                        "PL" => PL1,
+                        "PP" => PP1,
+                        _ => panic!("Unexpected sign of First: '{}'.", sign)
+                    }
+                },
+                Second => {
+                    match s{
+                        "K" => K2,
+                        "R" => R2,
+                        "B" => B2,
+                        "G" => G2,
+                        "S" => S2,
+                        "N" => N2,
+                        "L" => L2,
+                        "P" => P2,
+                        "PR" => PR2,
+                        "PB" => PB2,
+                        "PS" => PS2,
+                        "PN" => PN2,
+                        "PL" => PL2,
+                        "PP" => PP2,
+                        _ => panic!("Unexpected sign of Second: '{}'.", sign)
+                    }
+                },
+            }
+        },
+        None => {
+            match s {
+                "K" => K3,
+                "R" => R3,
+                "B" => B3,
+                "G" => G3,
+                "S" => S3,
+                "N" => N3,
+                "L" => L3,
+                "P" => P3,
+                "PR" => PR3,
+                "PB" => PB3,
+                "PS" => PS3,
+                "PN" => PN3,
+                "PL" => PL3,
+                "PP" => PP3,
+                _ => panic!("Unexpected sign on None: '{}'.", sign)
+            }
+        }
+    }
+}
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {
     use position::Piece::*;
     use physical_record::PieceType::*;
@@ -171,6 +240,57 @@ pub fn piece_to_piece_type(piece:Piece) -> PieceType {
         PN3 => PN,
         PL3 => PL,
         PP3 => PP,
+    }
+}
+pub fn hand_piece_to_hand_index(piece:Piece) -> i8 {
+    use position::Piece::*;
+    match piece {
+        K1 => {0},
+        R1 => {1},
+        B1 => {2},
+        G1 => {3},
+        S1 => {4},
+        N1 => {5},
+        L1 => {6},
+        P1 => {7},
+        K2 => {8},
+        R2 => {9},
+        B2 => {10},
+        G2 => {11},
+        S2 => {12},
+        N2 => {13},
+        L2 => {14},
+        P2 => {15},
+        K3 => {16},
+        R3 => {17},
+        B3 => {18},
+        G3 => {19},
+        S3 => {20},
+        N3 => {21},
+        L3 => {22},
+        P3 => {23},
+        _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
+    }
+}
+pub fn sign_to_piece_type(sign:String) -> PieceType {
+    use physical_record::PieceType::*;
+    let s = sign.as_str();
+    match s {
+        "K" => K,
+        "R" => R,
+        "B" => B,
+        "G" => G,
+        "S" => S,
+        "N" => N,
+        "L" => L,
+        "P" => P,
+        "PR" => PR,
+        "PB" => PB,
+        "PS" => PS,
+        "PN" => PN,
+        "PL" => PL,
+        "PP" => PP,
+        _ => panic!("Unexpected sign: '{}'.", sign)
     }
 }
 pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
@@ -293,15 +413,15 @@ pub fn file_char_to_i8(ch:char) -> i8 {
 }
 pub fn rank_char_to_i8(ch:char) -> i8 {
     match ch {
-        'a' => {1},
-        'b' => {2},
-        'c' => {3},
-        'd' => {4},
-        'e' => {5},
-        'f' => {6},
-        'g' => {7},
-        'h' => {8},
-        'i' => {9},
+        '1' | 'a' => {1},
+        '2' | 'b' => {2},
+        '3' | 'c' => {3},
+        '4' | 'd' => {4},
+        '5' | 'e' => {5},
+        '6' | 'f' => {6},
+        '7' | 'g' => {7},
+        '8' | 'h' => {8},
+        '9' | 'i' => {9},
         _ => {panic!("Unexpected rank char: '{0}'", ch)},
     }
 }
@@ -427,66 +547,59 @@ impl Position {
     }
 
     pub fn get_hand(&self, piece:Piece) -> i8 {
-        use position::Piece::*;
-        match piece {
-            K1 => {self.hands[0]},
-            R1 => {self.hands[1]},
-            B1 => {self.hands[2]},
-            G1 => {self.hands[3]},
-            S1 => {self.hands[4]},
-            N1 => {self.hands[5]},
-            L1 => {self.hands[6]},
-            P1 => {self.hands[7]},
-            K2 => {self.hands[8]},
-            R2 => {self.hands[9]},
-            B2 => {self.hands[10]},
-            G2 => {self.hands[11]},
-            S2 => {self.hands[12]},
-            N2 => {self.hands[13]},
-            L2 => {self.hands[14]},
-            P2 => {self.hands[15]},
-            K3 => {self.hands[16]},
-            R3 => {self.hands[17]},
-            B3 => {self.hands[18]},
-            G3 => {self.hands[19]},
-            S3 => {self.hands[20]},
-            N3 => {self.hands[21]},
-            L3 => {self.hands[22]},
-            P3 => {self.hands[23]},
-            _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
-        }
+        let hand_index = hand_piece_to_hand_index(piece);
+        self.hands[hand_index as usize]
     }
 
-    pub fn touch(&mut self, physical_move:&PhysicalMove) {
+    pub fn touch(&mut self, comm:&Communication, physical_move:&PhysicalMove) {
         match physical_move.address {
-            // どこかを指定した。
             Some(address) => {
-                match self.pieces[address.get_index()] {
-                    Some(piece) => {
-                        // 駒の場所を指定した。
-                        match self.pieces[SKY_ADDRESS] {
-                            Some(_piece) => {
-                                // 指には何も持ってない。
-                            },
-                            None => {
-                                // 指で駒をつかむ。
-                                self.pieces[SKY_ADDRESS] = Some(piece);
-                                self.pieces[address.get_index()] = None;
-                            },
-                        }
-                    },
-                    None => {
-                        // 空き升を指定した。
-                        match self.pieces[SKY_ADDRESS] {
-                            Some(piece) => {
-                                // 指につまんでいる駒を置く。
-                                self.pieces[SKY_ADDRESS] = None;
-                                self.pieces[address.get_index()] = Some(piece);
-                            },
-                            None => {
-                            },
-                        }
-                    },
+                // どこかを指定した。
+                if address.is_on_board(self.board_size) {
+                    // 盤上。
+                    match self.pieces[address.get_index()] {
+                        Some(piece) => {
+                            // 駒の場所を指定した。
+                            match self.pieces[SKY_ADDRESS] {
+                                Some(_piece) => {
+                                    // 指には何も持ってない。
+                                },
+                                None => {
+                                    // 指で駒をつかむ。
+                                    self.pieces[SKY_ADDRESS] = Some(piece);
+                                    self.pieces[address.get_index()] = None;
+                                },
+                            }
+                        },
+                        None => {
+                            // 空き升を指定した。
+                            match self.pieces[SKY_ADDRESS] {
+                                Some(piece) => {
+                                    // 指につまんでいる駒を置く。
+                                    self.pieces[SKY_ADDRESS] = None;
+                                    self.pieces[address.get_index()] = Some(piece);
+                                },
+                                None => {
+                                },
+                            }
+                        },
+                    }
+                } else {
+                    // 駒台。
+                    match self.pieces[SKY_ADDRESS] {
+                        Some(piece) => {
+                            // 指に何か持っているので、駒台に置く。
+                            self.pieces[SKY_ADDRESS] = None;
+                            comm.println(&format!("hand_index = {}.", address.get_hand_index()));
+                            self.hands[address.get_hand_index()] += 1;
+                        },
+                        None => {
+                            // 指には何も持ってないので、駒台の駒をつかむ。
+                            let piece_opt = address.get_hand_piece();
+                            self.pieces[SKY_ADDRESS] = piece_opt;
+                            self.hands[address.get_hand_index()] -= 1;
+                        },
+                    }
                 }
             },
             None => {
@@ -514,39 +627,34 @@ impl Position {
         }
     }
 
-    pub fn print_hand(&self, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
-        let piece = match phase_opt {
-            Some(phase) => {piece_type_to_piece(phase, piece_type)},
-            None => {
-                // 使っていない駒。とりあえず先手を指定。
-                piece_type_to_piece(Phase::First, piece_type)
-            },
-        };
+    fn to_hand_text(&self, comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
+        let piece = piece_type_to_piece(phase_opt, piece_type);
         let count = self.get_hand(piece);
-        let num_label = if 1 < count {count.to_string()} else {"".to_string()};
+        let coefficient = if 1 < count {count.to_string()} else {"".to_string()};
+        // comm.println(&format!("piece_type: '{}', hand_count: {}, coefficient: {}.", piece_type_to_sign(Some(piece_type)), count, coefficient));
         let ch = if 0 < count {
             piece_type_to_sign(Some(piece_type))
         } else {
             "".to_string()
         };
 
-        format!("{}{}", num_label, ch)
+        format!("{}{}", coefficient, ch)
     }
 
     /// Point of symmetory.
-    pub fn to_text(&self, phase:Phase) -> String {
+    pub fn to_text(&self, comm:&Communication, phase:Phase) -> String {
         use position::Phase::*;
         let mut content = String::new();
 
         Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
-            self.print_hand(Some(Phase::First), PieceType::K),
-            self.print_hand(Some(Phase::First), PieceType::R),
-            self.print_hand(Some(Phase::First), PieceType::B),
-            self.print_hand(Some(Phase::First), PieceType::G),
-            self.print_hand(Some(Phase::First), PieceType::S),
-            self.print_hand(Some(Phase::First), PieceType::N),
-            self.print_hand(Some(Phase::First), PieceType::L),
-            self.print_hand(Some(Phase::First), PieceType::P)));
+            self.to_hand_text(comm, Some(Phase::First), PieceType::K),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::R),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::B),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::G),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::S),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::N),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::L),
+            self.to_hand_text(comm, Some(Phase::First), PieceType::P)));
 
         match phase {
             First => {
@@ -596,14 +704,14 @@ impl Position {
             // Right boarder and None phase hands.
             match rank {
                 9 => {Parser::append(&mut content, &format!(" |   "))},
-                8 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::K)))},
-                7 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::R)))},
-                6 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::B)))},
-                5 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::G)))},
-                4 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::S)))},
-                3 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::N)))},
-                2 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::L)))},
-                1 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::P)))},
+                8 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::K)))},
+                7 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::R)))},
+                6 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::B)))},
+                5 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::G)))},
+                4 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::S)))},
+                3 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::N)))},
+                2 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::L)))},
+                1 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::P)))},
                 _ => {},
             };
 
@@ -642,15 +750,14 @@ impl Position {
 
         // Second phase hand.
         Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
-            self.print_hand(Some(Phase::Second), PieceType::K),
-            self.print_hand(Some(Phase::Second), PieceType::R),
-            self.print_hand(Some(Phase::Second), PieceType::B),
-            self.print_hand(Some(Phase::Second), PieceType::G),
-            self.print_hand(Some(Phase::Second), PieceType::S),
-            self.print_hand(Some(Phase::Second), PieceType::N),
-            self.print_hand(Some(Phase::Second), PieceType::L),
-            self.print_hand(Some(Phase::Second), PieceType::P)
-            ));
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::K),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::R),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::B),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::G),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::S),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::N),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::L),
+            self.to_hand_text(comm, Some(Phase::Second), PieceType::P)));
 
         content
     }

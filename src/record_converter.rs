@@ -1,10 +1,11 @@
 use address::*;
-use position::*;
+use communication::*;
 use common_operation::*;
 use logical_move::*;
 use logical_record::*;
 use physical_move::*;
 use physical_record::*;
+use position::*;
 
 pub struct RecordConverter {
 
@@ -26,7 +27,7 @@ impl RecordConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = PhysicalMove::create_by_address(Address::create_hand(Some(position.get_phase()), drop));
+                let hand_off = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
                 physical_moves.push(hand_off);
 
                 // hand-on
@@ -54,7 +55,7 @@ impl RecordConverter {
 
                         // hand-on
                         let up = piece_to_piece_type(piece);
-                        let hand_on = PhysicalMove::create_by_address(Address::create_hand(Some(position.get_phase()), up));
+                        let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                         physical_moves.push(hand_on);
                     },
                     None => {
@@ -87,6 +88,7 @@ impl RecordConverter {
 
     /// 変換には、初期局面が必要。
     pub fn convert_logical_record_to_physical_record(
+        comm:&Communication,
         position:&mut Position,
         logical_record:&LogicalRecord,
         physical_record:&mut PhysicalRecord) {
@@ -97,7 +99,7 @@ impl RecordConverter {
                 position);
 
             for physical_move in physical_moves {
-                CommonOperation::go(physical_record, &physical_move, position);
+                CommonOperation::go(comm, physical_record, &physical_move, position);
             }
         }
     }

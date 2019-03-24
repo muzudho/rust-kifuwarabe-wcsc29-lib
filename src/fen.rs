@@ -80,7 +80,7 @@ impl Fen {
         for mov in &temp_record.items {
             println!("info Move: `{}`.", mov.to_sign());
             logical_record.make_move(*mov, position);
-            comm.println(&position.to_text(logical_record.get_current_phase()));
+            comm.println(&position.to_text(comm, logical_record.get_current_phase()));
         }
 
         Some(logical_record)
