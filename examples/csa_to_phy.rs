@@ -30,9 +30,12 @@ impl CsaToPhy {
     pub fn load(file:&str) {
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();
-            if (line.starts_with("+") | line.starts_with("-") | line.starts_with("%")) && line.len()==7 {
-                let csa_move = CsaMove.parse(line);
-                println!("{}  {}", line, csa_move.to_text());
+
+            if (line.starts_with('+') | line.starts_with('-') | line.starts_with('%')) && line.len()==7 {
+                print!("{}  ", line);
+                if let Some(csa_move) = CsaMove::parse(&line) {
+                    println!("{}", csa_move.to_text());
+                }
             // } else {
             //    println!("x {}", line);
             }

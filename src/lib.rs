@@ -30,16 +30,16 @@ extern crate serde_json;
 
 use std::io;
 
-mod address;
-mod common_operation;
-mod communication;
-mod csa_conv;
-mod parser;
-mod physical_move;
-mod physical_record;
-mod position;
-mod usi_conv;
-mod thought;
+pub mod address;
+pub mod common_operation;
+pub mod communication;
+pub mod csa_conv;
+pub mod parser;
+pub mod physical_move;
+pub mod physical_record;
+pub mod position;
+pub mod usi_conv;
+pub mod thought;
 
 use address::*;
 use common_operation::*;
