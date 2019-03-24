@@ -91,36 +91,36 @@ fn main() {
             line.starts_with('8') ||
             line.starts_with('9')
         {
-            do_touch_cell_command(&line, &mut physical_record, &mut board);
+            do_touch_cell_command(&comm, &line, &mut physical_record, &mut board);
 
         // ########
         // # 記号 #
         // ########
         } else if line.starts_with('+') {
             // 成り。
-            CommonOperation::touch(&mut physical_record, &PhysicalMove::turn_over(), &mut board);
+            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::turn_over(), &mut board);
 
         } else if line.starts_with('-') {
             // １８０°回転。
-            CommonOperation::touch(&mut physical_record, &PhysicalMove::rotate(), &mut board);
+            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::rotate(), &mut board);
 
         } else if line.starts_with('|') {
             // フェーズ交代。
-            CommonOperation::touch(&mut physical_record, &PhysicalMove::change_phase(), &mut board);
+            CommonOperation::touch(&comm, &mut physical_record, &PhysicalMove::change_phase(), &mut board);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            CommonOperation::bo(&physical_record, &board);
+            CommonOperation::bo(&comm, &physical_record, &board);
 
         // #####
         // # D #
         // #####
         } else if line == "d" {
             // Delete.
-            CommonOperation::detouch(&mut physical_record, &mut board);
+            CommonOperation::detouch(&comm, &mut physical_record, &mut board);
 
         // #####
         // # G #
@@ -181,10 +181,10 @@ fn main() {
     }
 }
 
-fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
+fn do_touch_cell_command(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, board:&mut Position) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, board.get_board_size());
     let pmove = PhysicalMove::create_by_address(address);
-    CommonOperation::touch(physical_record, &pmove, board);
+    CommonOperation::touch(comm, physical_record, &pmove, board);
 }

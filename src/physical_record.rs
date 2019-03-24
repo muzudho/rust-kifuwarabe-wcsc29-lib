@@ -229,11 +229,15 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn println(&self, board_size:BoardSize) {
-        print!("Physical record({}): ", self.items.len());
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn to_sign(&self, board_size:BoardSize) -> String {
+        let mut sign = "".to_string();
         for physical_move in &self.items {
-            print!("{}", physical_move.to_physical_sign(board_size));
+            sign = format!("{}{}", sign, physical_move.to_physical_sign(board_size));
         }
-        println!();
+        sign
     }
 }
