@@ -6,6 +6,7 @@ use std::io;
 
 mod address;
 mod board;
+mod common_operation;
 mod communication;
 mod fen;
 mod logical_move;
@@ -19,6 +20,7 @@ mod thought;
 
 use address::*;
 use board::*;
+use common_operation::*;
 use communication::*;
 use fen::*;
 use logical_record::*;
@@ -96,25 +98,29 @@ fn main() {
         // ########
         } else if line.starts_with('+') {
             // 成り。
-            let pmove = PhysicalMove::turn_over();
-            board.touch(&pmove);
-            physical_record.add(&pmove);
-            board.println(physical_record.get_phase());
+            CommonOperation::touch(&mut physical_record, &PhysicalMove::turn_over(), &mut board);
 
         } else if line.starts_with('-') {
             // １８０°回転。
-            let pmove = PhysicalMove::rotate();
-            board.touch(&pmove);
-            physical_record.add(&pmove);
-            board.println(physical_record.get_phase());
+            CommonOperation::touch(&mut physical_record, &PhysicalMove::rotate(), &mut board);
+
+        } else if line.starts_with('|') {
+            // フェーズ交代。
+            CommonOperation::touch(&mut physical_record, &PhysicalMove::change_phase(), &mut board);
 
         // #####
         // # B #
         // #####
         } else if line.starts_with("bo") {
             // board.
-            board.println(physical_record.get_phase());
-            physical_record.println(board.get_board_size());
+            CommonOperation::bo(&physical_record, &board);
+
+        // #####
+        // # D #
+        // #####
+        } else if line == "d" {
+            // Delete.
+            CommonOperation::detouch(&mut physical_record, &mut board);
 
         // #####
         // # G #
@@ -133,13 +139,8 @@ fn main() {
             let best_physical_moves = RecordConverter::convert_logical_move(
                 best_logical_move, &board, physical_record.get_phase());
             for physical_move in best_physical_moves {
-                physical_record.add(&physical_move);
-                if board.touch(&physical_move) {
-                    // Phase change.
-                    physical_record.add(&PhysicalMove::phase_change());
-                }
+                CommonOperation::go(&mut physical_record, &physical_move, &mut board);
             }
-
             
         // #####
         // # I #
@@ -184,11 +185,5 @@ fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
     let address = Address::create_by_cell(file, rank, board.get_board_size());
     let pmove = PhysicalMove::create_by_address(address);
-    physical_record.add(&pmove);
-    if board.touch(&pmove) {
-        // Phase change.
-        physical_record.add(&PhysicalMove::phase_change());
-    }
-    board.println(physical_record.get_phase());
-    physical_record.println(board.get_board_size());
+    CommonOperation::touch(physical_record, &pmove, board);
 }

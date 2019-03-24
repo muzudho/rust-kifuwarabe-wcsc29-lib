@@ -231,6 +231,17 @@ impl PhysicalRecord {
         }
     }
 
+    pub fn pop(&mut self) -> Option<PhysicalMove> {
+        if self.items.is_empty() {
+            None
+        } else {
+            let last = self.items.len()-1;
+            let deleted = self.items[last];
+            self.items.remove(last);
+            Some(deleted)
+        }
+    }
+
     pub fn println(&self, board_size:BoardSize) {
         print!("Physical record({}): ", self.items.len());
         for physical_move in &self.items {

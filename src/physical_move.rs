@@ -37,7 +37,7 @@ impl PhysicalMove {
         }
     }
 
-    pub fn phase_change() -> PhysicalMove {
+    pub fn change_phase() -> PhysicalMove {
         PhysicalMove {
             address: None,
             sky_turn: false,

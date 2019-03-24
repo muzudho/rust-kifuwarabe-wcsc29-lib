@@ -451,10 +451,7 @@ impl Board {
         }
     }
 
-    /// # Returns
-    ///
-    /// Phase change is true.
-    pub fn touch(&mut self, physical_move:&PhysicalMove) -> bool {
+    pub fn touch(&mut self, physical_move:&PhysicalMove) {
         match physical_move.address {
             // どこかを指定した。
             Some(address) => {
@@ -464,13 +461,11 @@ impl Board {
                         match self.pieces[SKY_ADDRESS] {
                             Some(_piece) => {
                                 // 指には何も持ってない。
-                                false
                             },
                             None => {
                                 // 指で駒をつかむ。
                                 self.pieces[SKY_ADDRESS] = Some(piece);
                                 self.pieces[address.get_index()] = None;
-                                false
                             },
                         }
                     },
@@ -481,32 +476,28 @@ impl Board {
                                 // 指につまんでいる駒を置く。
                                 self.pieces[SKY_ADDRESS] = None;
                                 self.pieces[address.get_index()] = Some(piece);
-                                // 駒を盤上に置いたら真。
-                                address.is_on_board(self.board_size)
                             },
                             None => {
-                                false
                             },
                         }
                     },
                 }
             },
             None => {
-                match self.pieces[SKY_ADDRESS] {
-                    Some(piece) => {
-                        if physical_move.sky_turn {
-                            self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
-                            false
-                        } else if physical_move.sky_rotate {
-                            self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
-                            false
-                        } else {
-                            false
-                        }
-                    },
-                    None => {
-                        false
-                    },
+                if physical_move.phase_change {
+                    // TODO phase change.
+                } else {
+                    match self.pieces[SKY_ADDRESS] {
+                        Some(piece) => {
+                            if physical_move.sky_turn {
+                                self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
+                            } else if physical_move.sky_rotate {
+                                self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
+                            };
+                        },
+                        None => {
+                        },
+                    }
                 }
             }
         }

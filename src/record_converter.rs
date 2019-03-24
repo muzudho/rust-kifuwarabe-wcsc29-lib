@@ -1,5 +1,6 @@
 use address::*;
 use board::*;
+use common_operation::*;
 use logical_move::*;
 use logical_record::*;
 use physical_move::*;
@@ -94,11 +95,7 @@ impl RecordConverter {
             let physical_moves = RecordConverter::convert_logical_move(*logical_move, board, physical_record.get_phase());
 
             for physical_move in physical_moves {
-                physical_record.add(&physical_move);
-                if board.touch(&physical_move) {
-                    // Phase change.
-                    physical_record.add(&PhysicalMove::phase_change());
-                }
+                CommonOperation::go(physical_record, &physical_move, board);
             }
         }
     }
