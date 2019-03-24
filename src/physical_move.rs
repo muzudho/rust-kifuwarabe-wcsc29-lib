@@ -46,7 +46,7 @@ impl PhysicalMove {
         }
     }
 
-    pub fn to_physical_sign(&self, board_size:&BoardSize) -> String {
+    pub fn to_physical_sign(&self, board_size:BoardSize) -> String {
         match self.address {
             Some(address) => {
                 address.to_physical_sign(board_size)

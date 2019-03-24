@@ -7,13 +7,7 @@ pub struct Address {
     index: usize,
 }
 impl Address {
-    pub fn create_by_index(index_num:usize) -> Address {
-        Address {
-            index: index_num,
-        }
-    }
-
-    pub fn create_by_cell(file_num:i8, rank_num:i8, board_size:&BoardSize) -> Address {
+    pub fn create_by_cell(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
         Address {
             index: board_size.file_rank_to_cell(file_num, rank_num),
         }
@@ -74,22 +68,22 @@ impl Address {
         }
     }
 
-    pub fn get_index(&self) -> usize {
+    pub fn get_index(self) -> usize {
         self.index
     }
 
     /// 盤上。
-    pub fn is_on_board(&self) -> bool {
-        self.index <= 80
+    pub fn is_on_board(self, board_size:BoardSize) -> bool {
+        self.index < board_size.len()
     }
 
     /// 駒台
-    pub fn is_hand(&self) -> bool {
+    pub fn is_hand(self) -> bool {
         81 <= self.index && self.index <= 104
     }
 
-    pub fn to_physical_sign(&self, board_size:&BoardSize) -> String {
-        if self.is_on_board() {
+    pub fn to_physical_sign(self, board_size:BoardSize) -> String {
+        if self.is_on_board(board_size) {
             let (file, rank) = board_size.cell_to_file_rank(self.index);
             format!("{}{}", file, i8_to_rank_char(rank))
         } else if self.is_hand() {

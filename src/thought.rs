@@ -1,8 +1,8 @@
 use board::*;
-use logical_record::*;
+// use logical_record::*;
 use logical_move::*;
 use physical_record::*;
-use physical_move::*;
+// use physical_move::*;
 
 pub struct Thought {
 
@@ -29,14 +29,12 @@ impl Thought {
             for file in 1..=9 {
                 piece = board.get_piece(file, rank);
                 let phase = piece_to_phase(piece);
-                if phase.is_some() {
-                    if phase.unwrap() == physical_record.get_phase() {
-                        // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
-                        // TODO 自分の駒に限り。
-                        src_file = file;
-                        src_rank = rank;
-                        break 'search;
-                    }
+                if phase.is_some() && phase.unwrap() == physical_record.get_phase() {
+                    // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
+                    // TODO 自分の駒に限り。
+                    src_file = file;
+                    src_rank = rank;
+                    break 'search;
                 }
             }
         }

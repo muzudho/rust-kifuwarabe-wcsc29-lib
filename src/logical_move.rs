@@ -11,17 +11,6 @@ pub struct LogicalMove {
     pub drop:Option<PieceType>,
 }
 impl LogicalMove {
-    pub fn new() -> LogicalMove {
-        LogicalMove {
-            source_file:0,
-            source_rank:0,
-            destination_file:0,
-            destination_rank:0,
-            promotion:false,
-            drop:None,
-        }
-    }
-
     pub fn to_sign(self) -> String {
         let mut sign = String::new();
 

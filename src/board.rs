@@ -1,4 +1,4 @@
-use address::*;
+// use address::*;
 use physical_move::*;
 use physical_record::*;
 use std::*;
@@ -9,14 +9,6 @@ pub enum Phase {
     First,
     /// Starting second.
     Second,
-}
-pub fn phase_to_sign(phase:Phase) -> String {
-    use board::Phase::*;
-    match phase {
-        First => "b".to_string(),
-        Second => "w".to_string(),
-        _ => panic!("Unexpected phase. *phase as usize = {}.", phase as usize),
-    }
 }
 
 /// First phase is 1.
@@ -339,25 +331,23 @@ pub const HANDS_LEN: usize = 3 * 8;
 pub struct BoardSize {
     pub file_len: i8,
     pub rank_len: i8,
-    pub board_len: usize,
 }
 impl BoardSize {
     pub fn create_hon_shogi() -> BoardSize {
         BoardSize {
             file_len: DEFAULT_FILE_LEN as i8,
             rank_len: DEFAULT_RANK_LEN as i8,
-            board_len: (DEFAULT_RANK_LEN * DEFAULT_FILE_LEN) as usize,
         }
     }
 
-    pub fn file_rank_to_cell(&self, file:i8, rank:i8) -> usize {
+    pub fn file_rank_to_cell(self, file:i8, rank:i8) -> usize {
         ((rank-1)*self.file_len + (file-1)) as usize
     }
-    pub fn cell_to_file_rank(&self, cell:usize) -> (i8, i8) {
+    pub fn cell_to_file_rank(self, cell:usize) -> (i8, i8) {
         ((cell%self.file_len as usize) as i8 + 1, (cell/self.file_len as usize) as i8 + 1)
     }
-    pub fn reverse_cell(&self, cell:usize) -> usize {
-        self.rank_len as usize * self.file_len as usize - cell
+    pub fn len(self) -> usize {
+        (self.file_len * self.rank_len) as usize
     }
 }
 
@@ -430,9 +420,9 @@ impl Board {
         piece
     }
 
-    pub fn get_hand(&self, piece:&Piece) -> i8 {
+    pub fn get_hand(&self, piece:Piece) -> i8 {
         use board::Piece::*;
-        match *piece {
+        match piece {
             K1 => {self.hands[0]},
             R1 => {self.hands[1]},
             B1 => {self.hands[2]},
@@ -457,38 +447,6 @@ impl Board {
             N3 => {self.hands[21]},
             L3 => {self.hands[22]},
             P3 => {self.hands[23]},
-            _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(*piece))),
-        }
-    }
-
-    /// Obsolute. new --> add().
-    pub fn set_hand(&mut self, piece:Piece, num:i8) {
-        use board::Piece::*;
-        match piece {
-            K1 => {self.hands[0] = num},
-            R1 => {self.hands[1] = num},
-            B1 => {self.hands[2] = num},
-            G1 => {self.hands[3] = num},
-            S1 => {self.hands[4] = num},
-            N1 => {self.hands[5] = num},
-            L1 => {self.hands[6] = num},
-            P1 => {self.hands[7] = num},
-            K2 => {self.hands[8] = num},
-            R2 => {self.hands[9] = num},
-            B2 => {self.hands[10] = num},
-            G2 => {self.hands[11] = num},
-            S2 => {self.hands[12] = num},
-            N2 => {self.hands[13] = num},
-            L2 => {self.hands[14] = num},
-            P2 => {self.hands[15] = num},
-            K3 => {self.hands[16] = num},
-            R3 => {self.hands[17] = num},
-            B3 => {self.hands[18] = num},
-            G3 => {self.hands[19] = num},
-            S3 => {self.hands[20] = num},
-            N3 => {self.hands[21] = num},
-            L3 => {self.hands[22] = num},
-            P3 => {self.hands[23] = num},
             _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
         }
     }
@@ -504,7 +462,7 @@ impl Board {
                     Some(piece) => {
                         // 駒の場所を指定した。
                         match self.pieces[SKY_ADDRESS] {
-                            Some(piece) => {
+                            Some(_piece) => {
                                 // 指には何も持ってない。
                                 false
                             },
@@ -523,12 +481,8 @@ impl Board {
                                 // 指につまんでいる駒を置く。
                                 self.pieces[SKY_ADDRESS] = None;
                                 self.pieces[address.get_index()] = Some(piece);
-                                if address.is_on_board() {
-                                    // 駒を盤上に置いた。
-                                    true
-                                } else {
-                                    false
-                                }
+                                // 駒を盤上に置いたら真。
+                                address.is_on_board(self.board_size)
                             },
                             None => {
                                 false
@@ -558,20 +512,6 @@ impl Board {
         }
     }
 
-    /// latest.
-    pub fn add(&mut self, address:Address, piece:Piece) {
-        if address.is_on_board() {
-            match self.pieces[address.get_index()] {
-                Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
-                None => {
-                    self.pieces[address.get_index()] = Some(piece);
-                },
-            }
-        } else if address.is_hand() {
-            self.hands[address.get_index() - self.board_size.board_len] += 1
-        }
-    }
-
     pub fn print_hand(&self, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
         let piece = match phase_opt {
             Some(phase) => {piece_type_to_piece(phase, piece_type)},
@@ -580,7 +520,7 @@ impl Board {
                 piece_type_to_piece(Phase::First, piece_type)
             },
         };
-        let count = self.get_hand(&piece);
+        let count = self.get_hand(piece);
         let num_label = if 1 < count {count.to_string()} else {"".to_string()};
         let ch = if 0 < count {
             piece_type_to_sign(Some(piece_type))

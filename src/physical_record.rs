@@ -77,7 +77,6 @@ pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
                 PN => PN1,
                 PL => PL1,
                 PP => PP1,
-                _ => K1, // TODO Error
             }
         },
         Second => {
@@ -96,7 +95,6 @@ pub fn piece_type_to_piece(phase:Phase, piece_type:PieceType) -> Piece {
                 PN => PN2,
                 PL => PL2,
                 PP => PP2,
-                _ => K2, // TODO Error
             }
         },
     }
@@ -233,18 +231,10 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn get_last_move(&self) -> Option<PhysicalMove> {
-        if self.items.is_empty() {
-            None
-        } else {
-            Some(self.items[self.items.len()-1])
-        }
-    }
-
-    pub fn println(&self, board_size:&BoardSize) {
+    pub fn println(&self, board_size:BoardSize) {
         print!("Physical record({}): ", self.items.len());
         for physical_move in &self.items {
-            print!("{}", physical_move.to_physical_sign(&board_size));
+            print!("{}", physical_move.to_physical_sign(board_size));
         }
         println!();
     }

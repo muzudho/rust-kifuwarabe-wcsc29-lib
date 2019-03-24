@@ -16,7 +16,7 @@ impl RecordConverter {
         let destination_address = Address::create_by_cell(
             logical_move.destination_file,
             logical_move.destination_rank,
-            &board.get_board_size()
+            board.get_board_size()
         );
         
         match logical_move.drop
@@ -63,7 +63,7 @@ impl RecordConverter {
                         let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
                             logical_move.source_file,
                             logical_move.source_rank,
-                            &board.get_board_size()
+                            board.get_board_size()
                         ));
                         physical_moves.push(board_off);
 

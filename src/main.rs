@@ -13,7 +13,7 @@ mod logical_record;
 mod parser;
 mod physical_move;
 mod physical_record;
-mod position_file;
+// mod position_file;
 mod record_converter;
 mod thought;
 
@@ -21,7 +21,6 @@ use address::*;
 use board::*;
 use communication::*;
 use fen::*;
-// use logical_move::*;
 use logical_record::*;
 use physical_move::*;
 use physical_record::*;
@@ -60,7 +59,7 @@ fn test(cursor:&mut usize) {
 }
 */
 fn main() {
-    let mut comm = Communication::new();
+    let comm = Communication::new();
     let mut physical_record = PhysicalRecord::new();
     let mut board = Board::default();
 
@@ -115,7 +114,7 @@ fn main() {
         } else if line.starts_with("bo") {
             // board.
             board.println(physical_record.get_phase());
-            physical_record.println(&board.get_board_size());
+            physical_record.println(board.get_board_size());
 
         // #####
         // # G #
@@ -132,7 +131,7 @@ fn main() {
             comm.println(&format!("bestmove {}", best_logical_move.to_sign()));
 
             let best_physical_moves = RecordConverter::convert_logical_move(
-                best_logical_move, &mut board, physical_record.get_phase());
+                best_logical_move, &board, physical_record.get_phase());
             for physical_move in best_physical_moves {
                 physical_record.add(&physical_move);
                 if board.touch(&physical_move) {
@@ -167,12 +166,8 @@ fn main() {
             let mut logical_record = LogicalRecord::new();
             let mut start = 0;
             if Fen::parse_board(&line, &mut start, &mut board) {
-                match Fen::parse_moves(&line, &mut start, &mut board) {
-                    Some(lrecords) => {
-                        logical_record = lrecords;
-                    },
-                    None => {
-                    },
+                if let Some(lrecords) = Fen::parse_moves(&line, &mut start, &mut board) {
+                    logical_record = lrecords;
                 };
             }
 
@@ -187,7 +182,7 @@ fn main() {
 fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&mut Board) {
     let file = file_char_to_i8(line.to_string().chars().nth(0).unwrap());
     let rank = rank_char_to_i8(line.to_string().chars().nth(1).unwrap());
-    let address = Address::create_by_cell(file, rank, &board.get_board_size());
+    let address = Address::create_by_cell(file, rank, board.get_board_size());
     let pmove = PhysicalMove::create_by_address(address);
     physical_record.add(&pmove);
     if board.touch(&pmove) {
@@ -195,5 +190,5 @@ fn do_touch_cell_command(line:&str, physical_record:&mut PhysicalRecord, board:&
         physical_record.add(&PhysicalMove::phase_change());
     }
     board.println(physical_record.get_phase());
-    physical_record.println(&board.get_board_size());
+    physical_record.println(board.get_board_size());
 }
