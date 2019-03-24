@@ -12,7 +12,7 @@ impl CommonOperation {
     }
 
     pub fn bo(comm:&Communication, physical_record:&PhysicalRecord, position:&Position) {
-        position.println(position.get_phase());
+        comm.println(&position.to_text(position.get_phase()));
         comm.print(&format!("Physical record({}): ", physical_record.len()));
         comm.println(&format!("{}", physical_record.to_sign(position.get_board_size())));
     }

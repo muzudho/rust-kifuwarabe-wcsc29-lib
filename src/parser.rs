@@ -12,4 +12,18 @@ impl Parser {
             false
         }
     }
+
+    pub fn append(base:&mut String, appends:&String) {
+        let start = base.len();
+        base.insert_str(start, appends);
+    }
+
+    pub fn append_ln(base:&mut String) {
+        Parser::append(base, &String::from("\r\n"));
+    }
+
+    pub fn appendln(base:&mut String, appends:&String) {
+        Parser::append(base, appends);
+        Parser::append(base, &String::from("\r\n"));
+    }
 }

@@ -1,4 +1,5 @@
 /// フォーサイス エドワーズ記法
+use communication::*;
 use position::*;
 use logical_move::*;
 use logical_record::*;
@@ -58,7 +59,7 @@ impl Fen {
         }
     }
 
-    pub fn parse_moves(line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
+    pub fn parse_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<LogicalRecord> {
         if Parser::match_keyword(&line, "moves", start) || 
             Parser::match_keyword(&line, " moves", start) {
         } else {
@@ -73,13 +74,13 @@ impl Fen {
         // position startpos moves 2g2f 8c8d
         let mut temp_record = LogicalRecord::new();
         temp_record.parse2(line, start);
-        println!("info temp_record.items.len: {}", temp_record.items.len());
+        comm.println(&format!("info temp_record.items.len: {}", temp_record.items.len()));
 
         // TODO 指し手通り、進めたい。
         for mov in &temp_record.items {
             println!("info Move: `{}`.", mov.to_sign());
             logical_record.make_move(*mov, position);
-            position.println(logical_record.get_current_phase());
+            comm.println(&position.to_text(logical_record.get_current_phase()));
         }
 
         Some(logical_record)

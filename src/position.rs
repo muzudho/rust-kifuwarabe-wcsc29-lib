@@ -1,4 +1,4 @@
-// use address::*;
+use parser::*;
 use physical_move::*;
 use physical_record::*;
 use std::*;
@@ -534,10 +534,11 @@ impl Position {
     }
 
     /// Point of symmetory.
-    pub fn println(&self, phase:Phase) {
+    pub fn to_text(&self, phase:Phase) -> String {
         use position::Phase::*;
+        let mut content = String::new();
 
-        println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(Some(Phase::First), PieceType::K),
             self.print_hand(Some(Phase::First), PieceType::R),
             self.print_hand(Some(Phase::First), PieceType::B),
@@ -545,16 +546,15 @@ impl Position {
             self.print_hand(Some(Phase::First), PieceType::S),
             self.print_hand(Some(Phase::First), PieceType::N),
             self.print_hand(Some(Phase::First), PieceType::L),
-            self.print_hand(Some(Phase::First), PieceType::P)
-            );
+            self.print_hand(Some(Phase::First), PieceType::P)));
 
         match phase {
             First => {
                 // hand.
-                println!("|         |  +-------------------+");
+                Parser::appendln(&mut content, &format!("|         |  +-------------------+"));
             },
             Second => {
-                println!("             +-------------------+");
+                Parser::appendln(&mut content, &format!("             +-------------------+"));
             },
         }
 
@@ -565,22 +565,22 @@ impl Position {
             match phase {
                 First => {
                     match rank {
-                        9 => {print!("|         | ")},
-                        8 => {print!("+---+ +-+ | ")},
-                        7 => {print!("    | | | | ")},
-                        6 => {print!("    | | | | ")},
-                        5 => {print!("    +-+ +-+ ")},
-                        4 => {print!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS)))},
-                        3 => {print!("            ")},
-                        2 => {print!("            ")},
-                        1 => {print!("            ")},
+                        9 => {Parser::append(&mut content, &format!("|         | "))},
+                        8 => {Parser::append(&mut content, &format!("+---+ +-+ | "))},
+                        7 => {Parser::append(&mut content, &format!("    | | | | "))},
+                        6 => {Parser::append(&mut content, &format!("    | | | | ",))},
+                        5 => {Parser::append(&mut content, &format!("    +-+ +-+ ",))},
+                        4 => {Parser::append(&mut content, &format!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        3 => {Parser::append(&mut content, &format!("            "))},
+                        2 => {Parser::append(&mut content, &format!("            "))},
+                        1 => {Parser::append(&mut content, &format!("            "))},
                         _ => {},
                     };
                 },
-                Second => {print!("            ")},
+                Second => {Parser::append(&mut content, &format!("            "))},
             }
 
-            print!(
+            Parser::append(&mut content, &format!(
                 "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
                 i8_to_rank_char(rank),
                 piece_to_sign(self.get_piece(1, rank)),
@@ -591,19 +591,19 @@ impl Position {
                 piece_to_sign(self.get_piece(6, rank)),
                 piece_to_sign(self.get_piece(7, rank)),
                 piece_to_sign(self.get_piece(8, rank)),
-                piece_to_sign(self.get_piece(9, rank)));
+                piece_to_sign(self.get_piece(9, rank))));
 
             // Right boarder and None phase hands.
             match rank {
-                9 => {print!(" |   ")},
-                8 => {print!(" |{:>3}", self.print_hand(None, PieceType::K))},
-                7 => {print!(" |{:>3}", self.print_hand(None, PieceType::R))},
-                6 => {print!(" |{:>3}", self.print_hand(None, PieceType::B))},
-                5 => {print!(" |{:>3}", self.print_hand(None, PieceType::G))},
-                4 => {print!(" |{:>3}", self.print_hand(None, PieceType::S))},
-                3 => {print!(" |{:>3}", self.print_hand(None, PieceType::N))},
-                2 => {print!(" |{:>3}", self.print_hand(None, PieceType::L))},
-                1 => {print!(" |{:>3}", self.print_hand(None, PieceType::P))},
+                9 => {Parser::append(&mut content, &format!(" |   "))},
+                8 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::K)))},
+                7 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::R)))},
+                6 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::B)))},
+                5 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::G)))},
+                4 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::S)))},
+                3 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::N)))},
+                2 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::L)))},
+                1 => {Parser::append(&mut content, &format!(" |{:>3}", self.print_hand(None, PieceType::P)))},
                 _ => {},
             };
 
@@ -614,34 +614,34 @@ impl Position {
                     match rank {
                         9 => {},
                         8 => {},
-                        6 => {print!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS)))},
-                        5 => {print!(" +-+ +-+")},
-                        4 => {print!(" | | | |")},
-                        3 => {print!(" | | | |")},
-                        2 => {print!(" | +-+ +---+")},
-                        1 => {print!(" |         |")},
+                        6 => {Parser::append(&mut content, &format!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        5 => {Parser::append(&mut content, &format!(" +-+ +-+"))},
+                        4 => {Parser::append(&mut content, &format!(" | | | |"))},
+                        3 => {Parser::append(&mut content, &format!(" | | | |"))},
+                        2 => {Parser::append(&mut content, &format!(" | +-+ +---+"))},
+                        1 => {Parser::append(&mut content, &format!(" |         |"))},
                         _ => {},
                     };                    
                 },
             }
 
-            println!();
+            Parser::append_ln(&mut content);
         }
 
         match phase {
             First => {
-                println!("             +-------------------+");
+                Parser::appendln(&mut content, &format!("             +-------------------+"));
             },
             Second => {
                 // hand.
-                println!("             +-------------------+    |         |");
+                Parser::appendln(&mut content, &format!("             +-------------------+    |         |"));
             },
         }
 
-        println!("               1 2 3 4 5 6 7 8 9");
+        Parser::appendln(&mut content, &format!("               1 2 3 4 5 6 7 8 9"));
 
         // Second phase hand.
-        println!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.print_hand(Some(Phase::Second), PieceType::K),
             self.print_hand(Some(Phase::Second), PieceType::R),
             self.print_hand(Some(Phase::Second), PieceType::B),
@@ -650,6 +650,8 @@ impl Position {
             self.print_hand(Some(Phase::Second), PieceType::N),
             self.print_hand(Some(Phase::Second), PieceType::L),
             self.print_hand(Some(Phase::Second), PieceType::P)
-            );
+            ));
+
+        content
     }
 }

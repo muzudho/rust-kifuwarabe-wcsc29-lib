@@ -168,7 +168,7 @@ fn main() {
             let mut logical_record = LogicalRecord::new();
             let mut start = 0;
             if Fen::parse_position(&line, &mut start, &mut board) {
-                if let Some(lrecords) = Fen::parse_moves(&line, &mut start, &mut board) {
+                if let Some(lrecords) = Fen::parse_moves(&comm, &line, &mut start, &mut board) {
                     logical_record = lrecords;
                 };
             }
