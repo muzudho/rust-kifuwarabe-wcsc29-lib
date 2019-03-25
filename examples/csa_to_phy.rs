@@ -1,6 +1,6 @@
 /// ```Shell
 /// ### Example.
-/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29
+/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
 /// cls
 /// 
 /// ### Compile.
@@ -13,15 +13,15 @@
 /// Execution file.
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
 
-extern crate kifuwarabe_wcsc29;
+extern crate kifuwarabe_wcsc29_lib;
 
-use kifuwarabe_wcsc29::common_operation::*;
-use kifuwarabe_wcsc29::communication::*;
-use kifuwarabe_wcsc29::csa_conv::csa_converter::*;
-use kifuwarabe_wcsc29::csa_conv::csa_move::*;
-use kifuwarabe_wcsc29::csa_conv::csa_record::*;
-use kifuwarabe_wcsc29::physical_record::*;
-use kifuwarabe_wcsc29::position::*;
+use kifuwarabe_wcsc29_lib::common_operation::*;
+use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
+use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
+use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
+use kifuwarabe_wcsc29_lib::physical_record::*;
+use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
