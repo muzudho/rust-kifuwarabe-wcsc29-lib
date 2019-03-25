@@ -97,6 +97,10 @@ impl CsaConverter {
         c_record:&CsaRecord,
         physical_record:&mut PhysicalRecord) {
 
+        // TODO とりあえず平手初期局面だけ対応。
+        position.reset_startpos();
+        CommonOperation::bo(comm, physical_record, position);
+
         let mut ply = 1;
         for cmove in &c_record.items {
             let p_moves = CsaConverter::convert_move(
@@ -107,6 +111,7 @@ impl CsaConverter {
 
             for pmove in p_moves {
                 CommonOperation::go(comm, physical_record, &pmove, position);
+                CommonOperation::bo(comm, physical_record, position);
             }
 
             ply += 1;
