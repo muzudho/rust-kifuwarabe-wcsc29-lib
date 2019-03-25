@@ -29,8 +29,9 @@ impl PhysicalRecord {
 
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
+        let mut ply = 1;
         for physical_move in &self.items {
-            sign = format!("{} {}", sign, physical_move.to_physical_sign(board_size));
+            sign = format!("{} {}", sign, physical_move.to_sign(board_size, &mut ply));
         }
         sign
     }

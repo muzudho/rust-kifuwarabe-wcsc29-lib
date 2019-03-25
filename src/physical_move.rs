@@ -46,7 +46,7 @@ impl PhysicalMove {
         }
     }
 
-    pub fn to_physical_sign(&self, board_size:BoardSize) -> String {
+    pub fn to_sign(&self, board_size:BoardSize, ply:&mut i8) -> String {
         match self.address {
             Some(address) => {
                 address.to_physical_sign(board_size)
@@ -57,7 +57,10 @@ impl PhysicalMove {
                 } else if self.sky_rotate {
                     "-".to_string()
                 } else if self.phase_change {
-                    "|".to_string()
+                    // TODO 手数が出てきた方が嬉しいので [2] といった数で挟みたい。
+                    *ply += 1;
+                    format!("[{}]", ply)
+                    // "|".to_string()
                 } else {
                     panic!("Unexpected physical move print.")
                 }

@@ -152,7 +152,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.11");
+            comm.println("id name Kifuwarabe Build.12");
             comm.println("id author Satoshi TAKAHASHI");
             comm.println("usiok");
         } else if line == "usinewgame" {
@@ -220,6 +220,25 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 // フェーズ交代。
                 comm.print(&ch1.to_string());
                 start += 1;
+                Some(PhysicalMove::change_phase())
+            },
+            '[' => {
+                // フェーズ交代。 ']' まで読み飛ばす。
+                comm.print(&ch1.to_string());
+                start += 1;
+                loop {
+                    if line.len() <= start {
+                        break;
+                    }
+                    
+                    let sub_ch = line[start..=start].chars().nth(0).unwrap();
+                    comm.print(&sub_ch.to_string());
+                    start += 1;
+
+                    if sub_ch == ']' {
+                        break;
+                    }
+                };
                 Some(PhysicalMove::change_phase())
             },
             'K' | 'k' |
