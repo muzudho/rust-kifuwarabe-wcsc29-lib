@@ -36,53 +36,53 @@ impl UsiConverter {
                 physical_moves.push(hand_on);
             },
             None => {
-                match position.get_piece_by_address(destination_address.get_index()) {
-                    Some(piece) => {
-                        // 駒を取る動きの場合
+                // 駒を進める動きの場合
+                if let Some(piece) = position.get_piece_by_address(destination_address.get_index()) {
+                    // 駒を取る動きが入る場合
 
-                        // hand-off
-                        let hand_off = PhysicalMove::create_by_address(destination_address);
-                        physical_moves.push(hand_off);
+                    // hand-off
+                    let hand_off = PhysicalMove::create_by_address(destination_address);
+                    physical_moves.push(hand_off);
 
-                        // hand-turn
-                        if is_promotion_piece(Some(piece)) {
-                            let hand_turn = PhysicalMove::turn_over();
-                            physical_moves.push(hand_turn);
-                        }
+                    // hand-turn
+                    if is_promotion_piece(Some(piece)) {
+                        let hand_turn = PhysicalMove::turn_over();
+                        physical_moves.push(hand_turn);
+                    }
 
-                        // hand-rotate
-                        let hand_rotate = PhysicalMove::rotate();
-                        physical_moves.push(hand_rotate);
+                    // hand-rotate
+                    let hand_rotate = PhysicalMove::rotate();
+                    physical_moves.push(hand_rotate);
 
-                        // hand-on
-                        let up = piece_to_piece_type(piece);
-                        let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
-                        physical_moves.push(hand_on);
-                    },
-                    None => {
-                        // 駒を進める動きの場合
-
-                        // board-off
-                        let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
-                            umove.source_file,
-                            umove.source_rank,
-                            position.get_board_size()
-                        ));
-                        physical_moves.push(board_off);
-
-                        // board-turn-over
-                        if umove.promotion {
-                            let board_turn = PhysicalMove::turn_over();
-                            physical_moves.push(board_turn);
-                        }
-
-                        // board-on
-                        let board_on = PhysicalMove::create_by_address(destination_address);
-                        physical_moves.push(board_on);
-                    },
+                    // hand-on
+                    let up = piece_to_piece_type(piece);
+                    let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    physical_moves.push(hand_on);
                 }
+
+                // board-off
+                let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
+                    umove.source_file,
+                    umove.source_rank,
+                    position.get_board_size()
+                ));
+                physical_moves.push(board_off);
+
+                // board-turn-over
+                if umove.promotion {
+                    let board_turn = PhysicalMove::turn_over();
+                    physical_moves.push(board_turn);
+                }
+
+                // board-on
+                let board_on = PhysicalMove::create_by_address(destination_address);
+                physical_moves.push(board_on);
             },
         }
+
+        // change-phase
+        let change_phase = PhysicalMove::change_phase();
+        physical_moves.push(change_phase);
 
         physical_moves
     }

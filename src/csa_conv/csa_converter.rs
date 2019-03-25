@@ -14,7 +14,7 @@ pub struct CsaConverter {
 impl CsaConverter {
     /// 変換には、現局面が必要。
     pub fn convert_move(cmove:&CsaMove, position:&Position) -> Vec<PhysicalMove> {
-        let mut physical_moves = Vec::new();
+        let mut p_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
             cmove.destination_file,
@@ -29,62 +29,62 @@ impl CsaConverter {
 
                 // hand-off
                 let hand_off = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
-                physical_moves.push(hand_off);
+                p_moves.push(hand_off);
 
                 // hand-on
                 let hand_on = PhysicalMove::create_by_address(destination_address);
-                physical_moves.push(hand_on);
+                p_moves.push(hand_on);
             },
             None => {
-                match position.get_piece_by_address(destination_address.get_index()) {
-                    Some(piece) => {
-                        // 駒を取る動きの場合
+                // 駒を進める動きの場合
+                if let Some(piece) = position.get_piece_by_address(destination_address.get_index()) {
+                    // 駒を取る動きが入る場合
 
-                        // hand-off
-                        let hand_off = PhysicalMove::create_by_address(destination_address);
-                        physical_moves.push(hand_off);
+                    // hand-off
+                    let hand_off = PhysicalMove::create_by_address(destination_address);
+                    p_moves.push(hand_off);
 
-                        // hand-turn
-                        if is_promotion_piece(Some(piece)) {
-                            let hand_turn = PhysicalMove::turn_over();
-                            physical_moves.push(hand_turn);
-                        }
+                    // hand-turn
+                    if is_promotion_piece(Some(piece)) {
+                        let hand_turn = PhysicalMove::turn_over();
+                        p_moves.push(hand_turn);
+                    }
 
-                        // hand-rotate
-                        let hand_rotate = PhysicalMove::rotate();
-                        physical_moves.push(hand_rotate);
+                    // hand-rotate
+                    let hand_rotate = PhysicalMove::rotate();
+                    p_moves.push(hand_rotate);
 
-                        // hand-on
-                        let up = piece_to_piece_type(piece);
-                        let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
-                        physical_moves.push(hand_on);
-                    },
-                    None => {
-                        // 駒を進める動きの場合
-
-                        // board-off
-                        let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
-                            cmove.source_file,
-                            cmove.source_rank,
-                            position.get_board_size()
-                        ));
-                        physical_moves.push(board_off);
-
-                        // board-turn-over
-                        if cmove.promotion {
-                            let board_turn = PhysicalMove::turn_over();
-                            physical_moves.push(board_turn);
-                        }
-
-                        // board-on
-                        let board_on = PhysicalMove::create_by_address(destination_address);
-                        physical_moves.push(board_on);
-                    },
+                    // hand-on
+                    let up = piece_to_piece_type(piece);
+                    let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    p_moves.push(hand_on);
                 }
+
+                // board-off
+                let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
+                    cmove.source_file,
+                    cmove.source_rank,
+                    position.get_board_size()
+                ));
+                p_moves.push(board_off);
+
+                // board-turn-over
+                if cmove.promotion {
+                    let board_turn = PhysicalMove::turn_over();
+                    p_moves.push(board_turn);
+                }
+
+                // board-on
+                let board_on = PhysicalMove::create_by_address(destination_address);
+                p_moves.push(board_on);
             },
         }
 
-        physical_moves
+        // change-phase
+        let change_phase = PhysicalMove::change_phase();
+        p_moves.push(change_phase);
+
+        p_moves
     }
 
     /// 変換には、初期局面が必要。
@@ -95,11 +95,11 @@ impl CsaConverter {
         physical_record:&mut PhysicalRecord) {
 
         for cmove in &c_record.items {
-            let physical_moves = CsaConverter::convert_move(
+            let p_moves = CsaConverter::convert_move(
                 cmove,
                 position);
 
-            for physical_move in physical_moves {
+            for physical_move in p_moves {
                 CommonOperation::go(comm, physical_record, &physical_move, position);
             }
         }

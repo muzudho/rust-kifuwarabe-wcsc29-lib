@@ -11,14 +11,14 @@
 /// 
 /// ```Shell
 /// ### Example.
-/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29
+/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
 /// cls
 /// 
 /// ### Compile.
 /// cargo clippy
 /// 
-/// ### Run.
-/// cargo run --release
+/// ### Build.
+/// cargo build --release
 /// ```
 /// 
 /// Execution file.
@@ -55,7 +55,7 @@ use position::*;
 use usi_conv::usi_converter::*;
 use thought::Thought;
 
-fn main() {
+pub fn main_loop() {
     let comm = Communication::new();
     let mut physical_record = PhysicalRecord::new();
     let mut position = Position::default();
