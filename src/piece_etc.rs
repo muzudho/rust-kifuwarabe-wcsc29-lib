@@ -178,44 +178,44 @@ pub fn piece_to_display(piece_opt:Option<Piece>) -> String {
     if let Some(piece) = piece_opt {
         use piece_etc::Piece::*;
         match piece {
-            // 逆さにできないから、アルファベットにしているだけ☆（＾～＾）
-            K1 => "OU  ",
+            // 逆さにできないから、半角カナにしているだけ☆（＾～＾）右側のスペースに背番号が入る予定☆（＾～＾）
+            K1 => "ｵｳ  ",
             K2 => "玉  ",
             K3 => "玉  ",
 
-            R1 => "HI  ",
+            R1 => "ヒ  ",
             R2 => "飛  ",
             R3 => "飛  ",
 
-            B1 => "KA  ",
+            B1 => "ｶｸ  ",
             B2 => "角  ",
             B3 => "角  ",
 
-            G1 => "KI  ",
+            G1 => "ｷﾝ  ",
             G2 => "金  ",
             G3 => "金  ",
 
-            S1 => "GI  ",
+            S1 => "ｷﾞ  ",
             S2 => "銀  ",
             S3 => "銀  ",
 
-            N1 => "KE  ",
+            N1 => "ｹｲ  ",
             N2 => "桂  ",
             N3 => "桂  ",
 
-            L1 => "KY  ",
+            L1 => "ｷｮ  ",
             L2 => "香  ",
             L3 => "香  ",
 
-            P1 => "FU  ",
+            P1 => "フ  ",
             P2 => "歩  ",
             P3 => "歩  ",
 
-            PR1 => "RY  ",
+            PR1 => "ﾘｭ  ",
             PR2 => "竜  ",
             PR3 => "竜  ",
 
-            PB1 => "UM  ",
+            PB1 => "ｳﾏ  ",
             PB2 => "馬  ",
             PB3 => "馬  ",
 
@@ -223,15 +223,15 @@ pub fn piece_to_display(piece_opt:Option<Piece>) -> String {
             PS2 => "全  ",
             PS3 => "全  ",
 
-            PN1 => "NK  ",
+            PN1 => "Nｹ  ",
             PN2 => "圭  ",
             PN3 => "圭  ",
 
-            PL1 => "NY  ",
+            PL1 => "Nﾔ  ",
             PL2 => "杏  ",
             PL3 => "杏  ",
 
-            PP1 => "TO  ",
+            PP1 => "ト  ",
             PP2 => "と  ",
             PP3 => "と  ",
         }

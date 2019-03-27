@@ -216,79 +216,80 @@ impl Position {
         match phase {
             First => {
                 // hand.
-                Parser::appendln(&mut content, &"|         |  +--------------------------------------+".to_string());
+                Parser::appendln(&mut content, &"|         |  +----+----+----+----+----+----+----+----+----+".to_string());
             },
             Second => {
-                Parser::appendln(&mut content, &"             +--------------------------------------+".to_string());
+                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+".to_string());
             },
         }
 
-        for y in 0..=8 {
-            let rank = 9 - y;
+        for row in 0..=16 {
+            let rank = 9 - (row/2);
 
             // 先手の手。
             match phase {
                 First => {
-                    match rank {
-                        9 => {Parser::append(&mut content, &"|         | ".to_string())},
-                        8 => {Parser::append(&mut content, &"+---+ +-+ | ".to_string())},
-                        7 => {Parser::append(&mut content, &"    | | | | ".to_string())},
-                        6 => {Parser::append(&mut content, &"    | | | | ".to_string())},
-                        5 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
-                        4 => {Parser::append(&mut content, &format!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
-                        3 => {Parser::append(&mut content, &"            ".to_string())},
-                        2 => {Parser::append(&mut content, &"            ".to_string())},
-                        1 => {Parser::append(&mut content, &"            ".to_string())},
-                        _ => {},
+                    match row {
+                        0 => {Parser::append(&mut content, &"|         | ".to_string())},
+                        1 => {Parser::append(&mut content, &"+---+ +-+ | ".to_string())},
+                        2 => {Parser::append(&mut content, &"    | | | | ".to_string())},
+                        3 => {Parser::append(&mut content, &"    | | | | ".to_string())},
+                        4 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
+                        5 => {Parser::append(&mut content, &format!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        6|7|8|9|10|11|12|13|14|15|16 => {Parser::append(&mut content, &"            ".to_string())},
+                        _ => { panic!("Unexpected row: {0}.", row) },
                     };
                 },
                 Second => {Parser::append(&mut content, &"            ".to_string())},
             }
 
-            Parser::append(&mut content, &format!(
-                // 全角文字が混ざると、文字数では横幅調整できない。
-                // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
-                "{0}| {1}{2}{3}{4}{5}{6}{7}{8}{9}",
-                rank, // Parser::i8_to_rank_char(rank),
-                piece_to_display(self.get_piece(1, rank)), // piece_to_sign
-                piece_to_display(self.get_piece(2, rank)),
-                piece_to_display(self.get_piece(3, rank)),
-                piece_to_display(self.get_piece(4, rank)),
-                piece_to_display(self.get_piece(5, rank)),
-                piece_to_display(self.get_piece(6, rank)),
-                piece_to_display(self.get_piece(7, rank)),
-                piece_to_display(self.get_piece(8, rank)),
-                piece_to_display(self.get_piece(9, rank))));
+            if row%2==0 {
+                Parser::append(&mut content, &format!(
+                    // 全角文字が混ざると、文字数では横幅調整できない。
+                    // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
+                    "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
+                    rank, // Parser::i8_to_rank_char(rank),
+                    piece_to_display(self.get_piece(1, rank)), // piece_to_sign
+                    piece_to_display(self.get_piece(2, rank)),
+                    piece_to_display(self.get_piece(3, rank)),
+                    piece_to_display(self.get_piece(4, rank)),
+                    piece_to_display(self.get_piece(5, rank)),
+                    piece_to_display(self.get_piece(6, rank)),
+                    piece_to_display(self.get_piece(7, rank)),
+                    piece_to_display(self.get_piece(8, rank)),
+                    piece_to_display(self.get_piece(9, rank))));
+            } else {
+                Parser::append(&mut content, &" +----+----+----+----+----+----+----+----+----+".to_string());
+            }
 
             // Right boarder and None phase hands.
-            match rank {
-                9 => {Parser::append(&mut content, &" |   ".to_string())},
-                8 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::K)))},
-                7 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::R)))},
-                6 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::B)))},
-                5 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::G)))},
-                4 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::S)))},
-                3 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::N)))},
-                2 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::L)))},
-                1 => {Parser::append(&mut content, &format!(" |{:>3}", self.to_hand_text(comm, None, PieceType::P)))},
-                _ => {},
+            match row {
+                0|1|2|3|4|5|6|7|8 => {Parser::append(&mut content, &"   ".to_string())},
+                9 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::K)))},
+                10 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::R)))},
+                11 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::B)))},
+                12 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::G)))},
+                13 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::S)))},
+                14 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::N)))},
+                15 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::L)))},
+                16 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::P)))},
+                _ => { panic!("Unexpected row: {0}.", row) },
             };
 
             // Second player finger.
             match phase {
                 First => {},
                 Second => {
-                    match rank {
-                        9 => {},
-                        8 => {},
-                        6 => {Parser::append(&mut content, &format!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
-                        5 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
-                        4 => {Parser::append(&mut content, &" | | | |".to_string())},
-                        3 => {Parser::append(&mut content, &" | | | |".to_string())},
-                        2 => {Parser::append(&mut content, &" | +-+ +---+".to_string())},
-                        1 => {Parser::append(&mut content, &" |         |".to_string())},
-                        _ => {},
-                    };                    
+                    match row {
+                        0|1|2|3|4|5|6|7|8|9|10 => {},
+                        11 => {Parser::append(&mut content, &format!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        12 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
+                        13 => {Parser::append(&mut content, &" | | | |".to_string())},
+                        14 => {Parser::append(&mut content, &" | | | |".to_string())},
+                        15 => {Parser::append(&mut content, &" | +-+ +---+".to_string())},
+                        16 => {Parser::append(&mut content, &" |         |".to_string())},
+                        _ => { panic!("Unexpected row: {0}.", row) },
+                    };
                 },
             }
 
@@ -297,15 +298,15 @@ impl Position {
 
         match phase {
             First => {
-                Parser::appendln(&mut content, &"             +--------------------------------------+".to_string());
+                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+".to_string());
             },
             Second => {
                 // hand.
-                Parser::appendln(&mut content, &"             +--------------------------------------+    |         |".to_string());
+                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+    |         |".to_string());
             },
         }
 
-        Parser::appendln(&mut content, &"               1   2   3   4   5   6   7   8   9".to_string());
+        Parser::appendln(&mut content, &"              1    2    3    4    5    6    7    8    9".to_string());
 
         // Second phase hand.
         Parser::appendln(&mut content, &format!("               {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
