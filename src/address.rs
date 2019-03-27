@@ -122,10 +122,15 @@ impl Address {
     pub fn to_physical_sign(self, board_size:BoardSize) -> String {
         if self.is_on_board(board_size) {
             let (file, rank) = board_size.cell_to_file_rank(self.index);
-            format!("{}{}", file, Parser::i8_to_rank_char(rank))
+            format!(
+                "{}{}",
+                file,
+                rank) // Parser::i8_to_rank_char(rank)
         } else if self.is_hand() {
             // 持ち駒
-            format!("{}*", piece_to_sign(self.get_hand_piece()))
+            format!(
+                "0{}", // "{}*"
+                 piece_to_sign(self.get_hand_piece()))
         } else if self.index == 105 {
             "Sky".to_string()
         } else {

@@ -247,7 +247,7 @@ impl Position {
 
             Parser::append(&mut content, &format!(
                 "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
-                Parser::i8_to_rank_char(rank),
+                rank, // Parser::i8_to_rank_char(rank),
                 piece_to_sign(self.get_piece(1, rank)),
                 piece_to_sign(self.get_piece(2, rank)),
                 piece_to_sign(self.get_piece(3, rank)),
