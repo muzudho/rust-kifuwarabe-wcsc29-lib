@@ -47,7 +47,7 @@ impl CsaConverter {
                 p_moves.push(hand_off);
 
                 // hand-turn
-                if is_promotion_piece(Some(capture_piece)) {
+                if is_promoted_piece(Some(capture_piece)) {
                     let hand_turn = PhysicalMove::turn_over();
                     p_moves.push(hand_turn);
                 }
@@ -73,7 +73,10 @@ impl CsaConverter {
             p_moves.push(board_off);
 
             // board-turn-over
-            if cmove.promotion {
+            // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
+            let pre_promoted = is_promoted_piece(position.get_piece(cmove.source_file, cmove.source_rank));
+            let cur_promoted = is_promoted_piece_type(cmove.koma);
+            if !pre_promoted && cur_promoted {
                 let board_turn = PhysicalMove::turn_over();
                 p_moves.push(board_turn);
             }

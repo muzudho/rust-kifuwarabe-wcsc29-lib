@@ -7,7 +7,7 @@ pub struct CsaMove {
     pub source_rank:i8,
     pub destination_file:i8,
     pub destination_rank:i8,
-    pub promotion:bool,
+    // 成ったかどうかは、盤上で駒を動かしてみないと分からない。
     pub koma:Option<PieceType>,
 }
 impl CsaMove {
@@ -43,7 +43,6 @@ impl CsaMove {
             source_rank: src_r,
             destination_file: Parser::file_char_to_i8(ch3),
             destination_rank: Parser::rank_char_to_i8(ch4),
-            promotion:false, // TODO
             koma: piece_type,
         })
     }

@@ -24,26 +24,26 @@ impl Address {
                     First => {
                         match piece_type {
                             K => {82},
-                            R => {83},
-                            B => {84},
+                            R | PR => {83},
+                            B | PB => {84},
                             G => {85},
-                            S => {86},
-                            N => {87},
-                            L => {88},
-                            P => {89},
+                            S | PS => {86},
+                            N | PN => {87},
+                            L | PL => {88},
+                            P | PP => {89},
                             _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(piece_type)))
                         }
                     },
                     Second => {
                         match piece_type {
                             K => {90},
-                            R => {91},
-                            B => {92},
+                            R | PR => {91},
+                            B | PB => {92},
                             G => {93},
-                            S => {94},
-                            N => {95},
-                            L => {96},
-                            P => {97},
+                            S | PS => {94},
+                            N | PN => {95},
+                            L | PL => {96},
+                            P | PP => {97},
                             _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(piece_type)))
                         }
                     },

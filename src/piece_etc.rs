@@ -13,59 +13,59 @@ pub enum Phase {
 pub enum Piece {
     // King is 玉.
     K1 = 0,
+    K2,
+    K3,
     // Rook is 飛.
     R1,
+    R2,
+    R3,
     // Bishop is 角.
     B1,
+    B2,
+    B3,
     // Gold is 金.
     G1,
+    G2,
+    G3,
     // Silver is 銀.
     S1,
+    S2,
+    S3,
     // kNight is 桂.
     N1,
+    N2,
+    N3,
     // Lance is 香.
     L1,
+    L2,
+    L3,
     // Pawn is 歩.
     P1,
+    P2,
+    P3,
     // Promoted rook is 竜.
     PR1,
+    PR2,
+    PR3,
     // Promoted bishop is 馬.
     PB1,
+    PB2,
+    PB3,
     // Promoted silver is 成銀.
     PS1,
+    PS2,
+    PS3,
     // Promoted knight is 成桂.
     PN1,
+    PN2,
+    PN3,
     // Promoted lance is 成香.
     PL1,
+    PL2,
+    PL3,
     // Promoted pawn is と.
     PP1,
-    K2,
-    R2,
-    B2,
-    G2,
-    S2,
-    N2,
-    L2,
-    P2,
-    PR2,
-    PB2,
-    PS2,
-    PN2,
-    PL2,
     PP2,
-    K3,
-    R3,
-    B3,
-    G3,
-    S3,
-    N3,
-    L3,
-    P3,
-    PR3,
-    PB3,
-    PS3,
-    PN3,
-    PL3,
     PP3,
 }
 
@@ -273,93 +273,157 @@ pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
     }
 }
 
-pub fn promotion_piece(piece:Option<Piece>) -> Option<Piece> {
-    match piece {
-        Some(x) => {
-            use piece_etc::Piece::*;
-            match x {
-                R1 => Some(PR1),
-                B1 => Some(PB1),
-                S1 => Some(PS1),
-                N1 => Some(PN1),
-                L1 => Some(PL1),
-                P1 => Some(PP1),
-                R2 => Some(PR2),
-                B2 => Some(PB2),
-                S2 => Some(PS2),
-                N2 => Some(PN2),
-                L2 => Some(PL2),
-                P2 => Some(PP2),
-                _ => panic!("Failed: Sfen unexpected promotion.")
-            }
-        },
-        None => None,
+pub fn promotion_piece(piece_opt:Option<Piece>) -> Option<Piece> {
+    if let Some(piece) = piece_opt {
+        use piece_etc::Piece::*;
+        match piece {
+            K1 => Some(K1),
+            K2 => Some(K2),
+            K3 => Some(K3),
+
+            R1 => Some(PR1),
+            R2 => Some(PR2),
+            R3 => Some(PR3),
+
+            B1 => Some(PB1),
+            B2 => Some(PB2),
+            B3 => Some(PB3),
+
+            G1 => Some(G1),
+            G2 => Some(G2),
+            G3 => Some(G3),
+
+            S1 => Some(PS1),
+            S2 => Some(PS2),
+            S3 => Some(PS3),
+
+            N1 => Some(PN1),
+            N2 => Some(PN2),
+            N3 => Some(PN3),
+
+            L1 => Some(PL1),
+            L2 => Some(PL2),
+            L3 => Some(PL3),
+
+            P1 => Some(PP1),
+            P2 => Some(PP2),
+            P3 => Some(PP3),
+
+            PR1 => Some(PR1),
+            PR2 => Some(PR2),
+            PR3 => Some(PR3),
+
+            PB1 => Some(PB1),
+            PB2 => Some(PB2),
+            PB3 => Some(PB3),
+
+            PS1 => Some(PS1),
+            PS2 => Some(PS2),
+            PS3 => Some(PS3),
+
+            PN1 => Some(PN1),
+            PN2 => Some(PN2),
+            PN3 => Some(PN3),
+
+            PL1 => Some(PL1),
+            PL2 => Some(PL2),
+            PL3 => Some(PL3),
+
+            PP1 => Some(PP1),
+            PP2 => Some(PP2),
+            PP3 => Some(PP3),
+            _ => panic!("Failed: Sfen unexpected promotion.")
+        }
+    } else {
+        None
     }
 }
-pub fn rotate_piece(piece:Option<Piece>) -> Option<Piece> {
-    match piece {
-        Some(x) => {
-            use piece_etc::Piece::*;
-            match x {
-                K1 => Some(K2),
-                R1 => Some(R2),
-                B1 => Some(B2),
-                G1 => Some(G2),
-                S1 => Some(S2),
-                N1 => Some(N2),
-                L1 => Some(L2),
-                P1 => Some(P2),
-                PR1 => Some(PR2),
-                PB1 => Some(PB2),
-                PS1 => Some(PS2),
-                PN1 => Some(PN2),
-                PL1 => Some(PL2),
-                PP1 => Some(PP2),
-                K2 => Some(K1),
-                R2 => Some(R1),
-                B2 => Some(B1),
-                G2 => Some(G1),
-                S2 => Some(S1),
-                N2 => Some(N1),
-                L2 => Some(L1),
-                P2 => Some(P1),
-                PR2 => Some(PR1),
-                PB2 => Some(PB1),
-                PS2 => Some(PS1),
-                PN2 => Some(PN1),
-                PL2 => Some(PL1),
-                PP2 => Some(PP1),
-                K3 => Some(K3),
-                R3 => Some(R3),
-                B3 => Some(B3),
-                G3 => Some(G3),
-                S3 => Some(S3),
-                N3 => Some(N3),
-                L3 => Some(L3),
-                P3 => Some(P3),
-                PR3 => Some(PR3),
-                PB3 => Some(PB3),
-                PS3 => Some(PS3),
-                PN3 => Some(PN3),
-                PL3 => Some(PL3),
-                PP3 => Some(PP3),
-            }
-        },
-        None => { None }
+pub fn rotate_piece(piece_opt:Option<Piece>) -> Option<Piece> {
+    if let Some(piece) = piece_opt {
+        use piece_etc::Piece::*;
+        match piece {
+            K1 => Some(K2),
+            K2 => Some(K1),
+            K3 => Some(K3),
+
+            R1 => Some(R2),
+            R2 => Some(R1),
+            R3 => Some(R3),
+
+            B1 => Some(B2),
+            B2 => Some(B1),
+            B3 => Some(B3),
+
+            G1 => Some(G2),
+            G2 => Some(G1),
+            G3 => Some(G3),
+
+            S1 => Some(S2),
+            S2 => Some(S1),
+            S3 => Some(S3),
+
+            N1 => Some(N2),
+            N2 => Some(N1),
+            N3 => Some(N3),
+
+            L1 => Some(L2),
+            L2 => Some(L1),
+            L3 => Some(L3),
+
+            P1 => Some(P2),
+            P2 => Some(P1),
+            P3 => Some(P3),
+
+            PR1 => Some(PR2),
+            PR2 => Some(PR1),
+            PR3 => Some(PR3),
+
+            PB1 => Some(PB2),
+            PB2 => Some(PB1),
+            PB3 => Some(PB3),
+
+            PS1 => Some(PS2),
+            PS2 => Some(PS1),
+            PS3 => Some(PS3),
+
+            PN1 => Some(PN2),
+            PN2 => Some(PN1),
+            PN3 => Some(PN3),
+
+            PL1 => Some(PL2),
+            PL2 => Some(PL1),
+            PL3 => Some(PL3),
+
+            PP1 => Some(PP2),
+            PP2 => Some(PP1),
+            PP3 => Some(PP3),
+        }
+    } else {
+        None
     }
 }
-pub fn is_promotion_piece(piece_opt:Option<Piece>) -> bool {
-    match piece_opt {
-        Some(piece) => {
-            use piece_etc::Piece::*;
-            match piece {
-                PR1 | PB1 | PS1 | PN1 | PL1 | PP1 |
-                PR2 | PB2 | PS2 | PN2 | PL2 | PP2 |
-                PR3 | PB3 | PS3 | PN3 | PL3 | PP3 => true,
-                _ => false,
-            }
-        },
-        None => false,
+pub fn is_promoted_piece(piece_opt:Option<Piece>) -> bool {
+    if let Some(piece) = piece_opt {
+        use piece_etc::Piece::*;
+        match piece {
+            PR1 | PB1 | PS1 | PN1 | PL1 | PP1 |
+            PR2 | PB2 | PS2 | PN2 | PL2 | PP2 |
+            PR3 | PB3 | PS3 | PN3 | PL3 | PP3 => true,
+            _ => false,
+        }
+    } else {
+        false
+    }
+}
+pub fn is_promoted_piece_type(piece_type_opt:Option<PieceType>) -> bool {
+    if let Some(piece_type) = piece_type_opt {
+        use piece_etc::PieceType::*;
+        match piece_type {
+            PR | PB | PS | PN | PL | PP => true,
+            _ => false,
+        }
+    } else {
+        false
     }
 }
 pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {

@@ -45,7 +45,7 @@ impl UsiConverter {
                     physical_moves.push(hand_off);
 
                     // hand-turn
-                    if is_promotion_piece(Some(piece)) {
+                    if is_promoted_piece(Some(piece)) {
                         let hand_turn = PhysicalMove::turn_over();
                         physical_moves.push(hand_turn);
                     }

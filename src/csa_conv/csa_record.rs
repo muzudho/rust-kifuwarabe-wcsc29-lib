@@ -44,17 +44,22 @@ impl CsaRecord {
         }
     }
 
-    pub fn make_move(&mut self, mov:CsaMove, position:&mut Position){
-        if mov.is_drop() {
+    pub fn make_move(&mut self, cmove:CsaMove, position:&mut Position){
+        if cmove.is_drop() {
             // TODO drop
 
         } else {
-            let mut source_piece = position.remove_piece(mov.source_file, mov.source_rank);
-            if mov.promotion {
+            let mut source_piece = position.remove_piece(cmove.source_file, cmove.source_rank);
+
+            /*
+            // 成ったかどうかは分からない。
+            if cmove.promotion {
                 source_piece = promotion_piece(source_piece);
             }
-            position.set_piece(mov.destination_file, mov.destination_rank, source_piece);
-            self.push(mov);
+            */
+            
+            position.set_piece(cmove.destination_file, cmove.destination_rank, source_piece);
+            self.push(cmove);
         }
     }
 }
