@@ -203,7 +203,7 @@ impl Position {
         use piece_etc::Phase::*;
         let mut content = String::new();
 
-        Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        Parser::appendln(&mut content, &format!("               {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.to_hand_text(comm, Some(Phase::First), PieceType::K),
             self.to_hand_text(comm, Some(Phase::First), PieceType::R),
             self.to_hand_text(comm, Some(Phase::First), PieceType::B),
@@ -216,10 +216,10 @@ impl Position {
         match phase {
             First => {
                 // hand.
-                Parser::appendln(&mut content, &"|         |  +-------------------+".to_string());
+                Parser::appendln(&mut content, &"|         |  +--------------------------------------+".to_string());
             },
             Second => {
-                Parser::appendln(&mut content, &"             +-------------------+".to_string());
+                Parser::appendln(&mut content, &"             +--------------------------------------+".to_string());
             },
         }
 
@@ -246,17 +246,19 @@ impl Position {
             }
 
             Parser::append(&mut content, &format!(
-                "{0}|{1: >2}{2: >2}{3: >2}{4: >2}{5: >2}{6: >2}{7: >2}{8: >2}{9: >2}",
+                // 全角文字が混ざると、文字数では横幅調整できない。
+                // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
+                "{0}| {1}{2}{3}{4}{5}{6}{7}{8}{9}",
                 rank, // Parser::i8_to_rank_char(rank),
-                piece_to_sign(self.get_piece(1, rank)),
-                piece_to_sign(self.get_piece(2, rank)),
-                piece_to_sign(self.get_piece(3, rank)),
-                piece_to_sign(self.get_piece(4, rank)),
-                piece_to_sign(self.get_piece(5, rank)),
-                piece_to_sign(self.get_piece(6, rank)),
-                piece_to_sign(self.get_piece(7, rank)),
-                piece_to_sign(self.get_piece(8, rank)),
-                piece_to_sign(self.get_piece(9, rank))));
+                piece_to_display(self.get_piece(1, rank)), // piece_to_sign
+                piece_to_display(self.get_piece(2, rank)),
+                piece_to_display(self.get_piece(3, rank)),
+                piece_to_display(self.get_piece(4, rank)),
+                piece_to_display(self.get_piece(5, rank)),
+                piece_to_display(self.get_piece(6, rank)),
+                piece_to_display(self.get_piece(7, rank)),
+                piece_to_display(self.get_piece(8, rank)),
+                piece_to_display(self.get_piece(9, rank))));
 
             // Right boarder and None phase hands.
             match rank {
@@ -295,18 +297,18 @@ impl Position {
 
         match phase {
             First => {
-                Parser::appendln(&mut content, &"             +-------------------+".to_string());
+                Parser::appendln(&mut content, &"             +--------------------------------------+".to_string());
             },
             Second => {
                 // hand.
-                Parser::appendln(&mut content, &"             +-------------------+    |         |".to_string());
+                Parser::appendln(&mut content, &"             +--------------------------------------+    |         |".to_string());
             },
         }
 
-        Parser::appendln(&mut content, &"               1 2 3 4 5 6 7 8 9".to_string());
+        Parser::appendln(&mut content, &"               1   2   3   4   5   6   7   8   9".to_string());
 
         // Second phase hand.
-        Parser::appendln(&mut content, &format!("              {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
+        Parser::appendln(&mut content, &format!("               {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
             self.to_hand_text(comm, Some(Phase::Second), PieceType::K),
             self.to_hand_text(comm, Some(Phase::Second), PieceType::R),
             self.to_hand_text(comm, Some(Phase::Second), PieceType::B),

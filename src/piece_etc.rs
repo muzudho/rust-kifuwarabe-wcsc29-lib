@@ -109,56 +109,134 @@ pub fn phase_to_sign(phase:Phase) -> String {
     }
 }
 
-pub fn piece_to_sign(piece:Option<Piece>) -> String {
-    match piece {
-        Some(x) => {
-            use piece_etc::Piece::*;
-            match x {
-                K1 => "K",
-                R1 => "R",
-                B1 => "B",
-                G1 => "G",
-                S1 => "S",
-                N1 => "N",
-                L1 => "L",
-                P1 => "P",
-                PR1 => "+R",
-                PB1 => "+B",
-                PS1 => "+S",
-                PN1 => "+N",
-                PL1 => "+L",
-                PP1 => "+P",
-                K2 => "k",
-                R2 => "r",
-                B2 => "b",
-                G2 => "g",
-                S2 => "s",
-                N2 => "n",
-                L2 => "l",
-                P2 => "p",
-                PR2 => "+r",
-                PB2 => "+b",
-                PS2 => "+s",
-                PN2 => "+n",
-                PL2 => "+l",
-                PP2 => "+p",
-                K3 => "K",
-                R3 => "R",
-                B3 => "B",
-                G3 => "G",
-                S3 => "S",
-                N3 => "N",
-                L3 => "L",
-                P3 => "P",
-                PR3 => "+R",
-                PB3 => "+B",
-                PS3 => "+S",
-                PN3 => "+N",
-                PL3 => "+L",
-                PP3 => "+P",
-            }
-        },
-        None => { "" }
+pub fn piece_to_sign(piece_opt:Option<Piece>) -> String {
+    if let Some(piece) = piece_opt {
+        use piece_etc::Piece::*;
+        match piece {
+            K1 => "K",
+            K2 => "k",
+            K3 => "K",
+
+            R1 => "R",
+            R2 => "r",
+            R3 => "R",
+
+            B1 => "B",
+            B2 => "b",
+            B3 => "B",
+
+            G1 => "G",
+            G2 => "g",
+            G3 => "G",
+
+            S1 => "S",
+            S2 => "s",
+            S3 => "S",
+
+            N1 => "N",
+            N2 => "n",
+            N3 => "N",
+
+            L1 => "L",
+            L2 => "l",
+            L3 => "L",
+
+            P1 => "P",
+            P2 => "p",
+            P3 => "P",
+
+            PR1 => "+R",
+            PR2 => "+r",
+            PR3 => "+R",
+
+            PB1 => "+B",
+            PB2 => "+b",
+            PB3 => "+B",
+
+            PS1 => "+S",
+            PS2 => "+s",
+            PS3 => "+S",
+
+            PN1 => "+N",
+            PN2 => "+n",
+            PN3 => "+N",
+
+            PL1 => "+L",
+            PL2 => "+l",
+            PL3 => "+L",
+
+            PP1 => "+P",
+            PP2 => "+p",
+            PP3 => "+P",
+        }
+    } else {
+        ""
+    }.to_string()
+}
+/// 横幅は半角4文字。
+pub fn piece_to_display(piece_opt:Option<Piece>) -> String {
+    if let Some(piece) = piece_opt {
+        use piece_etc::Piece::*;
+        match piece {
+            // 逆さにできないから、アルファベットにしているだけ☆（＾～＾）
+            K1 => "OU  ",
+            K2 => "玉  ",
+            K3 => "玉  ",
+
+            R1 => "HI  ",
+            R2 => "飛  ",
+            R3 => "飛  ",
+
+            B1 => "KA  ",
+            B2 => "角  ",
+            B3 => "角  ",
+
+            G1 => "KI  ",
+            G2 => "金  ",
+            G3 => "金  ",
+
+            S1 => "GI  ",
+            S2 => "銀  ",
+            S3 => "銀  ",
+
+            N1 => "KE  ",
+            N2 => "桂  ",
+            N3 => "桂  ",
+
+            L1 => "KY  ",
+            L2 => "香  ",
+            L3 => "香  ",
+
+            P1 => "FU  ",
+            P2 => "歩  ",
+            P3 => "歩  ",
+
+            PR1 => "RY  ",
+            PR2 => "竜  ",
+            PR3 => "竜  ",
+
+            PB1 => "UM  ",
+            PB2 => "馬  ",
+            PB3 => "馬  ",
+
+            PS1 => "NG  ",
+            PS2 => "全  ",
+            PS3 => "全  ",
+
+            PN1 => "NK  ",
+            PN2 => "圭  ",
+            PN3 => "圭  ",
+
+            PL1 => "NY  ",
+            PL2 => "杏  ",
+            PL3 => "杏  ",
+
+            PP1 => "TO  ",
+            PP2 => "と  ",
+            PP3 => "と  ",
+        }
+    } else {
+        "    "
     }.to_string()
 }
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {
