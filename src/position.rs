@@ -235,7 +235,7 @@ impl Position {
                         2 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         3 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         4 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
-                        5 => {Parser::append(&mut content, &format!("      {:>2}    ", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        5 => {Parser::append(&mut content, &format!("     {}   ", piece_to_display(self.get_piece_by_address(SKY_ADDRESS))))},
                         6|7|8|9|10|11|12|13|14|15|16 => {Parser::append(&mut content, &"            ".to_string())},
                         _ => { panic!("Unexpected row: {0}.", row) },
                     };
@@ -282,7 +282,7 @@ impl Position {
                 Second => {
                     match row {
                         0|1|2|3|4|5|6|7|8|9|10 => {},
-                        11 => {Parser::append(&mut content, &format!("   {:>2}", piece_to_sign(self.get_piece_by_address(SKY_ADDRESS))))},
+                        11 => {Parser::append(&mut content, &format!("  {}", piece_to_display(self.get_piece_by_address(SKY_ADDRESS))))},
                         12 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
                         13 => {Parser::append(&mut content, &" | | | |".to_string())},
                         14 => {Parser::append(&mut content, &" | | | |".to_string())},
