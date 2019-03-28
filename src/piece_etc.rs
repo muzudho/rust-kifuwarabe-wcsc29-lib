@@ -327,7 +327,7 @@ pub fn piece_to_piece_type(piece:Piece) -> PieceType {
         PP3 => PP,
     }
 }
-pub fn hand_piece_to_hand_index(piece:Piece) -> i8 {
+pub fn hand_piece_to_hand_index(piece:Piece) -> usize {
     use piece_etc::Piece::*;
     match piece {
         K1 | PK1 => {0},
@@ -670,7 +670,7 @@ pub fn piece_type_to_piece(phase_opt:Option<Phase>, piece_type:PieceType) -> Pie
 
                 L => L3,
                 PL => PL3,
-                
+
                 P => P3,
                 PP => PP3,
             }

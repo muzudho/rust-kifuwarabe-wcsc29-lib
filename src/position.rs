@@ -42,8 +42,7 @@ pub struct Position {
     phase: Phase,
     board_size: BoardSize,
     pub pieces: [Option<Piece>; DEFAULT_BOARD_SIZE],
-    /// R, B, G, S, N, L, P, r, b, g, s, n, l, p.
-    pub hands: [i8; HANDS_LEN],
+    pub hands: [Vec<PieceType>; HANDS_LEN],
 }
 impl Position {
     pub fn default() -> Position {
@@ -51,7 +50,11 @@ impl Position {
             phase: Phase::First,
             board_size: BoardSize::create_hon_shogi(),
             pieces: [None; DEFAULT_BOARD_SIZE],
-            hands: [0; HANDS_LEN],
+            hands: [
+                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            ],
         }
     }
 
@@ -59,9 +62,85 @@ impl Position {
         self.board_size = BoardSize::create_hon_shogi();
         self.pieces = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
-                0, 0, 0, 0, 0, 0, 0, 0, // First phase.
-                0, 0, 0, 0, 0, 0, 0, 0, // Second phase.
-                2, 2, 2, 4, 4, 4, 4, 18,]; // None phase.
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+        ];
+        // 使わない駒
+        use piece_etc::Piece::*;
+        use piece_etc::PieceType::*;
+        // 玉2枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(K3)];
+            vec.push(K);
+            vec.push(K);
+        }
+        // 飛2枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(R3)];
+            vec.push(R);
+            vec.push(R);
+        }
+        // 角2枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(B3)];
+            vec.push(B);
+            vec.push(B);
+        }
+        // 金4枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(G3)];
+            vec.push(G);
+            vec.push(G);
+            vec.push(G);
+            vec.push(G);
+        }
+        // 銀4枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(S3)];
+            vec.push(S);
+            vec.push(S);
+            vec.push(S);
+            vec.push(S);
+        }
+        // 桂4枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(N3)];
+            vec.push(N);
+            vec.push(N);
+            vec.push(N);
+            vec.push(N);
+        }
+        // 香4枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(L3)];
+            vec.push(L);
+            vec.push(L);
+            vec.push(L);
+            vec.push(L);
+        }
+        // 歩18枚。
+        {
+            let vec = &mut self.hands[hand_piece_to_hand_index(P3)];
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+            vec.push(P);
+        }
     }
 
     pub fn reset_startpos(&mut self) {
@@ -69,18 +148,22 @@ impl Position {
         self.board_size = BoardSize::create_hon_shogi();
         // Flip horizontal.
         self.pieces = [
-                Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
-                None, Some(B2), None, None, None, None, None, Some(R2), None,
-                Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
-                None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None, None,
-                None, None, None, None, None, None, None, None, None,
-                Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
-                None, Some(R1), None, None, None, None, None, Some(B1), None,
-                Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
-                None, // Sky
+            Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
+            None, Some(B2), None, None, None, None, None, Some(R2), None,
+            Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
+            None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None, None,
+            Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
+            None, Some(R1), None, None, None, None, None, Some(B1), None,
+            Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
+            None, // Sky
         ];
-        self.hands = [0; HANDS_LEN];
+        self.hands = [
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+        ];
     }
 
     pub fn get_phase(&self) -> Phase {
@@ -115,7 +198,17 @@ impl Position {
 
     pub fn get_hand(&self, piece:Piece) -> i8 {
         let hand_index = hand_piece_to_hand_index(piece);
-        self.hands[hand_index as usize]
+        self.hands[hand_index].len() as i8
+    }
+
+    pub fn add_hand(&mut self, piece:Piece) {
+        let hand_index = hand_piece_to_hand_index(piece);
+        self.hands[hand_index].push(piece_to_piece_type(piece))
+    }
+
+    pub fn remove_hand(&mut self, piece:Piece) -> PieceType {
+        let hand_index = hand_piece_to_hand_index(piece);
+        self.hands[hand_index].pop().unwrap()
     }
 
     pub fn touch(&mut self, _comm:&Communication, physical_move:&PhysicalMove) {
@@ -150,17 +243,17 @@ impl Position {
                 } else {
                     // 駒台。
                     match self.pieces[SKY_ADDRESS] {
-                        Some(_piece) => {
+                        Some(piece) => {
                             // 指に何か持っているので、駒台に置く。
                             self.pieces[SKY_ADDRESS] = None;
                             // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
-                            self.hands[address.get_hand_index()] += 1;
+                            self.add_hand(piece);//[address.get_hand_index()] += 1;
                         },
                         None => {
                             // 指には何も持ってないので、駒台の駒をつかむ。
                             let piece_opt = address.get_hand_piece();
                             self.pieces[SKY_ADDRESS] = piece_opt;
-                            self.hands[address.get_hand_index()] -= 1;
+                            self.remove_hand(piece_opt.unwrap());// .hands[address.get_hand_index()] -= 1;
                         },
                     }
                 }
