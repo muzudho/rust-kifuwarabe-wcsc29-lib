@@ -41,14 +41,14 @@ impl Fen {
             };
 
             if spaces == 0 {
-                position.set_piece(file, rank, parse_sign_line_to_piece(line, start));
+                position.set_id_piece(file, rank, parse_sign_line_to_piece(line, start));
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
                 rank = 9;
             } else {
                 while spaces > 0 {
-                    position.set_piece(file, rank, None);
+                    position.set_id_piece(file, rank, None);
                     file += 1;
                     spaces -= 1;
                 }

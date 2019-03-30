@@ -75,74 +75,74 @@ impl Position {
         // 玉2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(K3)];
-            vec.push(IdentifiedPiece::create(None, K00));
-            vec.push(IdentifiedPiece::create(None, K01));
+            vec.push(IdentifiedPiece::create(None, false, K00));
+            vec.push(IdentifiedPiece::create(None, false, K01));
         }
         // 飛2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(R3)];
-            vec.push(IdentifiedPiece::create(None, R20));
-            vec.push(IdentifiedPiece::create(None, R21));
+            vec.push(IdentifiedPiece::create(None, false, R20));
+            vec.push(IdentifiedPiece::create(None, false, R21));
         }
         // 角2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(B3)];
-            vec.push(IdentifiedPiece::create(None, B18));
-            vec.push(IdentifiedPiece::create(None, B19));
+            vec.push(IdentifiedPiece::create(None, false, B18));
+            vec.push(IdentifiedPiece::create(None, false, B19));
         }
         // 金4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(G3)];
-            vec.push(IdentifiedPiece::create(None, G02));
-            vec.push(IdentifiedPiece::create(None, G03));
-            vec.push(IdentifiedPiece::create(None, G04));
-            vec.push(IdentifiedPiece::create(None, G05));
+            vec.push(IdentifiedPiece::create(None, false, G02));
+            vec.push(IdentifiedPiece::create(None, false, G03));
+            vec.push(IdentifiedPiece::create(None, false, G04));
+            vec.push(IdentifiedPiece::create(None, false, G05));
         }
         // 銀4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(S3)];
-            vec.push(IdentifiedPiece::create(None, S06));
-            vec.push(IdentifiedPiece::create(None, S07));
-            vec.push(IdentifiedPiece::create(None, S08));
-            vec.push(IdentifiedPiece::create(None, S09));
+            vec.push(IdentifiedPiece::create(None, false, S06));
+            vec.push(IdentifiedPiece::create(None, false, S07));
+            vec.push(IdentifiedPiece::create(None, false, S08));
+            vec.push(IdentifiedPiece::create(None, false, S09));
         }
         // 桂4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(N3)];
-            vec.push(IdentifiedPiece::create(None, N10));
-            vec.push(IdentifiedPiece::create(None, N11));
-            vec.push(IdentifiedPiece::create(None, N12));
-            vec.push(IdentifiedPiece::create(None, N13));
+            vec.push(IdentifiedPiece::create(None, false, N10));
+            vec.push(IdentifiedPiece::create(None, false, N11));
+            vec.push(IdentifiedPiece::create(None, false, N12));
+            vec.push(IdentifiedPiece::create(None, false, N13));
         }
         // 香4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(L3)];
-            vec.push(IdentifiedPiece::create(None, L14));
-            vec.push(IdentifiedPiece::create(None, L15));
-            vec.push(IdentifiedPiece::create(None, L16));
-            vec.push(IdentifiedPiece::create(None, L17));
+            vec.push(IdentifiedPiece::create(None, false, L14));
+            vec.push(IdentifiedPiece::create(None, false, L15));
+            vec.push(IdentifiedPiece::create(None, false, L16));
+            vec.push(IdentifiedPiece::create(None, false, L17));
         }
         // 歩18枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(P3)];
-            vec.push(IdentifiedPiece::create(None, P22));
-            vec.push(IdentifiedPiece::create(None, P23));
-            vec.push(IdentifiedPiece::create(None, P24));
-            vec.push(IdentifiedPiece::create(None, P25));
-            vec.push(IdentifiedPiece::create(None, P26));
-            vec.push(IdentifiedPiece::create(None, P27));
-            vec.push(IdentifiedPiece::create(None, P28));
-            vec.push(IdentifiedPiece::create(None, P29));
-            vec.push(IdentifiedPiece::create(None, P30));
-            vec.push(IdentifiedPiece::create(None, P31));
-            vec.push(IdentifiedPiece::create(None, P32));
-            vec.push(IdentifiedPiece::create(None, P33));
-            vec.push(IdentifiedPiece::create(None, P34));
-            vec.push(IdentifiedPiece::create(None, P35));
-            vec.push(IdentifiedPiece::create(None, P36));
-            vec.push(IdentifiedPiece::create(None, P37));
-            vec.push(IdentifiedPiece::create(None, P38));
-            vec.push(IdentifiedPiece::create(None, P39));
+            vec.push(IdentifiedPiece::create(None, false, P22));
+            vec.push(IdentifiedPiece::create(None, false, P23));
+            vec.push(IdentifiedPiece::create(None, false, P24));
+            vec.push(IdentifiedPiece::create(None, false, P25));
+            vec.push(IdentifiedPiece::create(None, false, P26));
+            vec.push(IdentifiedPiece::create(None, false, P27));
+            vec.push(IdentifiedPiece::create(None, false, P28));
+            vec.push(IdentifiedPiece::create(None, false, P29));
+            vec.push(IdentifiedPiece::create(None, false, P30));
+            vec.push(IdentifiedPiece::create(None, false, P31));
+            vec.push(IdentifiedPiece::create(None, false, P32));
+            vec.push(IdentifiedPiece::create(None, false, P33));
+            vec.push(IdentifiedPiece::create(None, false, P34));
+            vec.push(IdentifiedPiece::create(None, false, P35));
+            vec.push(IdentifiedPiece::create(None, false, P36));
+            vec.push(IdentifiedPiece::create(None, false, P37));
+            vec.push(IdentifiedPiece::create(None, false, P38));
+            vec.push(IdentifiedPiece::create(None, false, P39));
         }
     }
 
@@ -153,15 +153,15 @@ impl Position {
         self.board_size = BoardSize::create_hon_shogi();
         // Gote view to flip horizontal. **NOT** point of symmetry.
         self.board = [
-            IdentifiedPiece::some(Some(Second) , L15), IdentifiedPiece::some(Some(Second) , N11), IdentifiedPiece::some(Some(Second) , S07), IdentifiedPiece::some(Some(Second) , G03), IdentifiedPiece::some(Some(Second) , K01), IdentifiedPiece::some(Some(Second) , G05), IdentifiedPiece::some(Some(Second) , S09), IdentifiedPiece::some(Some(Second) , N13), IdentifiedPiece::some(Some(Second) , L17),
-            None, IdentifiedPiece::some(Some(Second) , B19), None, None, None, None, None, IdentifiedPiece::some(Some(Second) , R21), None,
-            IdentifiedPiece::some(Some(Second) , P37), IdentifiedPiece::some(Some(Second) , P33), IdentifiedPiece::some(Some(Second) , P29), IdentifiedPiece::some(Some(Second) , P25), IdentifiedPiece::some(Some(Second) , P23), IdentifiedPiece::some(Some(Second) , P27), IdentifiedPiece::some(Some(Second) , P31), IdentifiedPiece::some(Some(Second) , P35), IdentifiedPiece::some(Some(Second) , P39),
+            IdentifiedPiece::some(Some(Second), false, L15), IdentifiedPiece::some(Some(Second), false, N11), IdentifiedPiece::some(Some(Second), false, S07), IdentifiedPiece::some(Some(Second), false, G03), IdentifiedPiece::some(Some(Second), false, K01), IdentifiedPiece::some(Some(Second), false, G05), IdentifiedPiece::some(Some(Second), false, S09), IdentifiedPiece::some(Some(Second), false, N13), IdentifiedPiece::some(Some(Second), false, L17),
+            None, IdentifiedPiece::some(Some(Second), false, B19), None, None, None, None, None, IdentifiedPiece::some(Some(Second), false, R21), None,
+            IdentifiedPiece::some(Some(Second), false, P37), IdentifiedPiece::some(Some(Second), false, P33), IdentifiedPiece::some(Some(Second), false, P29), IdentifiedPiece::some(Some(Second), false, P25), IdentifiedPiece::some(Some(Second), false, P23), IdentifiedPiece::some(Some(Second), false, P27), IdentifiedPiece::some(Some(Second), false, P31), IdentifiedPiece::some(Some(Second), false, P35), IdentifiedPiece::some(Some(Second), false, P39),
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
-            IdentifiedPiece::some(Some(First), P38), IdentifiedPiece::some(Some(First), P34), IdentifiedPiece::some(Some(First), P30), IdentifiedPiece::some(Some(First), P26), IdentifiedPiece::some(Some(First), P22), IdentifiedPiece::some(Some(First), P24), IdentifiedPiece::some(Some(First), P28), IdentifiedPiece::some(Some(First), P32), IdentifiedPiece::some(Some(First), P36),
-            None, IdentifiedPiece::some(Some(First), R20), None, None, None, None, None, IdentifiedPiece::some(Some(First), B18), None,
-            IdentifiedPiece::some(Some(First), L16), IdentifiedPiece::some(Some(First), N12), IdentifiedPiece::some(Some(First), S08), IdentifiedPiece::some(Some(First), G04), IdentifiedPiece::some(Some(First), K00), IdentifiedPiece::some(Some(First), G02), IdentifiedPiece::some(Some(First), S06), IdentifiedPiece::some(Some(First), N10), IdentifiedPiece::some(Some(First), L14),
+            IdentifiedPiece::some(Some(First), false, P38), IdentifiedPiece::some(Some(First), false, P34), IdentifiedPiece::some(Some(First), false, P30), IdentifiedPiece::some(Some(First), false, P26), IdentifiedPiece::some(Some(First), false, P22), IdentifiedPiece::some(Some(First), false, P24), IdentifiedPiece::some(Some(First), false, P28), IdentifiedPiece::some(Some(First), false, P32), IdentifiedPiece::some(Some(First), false, P36),
+            None, IdentifiedPiece::some(Some(First), false, R20), None, None, None, None, None, IdentifiedPiece::some(Some(First), false, B18), None,
+            IdentifiedPiece::some(Some(First), false, L16), IdentifiedPiece::some(Some(First), false, N12), IdentifiedPiece::some(Some(First), false, S08), IdentifiedPiece::some(Some(First), false, G04), IdentifiedPiece::some(Some(First), false, K00), IdentifiedPiece::some(Some(First), false, G02), IdentifiedPiece::some(Some(First), false, S06), IdentifiedPiece::some(Some(First), false, N10), IdentifiedPiece::some(Some(First), false, L14),
             None, // Sky
         ];
         self.hands = [
@@ -186,6 +186,10 @@ impl Position {
 
     pub fn get_id_piece_by_address(&self, address:usize) -> Option<IdentifiedPiece> {
         self.board[address]
+    }
+
+    pub fn get_cell_thing_by_address(&self, address:Address) -> CellThing {
+        CellThing::create(self.board[address.get_index()])
     }
 
     pub fn move_finger_to_hand(&mut self) {
@@ -271,7 +275,7 @@ impl Position {
                         },
                         None => {
                             // 指には何も持ってないので、駒台の駒をつかむ。
-                            self.move_hand_to_finger();
+                            self.move_hand_to_finger(address);
                         },
                     }
                 }
@@ -284,11 +288,13 @@ impl Position {
                         First => {Second},
                         Second => {First},
                     };
-                } else if let Some(piece) = self.board[SKY_ADDRESS] {
+                } else if let Some(id_piece) = self.board[SKY_ADDRESS] {
                     if physical_move.sky_turn {
-                        self.board[SKY_ADDRESS] = promotion_piece(Some(piece));
+                        id_piece.turn_over();
+                        self.board[SKY_ADDRESS] = Some(id_piece);
                     } else if physical_move.sky_rotate {
-                        self.board[SKY_ADDRESS] = rotate_piece(Some(piece));
+                        id_piece.rotate();
+                        self.board[SKY_ADDRESS] = Some(id_piece);
                     };
                 }
             }
@@ -349,7 +355,7 @@ impl Position {
                         2 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         3 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         4 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
-                        5 => {Parser::append(&mut content, &format!("     {}   ", piece_to_display(self.get_piece_by_address(SKY_ADDRESS))))},
+                        5 => {Parser::append(&mut content, &format!("     {}   ", self.get_cell_thing_by_address(Address::create_as_sky()).to_display()))},
                         6|7|8|9|10|11|12|13|14|15|16 => {Parser::append(&mut content, &"            ".to_string())},
                         _ => { panic!("Unexpected row: {0}.", row) },
                     };
@@ -363,15 +369,15 @@ impl Position {
                     // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
                     "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
                     rank, // Parser::i8_to_rank_char(rank),
-                    piece_to_display(self.get_piece(1, rank)), // piece_to_sign
-                    piece_to_display(self.get_piece(2, rank)),
-                    piece_to_display(self.get_piece(3, rank)),
-                    piece_to_display(self.get_piece(4, rank)),
-                    piece_to_display(self.get_piece(5, rank)),
-                    piece_to_display(self.get_piece(6, rank)),
-                    piece_to_display(self.get_piece(7, rank)),
-                    piece_to_display(self.get_piece(8, rank)),
-                    piece_to_display(self.get_piece(9, rank))));
+                    self.get_cell_thing_by_address(Address::create_by_cell(1, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(2, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(3, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(4, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(5, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(6, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(7, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(8, rank, self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::create_by_cell(9, rank, self.board_size)).to_display()));
             } else {
                 Parser::append(&mut content, &" +----+----+----+----+----+----+----+----+----+".to_string());
             }
@@ -396,7 +402,7 @@ impl Position {
                 Second => {
                     match row {
                         0|1|2|3|4|5|6|7|8|9|10 => {},
-                        11 => {Parser::append(&mut content, &format!("  {}", piece_to_display(self.get_piece_by_address(SKY_ADDRESS))))},
+                        11 => {Parser::append(&mut content, &format!("  {}", self.get_cell_thing_by_address(Address::create_as_sky()).to_display()))},
                         12 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
                         13 => {Parser::append(&mut content, &" | | | |".to_string())},
                         14 => {Parser::append(&mut content, &" | | | |".to_string())},

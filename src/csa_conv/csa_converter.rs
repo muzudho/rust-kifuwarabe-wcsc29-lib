@@ -38,16 +38,16 @@ impl CsaConverter {
             p_moves.push(hand_on);
         } else {
             // 駒を進める動きの場合
-            if let Some(capture_piece) = position.get_piece_by_address(destination_address.get_index()) {
+            if let Some(capture_id_piece) = position.get_id_piece_by_address(destination_address.get_index()) {
                 // 駒を取る動きが入る場合
-                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, piece_to_sign(Some(capture_piece))));
+                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_physical_sign()));
 
                 // hand-off
                 let hand_off = PhysicalMove::create_by_address(destination_address);
                 p_moves.push(hand_off);
 
                 // hand-turn
-                if is_promoted_piece(Some(capture_piece)) {
+                if capture_id_piece.is_promoted() {
                     let hand_turn = PhysicalMove::turn_over();
                     p_moves.push(hand_turn);
                 }
@@ -57,7 +57,7 @@ impl CsaConverter {
                 p_moves.push(hand_rotate);
 
                 // hand-on
-                let up = piece_to_piece_type(capture_piece);
+                let up = capture_id_piece.get_type();
                 let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
             } else {
@@ -74,7 +74,11 @@ impl CsaConverter {
 
             // board-turn-over
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            let pre_promoted = is_promoted_piece(position.get_piece(cmove.source_file, cmove.source_rank));
+            let pre_promoted = if let Some(id_piece) = position.get_id_piece(cmove.source_file, cmove.source_rank) {
+                id_piece.is_promoted()
+            } else {
+                false
+            };
             let cur_promoted = is_promoted_piece_type(cmove.koma);
             if !pre_promoted && cur_promoted {
                 let board_turn = PhysicalMove::turn_over();

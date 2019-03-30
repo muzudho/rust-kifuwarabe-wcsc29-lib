@@ -45,7 +45,7 @@ impl UsiConverter {
                     physical_moves.push(hand_off);
 
                     // hand-turn
-                    if is_promoted_piece(Some(id_piece)) {
+                    if id_piece.is_promoted() {
                         let hand_turn = PhysicalMove::turn_over();
                         physical_moves.push(hand_turn);
                     }
@@ -55,7 +55,7 @@ impl UsiConverter {
                     physical_moves.push(hand_rotate);
 
                     // hand-on
-                    let up = piece_to_piece_type(id_piece);
+                    let up = id_piece.get_type();
                     let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                     physical_moves.push(hand_on);
                 }

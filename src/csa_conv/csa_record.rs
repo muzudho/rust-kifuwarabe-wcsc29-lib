@@ -49,7 +49,7 @@ impl CsaRecord {
             // TODO drop
 
         } else {
-            let mut source_piece = position.remove_piece(cmove.source_file, cmove.source_rank);
+            let mut source_id_piece_opt = position.remove_id_piece(cmove.source_file, cmove.source_rank);
 
             /*
             // 成ったかどうかは分からない。
@@ -58,7 +58,7 @@ impl CsaRecord {
             }
             */
             
-            position.set_piece(cmove.destination_file, cmove.destination_rank, source_piece);
+            position.set_id_piece(cmove.destination_file, cmove.destination_rank, source_id_piece_opt);
             self.push(cmove);
         }
     }

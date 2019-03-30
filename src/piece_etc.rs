@@ -52,31 +52,429 @@ pub enum PieceIdentify {
     P39,
 }
 
+/// IdentifiedPiece with None.
+pub struct CellThing {
+    id_piece_opt:Option<IdentifiedPiece>,
+}
+impl CellThing {
+    pub fn create(id_piece_opt_arg:Option<IdentifiedPiece>) -> CellThing {
+        CellThing {
+            id_piece_opt: id_piece_opt_arg,
+        }
+    }
+
+    /// 横幅は半角4文字。
+    // 逆さにできないから、半角カナにしているだけ☆（＾～＾）右側のスペースに18進数の背番号が入る予定☆（＾～＾）
+    pub fn to_display(self) -> String {
+        use piece_etc::PieceIdentify::*;
+        if let Some(id_piece) = self.id_piece_opt {
+            if let Some(phase) = id_piece.get_phase() {
+                match phase {
+                    First => {
+                        if id_piece.is_promoted() {
+                            match id_piece.get_id() {
+                                K00 => "生00",
+                                K01 => "生01",
+                                G02 => "今02",
+                                G03 => "今03",
+                                G04 => "今04",
+                                G05 => "今05",
+                                S06 => "全06",
+                                S07 => "全07",
+                                S08 => "全08",
+                                S09 => "全09",
+                                N10 => "圭10",
+                                N11 => "圭11",
+                                N12 => "圭12",
+                                N13 => "圭13",
+                                L14 => "杏14",
+                                L15 => "杏15",
+                                L16 => "杏16",
+                                L17 => "杏17",
+                                B18 => "馬18",
+                                B19 => "馬19",
+                                R20 => "竜20",
+                                R21 => "竜21",
+                                P22 => "と22",
+                                P23 => "と23",
+                                P24 => "と24",
+                                P25 => "と25",
+                                P26 => "と26",
+                                P27 => "と27",
+                                P28 => "と28",
+                                P29 => "と29",
+                                P30 => "と30",
+                                P31 => "と31",
+                                P32 => "と32",
+                                P33 => "と33",
+                                P34 => "と34",
+                                P35 => "と35",
+                                P36 => "と36",
+                                P37 => "と37",
+                                P38 => "と38",
+                                P39 => "と39",
+                            }
+                        } else {
+                            match id_piece.get_id() {
+                                K00 => "王00",
+                                K01 => "玉01",
+                                G02 => "金02",
+                                G03 => "金03",
+                                G04 => "金04",
+                                G05 => "金05",
+                                S06 => "銀06",
+                                S07 => "銀07",
+                                S08 => "銀08",
+                                S09 => "銀09",
+                                N10 => "桂10",
+                                N11 => "桂11",
+                                N12 => "桂12",
+                                N13 => "桂13",
+                                L14 => "香14",
+                                L15 => "香15",
+                                L16 => "香16",
+                                L17 => "香17",
+                                B18 => "角18",
+                                B19 => "角19",
+                                R20 => "飛20",
+                                R21 => "飛21",
+                                P22 => "歩22",
+                                P23 => "歩23",
+                                P24 => "歩24",
+                                P25 => "歩25",
+                                P26 => "歩26",
+                                P27 => "歩27",
+                                P28 => "歩28",
+                                P29 => "歩29",
+                                P30 => "歩30",
+                                P31 => "歩31",
+                                P32 => "歩32",
+                                P33 => "歩33",
+                                P34 => "歩34",
+                                P35 => "歩35",
+                                P36 => "歩36",
+                                P37 => "歩37",
+                                P38 => "歩38",
+                                P39 => "歩39",
+                            }
+                        }
+                    },
+                    Second => {
+                        if id_piece.is_promoted() {
+                            match id_piece.get_id() {
+                                K00 => "ｲｸ00",
+                                K01 => "ｲｸ01",
+                                G02 => "Nｷ02",
+                                G03 => "Nｷ03",
+                                G04 => "Nｷ04",
+                                G05 => "Nｷ05",
+                                S06 => "NG06",
+                                S07 => "NG07",
+                                S08 => "NG08",
+                                S09 => "NG09",
+                                N10 => "Nｹ10",
+                                N11 => "Nｹ11",
+                                N12 => "Nｹ12",
+                                N13 => "Nｹ13",
+                                L14 => "Nﾔ14",
+                                L15 => "Nﾔ15",
+                                L16 => "Nﾔ16",
+                                L17 => "Nﾔ17",
+                                B18 => "ｳﾏ18",
+                                B19 => "ｳﾏ19",
+                                R20 => "ﾘｭ20",
+                                R21 => "ﾘｭ21",
+                                P22 => "ト22",
+                                P23 => "ト23",
+                                P24 => "ト24",
+                                P25 => "ト25",
+                                P26 => "ト26",
+                                P27 => "ト27",
+                                P28 => "ト28",
+                                P29 => "ト29",
+                                P30 => "ト30",
+                                P31 => "ト31",
+                                P32 => "ト32",
+                                P33 => "ト33",
+                                P34 => "ト34",
+                                P35 => "ト35",
+                                P36 => "ト36",
+                                P37 => "ト37",
+                                P38 => "ト38",
+                                P39 => "ト39",
+                            }
+                        } else {
+                            match id_piece.get_id() {
+                                K00 => "ｵｳ00",
+                                K01 => "ｵｳ01",
+                                G02 => "ｷﾝ02",
+                                G03 => "ｷﾝ03",
+                                G04 => "ｷﾝ04",
+                                G05 => "ｷﾝ05",
+                                S06 => "ｷﾞ06",
+                                S07 => "ｷﾞ07",
+                                S08 => "ｷﾞ08",
+                                S09 => "ｷﾞ09",
+                                N10 => "ｹｲ10",
+                                N11 => "ｹｲ11",
+                                N12 => "ｹｲ12",
+                                N13 => "ｹｲ13",
+                                L14 => "ﾔﾘ14",
+                                L15 => "ﾔﾘ15",
+                                L16 => "ﾔﾘ16",
+                                L17 => "ﾔﾘ17",
+                                B18 => "ｶｸ18",
+                                B19 => "ｶｸ19",
+                                R20 => "ヒ20",
+                                R21 => "ヒ21",
+                                P22 => "フ22",
+                                P23 => "フ23",
+                                P24 => "フ24",
+                                P25 => "フ25",
+                                P26 => "フ26",
+                                P27 => "フ27",
+                                P28 => "フ28",
+                                P29 => "フ29",
+                                P30 => "フ30",
+                                P31 => "フ31",
+                                P32 => "フ32",
+                                P33 => "フ33",
+                                P34 => "フ34",
+                                P35 => "フ35",
+                                P36 => "フ36",
+                                P37 => "フ37",
+                                P38 => "フ38",
+                                P39 => "フ39",
+                            }
+                        }
+                    },
+                }
+            } else {
+                // 使っていない駒を盤上に置いてはいけないぜ☆（＾～＾）
+                "xxxx"
+            }
+        } else {
+            // 空セル☆（＾～＾）
+            "    "
+        }.to_string()
+    }
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub struct IdentifiedPiece {
     phase:Option<Phase>,
+    promoted:bool,
     id:PieceIdentify,
 }
 impl IdentifiedPiece {
-    pub fn create(phase_opt:Option<Phase>, piece_id:PieceIdentify,) -> IdentifiedPiece {
+    pub fn create(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> IdentifiedPiece {
         IdentifiedPiece {
             phase: phase_opt,
+            promoted: promoted_flag,
             id: piece_id,
         }
     }
-    pub fn some(phase_opt:Option<Phase>, piece_id:PieceIdentify,) -> Option<IdentifiedPiece> {
+
+    pub fn some(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> Option<IdentifiedPiece> {
         Some(IdentifiedPiece::create(
             phase_opt,
+            promoted_flag,
             piece_id,
         ))
+    }
+
+    pub fn turn_over(&mut self) {
+        self.promoted = !self.promoted;
+    }
+
+    pub fn rotate(&mut self) {
+        use piece_etc::Phase::*;
+        if let Some(phase) = self.phase {
+            self.phase = match phase {
+                First => Some(Second),
+                Second => Some(First),
+            }
+        }
     }
 
     pub fn get_phase(self) -> Option<Phase> {
         self.phase
     }
 
+    pub fn is_promoted(self) -> bool {
+        self.promoted
+    }
+
     pub fn get_id(self) -> PieceIdentify {
         self.id
+    }
+
+    pub fn get_type(self) -> PieceType {
+        use piece_etc::PieceIdentify::*;
+        use piece_etc::PieceType::*;
+        if self.promoted {
+            match self.id {
+                K00 | K01 => PK,
+                R20 | R21 => PR,
+                B18 | B19 => PB,
+                G02 | G03 | G04 | G05 => PG,
+                S06 | S07 | S08 | S09 => PS,
+                N10 | N11 | N12 | N13 => PN,
+                L14 | L15 | L16 | L17 => PL,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => PP,
+            }
+        } else {
+            match self.id {
+                K00 | K01 => K,
+                R20 | R21 => R,
+                B18 | B19 => B,
+                G02 | G03 | G04 | G05 => G,
+                S06 | S07 | S08 | S09 => S,
+                N10 | N11 | N12 | N13 => N,
+                L14 | L15 | L16 | L17 => L,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => P,
+            }
+        }
+    }
+
+    pub fn to_physical_sign(self) -> String {
+        use piece_etc::PieceIdentify::*;
+        if let Some(phase) = self.get_phase() {
+            match phase {
+                First => {
+                    if self.is_promoted() {
+                        // 先手の成り駒。
+                        match self.get_id() {
+                            K00 | K01 => "+K",
+                            R20 | R21 => "+R",
+                            B18 | B19 => "+B",
+                            G02 | G03 | G04 | G05 => "+G",
+                            S06 | S07 | S08 | S09 => "+S",
+                            N10 | N11 | N12 | N13 => "+N",
+                            L14 | L15 | L16 | L17 => "+L",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
+                        }
+                    } else {
+                        // 先手の不成駒。
+                        match self.get_id() {
+                            K00 | K01 => "K",
+                            R20 | R21 => "R",
+                            B18 | B19 => "B",
+                            G02 | G03 | G04 | G05 => "G",
+                            S06 | S07 | S08 | S09 => "S",
+                            N10 | N11 | N12 | N13 => "N",
+                            L14 | L15 | L16 | L17 => "L",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
+                        }
+                    }
+                },
+                Second => {
+                    if self.is_promoted() {
+                        // 後手の成り駒。
+                        match self.get_id() {
+                            K00 | K01 => "+k",
+                            R20 | R21 => "+r",
+                            B18 | B19 => "+b",
+                            G02 | G03 | G04 | G05 => "+g",
+                            S06 | S07 | S08 | S09 => "+S",
+                            N10 | N11 | N12 | N13 => "+n",
+                            L14 | L15 | L16 | L17 => "+l",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                        }
+                    } else {
+                        // 後手の不成駒。
+                        match self.get_id() {
+                            K00 | K01 => "k",
+                            R20 | R21 => "r",
+                            B18 | B19 => "b",
+                            G02 | G03 | G04 | G05 => "g",
+                            S06 | S07 | S08 | S09 => "s",
+                            N10 | N11 | N12 | N13 => "n",
+                            L14 | L15 | L16 | L17 => "l",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                        }
+                    }
+                },
+            }
+        } else {
+            // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
+            panic!("Unexpected physical sign.")
+        }.to_string()
+    }
+
+    pub fn to_usi_sign(self) -> String {
+        use piece_etc::PieceIdentify::*;
+        if let Some(phase) = self.get_phase() {
+            match phase {
+                First => {
+                    if self.is_promoted() {
+                        // 先手の成り駒。
+                        match self.get_id() {
+                            K00 | K01 => "K",
+                            R20 | R21 => "+R",
+                            B18 | B19 => "+B",
+                            G02 | G03 | G04 | G05 => "G",
+                            S06 | S07 | S08 | S09 => "+S",
+                            N10 | N11 | N12 | N13 => "+N",
+                            L14 | L15 | L16 | L17 => "+L",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
+                        }
+                    } else {
+                        // 先手の不成駒。
+                        match self.get_id() {
+                            K00 | K01 => "K",
+                            R20 | R21 => "R",
+                            B18 | B19 => "B",
+                            G02 | G03 | G04 | G05 => "G",
+                            S06 | S07 | S08 | S09 => "S",
+                            N10 | N11 | N12 | N13 => "N",
+                            L14 | L15 | L16 | L17 => "L",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
+                        }
+                    }
+                },
+                Second => {
+                    if self.is_promoted() {
+                        // 後手の成り駒。
+                        match self.get_id() {
+                            K00 | K01 => "k",
+                            R20 | R21 => "+r",
+                            B18 | B19 => "+b",
+                            G02 | G03 | G04 | G05 => "g",
+                            S06 | S07 | S08 | S09 => "+S",
+                            N10 | N11 | N12 | N13 => "+n",
+                            L14 | L15 | L16 | L17 => "+l",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                        }
+                    } else {
+                        // 後手の不成駒。
+                        match self.get_id() {
+                            K00 | K01 => "k",
+                            R20 | R21 => "r",
+                            B18 | B19 => "b",
+                            G02 | G03 | G04 | G05 => "g",
+                            S06 | S07 | S08 | S09 => "s",
+                            N10 | N11 | N12 | N13 => "n",
+                            L14 | L15 | L16 | L17 => "l",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                        }
+                    }
+                },
+            }
+        } else {
+            // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
+            panic!("Unexpected usi sign.")
+        }.to_string()
     }
 }
 
@@ -273,72 +671,6 @@ pub fn piece_to_sign(piece_opt:Option<Piece>) -> String {
         }
     } else {
         ""
-    }.to_string()
-}
-/// 横幅は半角4文字。
-pub fn piece_to_display(piece_opt:Option<Piece>) -> String {
-    if let Some(piece) = piece_opt {
-        use piece_etc::Piece::*;
-        match piece {
-            // 逆さにできないから、半角カナにしているだけ☆（＾～＾）右側のスペースに18進数の背番号が入る予定☆（＾～＾）
-            K1 => " ｵｳ ",
-            K2 => " 玉 ",
-            K3 => " 玉 ",
-            PK1 => " ｲｸ ",
-            PK2 => " 生 ",
-            PK3 => " 生 ",
-
-            R1 => " ヒ ",
-            R2 => " 飛 ",
-            R3 => " 飛 ",
-            PR1 => " ﾘｭ ",
-            PR2 => " 竜 ",
-            PR3 => " 竜 ",
-
-            B1 => " ｶｸ ",
-            B2 => " 角 ",
-            B3 => " 角 ",
-            PB1 => " ｳﾏ ",
-            PB2 => " 馬 ",
-            PB3 => " 馬 ",
-
-            G1 => " ｷﾝ ",
-            G2 => " 金 ",
-            G3 => " 金 ",
-            PG1 => " Nｷ ",
-            PG2 => " 今 ",
-            PG3 => " 今 ",
-
-            S1 => " ｷﾞ ",
-            S2 => " 銀 ",
-            S3 => " 銀 ",
-            PS1 => " NG ",
-            PS2 => " 全 ",
-            PS3 => " 全 ",
-
-            N1 => " ｹｲ ",
-            N2 => " 桂 ",
-            N3 => " 桂 ",
-            PN1 => " Nｹ ",
-            PN2 => " 圭 ",
-            PN3 => " 圭 ",
-
-            L1 => " ｷｮ ",
-            L2 => " 香 ",
-            L3 => " 香 ",
-            PL1 => " Nﾔ ",
-            PL2 => " 杏 ",
-            PL3 => " 杏 ",
-
-            P1 => " フ ",
-            P2 => " 歩 ",
-            P3 => " 歩 ",
-            PP1 => " ト ",
-            PP2 => " と ",
-            PP3 => " と ",
-        }
-    } else {
-        "    "
     }.to_string()
 }
 pub fn piece_to_piece_type(piece:Piece) -> PieceType {

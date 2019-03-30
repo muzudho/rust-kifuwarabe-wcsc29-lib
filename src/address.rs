@@ -1,4 +1,3 @@
-use parser::*;
 use piece_etc::*;
 use position::*;
 
@@ -11,6 +10,12 @@ impl Address {
     pub fn create_by_cell(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
         Address {
             index: board_size.file_rank_to_cell(file_num, rank_num),
+        }
+    }
+
+    pub fn create_as_sky() -> Address {
+        Address {
+            index: SKY_ADDRESS,
         }
     }
 
