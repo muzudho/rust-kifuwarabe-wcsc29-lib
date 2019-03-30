@@ -57,7 +57,7 @@ use thought::Thought;
 
 pub fn main_loop() {
     let comm = Communication::new();
-    let mut physical_record = PhysicalRecord::default();
+    let mut precord = PhysicalRecord::default();
     let mut position = Position::default();
 
     loop {
@@ -94,19 +94,25 @@ pub fn main_loop() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            read_tape(&comm, &line, &mut physical_record, &mut position);
+            read_tape(&comm, &line, &mut precord, &mut position);
 
         // #####
         // # B #
         // #####
 
         } else if line == "b" {
-            // Back.
-            CommonOperation::back(&comm, &mut physical_record, &mut position);
+            // Back 1mark.
+            CommonOperation::back_1mark(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "bb" {
+            // Back 1ply.
+            CommonOperation::back_1ply(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            CommonOperation::bo(&comm, &physical_record, &position);
+            CommonOperation::bo(&comm, &precord, &position);
 
         // #####
         // # D #
@@ -114,7 +120,7 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete.
-            CommonOperation::pop(&comm, &mut physical_record, &mut position);
+            CommonOperation::pop(&comm, &mut precord, &mut position);
 
         // #####
         // # F #
@@ -122,8 +128,8 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward.
-            CommonOperation::forward(&comm, &mut physical_record, &mut position);
-            // physical_record.forward();
+            CommonOperation::forward(&comm, &mut precord, &mut position);
+            // precord.forward();
 
         // #####
         // # G #
@@ -133,7 +139,7 @@ pub fn main_loop() {
             let thought = Thought::new();
             let best_logical_move = thought.get_best_move(
                 &position,
-                &mut physical_record);
+                &mut precord);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
@@ -144,7 +150,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for physical_move in best_physical_moves {
-                CommonOperation::go(&comm, &mut physical_record, &physical_move, &mut position);
+                CommonOperation::go(&comm, &mut precord, &physical_move, &mut position);
             }
             
         // #####
@@ -174,7 +180,7 @@ pub fn main_loop() {
         // #########
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
-            read_tape(&comm, &line, &mut physical_record, &mut position);
+            read_tape(&comm, &line, &mut precord, &mut position);
 
         // #####
         // # Q #
@@ -206,13 +212,13 @@ pub fn main_loop() {
                 &comm,
                 &mut position,
                 &logical_record,
-                &mut physical_record);
+                &mut precord);
         }
     }
 }
 
 /// 
-fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord, position:&mut Position) {
+fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, position:&mut Position) {
     let mut start = 0;
 
     loop {
@@ -309,7 +315,7 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
         };
 
         if let Some(pmove) = pmove_opt {
-            CommonOperation::touch(comm, physical_record, &pmove, position);
+            CommonOperation::touch(comm, precord, &pmove, position);
         }
     }
 }
