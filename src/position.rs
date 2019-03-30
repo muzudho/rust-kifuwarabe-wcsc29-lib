@@ -1,3 +1,4 @@
+use address::*;
 use communication::*;
 use parser::*;
 use physical_move::*;
@@ -41,8 +42,8 @@ impl BoardSize {
 pub struct Position {
     phase: Phase,
     board_size: BoardSize,
-    pub board: [Option<Piece>; DEFAULT_BOARD_SIZE],
-    pub hands: [Vec<PieceType>; HANDS_LEN],
+    pub board: [Option<IdentifiedPiece>; DEFAULT_BOARD_SIZE],
+    pub hands: [Vec<IdentifiedPiece>; HANDS_LEN],
 }
 impl Position {
     pub fn default() -> Position {
@@ -68,95 +69,99 @@ impl Position {
         ];
         // 使わない駒
         use piece_etc::Piece::*;
+        use piece_etc::PieceIdentify::*;
         use piece_etc::PieceType::*;
+        use piece_etc::IdentifiedPiece;
         // 玉2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(K3)];
-            vec.push(K);
-            vec.push(K);
+            vec.push(IdentifiedPiece::create(None, K00));
+            vec.push(IdentifiedPiece::create(None, K01));
         }
         // 飛2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(R3)];
-            vec.push(R);
-            vec.push(R);
+            vec.push(IdentifiedPiece::create(None, R20));
+            vec.push(IdentifiedPiece::create(None, R21));
         }
         // 角2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(B3)];
-            vec.push(B);
-            vec.push(B);
+            vec.push(IdentifiedPiece::create(None, B18));
+            vec.push(IdentifiedPiece::create(None, B19));
         }
         // 金4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(G3)];
-            vec.push(G);
-            vec.push(G);
-            vec.push(G);
-            vec.push(G);
+            vec.push(IdentifiedPiece::create(None, G02));
+            vec.push(IdentifiedPiece::create(None, G03));
+            vec.push(IdentifiedPiece::create(None, G04));
+            vec.push(IdentifiedPiece::create(None, G05));
         }
         // 銀4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(S3)];
-            vec.push(S);
-            vec.push(S);
-            vec.push(S);
-            vec.push(S);
+            vec.push(IdentifiedPiece::create(None, S06));
+            vec.push(IdentifiedPiece::create(None, S07));
+            vec.push(IdentifiedPiece::create(None, S08));
+            vec.push(IdentifiedPiece::create(None, S09));
         }
         // 桂4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(N3)];
-            vec.push(N);
-            vec.push(N);
-            vec.push(N);
-            vec.push(N);
+            vec.push(IdentifiedPiece::create(None, N10));
+            vec.push(IdentifiedPiece::create(None, N11));
+            vec.push(IdentifiedPiece::create(None, N12));
+            vec.push(IdentifiedPiece::create(None, N13));
         }
         // 香4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(L3)];
-            vec.push(L);
-            vec.push(L);
-            vec.push(L);
-            vec.push(L);
+            vec.push(IdentifiedPiece::create(None, L14));
+            vec.push(IdentifiedPiece::create(None, L15));
+            vec.push(IdentifiedPiece::create(None, L16));
+            vec.push(IdentifiedPiece::create(None, L17));
         }
         // 歩18枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(P3)];
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
-            vec.push(P);
+            vec.push(IdentifiedPiece::create(None, P22));
+            vec.push(IdentifiedPiece::create(None, P23));
+            vec.push(IdentifiedPiece::create(None, P24));
+            vec.push(IdentifiedPiece::create(None, P25));
+            vec.push(IdentifiedPiece::create(None, P26));
+            vec.push(IdentifiedPiece::create(None, P27));
+            vec.push(IdentifiedPiece::create(None, P28));
+            vec.push(IdentifiedPiece::create(None, P29));
+            vec.push(IdentifiedPiece::create(None, P30));
+            vec.push(IdentifiedPiece::create(None, P31));
+            vec.push(IdentifiedPiece::create(None, P32));
+            vec.push(IdentifiedPiece::create(None, P33));
+            vec.push(IdentifiedPiece::create(None, P34));
+            vec.push(IdentifiedPiece::create(None, P35));
+            vec.push(IdentifiedPiece::create(None, P36));
+            vec.push(IdentifiedPiece::create(None, P37));
+            vec.push(IdentifiedPiece::create(None, P38));
+            vec.push(IdentifiedPiece::create(None, P39));
         }
     }
 
     pub fn reset_startpos(&mut self) {
-        use piece_etc::Piece::*;
+        use piece_etc::IdentifiedPiece;
+        use piece_etc::Phase::*;
+        use piece_etc::PieceIdentify::*;
         self.board_size = BoardSize::create_hon_shogi();
-        // Flip horizontal.
+        // Gote view to flip horizontal. **NOT** point of symmetry.
         self.board = [
-            Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
-            None, Some(B2), None, None, None, None, None, Some(R2), None,
-            Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
+            IdentifiedPiece::some(Some(Second) , L15), IdentifiedPiece::some(Some(Second) , N11), IdentifiedPiece::some(Some(Second) , S07), IdentifiedPiece::some(Some(Second) , G03), IdentifiedPiece::some(Some(Second) , K01), IdentifiedPiece::some(Some(Second) , G05), IdentifiedPiece::some(Some(Second) , S09), IdentifiedPiece::some(Some(Second) , N13), IdentifiedPiece::some(Some(Second) , L17),
+            None, IdentifiedPiece::some(Some(Second) , B19), None, None, None, None, None, IdentifiedPiece::some(Some(Second) , R21), None,
+            IdentifiedPiece::some(Some(Second) , P37), IdentifiedPiece::some(Some(Second) , P33), IdentifiedPiece::some(Some(Second) , P29), IdentifiedPiece::some(Some(Second) , P25), IdentifiedPiece::some(Some(Second) , P23), IdentifiedPiece::some(Some(Second) , P27), IdentifiedPiece::some(Some(Second) , P31), IdentifiedPiece::some(Some(Second) , P35), IdentifiedPiece::some(Some(Second) , P39),
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
-            Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1), Some(P1),
-            None, Some(R1), None, None, None, None, None, Some(B1), None,
-            Some(L1), Some(N1), Some(S1), Some(G1), Some(K1), Some(G1), Some(S1), Some(N1), Some(L1),
+            IdentifiedPiece::some(Some(First), P38), IdentifiedPiece::some(Some(First), P34), IdentifiedPiece::some(Some(First), P30), IdentifiedPiece::some(Some(First), P26), IdentifiedPiece::some(Some(First), P22), IdentifiedPiece::some(Some(First), P24), IdentifiedPiece::some(Some(First), P28), IdentifiedPiece::some(Some(First), P32), IdentifiedPiece::some(Some(First), P36),
+            None, IdentifiedPiece::some(Some(First), R20), None, None, None, None, None, IdentifiedPiece::some(Some(First), B18), None,
+            IdentifiedPiece::some(Some(First), L16), IdentifiedPiece::some(Some(First), N12), IdentifiedPiece::some(Some(First), S08), IdentifiedPiece::some(Some(First), G04), IdentifiedPiece::some(Some(First), K00), IdentifiedPiece::some(Some(First), G02), IdentifiedPiece::some(Some(First), S06), IdentifiedPiece::some(Some(First), N10), IdentifiedPiece::some(Some(First), L14),
             None, // Sky
         ];
         self.hands = [
@@ -174,26 +179,41 @@ impl Position {
         self.board_size
     }
 
-    pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
+    pub fn get_id_piece(&self, file:i8, rank:i8) -> Option<IdentifiedPiece> {
         let address = self.board_size.file_rank_to_cell(file, rank);
         self.board[address]
     }
 
-    pub fn get_piece_by_address(&self, address:usize) -> Option<Piece> {
+    pub fn get_id_piece_by_address(&self, address:usize) -> Option<IdentifiedPiece> {
         self.board[address]
     }
 
-    /// Obsolute. new --> add().
-    pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
-        let cell = self.board_size.file_rank_to_cell(file, rank);
-        self.board[cell] = piece;
+    pub fn move_finger_to_hand(&mut self) {
+        let id_piece = self.board[SKY_ADDRESS];
+        // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
+        self.add_hand(id_piece);
+        self.board[SKY_ADDRESS] = None;
     }
 
-    pub fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
+    pub fn move_hand_to_finger(&mut self, address:Address) {
+        let hand_index = hand_piece_to_hand_index(address.get_hand_piece().unwrap());
+        let id_piece = self.hands[hand_index].pop();
+        self.board[SKY_ADDRESS] = id_piece;
+    }
+
+    /// TODO 識別子を追加していいのか？
+    /// Obsolute. new --> add().
+    pub fn set_id_piece(&mut self, file:i8, rank:i8, id_piece:Option<IdentifiedPiece>) {
+        let cell = self.board_size.file_rank_to_cell(file, rank);
+        self.board[cell] = id_piece;
+    }
+
+    /// TODO 識別子を消していいのか？
+    pub fn remove_id_piece(&mut self, file:i8, rank:i8) -> Option<IdentifiedPiece> {
         let cell = self.get_board_size().file_rank_to_cell(file, rank);
-        let piece = self.board[cell];
-        self.set_piece(file, rank, None);
-        piece
+        let id_piece = self.board[cell];
+        self.set_id_piece(file, rank, None);
+        id_piece
     }
 
     pub fn get_hand(&self, piece:Piece) -> i8 {
@@ -201,12 +221,14 @@ impl Position {
         self.hands[hand_index].len() as i8
     }
 
-    pub fn add_hand(&mut self, piece:Piece) {
-        let hand_index = hand_piece_to_hand_index(piece);
-        self.hands[hand_index].push(piece_to_piece_type(piece))
+    pub fn add_hand(&mut self, id_piece_opt:Option<IdentifiedPiece>) {
+        if let Some(id_piece) = id_piece_opt {
+            let hand_index = hand_id_piece_to_hand_index(id_piece);
+            self.hands[hand_index].push(id_piece)
+        }
     }
 
-    pub fn remove_hand(&mut self, piece:Piece) -> PieceType {
+    pub fn remove_hand(&mut self, piece:Piece) -> IdentifiedPiece {
         let hand_index = hand_piece_to_hand_index(piece);
         self.hands[hand_index].pop().unwrap()
     }
@@ -243,17 +265,13 @@ impl Position {
                 } else {
                     // 駒台。
                     match self.board[SKY_ADDRESS] {
-                        Some(piece) => {
+                        Some(id_piece) => {
                             // 指に何か持っているので、駒台に置く。
-                            self.board[SKY_ADDRESS] = None;
-                            // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
-                            self.add_hand(piece);//[address.get_hand_index()] += 1;
+                            self.move_finger_to_hand();
                         },
                         None => {
                             // 指には何も持ってないので、駒台の駒をつかむ。
-                            let piece_opt = address.get_hand_piece();
-                            self.board[SKY_ADDRESS] = piece_opt;
-                            self.remove_hand(piece_opt.unwrap());// .hands[address.get_hand_index()] -= 1;
+                            self.move_hand_to_finger();
                         },
                     }
                 }

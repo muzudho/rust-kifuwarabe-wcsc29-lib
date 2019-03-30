@@ -21,20 +21,23 @@ impl Thought {
         // println!("info Current phase: `{}`.", phase_to_sign(&logical_record.get_current_phase()));
 
         // 盤上の自分の駒を１つ選ぶ。
-        let mut piece = None;
+        let mut id_piece_opt = None;
         let mut src_file = 0;
         let mut src_rank = 0;
         'search: for rank in 1..=9 {
             // println!("info Rank: `{}`.", rank);
             for file in 1..=9 {
-                piece = position.get_piece(file, rank);
-                let phase = piece_to_phase(piece);
-                if phase.is_some() && phase.unwrap() == position.get_phase() {
-                    // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
-                    // TODO 自分の駒に限り。
-                    src_file = file;
-                    src_rank = rank;
-                    break 'search;
+                id_piece_opt = position.get_id_piece(file, rank);
+                if let Some(id_piece) = id_piece_opt {
+                    if let Some(phase) = id_piece.get_phase() {
+                        if phase == position.get_phase() {
+                            // println!("info Find: {}-{} {}.{}.", file, rank, phase_to_sign(phase), piece_to_sign(&piece));
+                            // TODO 自分の駒に限り。
+                            src_file = file;
+                            src_rank = rank;
+                            break 'search;
+                        }
+                    }
                 }
             }
         }

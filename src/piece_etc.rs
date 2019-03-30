@@ -6,8 +6,10 @@ pub enum Phase {
     Second,
 }
 
+/// Piece identify. Order of "大橋"(Ohashi) mode.
+/// With out phase.
 #[derive(Clone, Copy, PartialEq)]
-pub enum PieceNumber {
+pub enum PieceIdentify {
     K00,
     K01,
     G02,
@@ -50,6 +52,35 @@ pub enum PieceNumber {
     P39,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub struct IdentifiedPiece {
+    phase:Option<Phase>,
+    id:PieceIdentify,
+}
+impl IdentifiedPiece {
+    pub fn create(phase_opt:Option<Phase>, piece_id:PieceIdentify,) -> IdentifiedPiece {
+        IdentifiedPiece {
+            phase: phase_opt,
+            id: piece_id,
+        }
+    }
+    pub fn some(phase_opt:Option<Phase>, piece_id:PieceIdentify,) -> Option<IdentifiedPiece> {
+        Some(IdentifiedPiece::create(
+            phase_opt,
+            piece_id,
+        ))
+    }
+
+    pub fn get_phase(self) -> Option<Phase> {
+        self.phase
+    }
+
+    pub fn get_id(self) -> PieceIdentify {
+        self.id
+    }
+}
+
+/// Piece type with phase.
 /// First phase is 1.
 /// Second phase is 2.
 /// None phase is 3.
@@ -369,6 +400,51 @@ pub fn piece_to_piece_type(piece:Piece) -> PieceType {
         PP1 => PP,
         PP2 => PP,
         PP3 => PP,
+    }
+}
+pub fn hand_id_piece_to_hand_index(id_piece:IdentifiedPiece) -> usize {
+    use piece_etc::PieceIdentify::*;
+    if let Some(phase) = id_piece.phase {
+        match phase {
+            First => {
+                match id_piece.get_id() {
+                    K00 | K01 => {0},
+                    R20 | R21 => {1},
+                    B18 | B19 => {2},
+                    G02 | G03 | G04 | G05 => {3},
+                    S06 | S07 | S08 | S09 => {4},
+                    N10 | N11 | N12 | N13 => {5},
+                    L14 | L15 | L16 | L17 => {6},
+                    P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                    P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {7},
+                }
+            },
+            Second => {
+                match id_piece.get_id() {
+                    K00 | K01 => {8},
+                    R20 | R21 => {9},
+                    B18 | B19 => {10},
+                    G02 | G03 | G04 | G05 => {11},
+                    S06 | S07 | S08 | S09 => {12},
+                    N10 | N11 | N12 | N13 => {13},
+                    L14 | L15 | L16 | L17 => {14},
+                    P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+                    P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {15},
+                }
+            },
+        }
+    } else {
+        match id_piece.get_id() {
+            K00 | K01 => {16},
+            R20 | R21 => {17}, 
+            B18 | B19 => {18},
+            G02 | G03 | G04 | G05 => {19},
+            S06 | S07 | S08 | S09 => {20},
+            N10 | N11 | N12 | N13 => {21},
+            L14 | L15 | L16 | L17 => {22},
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {23},
+        }
     }
 }
 pub fn hand_piece_to_hand_index(piece:Piece) -> usize {

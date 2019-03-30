@@ -37,7 +37,7 @@ impl UsiConverter {
             },
             None => {
                 // 駒を進める動きの場合
-                if let Some(piece) = position.get_piece_by_address(destination_address.get_index()) {
+                if let Some(id_piece) = position.get_id_piece_by_address(destination_address.get_index()) {
                     // 駒を取る動きが入る場合
 
                     // hand-off
@@ -45,7 +45,7 @@ impl UsiConverter {
                     physical_moves.push(hand_off);
 
                     // hand-turn
-                    if is_promoted_piece(Some(piece)) {
+                    if is_promoted_piece(Some(id_piece)) {
                         let hand_turn = PhysicalMove::turn_over();
                         physical_moves.push(hand_turn);
                     }
@@ -55,7 +55,7 @@ impl UsiConverter {
                     physical_moves.push(hand_rotate);
 
                     // hand-on
-                    let up = piece_to_piece_type(piece);
+                    let up = piece_to_piece_type(id_piece);
                     let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                     physical_moves.push(hand_on);
                 }
