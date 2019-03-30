@@ -28,7 +28,7 @@ use std::io::{BufRead, BufReader};
 
 pub fn main() {
     let comm = Communication::new();
-    let mut physical_record = PhysicalRecord::new();
+    let mut physical_record = PhysicalRecord::default();
     let mut position = Position::default();
 
     let c_record = CsaRecord::load("download-kifu/WCSC28_F6_PAL_HFW.csa");

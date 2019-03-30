@@ -22,9 +22,29 @@ impl CommonOperation {
         CommonOperation::bo(comm, &physical_record, &position);
     }
 
-    pub fn detouch(comm:&Communication, physical_record:&mut PhysicalRecord, position:&mut Position) {
+    /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
+    pub fn pop(comm:&Communication, physical_record:&mut PhysicalRecord, position:&mut Position) {
         if let Some(physical_move) = physical_record.pop() {
             position.touch(comm, &physical_move);
+        }
+        CommonOperation::bo(comm, &physical_record, &position);
+    }
+
+    /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
+    pub fn back(comm:&Communication, physical_record:&mut PhysicalRecord, position:&mut Position) {
+        if let Some(physical_move) = physical_record.get_current() {
+            position.touch(comm, &physical_move);
+            physical_record.back();
+        }
+        CommonOperation::bo(comm, &physical_record, &position);
+    }
+
+    /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
+    pub fn forward(comm:&Communication, physical_record:&mut PhysicalRecord, position:&mut Position) {
+        if physical_record.forward() {
+            if let Some(physical_move) = physical_record.get_current() {
+                position.touch(comm, &physical_move);
+            }
         }
         CommonOperation::bo(comm, &physical_record, &position);
     }

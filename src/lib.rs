@@ -57,7 +57,7 @@ use thought::Thought;
 
 pub fn main_loop() {
     let comm = Communication::new();
-    let mut physical_record = PhysicalRecord::new();
+    let mut physical_record = PhysicalRecord::default();
     let mut position = Position::default();
 
     loop {
@@ -79,6 +79,7 @@ pub fn main_loop() {
         // ########
         // # 記号 #
         // ########
+
         if line.starts_with('0') || 
             line.starts_with('1') || 
             line.starts_with('2') ||
@@ -98,20 +99,36 @@ pub fn main_loop() {
         // #####
         // # B #
         // #####
+
+        } else if line == "b" {
+            // Back.
+            CommonOperation::back(&comm, &mut physical_record, &mut position);
+
         } else if line.starts_with("bo") {
-            // board.
+            // Board.
             CommonOperation::bo(&comm, &physical_record, &position);
 
         // #####
         // # D #
         // #####
+
         } else if line == "d" {
             // Delete.
-            CommonOperation::detouch(&comm, &mut physical_record, &mut position);
+            CommonOperation::pop(&comm, &mut physical_record, &mut position);
+
+        // #####
+        // # F #
+        // #####
+
+        } else if line == "f" {
+            // Forward.
+            CommonOperation::forward(&comm, &mut physical_record, &mut position);
+            // physical_record.forward();
 
         // #####
         // # G #
         // #####
+
         } else if line.starts_with("go") {
             let thought = Thought::new();
             let best_logical_move = thought.get_best_move(
