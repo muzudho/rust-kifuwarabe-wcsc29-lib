@@ -128,8 +128,13 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward.
-            CommonOperation::forward(&comm, &mut precord, &mut position);
-            // precord.forward();
+            CommonOperation::forward_1mark(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "ff" {
+            // Forward.
+            CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
 
         // #####
         // # G #

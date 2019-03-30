@@ -47,10 +47,11 @@ impl CommonOperation {
 
     /// 1手戻す。
     pub fn back_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+        let mut count = 0;
         loop {
             if let Some(pmove) = CommonOperation::back_1mark(comm, precord, position) {
-                if pmove.is_phase_change() {
-                    // フェーズ切り替えしたら終了。
+                if count != 0 && pmove.is_phase_change() {
+                    // フェーズ切り替えしたら終了。（ただし、初回除く）
                     break;
                 }
 
@@ -59,16 +60,42 @@ impl CommonOperation {
                 // 開始前に達したら終了。
                 break
             }
+
+            count += 1;
         }
     }
 
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
-    pub fn forward(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+    pub fn forward_1mark(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) -> Option<PhysicalMove> {
         if precord.forward() {
             if let Some(pmove) = precord.get_current() {
                 position.touch(comm, &pmove);
+                return Some(pmove)
+            } else {
+                panic!("Unexpected forward 1mark.")
             }
+        } else {
+            None
         }
-        CommonOperation::bo(comm, &precord, &position);
+    }
+
+    /// 1手進める。
+    pub fn forward_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+        let mut count = 0;
+        loop {
+            if let Some(pmove) = CommonOperation::forward_1mark(comm, precord, position) {
+                if count != 0 && pmove.is_phase_change() {
+                    // フェーズ切り替えしたら終了。（ただし、初回除く）
+                    break;
+                }
+
+                // それ以外は繰り返す。
+            } else {
+                // 最後尾に達していたのなら終了。
+                break
+            }
+
+            count += 1;
+        }
     }
 }
