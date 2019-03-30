@@ -76,10 +76,10 @@ impl Position {
     /// latest.
     pub fn add(&mut self, address:Address, piece:Piece) {
         if address.is_on_board(self.board_size) {
-            match self.pieces[address.get_index()] {
+            match self.board[address.get_index()] {
                 Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
                 None => {
-                    self.pieces[address.get_index()] = Some(piece);
+                    self.board[address.get_index()] = Some(piece);
                 },
             }
         } else if address.is_hand() {

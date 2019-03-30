@@ -6,6 +6,50 @@ pub enum Phase {
     Second,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum PieceNumber {
+    K00,
+    K01,
+    G02,
+    G03,
+    G04,
+    G05,
+    S06,
+    S07,
+    S08,
+    S09,
+    N10,
+    N11,
+    N12,
+    N13,
+    L14,
+    L15,
+    L16,
+    L17,
+    B18,
+    B19,
+    R20,
+    R21,
+    P22,
+    P23,
+    P24,
+    P25,
+    P26,
+    P27,
+    P28,
+    P29,
+    P30,
+    P31,
+    P32,
+    P33,
+    P34,
+    P35,
+    P36,
+    P37,
+    P38,
+    P39,
+}
+
 /// First phase is 1.
 /// Second phase is 2.
 /// None phase is 3.

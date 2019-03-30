@@ -41,7 +41,7 @@ impl BoardSize {
 pub struct Position {
     phase: Phase,
     board_size: BoardSize,
-    pub pieces: [Option<Piece>; DEFAULT_BOARD_SIZE],
+    pub board: [Option<Piece>; DEFAULT_BOARD_SIZE],
     pub hands: [Vec<PieceType>; HANDS_LEN],
 }
 impl Position {
@@ -49,7 +49,7 @@ impl Position {
         Position {
             phase: Phase::First,
             board_size: BoardSize::create_hon_shogi(),
-            pieces: [None; DEFAULT_BOARD_SIZE],
+            board: [None; DEFAULT_BOARD_SIZE],
             hands: [
                 Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
                 Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
@@ -60,7 +60,7 @@ impl Position {
 
     pub fn reset_default(&mut self) {
         self.board_size = BoardSize::create_hon_shogi();
-        self.pieces = [None; DEFAULT_BOARD_SIZE];
+        self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
@@ -147,7 +147,7 @@ impl Position {
         use piece_etc::Piece::*;
         self.board_size = BoardSize::create_hon_shogi();
         // Flip horizontal.
-        self.pieces = [
+        self.board = [
             Some(L2), Some(N2), Some(S2), Some(G2), Some(K2), Some(G2), Some(S2), Some(N2), Some(L2),
             None, Some(B2), None, None, None, None, None, Some(R2), None,
             Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2), Some(P2),
@@ -176,22 +176,22 @@ impl Position {
 
     pub fn get_piece(&self, file:i8, rank:i8) -> Option<Piece> {
         let address = self.board_size.file_rank_to_cell(file, rank);
-        self.pieces[address]
+        self.board[address]
     }
 
     pub fn get_piece_by_address(&self, address:usize) -> Option<Piece> {
-        self.pieces[address]
+        self.board[address]
     }
 
     /// Obsolute. new --> add().
     pub fn set_piece(&mut self, file:i8, rank:i8, piece:Option<Piece>) {
         let cell = self.board_size.file_rank_to_cell(file, rank);
-        self.pieces[cell] = piece;
+        self.board[cell] = piece;
     }
 
     pub fn remove_piece(&mut self, file:i8, rank:i8) -> Option<Piece> {
         let cell = self.get_board_size().file_rank_to_cell(file, rank);
-        let piece = self.pieces[cell];
+        let piece = self.board[cell];
         self.set_piece(file, rank, None);
         piece
     }
@@ -217,42 +217,42 @@ impl Position {
                 // どこかを指定した。
                 if address.is_on_board(self.board_size) {
                     // 盤上。
-                    match self.pieces[address.get_index()] {
+                    match self.board[address.get_index()] {
                         Some(piece) => {
                             // 駒の場所を指定した。
-                            match self.pieces[SKY_ADDRESS] {
+                            match self.board[SKY_ADDRESS] {
                                 Some(_piece) => {
                                     // 指には何も持ってない。
                                 },
                                 None => {
                                     // 指で駒をつかむ。
-                                    self.pieces[SKY_ADDRESS] = Some(piece);
-                                    self.pieces[address.get_index()] = None;
+                                    self.board[SKY_ADDRESS] = Some(piece);
+                                    self.board[address.get_index()] = None;
                                 },
                             }
                         },
                         None => {
                             // 空き升を指定した。
-                            if let Some(piece) = self.pieces[SKY_ADDRESS] {
+                            if let Some(piece) = self.board[SKY_ADDRESS] {
                                 // 指につまんでいる駒を置く。
-                                self.pieces[SKY_ADDRESS] = None;
-                                self.pieces[address.get_index()] = Some(piece);
+                                self.board[SKY_ADDRESS] = None;
+                                self.board[address.get_index()] = Some(piece);
                             }
                         },
                     }
                 } else {
                     // 駒台。
-                    match self.pieces[SKY_ADDRESS] {
+                    match self.board[SKY_ADDRESS] {
                         Some(piece) => {
                             // 指に何か持っているので、駒台に置く。
-                            self.pieces[SKY_ADDRESS] = None;
+                            self.board[SKY_ADDRESS] = None;
                             // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
                             self.add_hand(piece);//[address.get_hand_index()] += 1;
                         },
                         None => {
                             // 指には何も持ってないので、駒台の駒をつかむ。
                             let piece_opt = address.get_hand_piece();
-                            self.pieces[SKY_ADDRESS] = piece_opt;
+                            self.board[SKY_ADDRESS] = piece_opt;
                             self.remove_hand(piece_opt.unwrap());// .hands[address.get_hand_index()] -= 1;
                         },
                     }
@@ -266,11 +266,11 @@ impl Position {
                         First => {Second},
                         Second => {First},
                     };
-                } else if let Some(piece) = self.pieces[SKY_ADDRESS] {
+                } else if let Some(piece) = self.board[SKY_ADDRESS] {
                     if physical_move.sky_turn {
-                        self.pieces[SKY_ADDRESS] = promotion_piece(Some(piece));
+                        self.board[SKY_ADDRESS] = promotion_piece(Some(piece));
                     } else if physical_move.sky_rotate {
-                        self.pieces[SKY_ADDRESS] = rotate_piece(Some(piece));
+                        self.board[SKY_ADDRESS] = rotate_piece(Some(piece));
                     };
                 }
             }
