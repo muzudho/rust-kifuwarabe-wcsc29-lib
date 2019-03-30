@@ -11,9 +11,13 @@ impl CommonOperation {
         position.touch(comm, &physical_move);
     }
 
+    /// 局面表示。
     pub fn bo(comm:&Communication, physical_record:&PhysicalRecord, position:&Position) {
+        // 何手目か。
+        comm.println(&format!("[{}]", physical_record.get_ply()));
+        // 盤面。
         comm.println(&position.to_text(comm, position.get_phase()));
-        // comm.print(&format!("Physical record({}): ", physical_record.len()));
+        // 棋譜。
         comm.println(&physical_record.to_sign(position.get_board_size()));
     }
 

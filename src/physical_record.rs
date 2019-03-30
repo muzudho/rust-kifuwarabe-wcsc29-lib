@@ -5,16 +5,55 @@ use physical_move::*;
 pub struct PhysicalRecord {
     items: Vec<PhysicalMove>,
     cursor: i16,
+    ply: i16,
 }
 impl PhysicalRecord {
     pub fn default() -> PhysicalRecord {
         PhysicalRecord {
             items: Vec::new(),
             cursor: -1,
+            // 開始時点で、1手目進行中 として扱います。
+            ply: 1,
         }
     }
 
-    pub fn add(&mut self, physical_move:&PhysicalMove) {
+    fn up_count(&mut self, pmove:&PhysicalMove) {
+        self.cursor += 1;
+        if pmove.is_phase_change() {
+            self.ply += 1;
+        }
+    }
+
+    fn up_count_retry(&mut self) {
+        self.cursor += 1;
+        let pmove = self.items[self.cursor as usize];
+        if pmove.is_phase_change() {
+            self.ply += 1;
+        }
+    }
+
+    fn down_count(&mut self, pmove:&PhysicalMove) {
+        self.cursor -= 1;
+        if pmove.is_phase_change() {
+            self.ply -= 1;
+        }
+    }
+
+    fn down_count_retry(&mut self) {
+        // フェーズ切り替えがあったら、手目を１つ減らす。
+        let pmove = self.items[self.cursor as usize];
+        if pmove.is_phase_change() {
+            self.ply -= 1;
+        }
+
+        self.cursor -= 1;
+        if self.cursor < 0 {
+            // 何も記録していない内部状態に相当。
+            return;
+        }
+    }
+
+    pub fn add(&mut self, pmove:&PhysicalMove) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
@@ -23,8 +62,8 @@ impl PhysicalRecord {
 
         if self.items.len() == (self.cursor + 1) as usize {
             // 追加。
-            self.items.push(*physical_move);
-            self.cursor += 1;
+            self.items.push(*pmove);
+            self.up_count(pmove);
         } else {
             panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.items.len());
         }
@@ -35,16 +74,24 @@ impl PhysicalRecord {
             None
         } else {
             let last = self.items.len()-1;
-            let deleted = self.items[last];
+            let deleted_pmove = self.items[last];
             self.items.remove(last);
-            self.cursor -= 1;
-            Some(deleted)
+            self.down_count(&deleted_pmove);
+            Some(deleted_pmove)
         }
+    }
+
+    pub fn get_cursor(&self) -> i16 {
+        self.cursor
+    }
+
+    pub fn get_ply(&self) -> i16 {
+        self.ply
     }
 
     /// カーソルが指している要素を返す。
     pub fn get_current(&self) -> Option<PhysicalMove> {
-        if self.items.is_empty() {
+        if self.cursor == -1 { // self.items.is_empty()
             None
         } else {
             Some(self.items[self.cursor as usize])
@@ -57,7 +104,7 @@ impl PhysicalRecord {
             // 進めない。
             return false
         } else {
-            self.cursor += 1;
+            self.up_count_retry();
             return true
         }
     }
@@ -69,14 +116,14 @@ impl PhysicalRecord {
             return
         };
 
-        self.cursor -= 1;
+        self.down_count_retry();
     }
 
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         let mut ply = 1;
-        for physical_move in &self.items {
-            sign = format!("{} {}", sign, physical_move.to_sign(board_size, &mut ply));
+        for pmove in &self.items {
+            sign = format!("{} {}", sign, pmove.to_sign(board_size, &mut ply));
         }
         sign
     }

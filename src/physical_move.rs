@@ -7,7 +7,7 @@ pub struct PhysicalMove {
     pub address: Option<Address>,
     pub sky_turn: bool,
     pub sky_rotate: bool,
-    pub phase_change: bool,
+    phase_change: bool,
 }
 impl PhysicalMove {
     pub fn create_by_address(address:Address) -> PhysicalMove {
@@ -44,6 +44,10 @@ impl PhysicalMove {
             sky_rotate: false,
             phase_change: true,
         }
+    }
+
+    pub fn is_phase_change(&self) -> bool {
+        self.phase_change
     }
 
     pub fn to_sign(&self, board_size:BoardSize, ply:&mut i16) -> String {

@@ -298,7 +298,7 @@ impl Position {
                 }
             },
             None => {
-                if physical_move.phase_change {
+                if physical_move.is_phase_change() {
                     // TODO phase change.
                     use piece_etc::Phase::*;
                     self.phase = match self.phase {
