@@ -151,17 +151,18 @@ impl Position {
         use piece_etc::Phase::*;
         use piece_etc::PieceIdentify::*;
         self.board_size = BoardSize::create_hon_shogi();
-        // Gote view to flip horizontal. **NOT** point of symmetry.
+        // Sente view to flip upside down.
         self.board = [
-            IdentifiedPiece::some(Some(Second), false, L15), IdentifiedPiece::some(Some(Second), false, N11), IdentifiedPiece::some(Some(Second), false, S07), IdentifiedPiece::some(Some(Second), false, G03), IdentifiedPiece::some(Some(Second), false, K01), IdentifiedPiece::some(Some(Second), false, G05), IdentifiedPiece::some(Some(Second), false, S09), IdentifiedPiece::some(Some(Second), false, N13), IdentifiedPiece::some(Some(Second), false, L17),
-            None, IdentifiedPiece::some(Some(Second), false, B19), None, None, None, None, None, IdentifiedPiece::some(Some(Second), false, R21), None,
-            IdentifiedPiece::some(Some(Second), false, P37), IdentifiedPiece::some(Some(Second), false, P33), IdentifiedPiece::some(Some(Second), false, P29), IdentifiedPiece::some(Some(Second), false, P25), IdentifiedPiece::some(Some(Second), false, P23), IdentifiedPiece::some(Some(Second), false, P27), IdentifiedPiece::some(Some(Second), false, P31), IdentifiedPiece::some(Some(Second), false, P35), IdentifiedPiece::some(Some(Second), false, P39),
+            // rank 1, file 1.
+            IdentifiedPiece::some(Some(Second), false, L14), IdentifiedPiece::some(Some(Second), false, N10), IdentifiedPiece::some(Some(Second), false, S06), IdentifiedPiece::some(Some(Second), false, G02), IdentifiedPiece::some(Some(Second), false, K00), IdentifiedPiece::some(Some(Second), false, G04), IdentifiedPiece::some(Some(Second), false, S08), IdentifiedPiece::some(Some(Second), false, N12), IdentifiedPiece::some(Some(Second), false, L16),
+            None, IdentifiedPiece::some(Some(Second), false, B18), None, None, None, None, None, IdentifiedPiece::some(Some(Second), false, R20), None,
+            IdentifiedPiece::some(Some(Second), false, P36), IdentifiedPiece::some(Some(Second), false, P32), IdentifiedPiece::some(Some(Second), false, P28), IdentifiedPiece::some(Some(Second), false, P24), IdentifiedPiece::some(Some(Second), false, P22), IdentifiedPiece::some(Some(Second), false, P26), IdentifiedPiece::some(Some(Second), false, P30), IdentifiedPiece::some(Some(Second), false, P34), IdentifiedPiece::some(Some(Second), false, P38),
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
             None, None, None, None, None, None, None, None, None,
-            IdentifiedPiece::some(Some(First), false, P38), IdentifiedPiece::some(Some(First), false, P34), IdentifiedPiece::some(Some(First), false, P30), IdentifiedPiece::some(Some(First), false, P26), IdentifiedPiece::some(Some(First), false, P22), IdentifiedPiece::some(Some(First), false, P24), IdentifiedPiece::some(Some(First), false, P28), IdentifiedPiece::some(Some(First), false, P32), IdentifiedPiece::some(Some(First), false, P36),
-            None, IdentifiedPiece::some(Some(First), false, R20), None, None, None, None, None, IdentifiedPiece::some(Some(First), false, B18), None,
-            IdentifiedPiece::some(Some(First), false, L16), IdentifiedPiece::some(Some(First), false, N12), IdentifiedPiece::some(Some(First), false, S08), IdentifiedPiece::some(Some(First), false, G04), IdentifiedPiece::some(Some(First), false, K00), IdentifiedPiece::some(Some(First), false, G02), IdentifiedPiece::some(Some(First), false, S06), IdentifiedPiece::some(Some(First), false, N10), IdentifiedPiece::some(Some(First), false, L14),
+            IdentifiedPiece::some(Some(First), false, P39), IdentifiedPiece::some(Some(First), false, P35), IdentifiedPiece::some(Some(First), false, P31), IdentifiedPiece::some(Some(First), false, P27), IdentifiedPiece::some(Some(First), false, P23), IdentifiedPiece::some(Some(First), false, P25), IdentifiedPiece::some(Some(First), false, P29), IdentifiedPiece::some(Some(First), false, P33), IdentifiedPiece::some(Some(First), false, P37),
+            None, IdentifiedPiece::some(Some(First), false, R21), None, None, None, None, None, IdentifiedPiece::some(Some(First), false, B19), None,
+            IdentifiedPiece::some(Some(First), false, L17), IdentifiedPiece::some(Some(First), false, N13), IdentifiedPiece::some(Some(First), false, S09), IdentifiedPiece::some(Some(First), false, G05), IdentifiedPiece::some(Some(First), false, K01), IdentifiedPiece::some(Some(First), false, G03), IdentifiedPiece::some(Some(First), false, S07), IdentifiedPiece::some(Some(First), false, N11), IdentifiedPiece::some(Some(First), false, L15),
             None, // Sky
         ];
         self.hands = [
@@ -356,6 +357,7 @@ impl Position {
         }
 
         for row in 0..=16 {
+            // let rank = row / 2 + 1;
             let rank = 9 - (row/2);
 
             // 先手の手。

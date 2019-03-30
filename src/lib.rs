@@ -130,6 +130,19 @@ pub fn main_loop() {
             }
             
         // #####
+        // # H #
+        // #####
+
+        } else if line == "hand1" {
+            // TODO 先手の持ち駒を表示。
+
+        } else if line == "hand2" {
+            // TODO 後手の持ち駒を表示。
+
+        } else if line == "hand3" {
+            // TODO 使っていない駒を表示。
+
+        // #####
         // # I #
         // #####
         } else if line == "isready" {
