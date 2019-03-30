@@ -79,7 +79,8 @@ pub fn main_loop() {
         // ########
         // # 記号 #
         // ########
-        if line.starts_with('1') || 
+        if line.starts_with('0') || 
+            line.starts_with('1') || 
             line.starts_with('2') ||
             line.starts_with('3') ||
             line.starts_with('4') ||
@@ -209,6 +210,33 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                 start += 1;
                 None
             }
+            '0' => {
+                // ドロップ。
+                start += 1;
+
+                let ch2 = line[start..=start].chars().nth(0).unwrap();
+                start += 1;
+                match ch2 {
+                    'K' | 'k' |
+                    'R' | 'r' |
+                    'B' | 'b' |
+                    'G' | 'g' |
+                    'S' | 's' |
+                    'N' | 'n' |
+                    'L' | 'l' |
+                    'P' | 'p' => {
+                    },
+                    _ => {
+                        panic!("Unexpected drop '{}{}'.", ch1, ch2)
+                    },
+                }
+
+                comm.print(&format!("{}{}", ch1, ch2));
+                let piece_type = sign_to_piece_type(&ch2.to_string());
+                let address = Address::create_by_hand(Some(position.get_phase()), piece_type);
+                comm.println(&format!("address index = {}.", address.get_index()));
+                Some(PhysicalMove::create_by_address(address))
+            },
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
                 start += 1;
@@ -256,27 +284,6 @@ fn read_tape(comm:&Communication, line:&str, physical_record:&mut PhysicalRecord
                     }
                 };
                 Some(PhysicalMove::change_phase())
-            },
-            'K' | 'k' |
-            'R' | 'r' |
-            'B' | 'b' |
-            'G' | 'g' |
-            'S' | 's' |
-            'N' | 'n' |
-            'L' | 'l' |
-            'P' | 'p' => {
-                // ドロップ。
-                start += 1;
-                let ch2 = line[start..=start].chars().nth(0).unwrap();
-                start += 1;
-                if ch2 != '*' {
-                    panic!("Unexpected drop '{}'.", line)
-                };
-                comm.print(&format!("{}{}", ch1, ch2));
-                let piece_type = sign_to_piece_type(&ch1.to_string());
-                let address = Address::create_by_hand(Some(position.get_phase()), piece_type);
-                comm.println(&format!("address index = {}.", address.get_index()));
-                Some(PhysicalMove::create_by_address(address))
             },
             _ => {
                 let last = line.len();

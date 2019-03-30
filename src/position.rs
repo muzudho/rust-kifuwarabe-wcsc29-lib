@@ -433,7 +433,7 @@ impl Position {
             },
             Second => {
                 // hand.
-                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+    |         |".to_string());
+                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+ |         |".to_string());
             },
         }
 
