@@ -47,7 +47,8 @@ pub struct Position {
 }
 impl Position {
     pub fn default() -> Position {
-        Position {
+        // このあと すぐリセットする。
+        let mut instance = Position {
             phase: Phase::First,
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
@@ -56,10 +57,14 @@ impl Position {
                 Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
                 Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             ],
-        }
+        };
+
+        instance.reset_default();
+        instance
     }
 
     pub fn reset_default(&mut self) {
+        self.phase = Phase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
@@ -70,7 +75,6 @@ impl Position {
         // 使わない駒
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
-        use piece_etc::PieceType::*;
         use piece_etc::IdentifiedPiece;
         // 玉2枚。
         {
