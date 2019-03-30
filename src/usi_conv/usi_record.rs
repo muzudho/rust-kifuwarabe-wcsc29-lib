@@ -58,9 +58,9 @@ impl UsiRecord {
             // TODO drop
 
         } else {
-            let mut source_id_piece_opt = position.remove_id_piece(mov.source_file, mov.source_rank);
+            let source_id_piece_opt = position.remove_id_piece(mov.source_file, mov.source_rank);
             if mov.promotion {
-                if let Some(source_id_piece) = source_id_piece_opt {
+                if let Some(mut source_id_piece) = source_id_piece_opt {
                     source_id_piece.turn_over();
                 }
             }

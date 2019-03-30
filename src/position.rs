@@ -237,6 +237,18 @@ impl Position {
         self.hands[hand_index].pop().unwrap()
     }
 
+    /// USI position 読込時に使う。使ってない駒を盤上に置く。
+    pub fn activate_piece(&mut self, piece_opt:Option<Piece>, file:i8, rank:i8) {
+        if let Some(piece) = piece_opt {
+            let disactivate_piece = piece_to_disactivate(piece);
+            let hand_index = hand_piece_to_hand_index(disactivate_piece);
+            let id_piece = self.hands[hand_index].pop().unwrap();
+
+            let destination = self.board_size.file_rank_to_cell(file, rank);
+            self.board[destination] = Some(id_piece);
+        }
+    }
+
     pub fn touch(&mut self, _comm:&Communication, physical_move:&PhysicalMove) {
         match physical_move.address {
             Some(address) => {
@@ -288,7 +300,7 @@ impl Position {
                         First => {Second},
                         Second => {First},
                     };
-                } else if let Some(id_piece) = self.board[SKY_ADDRESS] {
+                } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
                     if physical_move.sky_turn {
                         id_piece.turn_over();
                         self.board[SKY_ADDRESS] = Some(id_piece);

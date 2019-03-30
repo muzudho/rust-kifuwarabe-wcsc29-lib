@@ -41,7 +41,8 @@ impl Fen {
             };
 
             if spaces == 0 {
-                position.set_id_piece(file, rank, parse_sign_line_to_piece(line, start));
+                let piece_opt = parse_sign_line_to_piece(line, start);
+                position.activate_piece(piece_opt, file, rank);
                 file += 1;
             } else if spaces == -1 {
                 file = 1;
@@ -100,7 +101,7 @@ impl Fen {
         let destination_file_num = parse_sign_to_file(line, start);
         let destination_rank_num = parse_sign_to_rank(line, start);
 
-        let mut promotion_flag =
+        let promotion_flag =
             if drop_opt == None {
                 parse_sign_to_promotion(line, start)
             } else {

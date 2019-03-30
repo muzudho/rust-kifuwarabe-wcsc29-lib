@@ -734,6 +734,34 @@ pub fn piece_to_piece_type(piece:Piece) -> PieceType {
         PP3 => PP,
     }
 }
+pub fn piece_to_disactivate(piece:Piece) -> Piece{
+    use piece_etc::Piece::*;
+    match piece {
+        K1 | K2 | K3 => K3,
+        PK1 | PK2 | PK3 => PK3,
+
+        R1 | R2 | R3 => R3,
+        PR1 | PR2 | PR3 => PR3,
+
+        B1 | B2 | B3 => B3,
+        PB1 | PB2 | PB3 => PB3,
+
+        G1 | G2 | G3 => G3,
+        PG1 | PG2 | PG3 => PG3,
+
+        S1 | S2 | S3 => S3,
+        PS1 | PS2 | PS3 => PS3,
+
+        N1 | N2 | N3 => N3,
+        PN1 | PN2 | PN3 => PN3,
+
+        L1 | L2 | L3 => L3,
+        PL1 | PL2 | PL3 => PL3,
+
+        P1 | P2 | P3 => P3,
+        PP1 | PP2 | PP3 => PP3,
+    }
+}
 pub fn hand_id_piece_to_hand_index(id_piece:IdentifiedPiece) -> usize {
     use piece_etc::PieceIdentify::*;
     if let Some(phase) = id_piece.phase {
