@@ -118,4 +118,20 @@ impl Position {
             _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
         }
     }
+
+    /// 持ち駒の１行表示
+    fn to_hand_text(&self, _comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
+        
+        let piece = piece_type_to_piece(phase_opt, piece_type);
+        let count = self.get_hand(piece);
+        let coefficient = if 1 < count {count.to_string()} else {"".to_string()};
+        // comm.println(&format!("piece_type: '{}', hand_count: {}, coefficient: {}.", piece_type_to_sign(Some(piece_type)), count, coefficient));
+        let ch = if 0 < count {
+            piece_type_to_sign(Some(piece_type))
+        } else {
+            "".to_string()
+        };
+
+        format!("{}{}", coefficient, ch)
+    }
 }

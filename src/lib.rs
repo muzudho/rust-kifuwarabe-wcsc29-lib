@@ -135,12 +135,15 @@ pub fn main_loop() {
 
         } else if line == "hand1" {
             // TODO 先手の持ち駒を表示。
+            comm.println(&position.to_hand_text(Some(Phase::First)));
 
         } else if line == "hand2" {
             // TODO 後手の持ち駒を表示。
+            comm.println(&position.to_hand_text(Some(Phase::Second)));
 
         } else if line == "hand3" {
             // TODO 使っていない駒を表示。
+            comm.println(&position.to_hand_text(None));
 
         // #####
         // # I #

@@ -315,19 +315,33 @@ impl Position {
     }
 
     /// 持ち駒の１行表示
-    fn to_hand_text(&self, _comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
-        
-        let piece = piece_type_to_piece(phase_opt, piece_type);
-        let count = self.get_hand(piece);
-        let coefficient = if 1 < count {count.to_string()} else {"".to_string()};
-        // comm.println(&format!("piece_type: '{}', hand_count: {}, coefficient: {}.", piece_type_to_sign(Some(piece_type)), count, coefficient));
-        let ch = if 0 < count {
-            piece_type_to_sign(Some(piece_type))
+    pub fn to_hand_text(&self, phase_opt:Option<Phase>) -> String {
+        let mut text = String::new();
+
+        use piece_etc::Phase::*;
+        use piece_etc::Piece::*;
+
+        let array = if let Some(phase) = phase_opt {
+            match phase {
+                First => {
+                    [K1, R1, B1, G1, S1, N1, L1, P1]
+                },
+                Second => {
+                    [K2, R2, B2, G2, S2, N2, L2, P2]
+                },
+            }
         } else {
-            "".to_string()
+            [K3, R3, B3, G3, S3, N3, L3, P3]
         };
 
-        format!("{}{}", coefficient, ch)
+        for piece in &array {
+            let hand_index = hand_piece_to_hand_index(*piece);
+            for id_piece in self.hands[hand_index].iter() {
+                text = format!("{} {}", text, id_piece.to_physical_display())
+            }
+        }
+
+        text
     }
 
     /// Point of symmetory.
@@ -336,15 +350,8 @@ impl Position {
         let mut content = String::new();
 
         // First phase hand.
-        Parser::appendln(&mut content, &format!("               {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
-            self.to_hand_text(comm, Some(Phase::First), PieceType::K),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::R),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::B),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::G),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::S),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::N),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::L),
-            self.to_hand_text(comm, Some(Phase::First), PieceType::P)));
+        Parser::appendln(&mut content, &format!("               {}",
+            self.to_hand_text(Some(Phase::First))));
 
         match phase {
             First => {
@@ -396,20 +403,6 @@ impl Position {
                 Parser::append(&mut content, &" +----+----+----+----+----+----+----+----+----+".to_string());
             }
 
-            // Right boarder and None phase hands.
-            match row {
-                0|1|2|3|4|5|6|7|8 => {Parser::append(&mut content, &"   ".to_string())},
-                9 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::K)))},
-                10 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::R)))},
-                11 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::B)))},
-                12 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::G)))},
-                13 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::S)))},
-                14 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::N)))},
-                15 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::L)))},
-                16 => {Parser::append(&mut content, &format!("{:>3}", self.to_hand_text(comm, None, PieceType::P)))},
-                _ => { panic!("Unexpected row: {0}.", row) },
-            };
-
             // Second player finger.
             match phase {
                 First => {},
@@ -443,15 +436,8 @@ impl Position {
         Parser::appendln(&mut content, &"              1    2    3    4    5    6    7    8    9".to_string());
 
         // Second phase hand.
-        Parser::appendln(&mut content, &format!("               {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>2} {:>3}",
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::K),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::R),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::B),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::G),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::S),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::N),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::L),
-            self.to_hand_text(comm, Some(Phase::Second), PieceType::P)));
+        Parser::appendln(&mut content, &format!("               {}",
+            self.to_hand_text(Some(Phase::Second))));
 
         content
     }
