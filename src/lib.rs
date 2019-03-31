@@ -60,6 +60,8 @@ pub fn main_loop() {
     let comm = Communication::new();
     let mut precord = PhysicalRecord::default();
     let mut position = Position::default();
+    let mut thought = Thought::new();
+    thought.load();
 
     loop {
         // Standard input.
@@ -190,7 +192,6 @@ pub fn main_loop() {
         // #####
 
         } else if line.starts_with("go") {
-            let thought = Thought::new();
             let best_logical_move = thought.get_best_move(
                 &position,
                 &mut precord);

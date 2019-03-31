@@ -21,9 +21,6 @@ impl UsiRecord {
 
     /// 1行目のテキストを返す。
     pub fn read_first_line(comm:&Communication, file:&str) -> String {
-        let mut position = Position::default();
-        let mut urecord = UsiRecord::new();
-
         if let Some(first_line_result) = BufReader::new(File::open(file).unwrap()).lines().next() {
             let first_line = first_line_result.unwrap();
             comm.println(&format!("Read first line: `{}`.", first_line));
