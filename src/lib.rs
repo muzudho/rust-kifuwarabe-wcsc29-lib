@@ -239,29 +239,32 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
                 None
             }
             '0' => {
-                // ドロップ。
+                // 駒台。
                 start += 1;
 
                 let ch2 = line[start..=start].chars().nth(0).unwrap();
                 start += 1;
+
+                let text15;
                 match ch2 {
-                    'K' | 'k' |
-                    'R' | 'r' |
-                    'B' | 'b' |
-                    'G' | 'g' |
-                    'S' | 's' |
-                    'N' | 'n' |
-                    'L' | 'l' |
-                    'P' | 'p' => {
+                    'P' | 'p' | 'ﾅ' => {
+                        // 成り駒は、不成駒と同じところに置くので、成りのマークは読み飛ばす。
+                        text15 = line[start..=start].chars().nth(0).unwrap().to_string();
+                        start += 1;
                     },
                     _ => {
-                        panic!("Unexpected drop '{}{}'.", ch1, ch2)
+                        // Ignored.
+                        text15 = "".to_string();
                     },
-                }
+                };
 
-                comm.print(&format!("{}{}", ch1, ch2));
-                let piece_type = sign_to_piece_type(&ch2.to_string());
-                let address = Address::create_by_hand(Some(position.get_phase()), piece_type);
+                // 駒の種類、フェーズ。
+                let piece = PhysicalSign::default(ch2.to_string()).to_piece();
+
+                comm.print(&format!("{}{}{}", ch1, text15, ch2));
+                let address = Address::create_by_hand(
+                    piece_to_phase(Some(piece)),
+                    piece_to_piece_type(piece));
                 comm.println(&format!("address index = {}.", address.get_index()));
                 Some(PhysicalMove::create_by_address(address))
             },

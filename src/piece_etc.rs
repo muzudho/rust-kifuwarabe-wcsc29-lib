@@ -938,24 +938,107 @@ pub fn hand_piece_to_hand_index(piece:Piece) -> usize {
         _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
     }
 }
-pub fn sign_to_piece_type(sign:&str) -> PieceType {
-    use piece_etc::PieceType::*;
-    match sign {
-        "K" | "k" => K,
-        "R" | "r" => R,
-        "B" | "b" => B,
-        "G" | "g" => G,
-        "S" | "s" => S,
-        "N" | "n" => N,
-        "L" | "l" => L,
-        "P" | "p" => P,
-        "PR" | "pr" => PR,
-        "PB" | "pb" => PB,
-        "PS" | "ps" => PS,
-        "PN" | "pn" => PN,
-        "PL" | "pl" => PL,
-        "PP" | "pp" => PP,
-        _ => panic!("Unexpected sign: '{}'.", sign)
+
+pub struct PhysicalSign {
+    text: String,
+}
+impl PhysicalSign {
+    pub fn default(sign_text:String) -> PhysicalSign {
+        PhysicalSign {
+            text: sign_text
+        }
+    }
+
+    pub fn to_piece(&self) -> Piece {
+        use piece_etc::Piece::*;
+        match self.text.as_str() {
+            // 成りごまの場合は頭に半角のＰ、ｐ、ナを付ける。
+            // Ｋｉｎｇ，オウ．
+            "K" => K1,
+            "k" => K2,
+            "ｵ" => K3,
+            "PK" => PK1,
+            "pk" => PK2,
+            "ﾅｵ" => PK3,
+
+            // Ｒｏｏｋ，ヒシャ．
+            "R" => R1,
+            "r" => R2,
+            "ﾋ" => R3,
+            "PR" => PR1,
+            "pr" => PR2,
+            "ﾅﾋ" => R3,
+
+            // Ｂｉｓｈｏｐ，カク．
+            "B" => B1,
+            "b" => B2,
+            "ｶ" => B3,
+            "PB" => PB1,
+            "pb" => PB2,
+            "ﾅｶ" => PB3,
+
+            // Ｇｏｌｄ，キン．
+            "G" => G1,
+            "g" => G2,
+            "ｷ" => G3,
+            "PG" => PG1,
+            "pg" => PG2,
+            "ﾅｷ" => PG3,
+
+            // Ｓｉｌｖｅｒ，シルバー．
+            "S" => S1,
+            "s" => S2,
+            "ｼ" => S3,
+            "PS" => PS1,
+            "ps" => PS2,
+            "ﾅｼ" => PS3,
+
+            // Ｋｎｉｇｈｔ，ケイ．
+            "N" => N1,
+            "n" => N2,
+            "ｹ" => N3,
+            "PN"=> PN1,
+            "pn" => PN2,
+            "ﾅｹ" => PN3,
+
+            // Ｌａｎｃｅ，ヤリ．
+            "L" => L1,
+            "l" => L2,
+            "ﾔ" => L3,
+            "PL" => PL1,
+            "pl" => PL2,
+            "ﾅﾔ" => PL3,
+
+            // Ｐａｗｎ，フ．
+            "P" => P1,
+            "p" => P2,
+            "ﾌ" => P3,
+            "PP" => PP1,
+            "pp" => PP2,
+            "ﾅﾌ" => PP3,
+            _ => panic!("Unexpected physical sign: '{}'.", self.text)
+        }
+    }
+
+    pub fn to_piece_type(&self) -> PieceType {
+        use piece_etc::PieceType::*;
+        match self.text.as_str() {
+            "K" | "k" => K,
+            "R" | "r" => R,
+            "B" | "b" => B,
+            "G" | "g" => G,
+            "S" | "s" => S,
+            "N" | "n" => N,
+            "L" | "l" => L,
+            "P" | "p" => P,
+            "PR" | "pr" => PR,
+            "PB" | "pb" => PB,
+            "PS" | "ps" => PS,
+            "PN" | "pn" => PN,
+            "PL" | "pl" => PL,
+            "PP" | "pp" => PP,
+            _ => panic!("Unexpected sign: '{}'.", self.text)
+        }
     }
 }
 pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
