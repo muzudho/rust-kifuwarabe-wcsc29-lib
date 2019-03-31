@@ -69,7 +69,13 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn pop(&mut self) -> Option<PhysicalMove> {
+    pub fn pop_current(&mut self) -> Option<PhysicalMove> {
+        // 後ろの要素がある場合は、削除する。
+        if (self.cursor + 1) < self.items.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
+            self.items.truncate((self.cursor + 1) as usize)
+        };
+
         if self.items.is_empty() {
             None
         } else {

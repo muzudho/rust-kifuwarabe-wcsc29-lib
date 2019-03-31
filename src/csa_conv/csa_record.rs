@@ -49,10 +49,10 @@ impl CsaRecord {
             // TODO drop
 
         } else {
-            let mut source_id_piece_opt = position.remove_id_piece(cmove.source_file, cmove.source_rank);
+            let source_id_piece_opt = position.remove_id_piece(cmove.source_file, cmove.source_rank);
 
+            // CSAの棋譜では、成ったかどうかは分からない。
             /*
-            // 成ったかどうかは分からない。
             if cmove.promotion {
                 source_piece = promotion_piece(source_piece);
             }

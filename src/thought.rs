@@ -14,7 +14,7 @@ impl Thought {
         }
     }
 
-    pub fn get_best_move(self, position:&Position, physical_record:&mut PhysicalRecord) -> UsiMove {
+    pub fn get_best_move(self, position:&Position, _precord:&mut PhysicalRecord) -> UsiMove {
         // use position::Piece::*;
 
         // position.show_position();

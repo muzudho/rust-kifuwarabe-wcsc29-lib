@@ -133,8 +133,28 @@ pub fn main_loop() {
         // #####
 
         } else if line == "d" {
-            // Delete.
-            CommonOperation::pop(&comm, &mut precord, &mut position);
+            // Delete 1mark.
+            CommonOperation::pop_current_1mark(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "dd" {
+            // Delete 1ply.
+            CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "ddd" {
+            // Delete 10ply.
+            for _i in 0..10 {
+                CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
+            }
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "dddd" {
+            // Delete 400ply.
+            for _i in 0..400 {
+                CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
+            }
+            CommonOperation::bo(&comm, &precord, &position);
 
         // #####
         // # F #

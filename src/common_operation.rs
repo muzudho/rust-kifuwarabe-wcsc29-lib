@@ -27,11 +27,28 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
-    pub fn pop(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
-        if let Some(pmove) = precord.pop() {
+    pub fn pop_current_1mark(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) -> Option<PhysicalMove> {
+        if let Some(pmove) = precord.pop_current() {
             position.touch(comm, &pmove);
+            Some(pmove)
+        } else {
+            None
         }
-        CommonOperation::bo(comm, &precord, &position);
+    }
+
+    /// 1手削除する。
+    pub fn pop_current_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+        let mut count = 0;
+        // 開始前に達したら終了。
+        while let Some(pmove) = CommonOperation::pop_current_1mark(comm, precord, position) {
+            if count != 0 && pmove.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                break;
+            }
+
+            // それ以外は繰り返す。
+            count += 1;
+        }
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
@@ -48,19 +65,14 @@ impl CommonOperation {
     /// 1手戻す。
     pub fn back_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
         let mut count = 0;
-        loop {
-            if let Some(pmove) = CommonOperation::back_1mark(comm, precord, position) {
-                if count != 0 && pmove.is_phase_change() {
-                    // フェーズ切り替えしたら終了。（ただし、初回除く）
-                    break;
-                }
-
-                // それ以外は繰り返す。
-            } else {
-                // 開始前に達したら終了。
-                break
+        // 開始前に達したら終了。
+        while let Some(pmove) = CommonOperation::back_1mark(comm, precord, position) {
+            if count != 0 && pmove.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                break;
             }
 
+            // それ以外は繰り返す。
             count += 1;
         }
     }
@@ -82,19 +94,14 @@ impl CommonOperation {
     /// 1手進める。
     pub fn forward_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
         let mut count = 0;
-        loop {
-            if let Some(pmove) = CommonOperation::forward_1mark(comm, precord, position) {
-                if count != 0 && pmove.is_phase_change() {
-                    // フェーズ切り替えしたら終了。（ただし、初回除く）
-                    break;
-                }
-
-                // それ以外は繰り返す。
-            } else {
-                // 最後尾に達していたのなら終了。
-                break
+        // 最後尾に達していたのなら終了。
+        while let Some(pmove) = CommonOperation::forward_1mark(comm, precord, position) {
+            if count != 0 && pmove.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                break;
             }
 
+            // それ以外は繰り返す。
             count += 1;
         }
     }

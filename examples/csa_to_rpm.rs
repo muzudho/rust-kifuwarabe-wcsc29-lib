@@ -4,10 +4,10 @@
 /// cls
 /// 
 /// ### Compile.
-/// cargo clippy --example csa_to_phy
+/// cargo clippy --example csa_to_rpm
 /// 
 /// ### Run.
-/// cargo run --example csa_to_phy
+/// cargo run --example csa_to_rpm
 /// ```
 /// 
 /// Execution file.
@@ -37,9 +37,9 @@ pub fn main() {
 }
 
 /// CSA形式の棋譜を、フィジカル レコードに変換。
-pub struct CsaToPhy {
+pub struct CsaToRmp {
 }
-impl CsaToPhy {
+impl CsaToRmp {
     pub fn load(file:&str) {
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();
