@@ -8,12 +8,17 @@
 /// 
 /// ### Run.
 /// cargo run --example csa_to_rpm
+/// ### '--' is separator. You can pass arguments to exe.
+/// cargo run --example csa_to_rpm -- --path download-kifu/WCSC28_F6_PAL_HFW.csa
 /// ```
 /// 
 /// Execution file.
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
 
 extern crate kifuwarabe_wcsc29_lib;
+extern crate getopts;
+use std::env;
+use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
@@ -26,12 +31,36 @@ use kifuwarabe_wcsc29_lib::position::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+#[derive(Debug)]
+struct Args {
+  path: Option<String>,
+}
+
+fn parse_args() -> Args {
+    let args: Vec<String> = env::args().collect();
+
+    let mut opts = Options::new();
+    opts.optopt("p", "path", "set input csa file name.", "NAME");
+
+    let matches = opts.parse(&args[1..])
+        .unwrap_or_else(|f| panic!(f.to_string()));
+
+    Args {
+        path: matches.opt_str("path"),
+    }
+}
+
 pub fn main() {
+    let args = parse_args();
+
     let comm = Communication::new();
+    let csa_path = args.path.unwrap();
+    comm.println(&format!("args.path = '{}'.", csa_path));
+
     let mut physical_record = PhysicalRecord::default();
     let mut position = Position::default();
 
-    let c_record = CsaRecord::load("download-kifu/WCSC28_F6_PAL_HFW.csa");
+    let c_record = CsaRecord::load(&csa_path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.csa"
     CsaConverter::convert_record(&comm, &mut position, &c_record, &mut physical_record);
     CommonOperation::bo(&comm, &physical_record, &position);
 }
