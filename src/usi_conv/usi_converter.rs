@@ -12,7 +12,6 @@ pub struct UsiConverter {
 
 }
 impl UsiConverter {
-    /// 変換には、現局面が必要。
     pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
@@ -87,12 +86,12 @@ impl UsiConverter {
         physical_moves
     }
 
-    /// 変換には、初期局面が必要。
+    /// USIレコードと 初期局面を合わせてください。
     pub fn convert_record(
         comm:&Communication,
         position:&mut Position,
         u_record:&UsiRecord,
-        physical_record:&mut PhysicalRecord) {
+        precord:&mut PhysicalRecord) {
 
         for umove in &u_record.items {
             let physical_moves = UsiConverter::convert_move(
@@ -100,7 +99,7 @@ impl UsiConverter {
                 position);
 
             for physical_move in physical_moves {
-                CommonOperation::go(comm, physical_record, &physical_move, position);
+                CommonOperation::go(comm, precord, &physical_move, position);
             }
         }
     }

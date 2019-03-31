@@ -19,25 +19,34 @@ impl UsiRecord {
         }
     }
 
-    pub fn load(comm:&Communication, file:&str) -> UsiRecord {
+    /// 1行目のテキストを返す。
+    pub fn read_first_line(comm:&Communication, file:&str) -> String {
         let mut position = Position::default();
         let mut urecord = UsiRecord::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();
+            comm.println(&format!("Read line: `{}`.", line));
+            return line;
+        }
 
-            comm.println(&format!("{}  ", line));
-            let mut start = 0;
-            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
-                comm.println("Position parsed.");
+        "".to_string()
+    }
 
-                if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
-                    comm.println("Moves parsed.");
-                    urecord = parsed_urecord;
-                };
-            }
-            
-            break;
+    pub fn parse_line(comm:&Communication, line:&str) -> UsiRecord {
+        let mut position = Position::default();
+        let mut urecord = UsiRecord::new();
+
+        comm.println(&format!("Parse line: `{}`.", line));
+        
+        let mut start = 0;
+        if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+            comm.println("Position parsed.");
+
+            if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+                comm.println("Moves parsed.");
+                urecord = parsed_urecord;
+            };
         }
 
         urecord

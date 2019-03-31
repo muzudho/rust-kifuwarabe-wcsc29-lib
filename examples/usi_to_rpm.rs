@@ -5,6 +5,7 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
@@ -43,8 +44,27 @@ pub fn main() {
     let mut precord = PhysicalRecord::default();
     let mut position = Position::default();
 
-    let urecord = UsiRecord::load(&comm, &path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.usi"
+    let line = UsiRecord::read_first_line(&comm, &path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.usi"
+
+    comm.println(&format!("Parse line: `{}`.", line));
+    let mut urecord = UsiRecord::new();
+        
+    let mut start = 0;
+    if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+        comm.println("Position parsed.");
+
+        if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+            comm.println("Moves parsed.");
+            urecord = parsed_urecord;
+        };
+    }
     comm.println("Created urecord.");
+
+    // ポジションをもう１回初期局面に戻す。
+    let mut start = 0;
+    if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+        comm.println("Position parsed.");
+    }
 
     UsiConverter::convert_record(&comm, &mut position, &urecord, &mut precord);
     CommonOperation::bo(&comm, &precord, &position);
