@@ -22,7 +22,7 @@ Library file.
 
 ## How to use engine?
 
-rust-kifuwarabe-wcsc29.
+[rust-kifuwarabe-wcsc29.](https://github.com/muzudho/kifuwarabe-wcsc29)
 
 ## Test
 
