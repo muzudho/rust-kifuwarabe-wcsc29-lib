@@ -1437,7 +1437,7 @@ pub fn parse_sign_to_file(line:&str, start:&mut usize) -> i8 {
         '7' => 7,
         '8' => 8,
         '9' => 9,
-        _ => panic!("Failed: Unexpected file. line `{}` at {}, `{}`.", line, *start-1, sign)
+        _ => panic!("Unexpected file: `{}`. line `{}` at {}.", sign, line, *start-1)
     }
 }
 

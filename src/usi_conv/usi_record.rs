@@ -26,10 +26,13 @@ impl UsiRecord {
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();
 
-            println!("{}  ", line);
+            comm.println(&format!("{}  ", line));
             let mut start = 0;
-            if Fen::parse_position(&line, &mut start, &mut position) {
+            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+                comm.println("Position parsed.");
+
                 if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+                    comm.println("Moves parsed.");
                     urecord = parsed_urecord;
                 };
             }
@@ -57,11 +60,11 @@ impl UsiRecord {
      */
 
     /// ex.) Parses 7g7f 3c3d.
-    pub fn parse_usi_some_moves(&mut self, line:&str, start:&mut usize) {
+    pub fn parse_usi_some_moves(&mut self, comm:&Communication, line:&str, start:&mut usize) {
         self.items.clear();
 
         loop {
-            let lmove = Fen::parse_usi_1move(&line, start);
+            let lmove = Fen::parse_usi_1move(&comm, &line, start);
             self.items.push(lmove);
 
             if *start + 1 < line.len() {

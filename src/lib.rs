@@ -255,7 +255,7 @@ pub fn main_loop() {
         } else if line.starts_with("position") {
             let mut urecord = UsiRecord::new();
             let mut start = 0;
-            if Fen::parse_position(&line, &mut start, &mut position) {
+            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
                 if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
                     urecord = parsed_urecord;
                 };

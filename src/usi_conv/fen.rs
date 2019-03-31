@@ -12,13 +12,15 @@ pub struct Fen {
 }
 impl Fen {
     // 解析と、局面の編集は同時に行う。
-    pub fn parse_position(line:&str, start:&mut usize, position:&mut Position) -> bool {
+    pub fn parse_position(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
         if line.starts_with("position startpos") {
+            comm.println("position startpos");
             // 平手初期局面にリセット。
             *start = "position startpos".len();
             position.reset_startpos();
             true
         } else if line.starts_with("position sfen ") {
+            comm.println("position sfen ");
             // TODO 初期局面を設定。
             position.reset_default();
 
@@ -62,19 +64,27 @@ impl Fen {
     }
 
     /// ex.) Parses 7g7f.
-    pub fn parse_usi_1move(line:&str, start:&mut usize) -> UsiMove {
-        println!("parse_usi_1move start: {0}.", start);
+    pub fn parse_usi_1move(comm:&Communication, line:&str, start:&mut usize) -> UsiMove {
+        comm.println(&format!("parse_usi_1move start(1): line: '{}', start: {}.", line, start));
+
         let drop_opt = parse_sign_to_drop(line, start);
+        comm.println(&format!("parse_usi_1move start(2): line: '{}', start: {}.", line, start));
 
         let mut source_file_num = 0;
         let mut source_rank_num = 0;
         if drop_opt == None {
             source_file_num = parse_sign_to_file(line, start);
+            comm.println(&format!("parse_usi_1move start(3): line: '{}', start: {}.", line, start));
+
             source_rank_num = parse_sign_to_rank(line, start);
+            comm.println(&format!("parse_usi_1move start(4): line: '{}', start: {}.", line, start));
         };
 
         let destination_file_num = parse_sign_to_file(line, start);
+        comm.println(&format!("parse_usi_1move start(5): line: '{}', start: {}.", line, start));
+
         let destination_rank_num = parse_sign_to_rank(line, start);
+        comm.println(&format!("parse_usi_1move start(6): line: '{}', start: {}.", line, start));
 
         let promotion_flag =
             if drop_opt == None {
@@ -82,6 +92,7 @@ impl Fen {
             } else {
                 false
             };
+        comm.println(&format!("parse_usi_1move start(7): line: '{}', start: {}.", line, start));
 
         UsiMove::create(
             source_file_num,

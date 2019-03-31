@@ -1,15 +1,38 @@
+use communication::*;
+
 pub struct Parser {
 }
 impl Parser {
-    pub fn match_keyword(line:&str, keyword:&str, start:&mut usize) -> bool {
+    pub fn match_keyword(comm:&Communication, line:&str, keyword:&str, start:&mut usize) -> bool {
         // スタートが文字列の終端を読み終わっていれば、結果は空。
         if line.len() <= *start {
-            false
-        } else if &line[*start..(*start+(keyword.len()-1))] == keyword {
+            return false;
+        }
+
+        let phrase = &line[*start..(*start+keyword.len())];
+        comm.println(&format!("slice: '{}'.", phrase));
+
+        if &line[*start..(*start+keyword.len())] == keyword {
             *start += keyword.len();
             true
         } else {
             false
+        }
+    }
+
+    // 半角空白を読み飛ばします。
+    pub fn skip_spaces(comm:&Communication, line:&str, start:&mut usize) {
+        if line.len() <= *start {
+            return;
+        }
+
+        while let Some(ch) = line.chars().nth(*start) {
+            if ch == ' ' {
+                *start += 1;
+                comm.println("Skip space.");
+            } else {
+                break;
+            }
         }
     }
 

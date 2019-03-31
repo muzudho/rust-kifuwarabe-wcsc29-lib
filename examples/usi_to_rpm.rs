@@ -44,6 +44,8 @@ pub fn main() {
     let mut position = Position::default();
 
     let urecord = UsiRecord::load(&comm, &path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.usi"
+    comm.println("Created urecord.");
+
     UsiConverter::convert_record(&comm, &mut position, &urecord, &mut precord);
     CommonOperation::bo(&comm, &precord, &position);
 }

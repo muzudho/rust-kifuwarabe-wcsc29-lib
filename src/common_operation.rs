@@ -112,11 +112,14 @@ impl CommonOperation {
     }
 
     pub fn read_usi_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<UsiRecord> {
-        if Parser::match_keyword(&line, "moves", start) || 
-            Parser::match_keyword(&line, " moves", start) {
+        if Parser::match_keyword(&comm, &line, "moves", start) || 
+            Parser::match_keyword(&comm, &line, " moves", start) {
         } else {
+            comm.println(&format!("Moves not matched. line: '{}', start: {}.", line, start));
             return None;
         }
+
+        Parser::skip_spaces(&comm, &line, start);
 
         let mut logical_record = UsiRecord::new();
 
@@ -125,7 +128,7 @@ impl CommonOperation {
         // Examples.
         // position startpos moves 2g2f 8c8d
         let mut temp_u_record = UsiRecord::new();
-        temp_u_record.parse_usi_some_moves(line, start);
+        temp_u_record.parse_usi_some_moves(&comm, line, start);
         comm.println(&format!("info temp_record.items.len: {}", temp_u_record.items.len()));
 
         // TODO 指し手通り、進めたい。
