@@ -1,7 +1,12 @@
 use communication::*;
-use position::*;
+use parser::*;
 use physical_move::*;
 use physical_record::*;
+use piece_etc::*;
+use position::*;
+use std::*;
+use usi_conv::usi_move::*;
+use usi_conv::usi_record::*;
 
 pub struct CommonOperation {
 }
@@ -104,5 +109,32 @@ impl CommonOperation {
             // それ以外は繰り返す。
             count += 1;
         }
+    }
+
+    pub fn read_usi_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<UsiRecord> {
+        if Parser::match_keyword(&line, "moves", start) || 
+            Parser::match_keyword(&line, " moves", start) {
+        } else {
+            return None;
+        }
+
+        let mut logical_record = UsiRecord::new();
+
+        // `position startpos moves `. [0]p, [1]o, ...
+
+        // Examples.
+        // position startpos moves 2g2f 8c8d
+        let mut temp_u_record = UsiRecord::new();
+        temp_u_record.parse_usi_some_moves(line, start);
+        comm.println(&format!("info temp_record.items.len: {}", temp_u_record.items.len()));
+
+        // TODO 指し手通り、進めたい。
+        for mov in &temp_u_record.items {
+            println!("info Move: `{}`.", mov.to_sign());
+            logical_record.make_move(*mov, position);
+            comm.println(&position.to_text(comm, logical_record.get_current_phase()));
+        }
+
+        Some(logical_record)
     }
 }

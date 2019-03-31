@@ -253,18 +253,18 @@ pub fn main_loop() {
         // # P #
         // #####
         } else if line.starts_with("position") {
-            let mut logical_record = UsiRecord::new();
+            let mut urecord = UsiRecord::new();
             let mut start = 0;
             if Fen::parse_position(&line, &mut start, &mut position) {
-                if let Some(lrecords) = Fen::parse_moves(&comm, &line, &mut start, &mut position) {
-                    logical_record = lrecords;
+                if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+                    urecord = parsed_urecord;
                 };
             }
 
             UsiConverter::convert_record(
                 &comm,
                 &mut position,
-                &logical_record,
+                &urecord,
                 &mut precord);
         }
     }

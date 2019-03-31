@@ -5,9 +5,9 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
+use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
+use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
+use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
 use kifuwarabe_wcsc29_lib::physical_record::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
@@ -23,7 +23,7 @@ fn parse_args() -> Args {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
-    opts.optopt("p", "path", "set input csa file name.", "NAME");
+    opts.optopt("p", "path", "set input usi file name.", "NAME");
 
     let matches = opts.parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
@@ -43,7 +43,7 @@ pub fn main() {
     let mut precord = PhysicalRecord::default();
     let mut position = Position::default();
 
-    let crecord = CsaRecord::load(&path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.csa"
-    CsaConverter::convert_record(&comm, &mut position, &crecord, &mut precord);
+    let urecord = UsiRecord::load(&comm, &path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.usi"
+    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut precord);
     CommonOperation::bo(&comm, &precord, &position);
 }

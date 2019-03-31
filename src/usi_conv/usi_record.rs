@@ -1,8 +1,12 @@
-use std::*;
-use usi_conv::fen::*;
-use usi_conv::usi_move::*;
+use common_operation::*;
+use communication::*;
 use piece_etc::*;
 use position::*;
+use std::*;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+use usi_conv::fen::*;
+use usi_conv::usi_move::*;
 
  #[derive(Default)]
 pub struct UsiRecord {
@@ -13,6 +17,27 @@ impl UsiRecord {
         UsiRecord {
             items: Vec::new(),
         }
+    }
+
+    pub fn load(comm:&Communication, file:&str) -> UsiRecord {
+        let mut position = Position::default();
+        let mut urecord = UsiRecord::new();
+
+        for result in BufReader::new(File::open(file).unwrap()).lines() {
+            let line = result.unwrap();
+
+            println!("{}  ", line);
+            let mut start = 0;
+            if Fen::parse_position(&line, &mut start, &mut position) {
+                if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+                    urecord = parsed_urecord;
+                };
+            }
+            
+            break;
+        }
+
+        urecord
     }
 
     /*
@@ -31,11 +56,12 @@ impl UsiRecord {
     }
      */
 
-    pub fn parse2(&mut self, line:&str, start:&mut usize) {
+    /// ex.) Parses 7g7f 3c3d.
+    pub fn parse_usi_some_moves(&mut self, line:&str, start:&mut usize) {
         self.items.clear();
 
         loop {
-            let lmove = Fen::parse3(&line, start);
+            let lmove = Fen::parse_usi_1move(&line, start);
             self.items.push(lmove);
 
             if *start + 1 < line.len() {

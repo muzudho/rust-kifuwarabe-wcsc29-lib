@@ -21,6 +21,22 @@ cargo run --example csa_to_rpm -- --path download-kifu/WCSC_F2_QHA_TNK.csa
 Output.
 `C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/libkifuwarabe-wcsc29.rlib`
 
+## How to convert usi-record to rpm-record?
+
+```Shell
+### Example.
+cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cls
+ 
+### Compile.
+cargo clippy --example usi_to_rpm
+ 
+### Run.
+### '--' is separator. You can pass arguments to exe.
+### Please change encoding to UTF-8.
+cargo run --example usi_to_rpm -- --path download-kifu/test.usi
+```
+
 ## How to use engine?
 
 [rust-kifuwarabe-wcsc29.](https://github.com/muzudho/kifuwarabe-wcsc29)
