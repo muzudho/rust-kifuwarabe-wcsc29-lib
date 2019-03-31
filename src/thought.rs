@@ -1,22 +1,27 @@
-use position::*;
+use learn::learning::*;
+use learn::rpmove_file::*;
 use usi_conv::usi_move::*;
 use physical_record::*;
 // use piece_etc::*;
+use position::*;
 
-#[derive(Default)]
 pub struct Thought {
-
+    learning: Learning,
 }
 impl Thought {
     pub fn new() -> Thought {
         Thought {
-
+            learning: Learning::default(),
         }
+    }
+
+    /// 学習ファイルを読み込む。
+    pub fn load(&mut self) {
+        self.learning.read();
     }
 
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(self, position:&Position, _precord:&mut PhysicalRecord) -> UsiMove {
-        // use position::Piece::*;
 
         // position.show_position();
         // println!("info Current phase: `{}`.", phase_to_sign(&logical_record.get_current_phase()));

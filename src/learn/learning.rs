@@ -3,36 +3,31 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 pub struct Learning {
-    rpmove_files: [Option<RpmoveFile>; 40],
+    rpmove_file_vec: Vec<RpmoveFile>,
 }
 impl Learning {
-    pub fn new() -> Learning {
+    pub fn default() -> Learning {
         let mut instance = Learning {
-            rpmove_files: [
-                None, None, None, None, None, None, None, None, None, None, 
-                None, None, None, None, None, None, None, None, None, None, 
-                None, None, None, None, None, None, None, None, None, None, 
-                None, None, None, None, None, None, None, None, None, None, 
-            ]
+            rpmove_file_vec: Vec::new(),
         };
 
         for number in 0..40 {
-            instance.rpmove_files[number] = Some(RpmoveFile::new());
+            instance.rpmove_file_vec[number] = RpmoveFile::default();
         }
 
         // 玉だけ動きを入れておく。
-        instance.rpmove_files[0] = Some(RpmoveFile {
+        instance.rpmove_file_vec[0] = RpmoveFile {
             line: "51 52".to_string(),
-        });
-        instance.rpmove_files[1] = Some(RpmoveFile {
+        };
+        instance.rpmove_file_vec[1] = RpmoveFile {
             line: "59 58".to_string(),
-        });
+        };
 
         instance
     }
 
+    /// TODO ファイルを読み込む。
     pub fn read(&self) {
-
     }
 
     pub fn save(&self) {
@@ -40,17 +35,15 @@ impl Learning {
         for number in 0..40 {
             let path = format!("thought/N{:02}.rpmove", number);
 
-            if let Some(ref rpmove_file) = self.rpmove_files[number] {
-                let mut file = OpenOptions::new()
-                .create(true)
-                .write(true)
-                // .append(true)
-                .open(path)
-                .unwrap();
+            let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            // .append(true)
+            .open(path)
+            .unwrap();
 
-                if let Err(e) = writeln!(file, "{}", rpmove_file.line) {
-                    eprintln!("Couldn't write to file: {}", e);
-                }
+            if let Err(e) = writeln!(file, "{}", self.rpmove_file_vec[number].line) {
+                eprintln!("Couldn't write to file: {}", e);
             }
         }
     }
