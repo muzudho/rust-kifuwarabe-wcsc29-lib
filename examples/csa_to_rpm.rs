@@ -1,20 +1,3 @@
-/// ```Shell
-/// ### Example.
-/// cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
-/// cls
-/// 
-/// ### Compile.
-/// cargo clippy --example csa_to_rpm
-/// 
-/// ### Run.
-/// cargo run --example csa_to_rpm
-/// ### '--' is separator. You can pass arguments to exe.
-/// cargo run --example csa_to_rpm -- --path download-kifu/WCSC28_F6_PAL_HFW.csa
-/// ```
-/// 
-/// Execution file.
-/// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
-
 extern crate kifuwarabe_wcsc29_lib;
 extern crate getopts;
 use std::env;
