@@ -40,7 +40,7 @@ impl CsaConverter {
             // 駒を進める動きの場合
             if let Some(capture_id_piece) = position.get_id_piece_by_address(destination_address.get_index()) {
                 // 駒を取る動きが入る場合
-                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_physical_sign()));
+                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_extended_usi_text()));
 
                 // hand-off
                 let hand_off = PhysicalMove::create_by_address(destination_address);
