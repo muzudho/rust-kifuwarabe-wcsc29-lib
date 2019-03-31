@@ -13,11 +13,12 @@ cargo clippy --example csa_to_rpm
  
 ### Run.
 ### '--' is separator. You can pass arguments to exe.
+### Please change encoding to UTF-8.
 cargo run --example csa_to_rpm -- --path download-kifu/WCSC28_F6_PAL_HFW.csa
+cargo run --example csa_to_rpm -- --path download-kifu/WCSC_F2_QHA_TNK.csa
 ```
 
-Library file.
-
+Output.
 `C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/libkifuwarabe-wcsc29.rlib`
 
 ## How to use engine?
