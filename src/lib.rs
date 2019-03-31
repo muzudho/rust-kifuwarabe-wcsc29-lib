@@ -110,6 +110,20 @@ pub fn main_loop() {
             CommonOperation::back_1ply(&comm, &mut precord, &mut position);
             CommonOperation::bo(&comm, &precord, &position);
 
+        } else if line == "bbb" {
+            // Back 10ply.
+            for _i in 0..10 {
+                CommonOperation::back_1ply(&comm, &mut precord, &mut position);
+            }
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "bbbb" {
+            // Back 400ply.
+            for _i in 0..400 {
+                CommonOperation::back_1ply(&comm, &mut precord, &mut position);
+            }
+            CommonOperation::bo(&comm, &precord, &position);
+
         } else if line.starts_with("bo") {
             // Board.
             CommonOperation::bo(&comm, &precord, &position);
@@ -127,13 +141,27 @@ pub fn main_loop() {
         // #####
 
         } else if line == "f" {
-            // Forward.
+            // Forward 1mark.
             CommonOperation::forward_1mark(&comm, &mut precord, &mut position);
             CommonOperation::bo(&comm, &precord, &position);
 
         } else if line == "ff" {
-            // Forward.
+            // Forward 1ply.
             CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "fff" {
+            // Forward 10ply.
+            for _i in 0..10 {
+                CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+            }
+            CommonOperation::bo(&comm, &precord, &position);
+
+        } else if line == "ffff" {
+            // Forward 400ply.
+            for _i in 0..400 {
+                CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+            }
             CommonOperation::bo(&comm, &precord, &position);
 
         // #####
