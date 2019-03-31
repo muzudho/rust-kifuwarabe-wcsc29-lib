@@ -24,13 +24,13 @@ impl UsiRecord {
         let mut position = Position::default();
         let mut urecord = UsiRecord::new();
 
-        for result in BufReader::new(File::open(file).unwrap()).lines() {
-            let line = result.unwrap();
-            comm.println(&format!("Read line: `{}`.", line));
-            return line;
+        if let Some(first_line_result) = BufReader::new(File::open(file).unwrap()).lines().next() {
+            let first_line = first_line_result.unwrap();
+            comm.println(&format!("Read first line: `{}`.", first_line));
+            first_line
+        } else {
+            "".to_string()
         }
-
-        "".to_string()
     }
 
     pub fn parse_line(comm:&Communication, line:&str) -> UsiRecord {
@@ -38,7 +38,7 @@ impl UsiRecord {
         let mut urecord = UsiRecord::new();
 
         comm.println(&format!("Parse line: `{}`.", line));
-        
+
         let mut start = 0;
         if Fen::parse_position(&comm, &line, &mut start, &mut position) {
             comm.println("Position parsed.");
