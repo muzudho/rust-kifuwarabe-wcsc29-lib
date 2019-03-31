@@ -1,7 +1,7 @@
 use position::*;
 use usi_conv::usi_move::*;
 use physical_record::*;
-use piece_etc::*;
+// use piece_etc::*;
 
 #[derive(Default)]
 pub struct Thought {
@@ -14,6 +14,7 @@ impl Thought {
         }
     }
 
+    /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(self, position:&Position, _precord:&mut PhysicalRecord) -> UsiMove {
         // use position::Piece::*;
 

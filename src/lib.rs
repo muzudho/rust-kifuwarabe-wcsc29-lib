@@ -34,6 +34,7 @@ pub mod address;
 pub mod common_operation;
 pub mod communication;
 pub mod csa_conv;
+pub mod learn;
 pub mod parser;
 pub mod physical_move;
 pub mod physical_record;

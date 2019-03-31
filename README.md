@@ -54,3 +54,17 @@ cargo clippy --example main
 ### Run.
 cargo run --example main
 ```
+
+## Learn
+
+```
+### Example.
+cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cls
+ 
+### Compile.
+cargo clippy --example learn
+ 
+### Run.
+cargo run --example learn
+```

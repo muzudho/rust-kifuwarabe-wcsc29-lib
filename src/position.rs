@@ -285,15 +285,12 @@ impl Position {
                     }
                 } else {
                     // 駒台。
-                    match self.board[SKY_ADDRESS] {
-                        Some(id_piece) => {
-                            // 指に何か持っているので、駒台に置く。
-                            self.move_finger_to_hand();
-                        },
-                        None => {
-                            // 指には何も持ってないので、駒台の駒をつかむ。
-                            self.move_hand_to_finger(address);
-                        },
+                    if let Some(_id_piece) = self.board[SKY_ADDRESS] {
+                        // 指に何か持っているので、駒台に置く。
+                        self.move_finger_to_hand();
+                    } else {
+                        // 指には何も持ってないので、駒台の駒をつかむ。
+                        self.move_hand_to_finger(address);
                     }
                 }
             },
@@ -349,7 +346,7 @@ impl Position {
     }
 
     /// Point of symmetory.
-    pub fn to_text(&self, comm:&Communication, phase:Phase) -> String {
+    pub fn to_text(&self, _comm:&Communication, phase:Phase) -> String {
         use piece_etc::Phase::*;
         let mut content = String::new();
 

@@ -108,10 +108,10 @@ impl PhysicalRecord {
     pub fn forward(&mut self) -> bool {
         if self.items.len() as i16 <= (self.cursor + 1) {
             // 進めない。
-            return false
+            false
         } else {
             self.up_count_retry();
-            return true
+            true
         }
     }
 

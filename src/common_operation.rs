@@ -2,10 +2,10 @@ use communication::*;
 use parser::*;
 use physical_move::*;
 use physical_record::*;
-use piece_etc::*;
+// use piece_etc::*;
 use position::*;
 use std::*;
-use usi_conv::usi_move::*;
+// use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 
 pub struct CommonOperation {
