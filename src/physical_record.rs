@@ -1,4 +1,5 @@
 use book::book_file::*;
+use communication::*;
 use position::*;
 use physical_move::*;
 
@@ -18,10 +19,10 @@ impl PhysicalRecord {
         }
     }
 
-    /// TODO 保存。
-    pub fn save(&self, board_size:BoardSize) {
+    /// 保存。
+    pub fn save(&self, comm:&Communication, board_size:BoardSize) {
         let book = Book::new();
-        book.save_precord(board_size, &self);
+        book.save_precord(&comm, board_size, &self);
     }
 
     fn up_count(&mut self, pmove:&PhysicalMove) {

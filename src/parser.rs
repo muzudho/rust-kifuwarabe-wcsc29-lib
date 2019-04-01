@@ -9,9 +9,6 @@ impl Parser {
             return false;
         }
 
-        let phrase = &line[*start..(*start+keyword.len())];
-        comm.println(&format!("slice: '{}'.", phrase));
-
         if &line[*start..(*start+keyword.len())] == keyword {
             *start += keyword.len();
             true
@@ -28,8 +25,8 @@ impl Parser {
 
         while let Some(ch) = line.chars().nth(*start) {
             if ch == ' ' {
+                // Skip space.
                 *start += 1;
-                comm.println("Skip space.");
             } else {
                 break;
             }

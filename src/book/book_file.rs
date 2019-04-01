@@ -1,3 +1,4 @@
+use communication::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -25,7 +26,8 @@ impl Book {
     }
 
     /// 物理レコードを追加する。
-    pub fn save_precord(&self, board_size:BoardSize, precord:&PhysicalRecord) {
+    pub fn save_precord(&self, comm:&Communication, board_size:BoardSize, precord:&PhysicalRecord) {
+        comm.println("#Book saving...");
         let mut file = OpenOptions::new()
         .create(true)
         .write(true)
@@ -36,5 +38,6 @@ impl Book {
         if let Err(e) = writeln!(file, "{}", precord.to_sign(board_size)) {
             eprintln!("Couldn't write to file: {}", e);
         }
+        comm.println("#Book saved.");
     }
 }

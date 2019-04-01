@@ -65,34 +65,22 @@ impl Fen {
 
     /// ex.) Parses 7g7f.
     pub fn parse_usi_1move(comm:&Communication, line:&str, start:&mut usize) -> UsiMove {
-        comm.println(&format!("parse_usi_1move start(1): line: '{}', start: {}.", line, start));
-
         let drop_opt = parse_sign_to_drop(line, start);
-        comm.println(&format!("parse_usi_1move start(2): line: '{}', start: {}.", line, start));
-
         let mut source_file_num = 0;
         let mut source_rank_num = 0;
         if drop_opt == None {
             source_file_num = parse_sign_to_file(line, start);
-            comm.println(&format!("parse_usi_1move start(3): line: '{}', start: {}.", line, start));
-
             source_rank_num = parse_sign_to_rank(line, start);
-            comm.println(&format!("parse_usi_1move start(4): line: '{}', start: {}.", line, start));
         };
 
         let destination_file_num = parse_sign_to_file(line, start);
-        comm.println(&format!("parse_usi_1move start(5): line: '{}', start: {}.", line, start));
-
         let destination_rank_num = parse_sign_to_rank(line, start);
-        comm.println(&format!("parse_usi_1move start(6): line: '{}', start: {}.", line, start));
-
         let promotion_flag =
             if drop_opt == None {
                 parse_sign_to_promotion(line, start)
             } else {
                 false
             };
-        comm.println(&format!("parse_usi_1move start(7): line: '{}', start: {}.", line, start));
 
         UsiMove::create(
             source_file_num,

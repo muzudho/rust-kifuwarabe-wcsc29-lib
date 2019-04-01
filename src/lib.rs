@@ -213,7 +213,7 @@ pub fn main_loop() {
             // TODO lose とか win とか。
 
             // TODO 物理レコードを１行にして保存したい。
-            precord.save(position.get_board_size());
+            precord.save(&comm, position.get_board_size());
 
         // #####
         // # H #
@@ -254,7 +254,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.14");
+            comm.println("id name Kifuwarabe Build.15");
             comm.println("id author Satoshi TAKAHASHI");
             comm.println("usiok");
         } else if line == "usinewgame" {
