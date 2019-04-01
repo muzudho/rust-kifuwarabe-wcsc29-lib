@@ -1,3 +1,4 @@
+use book::book_file::*;
 use position::*;
 use physical_move::*;
 
@@ -15,6 +16,12 @@ impl PhysicalRecord {
             // 開始時点で、1手目進行中 として扱います。
             ply: 1,
         }
+    }
+
+    /// TODO 保存。
+    pub fn save(&self, board_size:BoardSize) {
+        let book = Book::new();
+        book.save_precord(board_size, &self);
     }
 
     fn up_count(&mut self, pmove:&PhysicalMove) {
@@ -125,6 +132,7 @@ impl PhysicalRecord {
         self.down_count_retry();
     }
 
+    /// 定跡ファイルの保存形式でもある。
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         let mut ply = 1;

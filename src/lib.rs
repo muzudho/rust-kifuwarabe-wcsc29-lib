@@ -208,7 +208,13 @@ pub fn main_loop() {
             for physical_move in best_physical_moves {
                 CommonOperation::go(&comm, &mut precord, &physical_move, &mut position);
             }
-            
+
+        } else if line.starts_with("gameover") {
+            // TODO lose とか win とか。
+
+            // TODO 物理レコードを１行にして保存したい。
+            precord.save(position.get_board_size());
+
         // #####
         // # H #
         // #####

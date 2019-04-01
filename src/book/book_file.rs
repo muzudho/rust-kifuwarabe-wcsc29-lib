@@ -3,6 +3,8 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::Read;
 use std::io::{BufRead, BufReader};
+use position::*;
+use physical_record::*;
 
 pub struct Book {
     lines: Vec<String>,
@@ -19,6 +21,20 @@ impl Book {
             let line = result.unwrap();
             println!("Read line: `{}`.", line);
             self.lines.push(line);
-        }        
+        }
+    }
+
+    /// 物理レコードを追加する。
+    pub fn save_precord(&self, board_size:BoardSize, precord:&PhysicalRecord) {
+        let mut file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .append(true)
+        .open("./book/book.txt")
+        .unwrap();
+
+        if let Err(e) = writeln!(file, "{}", precord.to_sign(board_size)) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
     }
 }
