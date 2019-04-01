@@ -8,6 +8,7 @@ pub struct PhysicalMove {
     pub sky_turn: bool,
     pub sky_rotate: bool,
     phase_change: bool,
+    resign: bool,
 }
 impl PhysicalMove {
     pub fn create_by_address(address:Address) -> PhysicalMove {
@@ -16,6 +17,7 @@ impl PhysicalMove {
             sky_turn: false,
             sky_rotate: false,
             phase_change: false,
+            resign: false,
         }
     }
 
@@ -25,6 +27,7 @@ impl PhysicalMove {
             sky_turn: true,
             sky_rotate: false,
             phase_change: false,
+            resign: false,
         }
     }
 
@@ -34,6 +37,7 @@ impl PhysicalMove {
             sky_turn: false,
             sky_rotate: true,
             phase_change: false,
+            resign: false,
         }
     }
 
@@ -43,6 +47,17 @@ impl PhysicalMove {
             sky_turn: false,
             sky_rotate: false,
             phase_change: true,
+            resign: false,
+        }
+    }
+
+    pub fn create_resign() -> PhysicalMove {
+        PhysicalMove {
+            address: None,
+            sky_turn: false,
+            sky_rotate: false,
+            phase_change: false,
+            resign: true,
         }
     }
 
@@ -65,6 +80,8 @@ impl PhysicalMove {
                     *ply += 1;
                     format!("[{}]", ply)
                     // "|".to_string()
+                } else if self.resign {
+                    "%resign".to_string()
                 } else {
                     panic!("Unexpected physical move print.")
                 }

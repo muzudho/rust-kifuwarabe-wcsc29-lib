@@ -8,9 +8,9 @@ pub struct RpmoveFile {
     pub line: String,
 }
 impl RpmoveFile {
-    pub fn default(number:i16) -> RpmoveFile {
+    pub fn default(piece_number:i16) -> RpmoveFile {
         RpmoveFile {
-            number: number,
+            number: piece_number,
             line: String::new(),
         }
     }

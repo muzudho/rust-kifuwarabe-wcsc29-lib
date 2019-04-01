@@ -23,6 +23,7 @@ impl Thought {
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(&self, position:&Position, _precord:&mut PhysicalRecord) -> UsiMove {
 
+        /*
         // position.show_position();
         // println!("info Current phase: `{}`.", phase_to_sign(&logical_record.get_current_phase()));
 
@@ -63,5 +64,7 @@ impl Thought {
             dst_rank,
             false,
             None)
+        */
+        UsiMove::create_resign()
     }
 }

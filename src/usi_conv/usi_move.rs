@@ -9,6 +9,7 @@ pub struct UsiMove {
     pub destination_rank:i8,
     pub promotion:bool,
     drop:Option<PieceType>,
+    resign: bool,
 }
 impl UsiMove {
     pub fn create(
@@ -26,6 +27,19 @@ impl UsiMove {
             destination_rank: dst_rank,
             promotion: pro,
             drop: dro,
+            resign: false,
+        }
+    }
+
+    pub fn create_resign() -> UsiMove {
+        UsiMove {
+            source_file: -1,
+            source_rank: -1,
+            destination_file: -1,
+            destination_rank: -1,
+            promotion: false,
+            drop: None,
+            resign: true,
         }
     }
 
@@ -37,7 +51,20 @@ impl UsiMove {
         self.drop
     }
 
+    pub fn set_resign(&mut self, yes:bool) {
+        self.resign = yes
+    }
+
+    pub fn is_resign(&self) -> bool {
+        self.resign
+    }
+
+    /// USI符号。
     pub fn to_sign(self) -> String {
+        if self.resign {
+            return "resign".to_string();
+        }
+
         let mut sign = String::new();
 
         if self.drop != None {

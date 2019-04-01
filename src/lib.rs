@@ -31,6 +31,7 @@ extern crate serde_json;
 use std::io;
 
 pub mod address;
+pub mod book;
 pub mod common_operation;
 pub mod communication;
 pub mod csa_conv;

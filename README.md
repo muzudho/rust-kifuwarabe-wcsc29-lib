@@ -9,6 +9,7 @@ cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
+set RUST_BACKTRACE=1
 cargo clippy --example csa_to_rpm
  
 ### Run.
@@ -29,6 +30,7 @@ cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
+set RUST_BACKTRACE=1
 cargo clippy --example usi_to_rpm
  
 ### Run.
@@ -49,6 +51,7 @@ cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
+set RUST_BACKTRACE=1
 cargo clippy --example main
  
 ### Run.

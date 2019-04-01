@@ -15,6 +15,11 @@ impl UsiConverter {
     pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<PhysicalMove> {
         let mut physical_moves = Vec::new();
 
+        if umove.is_resign() {
+            physical_moves.push(PhysicalMove::create_resign());
+            return physical_moves;
+        }
+
         let destination_address = Address::create_by_cell(
             umove.destination_file,
             umove.destination_rank,
