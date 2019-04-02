@@ -14,13 +14,13 @@ impl Fen {
     // 解析と、局面の編集は同時に行う。
     pub fn parse_position(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
         if line.starts_with("position startpos") {
-            comm.println("#position startpos");
+            //comm.println("#position startpos");
             // 平手初期局面にリセット。
             *start = "position startpos".len();
             position.reset_startpos();
             true
         } else if line.starts_with("position sfen ") {
-            comm.println("#position sfen ");
+            //comm.println("#position sfen ");
             // TODO 初期局面を設定。
             position.reset_default();
 
