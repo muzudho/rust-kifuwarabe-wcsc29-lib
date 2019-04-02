@@ -1,3 +1,5 @@
 {
-    "record_directory": "C:/muzudho/kifuwarabe_wcsc29_learn"
+    "my_record_directory": "C:/muzudho/kifuwarabe-wcsc29-learn/my-record",
+    "reference_csa_record_directory": "C:/muzudho/kifuwarabe-wcsc29-learn/csa-record",
+    "reference_usi_record_directory": "C:/muzudho/kifuwarabe-wcsc29-learn/usi-record"
 }

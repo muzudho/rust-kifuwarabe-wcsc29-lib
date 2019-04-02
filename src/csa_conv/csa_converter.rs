@@ -3,10 +3,10 @@ use communication::*;
 use common_operation::*;
 use csa_conv::csa_move::*;
 use csa_conv::csa_record::*;
-use physical_move::*;
-use physical_record::*;
 use piece_etc::*;
 use position::*;
+use rpm_conv::physical_move::*;
+use rpm_conv::rpm_track::*;
 
 pub struct CsaConverter {
 
@@ -17,7 +17,7 @@ impl CsaConverter {
         comm:&Communication,
         cmove:&CsaMove,
         position:&Position,
-        ply:i16) -> Vec<PhysicalMove> {
+        ply:i16) -> Vec<RpmNote> {
         let mut p_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(
@@ -30,11 +30,11 @@ impl CsaConverter {
             // 駒を打つ動きの場合
 
             // hand-off
-            let hand_off = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
+            let hand_off = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
             p_moves.push(hand_off);
 
             // hand-on
-            let hand_on = PhysicalMove::create_by_address(destination_address);
+            let hand_on = RpmNote::create_by_address(destination_address);
             p_moves.push(hand_on);
         } else {
             // 駒を進める動きの場合
@@ -43,29 +43,29 @@ impl CsaConverter {
                 comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_extended_usi_text()));
 
                 // hand-off
-                let hand_off = PhysicalMove::create_by_address(destination_address);
+                let hand_off = RpmNote::create_by_address(destination_address);
                 p_moves.push(hand_off);
 
                 // hand-turn
                 if capture_id_piece.is_promoted() {
-                    let hand_turn = PhysicalMove::turn_over();
+                    let hand_turn = RpmNote::turn_over();
                     p_moves.push(hand_turn);
                 }
 
                 // hand-rotate
-                let hand_rotate = PhysicalMove::rotate();
+                let hand_rotate = RpmNote::rotate();
                 p_moves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
             } else {
                 comm.println(&format!("[{}] 駒は取らない", ply));
             }
 
             // board-off
-            let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
+            let board_off = RpmNote::create_by_address(Address::create_by_cell(
                 cmove.source_file,
                 cmove.source_rank,
                 position.get_board_size()
@@ -81,17 +81,17 @@ impl CsaConverter {
             };
             let cur_promoted = is_promoted_piece_type(cmove.koma);
             if !pre_promoted && cur_promoted {
-                let board_turn = PhysicalMove::turn_over();
+                let board_turn = RpmNote::turn_over();
                 p_moves.push(board_turn);
             }
 
             // board-on
-            let board_on = PhysicalMove::create_by_address(destination_address);
+            let board_on = RpmNote::create_by_address(destination_address);
             p_moves.push(board_on);
         };
 
         // change-phase
-        let change_phase = PhysicalMove::change_phase();
+        let change_phase = RpmNote::change_phase();
         p_moves.push(change_phase);
 
         p_moves
@@ -102,11 +102,11 @@ impl CsaConverter {
         comm:&Communication,
         position:&mut Position,
         c_record:&CsaRecord,
-        physical_record:&mut PhysicalRecord) {
+        rpm_track:&mut RpmTrack) {
 
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_startpos();
-        CommonOperation::bo(comm, physical_record, position);
+        CommonOperation::bo(comm, rpm_track, position);
 
         let mut ply = 1;
         for cmove in &c_record.items {
@@ -116,9 +116,9 @@ impl CsaConverter {
                 position,
                 ply);
 
-            for pmove in p_moves {
-                CommonOperation::go(comm, physical_record, &pmove, position);
-                CommonOperation::bo(comm, physical_record, position);
+            for rpm_note in p_moves {
+                CommonOperation::go(comm, rpm_track, &rpm_note, position);
+                CommonOperation::bo(comm, rpm_track, position);
             }
 
             ply += 1;

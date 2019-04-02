@@ -5,7 +5,7 @@ use std::io::prelude::*;
 use std::io::Read;
 use std::io::{BufRead, BufReader};
 use position::*;
-use physical_record::*;
+use rpm_conv::rpm_track::*;
 
 pub struct Book {
     lines: Vec<String>,
@@ -26,7 +26,7 @@ impl Book {
     }
 
     /// 物理レコードを追加する。
-    pub fn save_precord(&self, comm:&Communication, board_size:BoardSize, precord:&PhysicalRecord) {
+    pub fn save_rpm_track(&self, comm:&Communication, board_size:BoardSize, rpm_track:&RpmTrack) {
         comm.println("#Book saving...");
         let mut file = OpenOptions::new()
         .create(true)
@@ -35,7 +35,7 @@ impl Book {
         .open("./book/book.txt")
         .unwrap();
 
-        if let Err(e) = writeln!(file, "{}", precord.to_sign(board_size)) {
+        if let Err(e) = writeln!(file, "{}", rpm_track.to_sign(board_size)) {
             eprintln!("Couldn't write to file: {}", e);
         }
         comm.println("#Book saved.");

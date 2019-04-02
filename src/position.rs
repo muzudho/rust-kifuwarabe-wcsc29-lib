@@ -1,8 +1,8 @@
 use address::*;
 use communication::*;
 use parser::*;
-use physical_move::*;
 use piece_etc::*;
+use rpm_conv::physical_move::*;
 use std::*;
 
 pub const DEFAULT_FILE_LEN: usize = 9;
@@ -254,7 +254,7 @@ impl Position {
         }
     }
 
-    pub fn touch(&mut self, _comm:&Communication, physical_move:&PhysicalMove) {
+    pub fn touch(&mut self, _comm:&Communication, physical_move:&RpmNote) {
         match physical_move.address {
             Some(address) => {
                 // どこかを指定した。

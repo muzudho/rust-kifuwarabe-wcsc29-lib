@@ -1,27 +1,26 @@
-use learn::learning::*;
-use learn::rpmove_file::*;
-use usi_conv::usi_move::*;
-use physical_record::*;
-// use piece_etc::*;
+//use learn::learning::*;
+//use learn::rpm_learn_file::*;
 use position::*;
+use rpm_conv::rpm_track::*;
+use usi_conv::usi_move::*;
 
 pub struct Thought {
-    learning: Learning,
+    //learning: Learning,
 }
 impl Thought {
     pub fn new() -> Thought {
         Thought {
-            learning: Learning::default(),
+            //learning: Learning::default(),
         }
     }
 
     /// 学習ファイルを読み込む。
     pub fn load(&mut self) {
-        self.learning.read();
+        //self.learning.read();
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&self, position:&Position, _precord:&mut PhysicalRecord) -> UsiMove {
+    pub fn get_best_move(&self, position:&Position, _rpm_track:&mut RpmTrack) -> UsiMove {
 
         /*
         // position.show_position();

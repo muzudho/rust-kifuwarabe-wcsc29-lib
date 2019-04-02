@@ -1,50 +1,50 @@
 use communication::*;
 use parser::*;
-use physical_move::*;
-use physical_record::*;
 use position::*;
+use rpm_conv::physical_move::*;
+use rpm_conv::rpm_track::*;
 use std::*;
 use usi_conv::usi_record::*;
 
 pub struct CommonOperation {
 }
 impl CommonOperation {
-    pub fn go(comm:&Communication, precord:&mut PhysicalRecord, pmove:&PhysicalMove, position:&mut Position) {
-        precord.add(&pmove);
-        position.touch(comm, &pmove);
+    pub fn go(comm:&Communication, rpm_track:&mut RpmTrack, rpm_note:&RpmNote, position:&mut Position) {
+        rpm_track.add(&rpm_note);
+        position.touch(comm, &rpm_note);
     }
 
     /// 局面表示。
-    pub fn bo(comm:&Communication, precord:&PhysicalRecord, position:&Position) {
+    pub fn bo(comm:&Communication, rpm_track:&RpmTrack, position:&Position) {
         // 何手目か。
-        comm.println(&format!("[{}]", precord.get_ply()));
+        comm.println(&format!("[{}]", rpm_track.get_ply()));
         // 盤面。
         comm.println(&position.to_text(comm, position.get_phase()));
         // 棋譜。
-        comm.println(&precord.to_sign(position.get_board_size()));
+        comm.println(&rpm_track.to_sign(position.get_board_size()));
     }
 
-    pub fn touch(comm:&Communication, precord:&mut PhysicalRecord, pmove:&PhysicalMove, position:&mut Position) {
-        CommonOperation::go(comm, precord, pmove, position);
-        CommonOperation::bo(comm, &precord, &position);
+    pub fn touch(comm:&Communication, rpm_track:&mut RpmTrack, rpm_note:&RpmNote, position:&mut Position) {
+        CommonOperation::go(comm, rpm_track, rpm_note, position);
+        CommonOperation::bo(comm, &rpm_track, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
-    pub fn pop_current_1mark(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) -> Option<PhysicalMove> {
-        if let Some(pmove) = precord.pop_current() {
-            position.touch(comm, &pmove);
-            Some(pmove)
+    pub fn pop_current_1mark(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) -> Option<RpmNote> {
+        if let Some(rpm_note) = rpm_track.pop_current() {
+            position.touch(comm, &rpm_note);
+            Some(rpm_note)
         } else {
             None
         }
     }
 
     /// 1手削除する。
-    pub fn pop_current_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+    pub fn pop_current_1ply(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(pmove) = CommonOperation::pop_current_1mark(comm, precord, position) {
-            if count != 0 && pmove.is_phase_change() {
+        while let Some(rpm_note) = CommonOperation::pop_current_1mark(comm, rpm_track, position) {
+            if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
             }
@@ -55,22 +55,22 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
-    pub fn back_1mark(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) -> Option<PhysicalMove> {
-        if let Some(pmove) = precord.get_current() {
-            position.touch(comm, &pmove);
-            precord.back();
-            Some(pmove)
+    pub fn back_1mark(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) -> Option<RpmNote> {
+        if let Some(rpm_note) = rpm_track.get_current() {
+            position.touch(comm, &rpm_note);
+            rpm_track.back();
+            Some(rpm_note)
         } else {
             None
         }
     }
 
     /// 1手戻す。
-    pub fn back_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+    pub fn back_1ply(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(pmove) = CommonOperation::back_1mark(comm, precord, position) {
-            if count != 0 && pmove.is_phase_change() {
+        while let Some(rpm_note) = CommonOperation::back_1mark(comm, rpm_track, position) {
+            if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
             }
@@ -81,11 +81,11 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
-    pub fn forward_1mark(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) -> Option<PhysicalMove> {
-        if precord.forward() {
-            if let Some(pmove) = precord.get_current() {
-                position.touch(comm, &pmove);
-                return Some(pmove)
+    pub fn forward_1mark(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) -> Option<RpmNote> {
+        if rpm_track.forward() {
+            if let Some(rpm_note) = rpm_track.get_current() {
+                position.touch(comm, &rpm_note);
+                return Some(rpm_note)
             } else {
                 panic!("Unexpected forward 1mark.")
             }
@@ -95,11 +95,11 @@ impl CommonOperation {
     }
 
     /// 1手進める。
-    pub fn forward_1ply(comm:&Communication, precord:&mut PhysicalRecord, position:&mut Position) {
+    pub fn forward_1ply(comm:&Communication, rpm_track:&mut RpmTrack, position:&mut Position) {
         let mut count = 0;
         // 最後尾に達していたのなら終了。
-        while let Some(pmove) = CommonOperation::forward_1mark(comm, precord, position) {
-            if count != 0 && pmove.is_phase_change() {
+        while let Some(rpm_note) = CommonOperation::forward_1mark(comm, rpm_track, position) {
+            if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
             }

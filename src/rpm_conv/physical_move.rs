@@ -3,16 +3,16 @@ use position::*;
 
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]
-pub struct PhysicalMove {
+pub struct RpmNote {
     pub address: Option<Address>,
     pub sky_turn: bool,
     pub sky_rotate: bool,
     phase_change: bool,
     resign: bool,
 }
-impl PhysicalMove {
-    pub fn create_by_address(address:Address) -> PhysicalMove {
-        PhysicalMove {
+impl RpmNote {
+    pub fn create_by_address(address:Address) -> RpmNote {
+        RpmNote {
             address: Some(address),
             sky_turn: false,
             sky_rotate: false,
@@ -21,8 +21,8 @@ impl PhysicalMove {
         }
     }
 
-    pub fn turn_over() -> PhysicalMove {
-        PhysicalMove {
+    pub fn turn_over() -> RpmNote {
+        RpmNote {
             address: None,
             sky_turn: true,
             sky_rotate: false,
@@ -31,8 +31,8 @@ impl PhysicalMove {
         }
     }
 
-    pub fn rotate() -> PhysicalMove {
-        PhysicalMove {
+    pub fn rotate() -> RpmNote {
+        RpmNote {
             address: None,
             sky_turn: false,
             sky_rotate: true,
@@ -41,8 +41,8 @@ impl PhysicalMove {
         }
     }
 
-    pub fn change_phase() -> PhysicalMove {
-        PhysicalMove {
+    pub fn change_phase() -> RpmNote {
+        RpmNote {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -51,8 +51,8 @@ impl PhysicalMove {
         }
     }
 
-    pub fn create_resign() -> PhysicalMove {
-        PhysicalMove {
+    pub fn create_resign() -> RpmNote {
+        RpmNote {
             address: None,
             sky_turn: false,
             sky_rotate: false,

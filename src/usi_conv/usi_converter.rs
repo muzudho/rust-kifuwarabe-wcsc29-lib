@@ -1,23 +1,22 @@
 use address::*;
 use communication::*;
 use common_operation::*;
+use position::*;
+use rpm_conv::physical_move::*;
+use rpm_conv::rpm_track::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
-use physical_move::*;
-use physical_record::*;
-// use piece_etc::*;
-use position::*;
 
 pub struct UsiConverter {
 
 }
 impl UsiConverter {
-    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<PhysicalMove> {
-        let mut pmoves = Vec::new();
+    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<RpmNote> {
+        let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
-            pmoves.push(PhysicalMove::create_resign());
-            return pmoves;
+            rpm_move.push(RpmNote::create_resign());
+            return rpm_move;
         }
 
         let destination_address = Address::create_by_cell(
@@ -32,12 +31,12 @@ impl UsiConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
-                pmoves.push(hand_off);
+                let hand_off = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
+                rpm_move.push(hand_off);
 
                 // hand-on
-                let hand_on = PhysicalMove::create_by_address(destination_address);
-                pmoves.push(hand_on);
+                let hand_on = RpmNote::create_by_address(destination_address);
+                rpm_move.push(hand_on);
             },
             None => {
                 // 駒を進める動きの場合
@@ -45,50 +44,50 @@ impl UsiConverter {
                     // 駒を取る動きが入る場合
 
                     // hand-off
-                    let hand_off = PhysicalMove::create_by_address(destination_address);
-                    pmoves.push(hand_off);
+                    let hand_off = RpmNote::create_by_address(destination_address);
+                    rpm_move.push(hand_off);
 
                     // hand-turn
                     if id_piece.is_promoted() {
-                        let hand_turn = PhysicalMove::turn_over();
-                        pmoves.push(hand_turn);
+                        let hand_turn = RpmNote::turn_over();
+                        rpm_move.push(hand_turn);
                     }
 
                     // hand-rotate
-                    let hand_rotate = PhysicalMove::rotate();
-                    pmoves.push(hand_rotate);
+                    let hand_rotate = RpmNote::rotate();
+                    rpm_move.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
-                    let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
-                    pmoves.push(hand_on);
+                    let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    rpm_move.push(hand_on);
                 }
 
                 // board-off
-                let board_off = PhysicalMove::create_by_address(Address::create_by_cell(
+                let board_off = RpmNote::create_by_address(Address::create_by_cell(
                     umove.source_file,
                     umove.source_rank,
                     position.get_board_size()
                 ));
-                pmoves.push(board_off);
+                rpm_move.push(board_off);
 
                 // board-turn-over
                 if umove.promotion {
-                    let board_turn = PhysicalMove::turn_over();
-                    pmoves.push(board_turn);
+                    let board_turn = RpmNote::turn_over();
+                    rpm_move.push(board_turn);
                 }
 
                 // board-on
-                let board_on = PhysicalMove::create_by_address(destination_address);
-                pmoves.push(board_on);
+                let board_on = RpmNote::create_by_address(destination_address);
+                rpm_move.push(board_on);
             },
         }
 
         // change-phase
-        let change_phase = PhysicalMove::change_phase();
-        pmoves.push(change_phase);
+        let change_phase = RpmNote::change_phase();
+        rpm_move.push(change_phase);
 
-        pmoves
+        rpm_move
     }
 
     /// # Arguments
@@ -99,17 +98,17 @@ impl UsiConverter {
         comm:&Communication,
         position:&mut Position,
         urecord:&UsiRecord,
-        precord:&mut PhysicalRecord) {
+        rpm_track:&mut RpmTrack) {
 
         // 局面を動かしながら変換していく。
         let mut ply = 0;
         for umove in &urecord.items {
-            let pmoves = UsiConverter::convert_move(*umove, position);
-            //comm.println(&format!("Pmoves len: {}.", pmoves.len()));
+            let rpm_move = UsiConverter::convert_move(*umove, position);
+            //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
-            for pmove in pmoves {
-                //comm.println(&format!("Pmove: '{}'.", pmove.to_sign(position.get_board_size(), &mut ply)));
-                CommonOperation::go(comm, precord, &pmove, position);
+            for rpm_note in rpm_move {
+                //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
+                CommonOperation::go(comm, rpm_track, &rpm_note, position);
             }
         }
     }

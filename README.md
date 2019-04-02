@@ -15,8 +15,8 @@ cargo clippy --example csa_to_rpm
 ### Run.
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
-cargo run --example csa_to_rpm -- --path download-kifu/WCSC28_F6_PAL_HFW.csa
-cargo run --example csa_to_rpm -- --path download-kifu/WCSC_F2_QHA_TNK.csa
+cargo run --example csa_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/csa-record/WCSC28_F6_PAL_HFW.csa
+cargo run --example csa_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/csa-record/WCSC_F2_QHA_TNK.csa
 ```
 
 Output.
@@ -36,7 +36,7 @@ cargo clippy --example usi_to_rpm
 ### Run.
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
-cargo run --example usi_to_rpm -- --path download-kifu/test.usi
+cargo run --example usi_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/usi-record/test.usi
 ```
 
 ## How to use engine?

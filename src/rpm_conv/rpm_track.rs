@@ -1,17 +1,18 @@
 use book::book_file::*;
 use communication::*;
 use position::*;
-use physical_move::*;
+use rpm_conv::physical_move::*;
 
+/// Reversible physical move track.
 #[derive(Default)]
-pub struct PhysicalRecord {
-    items: Vec<PhysicalMove>,
+pub struct RpmTrack {
+    items: Vec<RpmNote>,
     cursor: i16,
     ply: i16,
 }
-impl PhysicalRecord {
-    pub fn default() -> PhysicalRecord {
-        PhysicalRecord {
+impl RpmTrack {
+    pub fn default() -> RpmTrack {
+        RpmTrack {
             items: Vec::new(),
             cursor: -1,
             // 開始時点で、1手目進行中 として扱います。
@@ -22,35 +23,35 @@ impl PhysicalRecord {
     /// 保存。
     pub fn save(&self, comm:&Communication, board_size:BoardSize) {
         let book = Book::new();
-        book.save_precord(&comm, board_size, &self);
+        book.save_rpm_track(&comm, board_size, &self);
     }
 
-    fn up_count(&mut self, pmove:&PhysicalMove) {
+    fn up_count(&mut self, rpm_note:&RpmNote) {
         self.cursor += 1;
-        if pmove.is_phase_change() {
+        if rpm_note.is_phase_change() {
             self.ply += 1;
         }
     }
 
     fn up_count_retry(&mut self) {
         self.cursor += 1;
-        let pmove = self.items[self.cursor as usize];
-        if pmove.is_phase_change() {
+        let rpm_note = self.items[self.cursor as usize];
+        if rpm_note.is_phase_change() {
             self.ply += 1;
         }
     }
 
-    fn down_count(&mut self, pmove:&PhysicalMove) {
+    fn down_count(&mut self, rpm_note:&RpmNote) {
         self.cursor -= 1;
-        if pmove.is_phase_change() {
+        if rpm_note.is_phase_change() {
             self.ply -= 1;
         }
     }
 
     fn down_count_retry(&mut self) {
         // フェーズ切り替えがあったら、手目を１つ減らす。
-        let pmove = self.items[self.cursor as usize];
-        if pmove.is_phase_change() {
+        let rpm_note = self.items[self.cursor as usize];
+        if rpm_note.is_phase_change() {
             self.ply -= 1;
         }
 
@@ -61,7 +62,7 @@ impl PhysicalRecord {
         }
     }
 
-    pub fn add(&mut self, pmove:&PhysicalMove) {
+    pub fn add(&mut self, rpm_note:&RpmNote) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
@@ -70,14 +71,14 @@ impl PhysicalRecord {
 
         if self.items.len() == (self.cursor + 1) as usize {
             // 追加。
-            self.items.push(*pmove);
-            self.up_count(pmove);
+            self.items.push(*rpm_note);
+            self.up_count(rpm_note);
         } else {
             panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.items.len());
         }
     }
 
-    pub fn pop_current(&mut self) -> Option<PhysicalMove> {
+    pub fn pop_current(&mut self) -> Option<RpmNote> {
         // 後ろの要素がある場合は、削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
@@ -88,10 +89,10 @@ impl PhysicalRecord {
             None
         } else {
             let last = self.items.len()-1;
-            let deleted_pmove = self.items[last];
+            let deleted_rpm_note = self.items[last];
             self.items.remove(last);
-            self.down_count(&deleted_pmove);
-            Some(deleted_pmove)
+            self.down_count(&deleted_rpm_note);
+            Some(deleted_rpm_note)
         }
     }
 
@@ -104,7 +105,7 @@ impl PhysicalRecord {
     }
 
     /// カーソルが指している要素を返す。
-    pub fn get_current(&self) -> Option<PhysicalMove> {
+    pub fn get_current(&self) -> Option<RpmNote> {
         if self.cursor == -1 { // self.items.is_empty()
             None
         } else {
@@ -137,8 +138,8 @@ impl PhysicalRecord {
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         let mut ply = 1;
-        for pmove in &self.items {
-            sign = format!("{} {}", sign, pmove.to_sign(board_size, &mut ply));
+        for rpm_note in &self.items {
+            sign = format!("{} {}", sign, rpm_note.to_sign(board_size, &mut ply));
         }
         sign
     }

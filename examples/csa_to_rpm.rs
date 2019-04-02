@@ -8,7 +8,7 @@ use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
-use kifuwarabe_wcsc29_lib::physical_record::*;
+use kifuwarabe_wcsc29_lib::rpm_track::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
@@ -40,10 +40,10 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut precord = PhysicalRecord::default();
+    let mut rpm_track = RpmTrack::default();
     let mut position = Position::default();
 
-    let crecord = CsaRecord::load(&path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.csa"
-    CsaConverter::convert_record(&comm, &mut position, &crecord, &mut precord);
-    CommonOperation::bo(&comm, &precord, &position);
+    let crecord = CsaRecord::load(&path);
+    CsaConverter::convert_record(&comm, &mut position, &crecord, &mut rpm_track);
+    CommonOperation::bo(&comm, &rpm_track, &position);
 }

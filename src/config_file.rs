@@ -8,12 +8,18 @@ use std::fs::File;
 use std::io::Read;
 
 pub struct Config {
-    /// 戦いを記録するディレクトリ。
-    record_directory: String,
+    /// 自分の戦いを記録するディレクトリ。
+    my_record_directory: String,
+
+    /// 参考にした CSA形式棋譜の置いてあるディレクトリ。
+    reference_csa_record_directory: String,
+
+    /// 参考にした USI形式棋譜の置いてあるディレクトリ。
+    reference_usi_record_directory: String,
 }
 impl Config {
-    pub fn get_record_directory(self) -> String {
-        self.record_directory
+    pub fn get_my_record_directory(self) -> String {
+        self.my_record_directory
     }
 
     /// 設定ファイル読込。
@@ -38,7 +44,19 @@ impl Config {
         };
 
         Config {
-            record_directory: if let Some(x) = document["record_directory"].as_str() {
+            my_record_directory: if let Some(x) = document["my_record_directory"].as_str() {
+                x.to_string()
+            } else {
+                "".to_string()
+            },
+
+            reference_csa_record_directory: if let Some(x) = document["my_rereference_csa_record_directorycord_directory"].as_str() {
+                x.to_string()
+            } else {
+                "".to_string()
+            },
+
+            reference_usi_record_directory: if let Some(x) = document["my_rereference_usi_record_directorycord_directory"].as_str() {
                 x.to_string()
             } else {
                 "".to_string()

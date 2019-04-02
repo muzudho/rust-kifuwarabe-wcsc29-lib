@@ -1,2 +1,2 @@
-pub mod learning;
-pub mod rpmove_file;
+//pub mod learning;
+//pub mod rpm_learn_file;

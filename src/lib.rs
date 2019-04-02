@@ -38,10 +38,9 @@ pub mod config_file;
 pub mod csa_conv;
 pub mod learn;
 pub mod parser;
-pub mod physical_move;
-pub mod physical_record;
 pub mod piece_etc;
 pub mod position;
+pub mod rpm_conv;
 pub mod usi_conv;
 pub mod thought;
 
@@ -49,10 +48,10 @@ use address::*;
 use common_operation::*;
 use communication::*;
 use config_file::*;
+use rpm_conv::physical_move::*;
+use rpm_conv::rpm_track::*;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
-use physical_move::*;
-use physical_record::*;
 use piece_etc::*;
 use parser::*;
 use position::*;
@@ -65,9 +64,9 @@ pub fn main_loop() {
 
     // Config.
     let config = Config::load();
-    comm.println(&format!("record_directory: '{}'.", config.get_record_directory()));
+    comm.println(&format!("my_record_directory: '{}'.", config.get_my_record_directory()));
 
-    let mut precord = PhysicalRecord::default();
+    let mut rpm_track = RpmTrack::default();
     let mut position = Position::default();
     let mut thought = Thought::new();
     thought.load();
@@ -106,7 +105,7 @@ pub fn main_loop() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            read_tape(&comm, &line, &mut precord, &mut position);
+            read_tape(&comm, &line, &mut rpm_track, &mut position);
 
         // #####
         // # B #
@@ -114,31 +113,31 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            CommonOperation::back_1mark(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::back_1mark(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "bb" {
             // Back 1ply.
-            CommonOperation::back_1ply(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                CommonOperation::back_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                CommonOperation::back_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         // #####
         // # D #
@@ -146,27 +145,27 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            CommonOperation::pop_current_1mark(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::pop_current_1mark(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                CommonOperation::pop_current_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         // #####
         // # F #
@@ -174,27 +173,27 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            CommonOperation::forward_1mark(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::forward_1mark(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
-            CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                CommonOperation::forward_1ply(&comm, &mut precord, &mut position);
+                CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
             }
-            CommonOperation::bo(&comm, &precord, &position);
+            CommonOperation::bo(&comm, &rpm_track, &position);
 
         // #####
         // # G #
@@ -203,7 +202,7 @@ pub fn main_loop() {
         } else if line.starts_with("go") {
             let best_logical_move = thought.get_best_move(
                 &position,
-                &mut precord);
+                &mut rpm_track);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
@@ -214,14 +213,14 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for physical_move in best_physical_moves {
-                CommonOperation::go(&comm, &mut precord, &physical_move, &mut position);
+                CommonOperation::go(&comm, &mut rpm_track, &physical_move, &mut position);
             }
 
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
             // TODO 物理レコードを１行にして保存したい。
-            precord.save(&comm, position.get_board_size());
+            rpm_track.save(&comm, position.get_board_size());
 
         // #####
         // # H #
@@ -250,7 +249,7 @@ pub fn main_loop() {
         // #########
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
-            read_tape(&comm, &line, &mut precord, &mut position);
+            read_tape(&comm, &line, &mut rpm_track, &mut position);
 
         // #####
         // # Q #
@@ -262,7 +261,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.15");
+            comm.println("id name Kifuwarabe Build.16");
             comm.println("id author Satoshi TAKAHASHI");
             comm.println("usiok");
         } else if line == "usinewgame" {
@@ -279,7 +278,7 @@ pub fn main_loop() {
                 };
             }
             //comm.println("#Position parse end1.");
-            //CommonOperation::bo(&comm, &precord, &position);
+            //CommonOperation::bo(&comm, &rpm_track, &position);
             //comm.println("#Position parse end2.");
 
             // ポジションをもう１回初期局面に戻す。
@@ -292,16 +291,16 @@ pub fn main_loop() {
                 &comm,
                 &mut position,
                 &urecord,
-                &mut precord);
+                &mut rpm_track);
             //comm.println("#Record converted1.");
-            //CommonOperation::bo(&comm, &precord, &position);
+            //CommonOperation::bo(&comm, &rpm_track, &position);
             //comm.println("#Record converted2.");
         }
     }
 }
 
 /// 
-fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, position:&mut Position) {
+fn read_tape(comm:&Communication, line:&str, rpm_track:&mut RpmTrack, position:&mut Position) {
     let mut start = 0;
 
     loop {
@@ -310,7 +309,7 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
         }
 
         let ch1 = line[start..=start].chars().nth(0).unwrap();
-        let pmove_opt = match ch1 {
+        let rpm_note_opt = match ch1 {
             ' ' => {
                 comm.print(&ch1.to_string());
                 start += 1;
@@ -344,7 +343,7 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
                     piece_to_phase(Some(piece)),
                     piece_to_piece_type(piece));
                 comm.println(&format!("address index = {}.", address.get_index()));
-                Some(PhysicalMove::create_by_address(address))
+                Some(RpmNote::create_by_address(address))
             },
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
@@ -355,25 +354,25 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
                 let file = Parser::file_char_to_i8(ch1);
                 let rank = Parser::rank_char_to_i8(ch2);
                 let address = Address::create_by_cell(file, rank, position.get_board_size());
-                Some(PhysicalMove::create_by_address(address))
+                Some(RpmNote::create_by_address(address))
             },
             '+' => {
                 // 成り。
                 comm.print(&ch1.to_string());
                 start += 1;
-                Some(PhysicalMove::turn_over())
+                Some(RpmNote::turn_over())
             },
             '-' => {
                 // １８０°回転。
                 comm.print(&ch1.to_string());
                 start += 1;
-                Some(PhysicalMove::rotate())
+                Some(RpmNote::rotate())
             },
             '|' => {
                 // フェーズ交代。
                 comm.print(&ch1.to_string());
                 start += 1;
-                Some(PhysicalMove::change_phase())
+                Some(RpmNote::change_phase())
             },
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
@@ -392,7 +391,7 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
                         break;
                     }
                 };
-                Some(PhysicalMove::change_phase())
+                Some(RpmNote::change_phase())
             },
             _ => {
                 let last = line.len();
@@ -400,8 +399,8 @@ fn read_tape(comm:&Communication, line:&str, precord:&mut PhysicalRecord, positi
             }
         };
 
-        if let Some(pmove) = pmove_opt {
-            CommonOperation::touch(comm, precord, &pmove, position);
+        if let Some(rpm_note) = rpm_note_opt {
+            CommonOperation::touch(comm, rpm_track, &rpm_note, position);
         }
     }
 }

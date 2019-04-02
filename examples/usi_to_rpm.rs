@@ -9,7 +9,7 @@ use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
 //use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
-use kifuwarabe_wcsc29_lib::physical_record::*;
+use kifuwarabe_wcsc29_lib::rpm_track::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 //use std::fs::File;
@@ -41,10 +41,10 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut precord = PhysicalRecord::default();
+    let mut rpm_track = RpmTrack::default();
     let mut position = Position::default();
 
-    let line = UsiRecord::read_first_line(&comm, &path); // ex.) "download-kifu/WCSC28_F6_PAL_HFW.usi"
+    let line = UsiRecord::read_first_line(&comm, &path);
 
     comm.println(&format!("Parse line: `{}`.", line));
     let mut urecord = UsiRecord::new();
@@ -66,6 +66,6 @@ pub fn main() {
         comm.println("Position parsed.");
     }
 
-    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut precord);
-    CommonOperation::bo(&comm, &precord, &position);
+    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut rpm_track);
+    CommonOperation::bo(&comm, &rpm_track, &position);
 }
