@@ -34,6 +34,7 @@ pub mod address;
 pub mod book;
 pub mod common_operation;
 pub mod communication;
+pub mod config_file;
 pub mod csa_conv;
 pub mod learn;
 pub mod parser;
@@ -47,6 +48,7 @@ pub mod thought;
 use address::*;
 use common_operation::*;
 use communication::*;
+use config_file::*;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use physical_move::*;
@@ -58,7 +60,13 @@ use usi_conv::usi_converter::*;
 use thought::Thought;
 
 pub fn main_loop() {
+    // Logging.
     let comm = Communication::new();
+
+    // Config.
+    let config = Config::load();
+    comm.println(&format!("record_directory: '{}'.", config.get_record_directory()));
+
     let mut precord = PhysicalRecord::default();
     let mut position = Position::default();
     let mut thought = Thought::new();
