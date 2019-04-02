@@ -5,7 +5,7 @@ use rpm_conv::rpm_operation_track::*;
 
 /// Reversible physical move - Record.
 pub struct RpmRecord {
-    operation_track: RpmOTrack,
+    pub operation_track: RpmOTrack,
     identify_track: RpmITrack,
 }
 impl RpmRecord {
@@ -16,9 +16,24 @@ impl RpmRecord {
         }
     }
 
+    pub fn forward(&mut self) -> bool {
+        let i = self.identify_track.forward();
+        let o = self.operation_track.forward();
+        if i!=o {panic!("Can not forward.");}
+
+        i
+    }
+
+    pub fn back(&mut self) {
+        self.operation_track.back();
+        self.identify_track.back();
+    }
+
+    /*
     pub fn get_operation_track(self) -> RpmOTrack {
         self.operation_track
     }
+     */
 
     pub fn get_mut_operation_track(&mut self) -> &mut RpmOTrack {
         &mut self.operation_track

@@ -3,6 +3,7 @@ use parser::*;
 use position::*;
 use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
+use rpm_conv::rpm_record::*;
 use std::*;
 use usi_conv::usi_record::*;
 
@@ -56,10 +57,10 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
-    pub fn back_1mark(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) -> Option<RpmNote> {
-        if let Some(rpm_note) = rpm_o_track.get_current() {
+    pub fn back_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
+        if let Some(rpm_note) = rpm_record.operation_track.get_current() {
             position.touch(comm, &rpm_note);
-            rpm_o_track.back();
+            rpm_record.back();
             Some(rpm_note)
         } else {
             None
@@ -67,10 +68,10 @@ impl CommonOperation {
     }
 
     /// 1手戻す。
-    pub fn back_1ply(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) {
+    pub fn back_1ply(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(rpm_note) = CommonOperation::back_1mark(comm, rpm_o_track, position) {
+        while let Some(rpm_note) = CommonOperation::back_1mark(comm, rpm_record, position) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
@@ -82,9 +83,9 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
-    pub fn forward_1mark(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) -> Option<RpmNote> {
-        if rpm_o_track.forward() {
-            if let Some(rpm_note) = rpm_o_track.get_current() {
+    pub fn forward_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
+        if rpm_record.forward() {
+            if let Some(rpm_note) = rpm_record.operation_track.get_current() {
                 position.touch(comm, &rpm_note);
                 return Some(rpm_note)
             } else {
@@ -96,10 +97,10 @@ impl CommonOperation {
     }
 
     /// 1手進める。
-    pub fn forward_1ply(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) {
+    pub fn forward_1ply(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) {
         let mut count = 0;
         // 最後尾に達していたのなら終了。
-        while let Some(rpm_note) = CommonOperation::forward_1mark(comm, rpm_o_track, position) {
+        while let Some(rpm_note) = CommonOperation::forward_1mark(comm, rpm_record, position) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
