@@ -7,9 +7,11 @@ use serde_json::Value;
 use std::fs::File;
 use std::io::Read;
 
+// #[derive(Clone, Copy, PartialEq)]
+// #[derive(Clone, Copy)]
 pub struct Config {
     /// 自分の戦いを記録するディレクトリ。
-    my_record_directory: String,
+    pub my_record_directory: String,
 
     /// 参考にした CSA形式棋譜の置いてあるディレクトリ。
     reference_csa_record_directory: String,
@@ -18,9 +20,11 @@ pub struct Config {
     reference_usi_record_directory: String,
 }
 impl Config {
+    /*
     pub fn get_my_record_directory(self) -> String {
         self.my_record_directory
     }
+     */
 
     /// 設定ファイル読込。
     pub fn load() -> Config {

@@ -1,7 +1,7 @@
-use book::book_file::*;
 use communication::*;
 use position::*;
-use rpm_conv::physical_move::*;
+use rpm_conv::rpm_operation_note::*;
+use rpm_conv::*;
 
 /// Reversible physical move - Operation track.
 #[derive(Default)]
@@ -18,12 +18,6 @@ impl RpmOTrack {
             // 開始時点で、1手目進行中 として扱います。
             ply: 1,
         }
-    }
-
-    /// 保存。
-    pub fn save(&self, comm:&Communication, board_size:BoardSize) {
-        let book = Book::new();
-        book.save_rpm_o_track(&comm, board_size, &self);
     }
 
     fn up_count(&mut self, rpm_note:&RpmNote) {
@@ -135,11 +129,10 @@ impl RpmOTrack {
     }
 
     /// 定跡ファイルの保存形式でもある。
-    pub fn to_sign(&self, board_size:BoardSize) -> String {
+    pub fn to_sign(&self, board_size:BoardSize, ply:&mut i16) -> String {
         let mut sign = "".to_string();
-        let mut ply = 1;
         for rpm_note in &self.items {
-            sign = format!("{} {}", sign, rpm_note.to_sign(board_size, &mut ply));
+            sign = format!("{} {}", sign, rpm_note.to_sign(board_size, ply));
         }
         sign
     }

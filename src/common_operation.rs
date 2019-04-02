@@ -1,7 +1,7 @@
 use communication::*;
 use parser::*;
 use position::*;
-use rpm_conv::physical_move::*;
+use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
 use std::*;
 use usi_conv::usi_record::*;
@@ -21,7 +21,8 @@ impl CommonOperation {
         // 盤面。
         comm.println(&position.to_text(comm, position.get_phase()));
         // 棋譜。
-        comm.println(&rpm_o_track.to_sign(position.get_board_size()));
+        let mut unused_ply = 0;
+        comm.println(&rpm_o_track.to_sign(position.get_board_size(), &mut unused_ply));
     }
 
     pub fn touch(comm:&Communication, rpm_o_track:&mut RpmOTrack, rpm_note:&RpmNote, position:&mut Position) {

@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use common_operation::*;
 use position::*;
-use rpm_conv::physical_move::*;
+use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
@@ -101,7 +101,7 @@ impl UsiConverter {
         rpm_o_track:&mut RpmOTrack) {
 
         // 局面を動かしながら変換していく。
-        let mut ply = 0;
+        // let mut ply = 0;
         for umove in &urecord.items {
             let rpm_move = UsiConverter::convert_move(*umove, position);
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));

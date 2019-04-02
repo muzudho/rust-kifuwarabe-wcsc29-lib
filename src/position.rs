@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use parser::*;
 use piece_etc::*;
-use rpm_conv::physical_move::*;
+use rpm_conv::rpm_operation_note::*;
 use std::*;
 
 pub const DEFAULT_FILE_LEN: usize = 9;
@@ -254,8 +254,8 @@ impl Position {
         }
     }
 
-    pub fn touch(&mut self, _comm:&Communication, physical_move:&RpmNote) {
-        match physical_move.address {
+    pub fn touch(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) {
+        match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
                 if address.is_on_board(self.board_size) {
@@ -293,7 +293,7 @@ impl Position {
                 }
             },
             None => {
-                if physical_move.is_phase_change() {
+                if rpm_operation_note.is_phase_change() {
                     // TODO phase change.
                     use piece_etc::Phase::*;
                     self.phase = match self.phase {
@@ -301,10 +301,10 @@ impl Position {
                         Second => {First},
                     };
                 } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
-                    if physical_move.sky_turn {
+                    if rpm_operation_note.sky_turn {
                         id_piece.turn_over();
                         self.board[SKY_ADDRESS] = Some(id_piece);
-                    } else if physical_move.sky_rotate {
+                    } else if rpm_operation_note.sky_rotate {
                         id_piece.rotate();
                         self.board[SKY_ADDRESS] = Some(id_piece);
                     };

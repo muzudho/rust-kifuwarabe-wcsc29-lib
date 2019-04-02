@@ -1,6 +1,6 @@
-use book::book_file::*;
 use communication::*;
 use position::*;
+use rpm_conv::*;
 
 const NONE_IDENTIFY:i16 = -1;
 
@@ -103,7 +103,6 @@ impl RpmITrack {
     /// 定跡ファイルの保存形式でもある。
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
-        let mut ply = 1;
         for identify in &self.items {
             sign = format!("{} {}", sign, identify);
         }
