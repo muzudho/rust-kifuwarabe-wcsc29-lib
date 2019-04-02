@@ -1,4 +1,4 @@
-impl RpmTrack {
+impl RpmOTrack {
     pub fn len(&self) -> usize {
         self.items.len()
     }

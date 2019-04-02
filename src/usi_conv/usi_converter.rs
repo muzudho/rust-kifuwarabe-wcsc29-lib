@@ -3,7 +3,7 @@ use communication::*;
 use common_operation::*;
 use position::*;
 use rpm_conv::physical_move::*;
-use rpm_conv::rpm_track::*;
+use rpm_conv::rpm_operation_track::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 
@@ -98,7 +98,7 @@ impl UsiConverter {
         comm:&Communication,
         position:&mut Position,
         urecord:&UsiRecord,
-        rpm_track:&mut RpmTrack) {
+        rpm_o_track:&mut RpmOTrack) {
 
         // 局面を動かしながら変換していく。
         let mut ply = 0;
@@ -108,7 +108,7 @@ impl UsiConverter {
 
             for rpm_note in rpm_move {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                CommonOperation::go(comm, rpm_track, &rpm_note, position);
+                CommonOperation::go(comm, rpm_o_track, &rpm_note, position);
             }
         }
     }

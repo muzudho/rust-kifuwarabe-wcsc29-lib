@@ -3,16 +3,16 @@ use communication::*;
 use position::*;
 use rpm_conv::physical_move::*;
 
-/// Reversible physical move track.
+/// Reversible physical move - Operation track.
 #[derive(Default)]
-pub struct RpmTrack {
+pub struct RpmOTrack {
     items: Vec<RpmNote>,
     cursor: i16,
     ply: i16,
 }
-impl RpmTrack {
-    pub fn default() -> RpmTrack {
-        RpmTrack {
+impl RpmOTrack {
+    pub fn default() -> RpmOTrack {
+        RpmOTrack {
             items: Vec::new(),
             cursor: -1,
             // 開始時点で、1手目進行中 として扱います。
@@ -23,7 +23,7 @@ impl RpmTrack {
     /// 保存。
     pub fn save(&self, comm:&Communication, board_size:BoardSize) {
         let book = Book::new();
-        book.save_rpm_track(&comm, board_size, &self);
+        book.save_rpm_o_track(&comm, board_size, &self);
     }
 
     fn up_count(&mut self, rpm_note:&RpmNote) {

@@ -49,7 +49,7 @@ use common_operation::*;
 use communication::*;
 use config_file::*;
 use rpm_conv::physical_move::*;
-use rpm_conv::rpm_track::*;
+use rpm_conv::rpm_operation_track::*;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use piece_etc::*;
@@ -66,7 +66,7 @@ pub fn main_loop() {
     let config = Config::load();
     comm.println(&format!("my_record_directory: '{}'.", config.get_my_record_directory()));
 
-    let mut rpm_track = RpmTrack::default();
+    let mut rpm_o_track = RpmOTrack::default();
     let mut position = Position::default();
     let mut thought = Thought::new();
     thought.load();
@@ -105,7 +105,7 @@ pub fn main_loop() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            read_tape(&comm, &line, &mut rpm_track, &mut position);
+            read_tape(&comm, &line, &mut rpm_o_track, &mut position);
 
         // #####
         // # B #
@@ -113,31 +113,31 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            CommonOperation::back_1mark(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::back_1mark(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "bb" {
             // Back 1ply.
-            CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::back_1ply(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::back_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                CommonOperation::back_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::back_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         // #####
         // # D #
@@ -145,27 +145,27 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            CommonOperation::pop_current_1mark(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::pop_current_1mark(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::pop_current_1ply(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::pop_current_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                CommonOperation::pop_current_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::pop_current_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         // #####
         // # F #
@@ -173,27 +173,27 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            CommonOperation::forward_1mark(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::forward_1mark(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
-            CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::forward_1ply(&comm, &mut rpm_o_track, &mut position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::forward_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                CommonOperation::forward_1ply(&comm, &mut rpm_track, &mut position);
+                CommonOperation::forward_1ply(&comm, &mut rpm_o_track, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_track, &position);
+            CommonOperation::bo(&comm, &rpm_o_track, &position);
 
         // #####
         // # G #
@@ -202,7 +202,7 @@ pub fn main_loop() {
         } else if line.starts_with("go") {
             let best_logical_move = thought.get_best_move(
                 &position,
-                &mut rpm_track);
+                &mut rpm_o_track);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");
@@ -213,14 +213,14 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for physical_move in best_physical_moves {
-                CommonOperation::go(&comm, &mut rpm_track, &physical_move, &mut position);
+                CommonOperation::go(&comm, &mut rpm_o_track, &physical_move, &mut position);
             }
 
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
             // TODO 物理レコードを１行にして保存したい。
-            rpm_track.save(&comm, position.get_board_size());
+            rpm_o_track.save(&comm, position.get_board_size());
 
         // #####
         // # H #
@@ -249,7 +249,7 @@ pub fn main_loop() {
         // #########
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
-            read_tape(&comm, &line, &mut rpm_track, &mut position);
+            read_tape(&comm, &line, &mut rpm_o_track, &mut position);
 
         // #####
         // # Q #
@@ -278,7 +278,7 @@ pub fn main_loop() {
                 };
             }
             //comm.println("#Position parse end1.");
-            //CommonOperation::bo(&comm, &rpm_track, &position);
+            //CommonOperation::bo(&comm, &rpm_o_track, &position);
             //comm.println("#Position parse end2.");
 
             // ポジションをもう１回初期局面に戻す。
@@ -291,16 +291,16 @@ pub fn main_loop() {
                 &comm,
                 &mut position,
                 &urecord,
-                &mut rpm_track);
+                &mut rpm_o_track);
             //comm.println("#Record converted1.");
-            //CommonOperation::bo(&comm, &rpm_track, &position);
+            //CommonOperation::bo(&comm, &rpm_o_track, &position);
             //comm.println("#Record converted2.");
         }
     }
 }
 
 /// 
-fn read_tape(comm:&Communication, line:&str, rpm_track:&mut RpmTrack, position:&mut Position) {
+fn read_tape(comm:&Communication, line:&str, rpm_o_track:&mut RpmOTrack, position:&mut Position) {
     let mut start = 0;
 
     loop {
@@ -400,7 +400,7 @@ fn read_tape(comm:&Communication, line:&str, rpm_track:&mut RpmTrack, position:&
         };
 
         if let Some(rpm_note) = rpm_note_opt {
-            CommonOperation::touch(comm, rpm_track, &rpm_note, position);
+            CommonOperation::touch(comm, rpm_o_track, &rpm_note, position);
         }
     }
 }

@@ -9,7 +9,7 @@ use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
 //use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
-use kifuwarabe_wcsc29_lib::rpm_track::*;
+use kifuwarabe_wcsc29_lib::rpm_operation_track::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 //use std::fs::File;
@@ -41,7 +41,7 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut rpm_track = RpmTrack::default();
+    let mut rpm_o_track = RpmOTrack::default();
     let mut position = Position::default();
 
     let line = UsiRecord::read_first_line(&comm, &path);
@@ -66,6 +66,6 @@ pub fn main() {
         comm.println("Position parsed.");
     }
 
-    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut rpm_track);
-    CommonOperation::bo(&comm, &rpm_track, &position);
+    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut rpm_o_track);
+    CommonOperation::bo(&comm, &rpm_o_track, &position);
 }

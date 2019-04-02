@@ -1,7 +1,7 @@
 //use learn::learning::*;
 //use learn::rpm_learn_file::*;
 use position::*;
-use rpm_conv::rpm_track::*;
+use rpm_conv::rpm_operation_track::*;
 use usi_conv::usi_move::*;
 
 pub struct Thought {
@@ -20,7 +20,7 @@ impl Thought {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&self, position:&Position, _rpm_track:&mut RpmTrack) -> UsiMove {
+    pub fn get_best_move(&self, position:&Position, _rpm_o_track:&mut RpmOTrack) -> UsiMove {
 
         /*
         // position.show_position();
