@@ -254,42 +254,56 @@ impl Position {
         }
     }
 
-    pub fn touch(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) {
+    /// # Returns
+    /// 
+    /// Piece identify.
+    pub fn touch(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) -> i16 {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
                 if address.is_on_board(self.board_size) {
                     // 盤上。
                     match self.board[address.get_index()] {
-                        Some(piece) => {
+                        Some(board_id_piece) => {
                             // 駒の場所を指定した。
                             match self.board[SKY_ADDRESS] {
-                                Some(_piece) => {
-                                    // 指には何も持ってない。
+                                Some(sky_id_piece) => {
+                                    // 指に何か持ってた。
+                                    sky_id_piece.get_id_number()
                                 },
                                 None => {
-                                    // 指で駒をつかむ。
-                                    self.board[SKY_ADDRESS] = Some(piece);
+                                    // 指が空いてたので駒をつかむ。
+                                    self.board[SKY_ADDRESS] = Some(board_id_piece);
                                     self.board[address.get_index()] = None;
+                                    board_id_piece.get_id_number()
                                 },
                             }
                         },
                         None => {
                             // 空き升を指定した。
-                            if let Some(piece) = self.board[SKY_ADDRESS] {
+                            if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
                                 // 指につまんでいる駒を置く。
                                 self.board[SKY_ADDRESS] = None;
-                                self.board[address.get_index()] = Some(piece);
+                                self.board[address.get_index()] = Some(sky_id_piece);
+                                sky_id_piece.get_id_number()
+                            } else {
+                                -1
                             }
                         },
                     }
                 // 駒台。
-                } else if let Some(_id_piece) = self.board[SKY_ADDRESS] {
+                } else if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
                     // 指に何か持っているので、駒台に置く。
                     self.move_finger_to_hand();
+                    sky_id_piece.get_id_number()
                 } else {
                     // 指には何も持ってないので、駒台の駒をつかむ。
                     self.move_hand_to_finger(address);
+                    if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
+                        sky_id_piece.get_id_number()
+                    } else {
+                        -1
+                    }
                 }
             },
             None => {
@@ -300,6 +314,7 @@ impl Position {
                         First => {Second},
                         Second => {First},
                     };
+                    -1
                 } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
                     if rpm_operation_note.sky_turn {
                         id_piece.turn_over();
@@ -308,6 +323,9 @@ impl Position {
                         id_piece.rotate();
                         self.board[SKY_ADDRESS] = Some(id_piece);
                     };
+                    id_piece.get_id_number()
+                } else {
+                    -1
                 }
             }
         }

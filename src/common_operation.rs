@@ -10,9 +10,9 @@ use usi_conv::usi_record::*;
 pub struct CommonOperation {
 }
 impl CommonOperation {
-    pub fn go(comm:&Communication, rpm_o_track:&mut RpmOTrack, rpm_note:&RpmNote, position:&mut Position) {
-        rpm_o_track.add(&rpm_note);
-        position.touch(comm, &rpm_note);
+    pub fn go(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
+        let identify = position.touch(comm, &rpm_note);
+        rpm_record.add(&rpm_note, identify);
     }
 
     /// 局面表示。
@@ -26,9 +26,9 @@ impl CommonOperation {
         comm.println(&rpm_o_track.to_sign(position.get_board_size(), &mut unused_ply));
     }
 
-    pub fn touch(comm:&Communication, rpm_o_track:&mut RpmOTrack, rpm_note:&RpmNote, position:&mut Position) {
-        CommonOperation::go(comm, rpm_o_track, rpm_note, position);
-        CommonOperation::bo(comm, &rpm_o_track, &position);
+    pub fn touch(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
+        CommonOperation::go(comm, rpm_record, rpm_note, position);
+        CommonOperation::bo(comm, &rpm_record.operation_track, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。

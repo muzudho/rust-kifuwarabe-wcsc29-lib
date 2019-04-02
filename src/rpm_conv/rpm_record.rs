@@ -2,6 +2,7 @@ use position::*;
 use rpm_conv::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
+use rpm_conv::rpm_operation_note::*;
 
 /// Reversible physical move - Record.
 pub struct RpmRecord {
@@ -14,6 +15,11 @@ impl RpmRecord {
             operation_track: RpmOTrack::default(),
             identify_track: RpmITrack::default(),
         }
+    }
+
+    pub fn add(&mut self, rpm_note:&RpmNote, identify:i16) {
+        self.operation_track.add_element(&rpm_note);
+        self.identify_track.add_element(identify);
     }
 
     pub fn forward(&mut self) -> bool {

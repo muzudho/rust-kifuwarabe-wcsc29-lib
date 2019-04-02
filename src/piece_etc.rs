@@ -124,6 +124,51 @@ impl IdentifiedPiece {
         self.id
     }
 
+    pub fn get_id_number(self) -> i16 {
+        match self.id {
+            K00 => 0,
+            K01 => 1,
+            G02 => 2,
+            G03 => 3,
+            G04 => 4,
+            G05 => 5,
+            S06 => 6,
+            S07 => 7,
+            S08 => 8,
+            S09 => 9,
+            N10 => 10,
+            N11 => 11,
+            N12 => 12,
+            N13 => 13,
+            L14 => 14,
+            L15 => 15,
+            L16 => 16,
+            L17 => 17,
+            B18 => 18,
+            B19 => 19,
+            R20 => 20,
+            R21 => 21,
+            P22 => 22,
+            P23 => 23,
+            P24 => 24,
+            P25 => 25,
+            P26 => 26,
+            P27 => 27,
+            P28 => 28,
+            P29 => 29,
+            P30 => 30,
+            P31 => 31,
+            P32 => 32,
+            P33 => 33,
+            P34 => 34,
+            P35 => 35,
+            P36 => 36,
+            P37 => 37,
+            P38 => 38,
+            P39 => 39,
+        }
+    }
+
     pub fn get_type(self) -> PieceType {
         use piece_etc::PieceIdentify::*;
         use piece_etc::PieceType::*;

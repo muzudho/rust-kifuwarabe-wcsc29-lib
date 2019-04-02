@@ -56,7 +56,7 @@ impl RpmOTrack {
         }
     }
 
-    pub fn add(&mut self, rpm_note:&RpmNote) {
+    pub fn add_element(&mut self, rpm_note:&RpmNote) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());

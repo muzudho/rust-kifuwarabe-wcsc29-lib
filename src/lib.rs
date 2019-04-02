@@ -216,7 +216,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                CommonOperation::go(&comm, &mut rpm_record.get_mut_operation_track(), &rpm_operation_note, &mut position);
+                CommonOperation::go(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {
@@ -296,7 +296,7 @@ pub fn main_loop() {
                 &comm,
                 &mut position,
                 &urecord,
-                &mut rpm_record.get_mut_operation_track());
+                &mut rpm_record);
             //comm.println("#Record converted1.");
             //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
             //comm.println("#Record converted2.");
@@ -405,7 +405,7 @@ fn read_tape(comm:&Communication, line:&str, rpm_record:&mut RpmRecord, position
         };
 
         if let Some(rpm_note) = rpm_note_opt {
-            CommonOperation::touch(comm, &mut rpm_record.get_mut_operation_track(), &rpm_note, position);
+            CommonOperation::touch(comm, rpm_record, &rpm_note, position);
         }
     }
 }

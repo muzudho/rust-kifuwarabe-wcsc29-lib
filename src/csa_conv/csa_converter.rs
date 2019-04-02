@@ -7,6 +7,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
+use rpm_conv::rpm_record::*;
 
 pub struct CsaConverter {
 
@@ -102,11 +103,11 @@ impl CsaConverter {
         comm:&Communication,
         position:&mut Position,
         c_record:&CsaRecord,
-        rpm_o_track:&mut RpmOTrack) {
+        rpm_record:&mut RpmRecord) {
 
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_startpos();
-        CommonOperation::bo(comm, rpm_o_track, position);
+        CommonOperation::bo(comm, &rpm_record.operation_track, position);
 
         let mut ply = 1;
         for cmove in &c_record.items {
@@ -117,8 +118,8 @@ impl CsaConverter {
                 ply);
 
             for rpm_note in p_moves {
-                CommonOperation::go(comm, rpm_o_track, &rpm_note, position);
-                CommonOperation::bo(comm, rpm_o_track, position);
+                CommonOperation::go(comm, rpm_record, &rpm_note, position);
+                CommonOperation::bo(comm, &rpm_record.operation_track, position);
             }
 
             ply += 1;
