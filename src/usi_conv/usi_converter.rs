@@ -13,11 +13,11 @@ pub struct UsiConverter {
 }
 impl UsiConverter {
     pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<PhysicalMove> {
-        let mut physical_moves = Vec::new();
+        let mut pmoves = Vec::new();
 
         if umove.is_resign() {
-            physical_moves.push(PhysicalMove::create_resign());
-            return physical_moves;
+            pmoves.push(PhysicalMove::create_resign());
+            return pmoves;
         }
 
         let destination_address = Address::create_by_cell(
@@ -33,11 +33,11 @@ impl UsiConverter {
 
                 // hand-off
                 let hand_off = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
-                physical_moves.push(hand_off);
+                pmoves.push(hand_off);
 
                 // hand-on
                 let hand_on = PhysicalMove::create_by_address(destination_address);
-                physical_moves.push(hand_on);
+                pmoves.push(hand_on);
             },
             None => {
                 // 駒を進める動きの場合
@@ -46,22 +46,22 @@ impl UsiConverter {
 
                     // hand-off
                     let hand_off = PhysicalMove::create_by_address(destination_address);
-                    physical_moves.push(hand_off);
+                    pmoves.push(hand_off);
 
                     // hand-turn
                     if id_piece.is_promoted() {
                         let hand_turn = PhysicalMove::turn_over();
-                        physical_moves.push(hand_turn);
+                        pmoves.push(hand_turn);
                     }
 
                     // hand-rotate
                     let hand_rotate = PhysicalMove::rotate();
-                    physical_moves.push(hand_rotate);
+                    pmoves.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
                     let hand_on = PhysicalMove::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
-                    physical_moves.push(hand_on);
+                    pmoves.push(hand_on);
                 }
 
                 // board-off
@@ -70,41 +70,46 @@ impl UsiConverter {
                     umove.source_rank,
                     position.get_board_size()
                 ));
-                physical_moves.push(board_off);
+                pmoves.push(board_off);
 
                 // board-turn-over
                 if umove.promotion {
                     let board_turn = PhysicalMove::turn_over();
-                    physical_moves.push(board_turn);
+                    pmoves.push(board_turn);
                 }
 
                 // board-on
                 let board_on = PhysicalMove::create_by_address(destination_address);
-                physical_moves.push(board_on);
+                pmoves.push(board_on);
             },
         }
 
         // change-phase
         let change_phase = PhysicalMove::change_phase();
-        physical_moves.push(change_phase);
+        pmoves.push(change_phase);
 
-        physical_moves
+        pmoves
     }
 
-    /// USIレコードと 初期局面を合わせてください。
+    /// # Arguments
+    /// 
+    /// * 'position' - USIレコードと 初期局面を合わせてください。
+    /// 
     pub fn convert_record(
         comm:&Communication,
         position:&mut Position,
-        u_record:&UsiRecord,
+        urecord:&UsiRecord,
         precord:&mut PhysicalRecord) {
 
-        for umove in &u_record.items {
-            let physical_moves = UsiConverter::convert_move(
-                *umove,
-                position);
+        // 局面を動かしながら変換していく。
+        let mut ply = 0;
+        for umove in &urecord.items {
+            let pmoves = UsiConverter::convert_move(*umove, position);
+            //comm.println(&format!("Pmoves len: {}.", pmoves.len()));
 
-            for physical_move in physical_moves {
-                CommonOperation::go(comm, precord, &physical_move, position);
+            for pmove in pmoves {
+                //comm.println(&format!("Pmove: '{}'.", pmove.to_sign(position.get_board_size(), &mut ply)));
+                CommonOperation::go(comm, precord, &pmove, position);
             }
         }
     }

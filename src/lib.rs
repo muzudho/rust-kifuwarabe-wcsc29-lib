@@ -262,6 +262,7 @@ pub fn main_loop() {
         // # P #
         // #####
         } else if line.starts_with("position") {
+            // 相手が指したあとの局面まで進める。
             let mut urecord = UsiRecord::new();
             let mut start = 0;
             if Fen::parse_position(&comm, &line, &mut start, &mut position) {
@@ -269,12 +270,24 @@ pub fn main_loop() {
                     urecord = parsed_urecord;
                 };
             }
+            //comm.println("#Position parse end1.");
+            //CommonOperation::bo(&comm, &precord, &position);
+            //comm.println("#Position parse end2.");
+
+            // ポジションをもう１回初期局面に戻す。
+            let mut start = 0;
+            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+                //comm.println("#Position parsed.");
+            }
 
             UsiConverter::convert_record(
                 &comm,
                 &mut position,
                 &urecord,
                 &mut precord);
+            //comm.println("#Record converted1.");
+            //CommonOperation::bo(&comm, &precord, &position);
+            //comm.println("#Record converted2.");
         }
     }
 }

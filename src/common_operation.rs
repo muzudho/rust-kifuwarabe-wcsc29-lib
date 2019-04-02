@@ -113,7 +113,7 @@ impl CommonOperation {
         if Parser::match_keyword(&comm, &line, "moves", start) || 
             Parser::match_keyword(&comm, &line, " moves", start) {
         } else {
-            // comm.println(&format!("Moves not matched. line: '{}', start: {}.", line, start));
+            comm.println(&format!("#Moves not matched. line: '{}', start: {}.", line, start));
             return None;
         }
 
@@ -127,13 +127,13 @@ impl CommonOperation {
         // position startpos moves 2g2f 8c8d
         let mut temp_u_record = UsiRecord::new();
         temp_u_record.parse_usi_some_moves(&comm, line, start);
-        // comm.println(&format!("info temp_record.items.len: {}", temp_u_record.items.len()));
+        comm.println(&format!("#temp_record.items.len: {}", temp_u_record.items.len()));
 
         // TODO 指し手通り、進めたい。
         for mov in &temp_u_record.items {
-            // println!("info Move: `{}`.", mov.to_sign());
+            comm.println(&format!("#Move: `{}`.", mov.to_sign()));
             logical_record.make_move(*mov, position);
-            // comm.println(&position.to_text(comm, logical_record.get_current_phase()));
+            comm.println(&position.to_text(comm, logical_record.get_current_phase()));
         }
 
         Some(logical_record)

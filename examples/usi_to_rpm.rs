@@ -7,13 +7,13 @@ use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
-use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
+//use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
 use kifuwarabe_wcsc29_lib::physical_record::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+//use std::fs::File;
+//use std::io::{BufRead, BufReader};
 
 #[derive(Debug)]
 struct Args {
