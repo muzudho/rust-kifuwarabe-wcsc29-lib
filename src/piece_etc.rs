@@ -125,6 +125,7 @@ impl IdentifiedPiece {
     }
 
     pub fn get_id_number(self) -> i16 {
+        use piece_etc::PieceIdentify::*;
         match self.id {
             K00 => 0,
             K01 => 1,

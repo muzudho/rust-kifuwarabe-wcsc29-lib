@@ -257,7 +257,7 @@ impl Position {
     /// # Returns
     /// 
     /// Piece identify.
-    pub fn touch(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) -> i16 {
+    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) -> i16 {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。

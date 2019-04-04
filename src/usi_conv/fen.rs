@@ -12,7 +12,7 @@ pub struct Fen {
 }
 impl Fen {
     // 解析と、局面の編集は同時に行う。
-    pub fn parse_position(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
+    pub fn parse_position(_comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
         if line.starts_with("position startpos") {
             //comm.println("#position startpos");
             // 平手初期局面にリセット。
@@ -64,7 +64,7 @@ impl Fen {
     }
 
     /// ex.) Parses 7g7f.
-    pub fn parse_usi_1move(comm:&Communication, line:&str, start:&mut usize) -> UsiMove {
+    pub fn parse_usi_1move(_comm:&Communication, line:&str, start:&mut usize) -> UsiMove {
         let drop_opt = parse_sign_to_drop(line, start);
         let mut source_file_num = 0;
         let mut source_rank_num = 0;

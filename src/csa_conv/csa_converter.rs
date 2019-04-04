@@ -118,7 +118,7 @@ impl CsaConverter {
                 ply);
 
             for rpm_note in p_moves {
-                CommonOperation::go(comm, rpm_record, &rpm_note, position);
+                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
                 CommonOperation::bo(comm, &rpm_record.operation_track, position);
             }
 

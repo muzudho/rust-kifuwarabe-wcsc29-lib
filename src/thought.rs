@@ -20,7 +20,7 @@ impl Thought {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&self, position:&Position, _rpm_o_track:&mut RpmOTrack) -> UsiMove {
+    pub fn get_best_move(&self, _position:&Position, _rpm_o_track:&mut RpmOTrack) -> UsiMove {
 
         /*
         // position.show_position();

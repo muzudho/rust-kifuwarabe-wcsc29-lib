@@ -216,7 +216,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                CommonOperation::go(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
+                CommonOperation::touch_beautiful_world(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {
@@ -405,7 +405,7 @@ fn read_tape(comm:&Communication, line:&str, rpm_record:&mut RpmRecord, position
         };
 
         if let Some(rpm_note) = rpm_note_opt {
-            CommonOperation::touch(comm, rpm_record, &rpm_note, position);
+            CommonOperation::touch_talking_beautifle_world(comm, rpm_record, &rpm_note, position);
         }
     }
 }

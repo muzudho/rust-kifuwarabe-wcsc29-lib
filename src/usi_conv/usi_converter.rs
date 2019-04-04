@@ -109,7 +109,7 @@ impl UsiConverter {
 
             for rpm_note in rpm_move {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                CommonOperation::go(comm, rpm_record, &rpm_note, position);
+                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
             }
         }
     }

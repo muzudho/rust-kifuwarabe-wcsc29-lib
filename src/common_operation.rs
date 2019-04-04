@@ -10,9 +10,10 @@ use usi_conv::usi_record::*;
 pub struct CommonOperation {
 }
 impl CommonOperation {
-    pub fn go(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
-        let identify = position.touch(comm, &rpm_note);
-        rpm_record.add(&rpm_note, identify);
+    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
+        let identify = position.touch_world(comm, &rpm_note);
+        rpm_record.add_note(&rpm_note, identify);
     }
 
     /// 局面表示。
@@ -26,15 +27,16 @@ impl CommonOperation {
         comm.println(&rpm_o_track.to_sign(position.get_board_size(), &mut unused_ply));
     }
 
-    pub fn touch(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
-        CommonOperation::go(comm, rpm_record, rpm_note, position);
+    /// 局面表示付きだぜ☆（＾～＾）
+    pub fn touch_talking_beautifle_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
+        CommonOperation::touch_beautiful_world(comm, rpm_record, rpm_note, position);
         CommonOperation::bo(comm, &rpm_record.operation_track, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_current_1mark(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) -> Option<RpmNote> {
         if let Some(rpm_note) = rpm_o_track.pop_current() {
-            position.touch(comm, &rpm_note);
+            position.touch_world(comm, &rpm_note);
             Some(rpm_note)
         } else {
             None
@@ -59,7 +61,7 @@ impl CommonOperation {
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
     pub fn back_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
         if let Some(rpm_note) = rpm_record.operation_track.get_current() {
-            position.touch(comm, &rpm_note);
+            position.touch_world(comm, &rpm_note);
             rpm_record.back();
             Some(rpm_note)
         } else {
@@ -86,7 +88,7 @@ impl CommonOperation {
     pub fn forward_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
         if rpm_record.forward() {
             if let Some(rpm_note) = rpm_record.operation_track.get_current() {
-                position.touch(comm, &rpm_note);
+                position.touch_world(comm, &rpm_note);
                 return Some(rpm_note)
             } else {
                 panic!("Unexpected forward 1mark.")

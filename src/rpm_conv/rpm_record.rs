@@ -17,9 +17,10 @@ impl RpmRecord {
         }
     }
 
-    pub fn add(&mut self, rpm_note:&RpmNote, identify:i16) {
+    /// 追加する。
+    pub fn add_note(&mut self, rpm_note:&RpmNote, identify:i16) {
         self.operation_track.add_element(&rpm_note);
-        self.identify_track.add_element(identify);
+        self.identify_track.add_identify(identify);
     }
 
     pub fn forward(&mut self) -> bool {
