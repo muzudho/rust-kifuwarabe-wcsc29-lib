@@ -12,8 +12,12 @@ pub struct CommonOperation {
 impl CommonOperation {
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
-        let identify = position.touch_world(comm, &rpm_note);
-        rpm_record.add_note(&rpm_note, identify);
+        let piece_id_number = if let Some(piece_identify) = position.touch_world(comm, &rpm_note) {
+            piece_identify.get_id_number()
+        } else {
+            -1
+        };
+        rpm_record.add_note(&rpm_note, piece_id_number);
     }
 
     /// 局面表示。
