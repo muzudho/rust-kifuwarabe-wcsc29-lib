@@ -7,10 +7,11 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-//use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_move::*;
+use kifuwarabe_wcsc29_lib::kif_conv::kif_player::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_record::*;
 use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
@@ -43,10 +44,12 @@ pub fn main()
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut rpm_o_track = RpmOTrack::default();
+    let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
 
     let krecord = KifRecord::load(&path);
+    KifPlayer::play_record(&comm, &mut position, &krecord, &mut rrecord);
+    CommonOperation::bo(&comm, &rrecord.operation_track, &position);
 
     comm.println("Finished.");
 }

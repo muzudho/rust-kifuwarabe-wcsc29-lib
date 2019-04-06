@@ -711,6 +711,37 @@ pub enum Piece {
     PP3,
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum JsaPieceType{
+    // King is 玉.
+    K = 0,
+    // Rook is 飛.
+    R,
+    // Promoted rook is 竜.
+    PR,
+    // Bishop is 角.
+    B,
+    // Promoted bishop is 馬.
+    PB,
+    // Gold is 金.
+    G,
+    // Silver is 銀.
+    S,
+    // Promoted silver is 成銀.
+    PS,
+    // kNight is 桂.
+    N,
+    // Promoted knight is 成桂.
+    PN,
+    // Lance is 香.
+    L,
+    // Promoted lance is 成香.
+    PL,
+    // Pawn is 歩.
+    P,
+    // Promoted pawn is と.
+    PP,
+}
 /// Perfect piece type.
 #[derive(Clone, Copy, PartialEq)]
 pub enum PieceType{
@@ -1264,6 +1295,69 @@ pub fn is_promoted_piece_type(piece_type_opt:Option<PieceType>) -> bool {
         }
     } else {
         false
+    }
+}
+pub fn jsa_piece_type_to_perfect(piece_type_opt:Option<JsaPieceType>) -> Option<PieceType> {
+    use piece_etc::JsaPieceType;
+    use piece_etc::PieceType;
+    match piece_type_opt {
+        Some(piece_type) => {
+            match piece_type {
+                JsaPieceType::K => Some(PieceType::K),
+
+                JsaPieceType::R => Some(PieceType::R),
+                JsaPieceType::PR => Some(PieceType::PR),
+
+                JsaPieceType::B => Some(PieceType::B),
+                JsaPieceType::PB => Some(PieceType::PB),
+
+                JsaPieceType::G => Some(PieceType::G),
+
+                JsaPieceType::S => Some(PieceType::S),
+                JsaPieceType::PS => Some(PieceType::PS),
+
+                JsaPieceType::N => Some(PieceType::N),
+                JsaPieceType::PN => Some(PieceType::PN),
+
+                JsaPieceType::L => Some(PieceType::L),
+                JsaPieceType::PL => Some(PieceType::PL),
+
+                JsaPieceType::P => Some(PieceType::P),
+                JsaPieceType::PP => Some(PieceType::PP),
+            }
+        },
+        None => {None},
+    }
+}
+pub fn jsa_piece_type_to_sign(piece_type_opt:Option<JsaPieceType>) -> String {
+    use piece_etc::JsaPieceType::*;
+    match piece_type_opt {
+        Some(piece_type) => {
+            match piece_type {
+                K => "K".to_string(),
+
+                R => "R".to_string(),
+                PR => "+R".to_string(),
+
+                B => "B".to_string(),
+                PB => "+B".to_string(),
+
+                G => "G".to_string(),
+
+                S => "S".to_string(),
+                PS => "+S".to_string(),
+
+                N => "N".to_string(),
+                PN => "+N".to_string(),
+
+                L => "L".to_string(),
+                PL => "+L".to_string(),
+
+                P => "P".to_string(),
+                PP => "+P".to_string(),
+            }
+        },
+        None => {"".to_string()},
     }
 }
 pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {

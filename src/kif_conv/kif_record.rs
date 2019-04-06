@@ -52,16 +52,17 @@ impl KifRecord {
         let mut pre_rank = 0;
         for mov in &mut record.items {
             if mov.is_same {
-                mov.dst_file = pre_file;
-                mov.dst_rank = pre_rank;
+                mov.destination_file = pre_file;
+                mov.destination_rank = pre_rank;
             }
 
-            pre_file = mov.dst_file;
-            pre_rank = mov.dst_rank;
+            pre_file = mov.destination_file;
+            pre_rank = mov.destination_rank;
 
             println!("Move : {}", mov.to_sign());
         }
 
+        // これでレコードはできあがり。
         record
     }
 

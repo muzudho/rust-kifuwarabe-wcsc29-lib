@@ -3,27 +3,27 @@ use piece_etc::*;
 use regex::Regex;
 
 pub struct KifMove {
-    pub dst_file : i8,
-    pub dst_rank : i8,
+    pub destination_file : i8,
+    pub destination_rank : i8,
     pub is_same : bool,
-    pub piece : String,
+    pub piece : Option<JsaPieceType>,
     pub is_promote : bool,
     pub is_drop : bool,
-    pub src_file : i8,
-    pub src_rank : i8,
+    pub source_file : i8,
+    pub source_rank : i8,
 }
 impl KifMove {
     pub fn to_sign(&self) -> String {
         let mut sign = "".to_string();
 
-        sign = format!("{} {}", sign, self.dst_file);
-        sign = format!("{} {}", sign, self.dst_rank);
+        sign = format!("{} {}", sign, self.destination_file);
+        sign = format!("{} {}", sign, self.destination_rank);
         sign = format!("{} {}", sign, self.is_same);
-        sign = format!("{} {}", sign, self.piece);
+        sign = format!("{} {}", sign, jsa_piece_type_to_sign(self.piece));
         sign = format!("{} {}", sign, self.is_promote);
         sign = format!("{} {}", sign, self.is_drop);
-        sign = format!("{} {}", sign, self.src_file);
-        sign = format!("{} {}", sign, self.src_rank);
+        sign = format!("{} {}", sign, self.source_file);
+        sign = format!("{} {}", sign, self.source_rank);
 
         sign
     }
@@ -35,14 +35,14 @@ impl KifMove {
         print!("{} -> ", sign);
 
         let mut mv = KifMove {
-            dst_file : 0,
-            dst_rank : 0,
+            destination_file : 0,
+            destination_rank : 0,
             is_same : false,
-            piece : "".to_string(),
+            piece : None,
             is_promote : false,
             is_drop : false,
-            src_file : 0,
-            src_rank : 0,
+            source_file : 0,
+            source_rank : 0,
         };
 
         /**
@@ -60,7 +60,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 0.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.dst_file = match ch.as_str() {
+            mv.destination_file = match ch.as_str() {
                 "１" => 1,
                 "２" => 2,
                 "３" => 3,
@@ -78,7 +78,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 1.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.dst_rank = match ch.as_str() {
+            mv.destination_rank = match ch.as_str() {
                 "一" => 1,
                 "二" => 2,
                 "三" => 3,
@@ -113,31 +113,31 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 3.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
+            use piece_etc::JsaPieceType::*;
             mv.piece = match ch.as_str() {
-                "歩" => "歩",
-                "香" => "香",
-                "桂" => "桂",
-                "銀" => "銀",
-                "金" => "金",
-                "玉" => "玉",
-                "角" => "角",
-                "飛" => "飛",
-                "と" => "と",
-                "馬" => "馬",
-                "龍" => "龍",
+                "歩" => Some(P),
+                "香" => Some(L),
+                "桂" => Some(N),
+                "銀" => Some(S),
+                "金" => Some(G),
+                "玉" => Some(K),
+                "角" => Some(B),
+                "飛" => Some(R),
+                "と" => Some(PP),
+                "馬" => Some(PB),
+                "龍" => Some(PR),
                 "成" => {
                     let ch = sign.chars().nth(nth).unwrap().to_string();
                     nth += 1;
                     match ch.as_str() {
-                        "香" => "成香",
-                        "桂" => "成桂",
-                        "銀" => "成銀",
-                        "金" => "成金",
+                        "香" => Some(PL),
+                        "桂" => Some(PN),
+                        "銀" => Some(PS),
                         _ => panic!("Unexpected promoted ch: '{}'.", ch),
                     }
                 },
-                _ => {nth -= 1; ""},
-            }.to_string();
+                _ => {nth -= 1; None},
+            };
         }
 
         if 0 < sign.len() - nth {
@@ -174,7 +174,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 7.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.src_file = match ch.as_str() {
+            mv.source_file = match ch.as_str() {
                 "1" => 1,
                 "2" => 2,
                 "3" => 3,
@@ -192,7 +192,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 8.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.src_rank = match ch.as_str() {
+            mv.source_rank = match ch.as_str() {
                 "1" => 1,
                 "2" => 2,
                 "3" => 3,

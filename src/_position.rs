@@ -123,7 +123,7 @@ impl Position {
     fn to_hand_text(&self, _comm:&Communication, phase_opt:Option<Phase>, piece_type:PieceType) -> String {
         
         let piece = piece_type_to_piece(phase_opt, piece_type);
-        let count = self.get_hand(piece);
+        let count = self.get_hand_count(piece);
         let coefficient = if 1 < count {count.to_string()} else {"".to_string()};
         // comm.println(&format!("piece_type: '{}', hand_count: {}, coefficient: {}.", piece_type_to_sign(Some(piece_type)), count, coefficient));
         let ch = if 0 < count {

@@ -225,7 +225,7 @@ impl Position {
         id_piece
     }
 
-    pub fn get_hand(&self, piece:Piece) -> i8 {
+    pub fn get_hand_count(&self, piece:Piece) -> i8 {
         let hand_index = hand_piece_to_hand_index(piece);
         self.hands[hand_index].len() as i8
     }
@@ -240,6 +240,16 @@ impl Position {
     pub fn remove_hand(&mut self, piece:Piece) -> IdentifiedPiece {
         let hand_index = hand_piece_to_hand_index(piece);
         self.hands[hand_index].pop().unwrap()
+    }
+
+    pub fn peek_hand(&self, piece:Piece) -> Option<IdentifiedPiece> {
+        let hand_index = hand_piece_to_hand_index(piece);
+        let stack = &self.hands[hand_index];
+        if stack.is_empty() {
+            None
+        } else {
+            Some(stack[stack.len()-1])
+        }
     }
 
     /// USI position 読込時に使う。使ってない駒を盤上に置く。
