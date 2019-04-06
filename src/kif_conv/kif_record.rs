@@ -30,19 +30,36 @@ impl KifRecord {
                 // println!("Trim0  : {}", first_ch);
                 match first_ch.parse::<i8>() {
                     Ok(x) => {
-                        // println!("Move   : {}", line);
                         if let Some(kif_move) = KifMove::parse(&line) {
+                            //println!(" : {}", kif_move.to_sign());
                             record.push(kif_move);
+                        //} else {
+                            //println!("Else");
                         }
                     },
                     Err(err) => {
                         // この行は無視。
-                        println!("Ignored: {}", line);
+                        //println!("Ignored: {}", line);
                     },
                 }
-            } else {
-                println!("Ignored: {}", line);
+            //} else {
+                //println!("Ignored: {}", line);
             }
+        }
+
+        // '同'を解決する。
+        let mut pre_file = 0;
+        let mut pre_rank = 0;
+        for mov in &mut record.items {
+            if mov.is_same {
+                mov.dst_file = pre_file;
+                mov.dst_rank = pre_rank;
+            }
+
+            pre_file = mov.dst_file;
+            pre_rank = mov.dst_rank;
+
+            println!("Move : {}", mov.to_sign());
         }
 
         record
