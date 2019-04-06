@@ -7,11 +7,13 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::config_file::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_move::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_player::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_record::*;
 use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
 use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_sheet::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
@@ -38,11 +40,16 @@ fn parse_args() -> Args {
 
 pub fn main()
 {
+    // Command line arguments.
     let args = parse_args();
 
+    // Logging.
     let comm = Communication::new();
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
+
+    // Config.
+    let config = &Config::load();
 
     let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
@@ -50,6 +57,11 @@ pub fn main()
     let krecord = KifRecord::load(&path);
     KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
     CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
+
+    // Save.
+    let rpm_sheet = RpmSheet::new();
+    let dir = &config.my_record_directory;
+    rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
 
     comm.println("Finished.");
 }

@@ -1,4 +1,5 @@
 use communication::*;
+use config_file::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -30,14 +31,19 @@ impl RpmSheet {
     /// 物理レコードを追加する。
     pub fn append(&self, comm:&Communication, board_size:BoardSize, directory:&str, rpm_record:&RpmRecord) {
         comm.println("#Sheet saving...");
+
+        let path = "sheet.txt";
+
+        // 新規作成、またはレコードを追記。
         let mut file = OpenOptions::new()
         .create(true)
         .write(true)
         .append(true)
-        .open(Path::new(directory).join("sheet.txt"))
+        .open(Path::new(directory).join(path))
         .unwrap();
 
-        if let Err(e) = writeln!(file, "{}", rpm_record.to_json(board_size)) {
+        // 末尾にカンマを付けて終わる。
+        if let Err(e) = writeln!(file, "{},", rpm_record.to_json_object(board_size)) {
             eprintln!("Couldn't write to file: {}", e);
         }
         comm.println("#Sheet saved.");

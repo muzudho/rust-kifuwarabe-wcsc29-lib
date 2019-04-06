@@ -224,8 +224,7 @@ pub fn main_loop() {
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            // TODO 物理レコードを１行にして保存したい。
-            //let dir = &config.get_my_record_directory();
+            // 物理レコードを１行にして保存したい。
             let dir = &config.my_record_directory;
             rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rpm_record);
 

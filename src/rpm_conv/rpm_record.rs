@@ -78,17 +78,17 @@ impl RpmRecord {
         &mut self.body.identify_track
     }
 
-    /// JSON形式。
-    pub fn to_json(&self, board_size:BoardSize) -> String {
+    /// JSONのオブジェクト形式。
+    pub fn to_json_object(&self, board_size:BoardSize) -> String {
         let mut unused_ply = 0;
 
-        let mut text = "{c\n".to_string();
+        let mut text = "{\n".to_string();
         text = format!("{}    \"header\" : {{\n", text);
         text = format!("{}        \"date\" : \"{}\",\n", text, self.header.date);
         text = format!("{}        \"event\" : \"{}\",\n", text, self.header.event);
         text = format!("{}        \"player1\" : \"{}\",\n", text, self.header.player1);
         text = format!("{}        \"player2\" : \"{}\",\n", text, self.header.player2);
-        text = format!("{}        \"read_file\" : \"{}\",\n", text, self.header.read_file);
+        text = format!("{}        \"read_file\" : \"{}\"\n", text, self.header.read_file);
         text = format!("{}    }},\n", text);
         text = format!("{}    \"body\" : {{\n", text);
         text = format!("{}        \"operation\" : [\n", text);
@@ -98,7 +98,7 @@ impl RpmRecord {
         text = format!("{}            {}\n", text, self.body.identify_track.to_json(board_size));
         text = format!("{}        ]\n", text);
         text = format!("{}    }}\n", text);
-        text = format!("{}}}\n", text);
+        text = format!("{}}}", text);
         text
     }
 }
