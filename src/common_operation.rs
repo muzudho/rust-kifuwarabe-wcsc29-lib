@@ -34,7 +34,7 @@ impl CommonOperation {
     /// 局面表示付きだぜ☆（＾～＾）
     pub fn touch_talking_beautifle_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
         CommonOperation::touch_beautiful_world(comm, rpm_record, rpm_note, position);
-        CommonOperation::bo(comm, &rpm_record.operation_track, &position);
+        CommonOperation::bo(comm, &rpm_record.body.operation_track, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
@@ -64,7 +64,7 @@ impl CommonOperation {
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
     pub fn back_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
-        if let Some(rpm_note) = rpm_record.operation_track.get_current() {
+        if let Some(rpm_note) = rpm_record.body.operation_track.get_current() {
             position.touch_world(comm, &rpm_note);
             rpm_record.back();
             Some(rpm_note)
@@ -91,7 +91,7 @@ impl CommonOperation {
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
     pub fn forward_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
         if rpm_record.forward() {
-            if let Some(rpm_note) = rpm_record.operation_track.get_current() {
+            if let Some(rpm_note) = rpm_record.body.operation_track.get_current() {
                 position.touch_world(comm, &rpm_note);
                 return Some(rpm_note)
             } else {

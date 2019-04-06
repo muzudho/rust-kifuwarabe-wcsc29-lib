@@ -48,7 +48,7 @@ pub fn main()
     let mut position = Position::default();
 
     let krecord = KifRecord::load(&path);
-    KifPlayer::play_record(&comm, &mut position, &krecord, &mut rrecord);
+    KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
     CommonOperation::bo(&comm, &rrecord.operation_track, &position);
 
     comm.println("Finished.");

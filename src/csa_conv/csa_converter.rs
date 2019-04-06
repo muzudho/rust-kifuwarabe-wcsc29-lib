@@ -41,7 +41,6 @@ impl CsaConverter {
             // 駒を進める動きの場合
             if let Some(capture_id_piece) = position.get_id_piece_by_address(destination_address.get_index()) {
                 // 駒を取る動きが入る場合
-                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_extended_usi_text()));
 
                 // hand-off
                 let hand_off = RpmNote::create_by_address(destination_address);
@@ -61,8 +60,6 @@ impl CsaConverter {
                 let up = capture_id_piece.get_type();
                 let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
-            } else {
-                comm.println(&format!("[{}] 駒は取らない", ply));
             }
 
             // board-off
@@ -107,7 +104,7 @@ impl CsaConverter {
 
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_startpos();
-        CommonOperation::bo(comm, &rpm_record.operation_track, position);
+        CommonOperation::bo(comm, &rpm_record.body.operation_track, position);
 
         let mut ply = 1;
         for cmove in &c_record.items {
@@ -119,7 +116,7 @@ impl CsaConverter {
 
             for rpm_note in p_moves {
                 CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
-                CommonOperation::bo(comm, &rpm_record.operation_track, position);
+                CommonOperation::bo(comm, &rpm_record.body.operation_track, position);
             }
 
             ply += 1;

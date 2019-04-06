@@ -4,36 +4,60 @@ use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_operation_note::*;
 
+/// 対局情報。
+pub struct RpmRecordHeader {
+    pub date: String,
+    pub event: String,
+    pub player1: String,
+    pub player2: String,
+    pub read_file: String,
+}
+
+/// レコードの本体。
+pub struct RpmRecordBody {
+    pub operation_track: RpmOTrack,
+    pub identify_track: RpmITrack,
+}
+
 /// Reversible physical move - Record.
 pub struct RpmRecord {
-    pub operation_track: RpmOTrack,
-    identify_track: RpmITrack,
+    pub header: RpmRecordHeader,
+    pub body: RpmRecordBody,
 }
 impl RpmRecord {
     pub fn default() -> RpmRecord {
         RpmRecord {
-            operation_track: RpmOTrack::default(),
-            identify_track: RpmITrack::default(),
+            header : RpmRecordHeader {
+                date: "".to_string(),
+                event: "".to_string(),
+                player1: "".to_string(),
+                player2: "".to_string(),
+                read_file: "".to_string(),
+            },
+            body : RpmRecordBody {
+                operation_track: RpmOTrack::default(),
+                identify_track: RpmITrack::default(),
+            },
         }
     }
 
     /// 追加する。
     pub fn add_note(&mut self, rpm_note:&RpmNote, identify:i16) {
-        self.operation_track.add_element(&rpm_note);
-        self.identify_track.add_identify(identify);
+        self.body.operation_track.add_element(&rpm_note);
+        self.body.identify_track.add_identify(identify);
     }
 
     pub fn forward(&mut self) -> bool {
-        let i = self.identify_track.forward();
-        let o = self.operation_track.forward();
+        let i = self.body.identify_track.forward();
+        let o = self.body.operation_track.forward();
         if i!=o {panic!("Can not forward.");}
 
         i
     }
 
     pub fn back(&mut self) {
-        self.operation_track.back();
-        self.identify_track.back();
+        self.body.operation_track.back();
+        self.body.identify_track.back();
     }
 
     /*
@@ -43,15 +67,15 @@ impl RpmRecord {
      */
 
     pub fn get_mut_operation_track(&mut self) -> &mut RpmOTrack {
-        &mut self.operation_track
+        &mut self.body.operation_track
     }
 
     pub fn get_identify_track(self) -> RpmITrack {
-        self.identify_track
+        self.body.identify_track
     }
 
     pub fn get_mut_identify_track(&mut self) -> &mut RpmITrack {
-        &mut self.identify_track
+        &mut self.body.identify_track
     }
 
     /// 定跡ファイルの保存形式でもある。
@@ -59,8 +83,8 @@ impl RpmRecord {
         let mut unused_ply = 0;
 
         let mut sign = "Rec\n".to_string();
-        sign = format!("{}    Tr.0: {}\n", sign, self.operation_track.to_sign(board_size, &mut unused_ply));
-        sign = format!("{}    Tr.1: {}\n", sign, self.identify_track.to_sign(board_size));
+        sign = format!("{}    Tr.0: {}\n", sign, self.body.operation_track.to_sign(board_size, &mut unused_ply));
+        sign = format!("{}    Tr.1: {}\n", sign, self.body.identify_track.to_sign(board_size));
         sign
     }
 }

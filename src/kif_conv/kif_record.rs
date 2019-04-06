@@ -25,25 +25,17 @@ impl KifRecord {
             // スペースを除く、先頭が数字で始まる行は　指し手。
             if 4 < line.len() {
                 let mut first_ch = line.trim_start().to_string();
-                // println!("TrimS  : {}", first_ch);
                 first_ch = first_ch.chars().nth(0).unwrap().to_string();
-                // println!("Trim0  : {}", first_ch);
                 match first_ch.parse::<i8>() {
                     Ok(x) => {
                         if let Some(kif_move) = KifMove::parse(&line) {
-                            //println!(" : {}", kif_move.to_sign());
                             record.push(kif_move);
-                        //} else {
-                            //println!("Else");
                         }
                     },
                     Err(err) => {
                         // この行は無視。
-                        //println!("Ignored: {}", line);
                     },
                 }
-            //} else {
-                //println!("Ignored: {}", line);
             }
         }
 
@@ -58,8 +50,6 @@ impl KifRecord {
 
             pre_file = mov.destination_file;
             pre_rank = mov.destination_rank;
-
-            println!("Move : {}", mov.to_sign());
         }
 
         // これでレコードはできあがり。

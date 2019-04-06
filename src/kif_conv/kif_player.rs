@@ -44,7 +44,6 @@ impl KifPlayer {
             // 駒を進める動きの場合
             if let Some(capture_id_piece) = position.get_id_piece_by_address(destination_address.get_index()) {
                 // 駒を取る動きが入る場合
-                comm.println(&format!("[{}] 駒を取る動きが入る場合 {}", ply, capture_id_piece.to_extended_usi_text()));
 
                 // hand-off
                 let hand_off = RpmNote::create_by_address(destination_address);
@@ -64,8 +63,6 @@ impl KifPlayer {
                 let up = capture_id_piece.get_type();
                 let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 rmoves.push(hand_on);
-            } else {
-                comm.println(&format!("[{}] 駒は取らない", ply));
             }
 
             // board-off
@@ -102,7 +99,7 @@ impl KifPlayer {
     }
 
     /// 変換には、初期局面が必要。
-    pub fn play_record(
+    pub fn play_out_record(
         comm:&Communication,
         position:&mut Position,
         krecord:&KifRecord,
@@ -110,7 +107,6 @@ impl KifPlayer {
 
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_startpos();
-        CommonOperation::bo(comm, &rrecord.operation_track, position);
 
         let mut ply = 1;
         for kmove in &krecord.items {
@@ -122,7 +118,6 @@ impl KifPlayer {
 
             for rnote in rmoves {
                 CommonOperation::touch_beautiful_world(comm, rrecord, &rnote, position);
-                CommonOperation::bo(comm, &rrecord.operation_track, position);
             }
 
             ply += 1;

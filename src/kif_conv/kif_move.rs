@@ -32,7 +32,6 @@ impl KifMove {
         let re = Regex::new(r"\s*\d+ ((.*))*\([ 0-9:/]+\)").unwrap();
         let caps = re.captures(line).unwrap();
         let sign = caps.get(1).map_or("", |m| m.as_str());
-        print!("{} -> ", sign);
 
         let mut mv = KifMove {
             destination_file : 0,
