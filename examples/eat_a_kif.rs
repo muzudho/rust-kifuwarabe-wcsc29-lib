@@ -5,10 +5,10 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
-use kifuwarabe_wcsc29_lib::rpm_operation_track::*;
+//use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
+use kifuwarabe_wcsc29_lib::kif_conv::kif_move::*;
+use kifuwarabe_wcsc29_lib::kif_conv::kif_record::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
@@ -44,4 +44,7 @@ pub fn main()
     let mut rpm_o_track = RpmOTrack::default();
     let mut position = Position::default();
 
+    let krecord = KifRecord::load(&path);
+
+    comm.println("Finished.");
 }

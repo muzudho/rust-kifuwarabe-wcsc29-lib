@@ -35,6 +35,7 @@ pub mod common_operation;
 pub mod communication;
 pub mod config_file;
 pub mod csa_conv;
+pub mod kif_conv;
 pub mod learn;
 pub mod parser;
 pub mod piece_etc;

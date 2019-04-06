@@ -5,10 +5,9 @@ pub struct KifMove {
     pub origin_line:String,
 }
 impl KifMove {
-
     pub fn parse(line:&str) -> Option<KifMove> {
-        KifMove {
-            origin_line: line
-        }
+        Some(KifMove {
+            origin_line: line.to_string()
+        })
     }
 }

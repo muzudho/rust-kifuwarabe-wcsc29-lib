@@ -23,28 +23,36 @@ impl KifRecord {
             let line = result.unwrap();
 
             // スペースを除く、先頭が数字で始まる行は　指し手。
-            line = line.trim_start();
-            match line.parse::<i8>() {
-                Ok(x) => {
-                    print!("{}  ", line);
-                    if let Some(kif_move) = KifMove::parse(&line) {
-                        record.push(kif_move);
-                    }
-                },
-                Err(err) => {
-                    // この行は無視。
-                    print!("Ignored: {}", line);
-                },
+            if 4 < line.len() {
+                let mut first_ch = line.trim_start().to_string();
+                // println!("TrimS  : {}", first_ch);
+                first_ch = first_ch.chars().nth(0).unwrap().to_string();
+                // println!("Trim0  : {}", first_ch);
+                match first_ch.parse::<i8>() {
+                    Ok(x) => {
+                        println!("Move   : {}", line);
+                        if let Some(kif_move) = KifMove::parse(&line) {
+                            record.push(kif_move);
+                        }
+                    },
+                    Err(err) => {
+                        // この行は無視。
+                        println!("Ignored: {}", line);
+                    },
+                }
+            } else {
+                println!("Ignored: {}", line);
             }
         }
 
         record
     }
 
-    pub fn push(&mut self, mov:CsaMove) {
+    pub fn push(&mut self, mov:KifMove) {
         self.items.push(mov);
     }
 
+    /*
     pub fn get_current_phase(&self) -> Phase {
         match self.items.len() % 2 {
             0 => Phase::First,
@@ -52,7 +60,7 @@ impl KifRecord {
         }
     }
 
-    pub fn make_move(&mut self, cmove:CsaMove, position:&mut Position){
+    pub fn make_move(&mut self, cmove:KifMove, position:&mut Position){
         if cmove.is_drop() {
             // TODO drop
 
@@ -70,4 +78,5 @@ impl KifRecord {
             self.push(cmove);
         }
     }
+    */
 }
