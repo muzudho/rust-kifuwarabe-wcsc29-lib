@@ -37,7 +37,7 @@ impl RpmSheet {
         .open(Path::new(directory).join("sheet.txt"))
         .unwrap();
 
-        if let Err(e) = writeln!(file, "{}", rpm_record.to_sign(board_size)) {
+        if let Err(e) = writeln!(file, "{}", rpm_record.to_json(board_size)) {
             eprintln!("Couldn't write to file: {}", e);
         }
         comm.println("#Sheet saved.");

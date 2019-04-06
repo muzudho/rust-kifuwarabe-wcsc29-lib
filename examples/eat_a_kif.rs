@@ -49,7 +49,7 @@ pub fn main()
 
     let krecord = KifRecord::load(&path);
     KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
-    CommonOperation::bo(&comm, &rrecord.operation_track, &position);
+    CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
 
     comm.println("Finished.");
 }

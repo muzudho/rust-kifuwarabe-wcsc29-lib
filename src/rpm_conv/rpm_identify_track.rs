@@ -100,12 +100,28 @@ impl RpmITrack {
         self.down_count();
     }
 
-    /// 定跡ファイルの保存形式でもある。
+    /// コマンドライン入力形式。
     pub fn to_sign(&self, board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         for identify in &self.items {
             sign = format!("{} {}", sign, identify);
         }
         sign
+    }
+
+    /// JSONファイル保存形式。
+    pub fn to_json(&self, board_size:BoardSize) -> String {
+        let mut text = "".to_string();
+        let mut iter = self.items.iter();
+
+        if 0 < self.items.len() {
+            text = format!("{} {}", text, iter.next().unwrap());
+        }
+
+        for index in 1..self.items.len() {
+            text = format!("{}, {}", text, iter.next().unwrap());
+        }
+        
+        text.trim_start().to_string()
     }
 }

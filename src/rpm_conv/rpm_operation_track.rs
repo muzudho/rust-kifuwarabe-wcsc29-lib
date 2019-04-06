@@ -128,12 +128,28 @@ impl RpmOTrack {
         self.down_count_retry();
     }
 
-    /// 定跡ファイルの保存形式でもある。
+    /// コマンドライン入力形式。
     pub fn to_sign(&self, board_size:BoardSize, ply:&mut i16) -> String {
         let mut sign = "".to_string();
         for rpm_note in &self.items {
             sign = format!("{} {}", sign, rpm_note.to_sign(board_size, ply));
         }
         sign
+    }
+
+    /// JSONファイル保存形式。
+    pub fn to_json(&self, board_size:BoardSize, ply:&mut i16) -> String {
+        let mut text = "".to_string();
+        let mut iter = self.items.iter();
+
+        if 0 < self.items.len() {
+            text = format!("{} \"{}\"", text, iter.next().unwrap().to_sign(board_size, ply));
+        }
+
+        for index in 1..self.items.len() {
+            text = format!("{}, \"{}\"", text, iter.next().unwrap().to_sign(board_size, ply));
+        }
+
+        text.trim_start().to_string()
     }
 }
