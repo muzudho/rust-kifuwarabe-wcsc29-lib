@@ -27,6 +27,7 @@
 /// extern crate は main.rs か lib.rs に入れる。
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
 extern crate serde_json;
+extern crate regex;
 
 use std::io;
 

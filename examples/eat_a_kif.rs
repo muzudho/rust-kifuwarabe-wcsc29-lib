@@ -1,5 +1,7 @@
 extern crate kifuwarabe_wcsc29_lib;
 extern crate getopts;
+extern crate regex;
+
 use std::env;
 use getopts::Options;
 

@@ -30,7 +30,7 @@ impl KifRecord {
                 // println!("Trim0  : {}", first_ch);
                 match first_ch.parse::<i8>() {
                     Ok(x) => {
-                        println!("Move   : {}", line);
+                        // println!("Move   : {}", line);
                         if let Some(kif_move) = KifMove::parse(&line) {
                             record.push(kif_move);
                         }
