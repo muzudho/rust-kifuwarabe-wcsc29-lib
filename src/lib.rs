@@ -226,7 +226,7 @@ pub fn main_loop() {
 
             // 物理レコードを１行にして保存したい。
             let dir = &config.my_record_directory;
-            rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rpm_record);
+            rpm_sheet.append(&comm, position.get_board_size(), &dir, &rpm_record);
 
         // #####
         // # H #

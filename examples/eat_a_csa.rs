@@ -5,10 +5,13 @@ use getopts::Options;
 
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::*;
+use kifuwarabe_wcsc29_lib::config_file::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
+use kifuwarabe_wcsc29_lib::csa_conv::csa_player::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
-use kifuwarabe_wcsc29_lib::rpm_operation_track::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_sheet::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 use std::fs::File;
@@ -16,7 +19,7 @@ use std::io::{BufRead, BufReader};
 
 #[derive(Debug)]
 struct Args {
-  path: Option<String>,
+    path: Option<String>,
 }
 
 fn parse_args() -> Args {
@@ -34,16 +37,30 @@ fn parse_args() -> Args {
 }
 
 pub fn main() {
+    // Command line arguments.
     let args = parse_args();
 
+    // Logging.
     let comm = Communication::new();
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut rpm_o_track = RpmOTrack::default();
-    let mut position = Position::default();
+    // Config.
+    let config = &Config::load();
 
+    // Model.
+    let mut rrecord = RpmRecord::default();
+    let mut position = Position::default();
     let crecord = CsaRecord::load(&path);
-    CsaConverter::convert_record(&comm, &mut position, &crecord, &mut rpm_o_track);
-    CommonOperation::bo(&comm, &rpm_o_track, &position);
+
+    // Play.
+    CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
+    CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
+
+    // Save.
+    let rpm_sheet = RpmSheet::new();
+    let dir = &config.my_record_directory;
+    rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
+
+    comm.println("Finished.");
 }

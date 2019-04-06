@@ -114,7 +114,7 @@ impl RpmITrack {
         let mut text = "".to_string();
         let mut iter = self.items.iter();
 
-        if 0 < self.items.len() {
+        if !self.items.is_empty() {
             text = format!("{} {}", text, iter.next().unwrap());
         }
 

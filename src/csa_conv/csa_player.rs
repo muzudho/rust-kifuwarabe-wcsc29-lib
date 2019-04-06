@@ -9,10 +9,10 @@ use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
 
-pub struct CsaConverter {
+pub struct CsaPlayer {
 
 }
-impl CsaConverter {
+impl CsaPlayer {
     /// 変換には、現局面が必要。
     pub fn convert_move(
         comm:&Communication,
@@ -96,7 +96,7 @@ impl CsaConverter {
     }
 
     /// 変換には、初期局面が必要。
-    pub fn convert_record(
+    pub fn play_out_record(
         comm:&Communication,
         position:&mut Position,
         c_record:&CsaRecord,
@@ -104,11 +104,10 @@ impl CsaConverter {
 
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_startpos();
-        CommonOperation::bo(comm, &rpm_record.body.operation_track, position);
 
         let mut ply = 1;
         for cmove in &c_record.items {
-            let p_moves = CsaConverter::convert_move(
+            let p_moves = CsaPlayer::convert_move(
                 comm,
                 cmove,
                 position,
@@ -116,7 +115,6 @@ impl CsaConverter {
 
             for rpm_note in p_moves {
                 CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
-                CommonOperation::bo(comm, &rpm_record.body.operation_track, position);
             }
 
             ply += 1;

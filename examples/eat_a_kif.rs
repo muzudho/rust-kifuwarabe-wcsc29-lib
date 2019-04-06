@@ -51,10 +51,12 @@ pub fn main()
     // Config.
     let config = &Config::load();
 
+    // Model.
     let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
-
     let krecord = KifRecord::load(&path);
+
+    // Play.
     KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
     CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
 
