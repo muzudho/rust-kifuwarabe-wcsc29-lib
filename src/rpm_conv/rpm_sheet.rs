@@ -1,5 +1,5 @@
 use communication::*;
-use config_file::*;
+use conf::my_config::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;

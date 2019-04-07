@@ -55,7 +55,7 @@ impl UsiMove {
         self.resign = yes
     }
 
-    pub fn is_resign(&self) -> bool {
+    pub fn is_resign(self) -> bool {
         self.resign
     }
 

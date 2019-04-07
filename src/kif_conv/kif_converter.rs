@@ -1,8 +1,9 @@
 use common_operation::*;
 use communication::*;
-use config_file::*;
 use kif_conv::kif_player::*;
 use kif_conv::kif_record::*;
+use conf::kifuwarabe_wcsc29_config::*;
+use conf::my_config::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
@@ -20,7 +21,8 @@ impl KifConverter {
         comm.println(&format!("output_path: {}", output_path));
 
         // Config.
-        let config = Config::load();
+        let my_config = MyConfig::load();
+        let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
         // Directory.
         let out_path = Path::new(output_path);
@@ -30,7 +32,7 @@ impl KifConverter {
             Err(err) => panic!("Directory create fail: {}", err),
         }
 
-        let eating_dir = config.my_record_directory;
+        let eating_dir = kw29_config.learning;
         match fs::create_dir_all(&eating_dir) {
             Ok(x) => {},
             Err(err) => panic!("Directory create fail: {}", err),
@@ -47,7 +49,7 @@ impl KifConverter {
 
         // Save.
         let rpm_sheet = RpmSheet::default(output_path);
-        rpm_sheet.append(&comm, position.get_board_size(), &eating_dir, &mut rrecord);
+        rpm_sheet.append(&comm, position.get_board_size(), &eating_dir, &rrecord);
 
         comm.println("Finished.");
     }

@@ -26,6 +26,7 @@
 
 /// extern crate は main.rs か lib.rs に入れる。
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
+extern crate serde;
 extern crate serde_json;
 extern crate regex;
 extern crate getopts;
@@ -35,10 +36,10 @@ use std::io;
 pub mod address;
 pub mod common_operation;
 pub mod communication;
-pub mod config_file;
 pub mod csa_conv;
 pub mod kif_conv;
 pub mod learn;
+pub mod conf;
 pub mod parser;
 pub mod piece_etc;
 pub mod position;
@@ -49,7 +50,8 @@ pub mod thought;
 use address::*;
 use common_operation::*;
 use communication::*;
-use config_file::*;
+use conf::kifuwarabe_wcsc29_config::*;
+use conf::my_config::*;
 use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
@@ -67,8 +69,8 @@ pub fn main_loop() {
     let comm = Communication::new();
 
     // Config.
-    let config = &Config::load();
-    // comm.println(&format!("my_record_directory: '{}'.", &config.get_my_record_directory()));
+    let my_config = MyConfig::load();
+    let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
     let rpm_sheet = RpmSheet::default("sheet.txt");
     let mut rpm_record = RpmRecord::default();
@@ -226,7 +228,7 @@ pub fn main_loop() {
             // TODO lose とか win とか。
 
             // 物理レコードを１行にして保存したい。
-            let dir = &config.my_record_directory;
+            let dir = &kw29_config.learning;
             rpm_sheet.append(&comm, position.get_board_size(), &dir, &rpm_record);
 
         // #####
