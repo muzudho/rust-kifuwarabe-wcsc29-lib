@@ -7,6 +7,7 @@ use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
 use std::fs;
+use std::path::Path;
 
 pub struct KifConverter {
 }
@@ -15,9 +16,25 @@ impl KifConverter {
     {
         // Logging.
         let comm = Communication::new();
+        comm.println(&format!("input_path: {}", input_path));
+        comm.println(&format!("output_path: {}", output_path));
 
         // Config.
-        let config = &Config::load();
+        let config = Config::load();
+
+        // Directory.
+        let out_path = Path::new(output_path);
+        let out_dir = out_path.parent().unwrap();
+        match fs::create_dir_all(out_dir) {
+            Ok(x) => {},
+            Err(err) => panic!("Directory create fail: {}", err),
+        }
+
+        let eating_dir = config.my_record_directory;
+        match fs::create_dir_all(&eating_dir) {
+            Ok(x) => {},
+            Err(err) => panic!("Directory create fail: {}", err),
+        }
 
         // Model.
         let mut rrecord = RpmRecord::default();
@@ -30,12 +47,7 @@ impl KifConverter {
 
         // Save.
         let rpm_sheet = RpmSheet::default(output_path);
-        let dir = &config.my_record_directory;
-        match fs::create_dir_all(dir) {
-            Ok(x) => {},
-            Err(err) => panic!("Directory create fail: {}", err),
-        }
-        rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
+        rpm_sheet.append(&comm, position.get_board_size(), &eating_dir, &mut rrecord);
 
         comm.println("Finished.");
 

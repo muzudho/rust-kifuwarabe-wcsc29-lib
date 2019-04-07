@@ -18,6 +18,23 @@ cargo clippy --example eat_a_kif
 cargo run --example eat_a_kif -- --path C:/muzudho/kifuwarabe-wcsc29-learn/output-wcsc-record/copied-daiwa/daiwa.kif
 ```
 
+## How to convert .kif record?
+
+```Shell
+### Example.
+cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cls
+
+### Compile.
+set RUST_BACKTRACE=1
+cargo clippy --example conv_a_kif
+
+### Run.
+### '--' is separator. You can pass arguments to exe.
+### Please change encoding to UTF-8.
+cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak.rpmove"
+```
+
 ## How to eat .csa record?
 
 ```Shell
