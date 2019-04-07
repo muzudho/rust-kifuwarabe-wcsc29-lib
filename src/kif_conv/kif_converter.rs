@@ -6,6 +6,7 @@ use kif_conv::kif_record::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
+use std::fs;
 
 pub struct KifConverter {
 }
@@ -30,6 +31,10 @@ impl KifConverter {
         // Save.
         let rpm_sheet = RpmSheet::default(output_path);
         let dir = &config.my_record_directory;
+        match fs::create_dir_all(dir) {
+            Ok(x) => {},
+            Err(err) => panic!("Directory create fail: {}", err),
+        }
         rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
 
         comm.println("Finished.");
