@@ -7,7 +7,7 @@ use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
 
-struct KifConverter {
+pub struct KifConverter {
 }
 impl KifConverter {
     pub fn convert_kif(input_path:&str, output_path:&str) -> RpmRecord

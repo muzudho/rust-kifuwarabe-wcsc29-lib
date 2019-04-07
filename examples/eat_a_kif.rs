@@ -38,5 +38,5 @@ pub fn main()
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    KifConverter::convert_kif(path);
+    KifConverter::convert_kif(&path, "sheet.txt");
 }
