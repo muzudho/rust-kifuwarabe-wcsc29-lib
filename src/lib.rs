@@ -62,7 +62,7 @@ use piece_etc::*;
 use parser::*;
 use position::*;
 use usi_conv::usi_converter::*;
-use thought::Thought;
+use thought::best_move_picker::*;
 
 pub fn main_loop() {
     // Logging.
@@ -76,8 +76,7 @@ pub fn main_loop() {
     let mut rpm_record = RpmRecord::default();
 
     let mut position = Position::default();
-    let mut thought = Thought::new();
-    thought.load();
+    let mut best_move_picker = BestMovePicker::new();
 
     loop {
         // Standard input.
@@ -208,9 +207,7 @@ pub fn main_loop() {
         // #####
 
         } else if line.starts_with("go") {
-            let best_logical_move = thought.get_best_move(
-                &position,
-                &mut rpm_record.get_mut_operation_track());
+            let best_logical_move = best_move_picker.get_best_move(&kw29_config, &position);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");

@@ -3,6 +3,7 @@ use serde_json::*;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 
 /// このライブラリの設定。
 #[derive(Deserialize)]
@@ -15,7 +16,7 @@ impl KifuwarabeWcsc29LibConfig {
 
     /// 設定ファイル読込。
     pub fn load() -> KifuwarabeWcsc29LibConfig {
-        let path = "./kifuwarabe-wcsc29-lib-config.json";
+        let path = Path::new("./kifuwarabe-wcsc29-lib-config.json");
 
         let mut file = match File::open(path) {
             Ok(x) => x,
@@ -30,7 +31,7 @@ impl KifuwarabeWcsc29LibConfig {
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected config: {}", path),
+            Err(err) => panic!("Unexpected config: {}", err),
         }
     }
 }
