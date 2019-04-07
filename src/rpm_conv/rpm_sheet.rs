@@ -1,5 +1,5 @@
 use communication::*;
-use conf::my_config::*;
+use conf::kifuwarabe_wcsc29_lib_config::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;

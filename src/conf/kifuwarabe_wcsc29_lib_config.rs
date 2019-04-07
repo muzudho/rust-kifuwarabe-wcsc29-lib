@@ -7,14 +7,14 @@ use std::io::Read;
 /// このライブラリの設定。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct MyConfig {
+pub struct KifuwarabeWcsc29LibConfig {
     /// 統一設定ファイルへのパス。
     pub kifuwarabe_wcsc29_config_path: String,
 }
-impl MyConfig {
+impl KifuwarabeWcsc29LibConfig {
 
     /// 設定ファイル読込。
-    pub fn load() -> MyConfig {
+    pub fn load() -> KifuwarabeWcsc29LibConfig {
         let path = "./kifuwarabe-wcsc29-lib-config.json";
 
         let mut file = match File::open(path) {

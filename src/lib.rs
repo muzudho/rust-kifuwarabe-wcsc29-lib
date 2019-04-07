@@ -51,7 +51,7 @@ use address::*;
 use common_operation::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
-use conf::my_config::*;
+use conf::kifuwarabe_wcsc29_lib_config::*;
 use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
@@ -69,7 +69,7 @@ pub fn main_loop() {
     let comm = Communication::new();
 
     // Config.
-    let my_config = MyConfig::load();
+    let my_config = KifuwarabeWcsc29LibConfig::load();
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
     let rpm_sheet = RpmSheet::default("sheet.txt");

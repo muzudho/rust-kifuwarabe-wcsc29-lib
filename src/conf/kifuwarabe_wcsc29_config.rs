@@ -3,7 +3,7 @@ use serde_json::*;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
-use conf::my_config::*;
+use conf::kifuwarabe_wcsc29_lib_config::*;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
@@ -25,7 +25,7 @@ pub struct KifuwarabeWcsc29Config {
 impl KifuwarabeWcsc29Config {
 
     /// 設定ファイル読込。
-    pub fn load(my_confing:&MyConfig) -> KifuwarabeWcsc29Config {
+    pub fn load(my_confing:&KifuwarabeWcsc29LibConfig) -> KifuwarabeWcsc29Config {
         let path = &my_confing.kifuwarabe_wcsc29_config_path;
         let mut file = match File::open(path) {
             Ok(x) => x,

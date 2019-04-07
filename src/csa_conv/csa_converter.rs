@@ -3,7 +3,7 @@ use communication::*;
 use csa_conv::csa_player::*;
 use csa_conv::csa_record::*;
 use conf::kifuwarabe_wcsc29_config::*;
-use conf::my_config::*;
+use conf::kifuwarabe_wcsc29_lib_config::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
@@ -21,7 +21,7 @@ impl CsaConverter {
         comm.println(&format!("output_path: {}", output_path));
 
         // Config.
-        let my_config = MyConfig::load();
+        let my_config = KifuwarabeWcsc29LibConfig::load();
         let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
         // Directory.
