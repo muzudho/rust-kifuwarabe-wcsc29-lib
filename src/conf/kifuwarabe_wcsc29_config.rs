@@ -21,6 +21,7 @@ pub struct KifuwarabeWcsc29Config {
 	pub formation : Kw29Directories,
 	pub eating : Kw29Directories,
     pub learning : String,
+    pub rpm_record : String,
 }
 impl KifuwarabeWcsc29Config {
 

@@ -26,11 +26,13 @@
 
 /// extern crate は main.rs か lib.rs に入れる。
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
+extern crate rand;
 extern crate serde;
 extern crate serde_json;
 extern crate regex;
 extern crate getopts;
 
+use rand::Rng;
 use std::io;
 
 pub mod address;
@@ -54,7 +56,8 @@ use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
 use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_record::*;
-use rpm_conv::rpm_sheet::*;
+use rpm_conv::rpm_object_sheet::*;
+use std::path::Path;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use piece_etc::*;
@@ -71,7 +74,19 @@ pub fn main_loop() {
     let my_config = KifuwarabeWcsc29LibConfig::load();
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
-    let rpm_sheet = RpmSheet::default("sheet.txt");
+    // ファイル名をランダムに作成する。
+    let rpm_object_sheet_path;
+    {       
+        let mut rng = rand::thread_rng();
+        let rand1: i64 = rng.gen();
+        let rand2: i64 = rng.gen();
+        let rand3: i64 = rng.gen();
+        let rand4: i64 = rng.gen();
+        rpm_object_sheet_path = Path::new(&kw29_config.learning).join(format!("{}-{}-{}-{}-learning.rpmove", rand1, rand2, rand3, rand4)).to_str().unwrap().to_string();
+    }
+
+    // 学習中の棋譜を入れる。
+    let rpm_object_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
     let mut rpm_record = RpmRecord::default();
 
     let mut position = Position::default();
@@ -223,9 +238,7 @@ pub fn main_loop() {
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            // 物理レコードを１行にして保存したい。
-            let dir = &kw29_config.learning;
-            rpm_sheet.append(&comm, position.get_board_size(), &dir, &rpm_record);
+            rpm_object_sheet.append(&comm, position.get_board_size(), &rpm_record);
 
         // #####
         // # H #

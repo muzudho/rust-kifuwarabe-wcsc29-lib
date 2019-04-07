@@ -12,6 +12,9 @@ impl Knowledge {
     }
 
     pub fn match_thread(&self, _position:&Position, _id:&PieceIdentify) -> ThreadsOfPiece {
+
+        // TODO とりあえず -rpmrec.json ファイルを１個読む。
+
         ThreadsOfPiece {
             max_ply: 0,
             record: RpmRecord::default(),
