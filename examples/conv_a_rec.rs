@@ -51,10 +51,10 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                let rrecord = KifConverter::convert_kif(&in_file, &out_file);
+                KifConverter::convert_kif(&in_file, &out_file);
             },
             "CSA" => {
-                let rrecord = CsaConverter::convert_csa(&in_file, &out_file);
+                CsaConverter::convert_csa(&in_file, &out_file);
             }
             _ => {print!("Pass extension: {}", ext)}
         }
