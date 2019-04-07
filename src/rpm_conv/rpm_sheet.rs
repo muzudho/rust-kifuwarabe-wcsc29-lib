@@ -12,13 +12,13 @@ use rpm_conv::rpm_record::*;
 
 pub struct RpmSheet {
     output_path: String,
-    records: Vec<RpmRecord>,
+    // records: Vec<RpmRecord>,
 }
 impl RpmSheet {
     pub fn default(output_file_path:&str) -> RpmSheet {
         RpmSheet {
             output_path: output_file_path.to_string(),
-            records: Vec::new(),
+            // records: Vec::new(),
         }
     }
 

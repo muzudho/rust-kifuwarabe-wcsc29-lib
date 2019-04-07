@@ -25,7 +25,7 @@ impl Fen {
             position.reset_default();
 
             *start = 14;
-            let mut rank=9;
+            let rank=9;
             let mut file=1;
 
             let sign = line.to_string().chars().next().unwrap();

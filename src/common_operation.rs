@@ -13,7 +13,7 @@ impl CommonOperation {
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNote, position:&mut Position) {
         let piece_id_number = if let Some(piece_identify) = position.touch_world(comm, &rpm_note) {
-            piece_identify.get_id_number()
+            piece_identify.get_id().get_number()
         } else {
             -1
         };

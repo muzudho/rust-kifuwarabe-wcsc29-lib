@@ -207,7 +207,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
         if 0 < sign.len() - nth {
             // Phase 9.
             let ch = sign.chars().nth(nth).unwrap().to_string();
-            nth += 1;
+            /* nth += 1; */
             match ch.as_str() {
                 ")" => {},
                 _ => {/*nth -= 1*/},

@@ -75,7 +75,7 @@ pub fn main_loop() {
     let mut rpm_record = RpmRecord::default();
 
     let mut position = Position::default();
-    let best_move_picker = BestMovePicker::new();
+    let mut best_move_picker = BestMovePicker::default();
 
     loop {
         // Standard input.
@@ -206,7 +206,7 @@ pub fn main_loop() {
         // #####
 
         } else if line.starts_with("go") {
-            let best_logical_move = best_move_picker.get_best_move(&kw29_config, &position);
+            let best_logical_move = best_move_picker.get_best_move(&comm, &kw29_config, &position);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");

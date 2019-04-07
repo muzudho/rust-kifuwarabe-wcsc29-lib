@@ -2,12 +2,13 @@ use communication::*;
 use position::*;
 // use rpm_conv::*;
 
-const NONE_IDENTIFY:i16 = -1;
+const NONE_IDENTIFY:i8 = -1;
 
 /// Reversible physical move - Identify track.
 #[derive(Default)]
 pub struct RpmITrack {
-    items: Vec<i16>,
+    // piece number.
+    items: Vec<i8>,
     cursor: i16,
 }
 impl RpmITrack {
@@ -32,7 +33,7 @@ impl RpmITrack {
         self.cursor -= 1;
     }
 
-    pub fn add_identify(&mut self, identify:i16) {
+    pub fn add_identify(&mut self, identify:i8) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
@@ -48,7 +49,7 @@ impl RpmITrack {
         }
     }
 
-    pub fn pop_current(&mut self) -> i16 {
+    pub fn pop_current(&mut self) -> i8 {
         // 後ろの要素がある場合は、削除する。
         if (self.cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
@@ -71,7 +72,7 @@ impl RpmITrack {
     }
 
     /// カーソルが指している要素を返す。
-    pub fn get_current(&self) -> i16 {
+    pub fn get_current(&self) -> i8 {
         if self.cursor == -1 {
             NONE_IDENTIFY
         } else {

@@ -11,6 +11,7 @@ pub enum Phase {
 /// Piece identify. Order of "大橋"(Ohashi) mode.
 /// With out phase.
 #[derive(Clone, Copy, PartialEq)]
+#[derive(Debug)]
 pub enum PieceIdentify {
     K00,
     K01,
@@ -63,6 +64,52 @@ impl PieceIdentify {
             P30, P31, P32, P33, P34, P35, P36, P37, P38, P39,
         ];
         PIECE_IDENTIFIES.into_iter()
+    }
+
+    pub fn get_number(self) -> i8 {
+        use piece_etc::PieceIdentify::*;
+        match self {
+            K00 => 0,
+            K01 => 1,
+            G02 => 2,
+            G03 => 3,
+            G04 => 4,
+            G05 => 5,
+            S06 => 6,
+            S07 => 7,
+            S08 => 8,
+            S09 => 9,
+            N10 => 10,
+            N11 => 11,
+            N12 => 12,
+            N13 => 13,
+            L14 => 14,
+            L15 => 15,
+            L16 => 16,
+            L17 => 17,
+            B18 => 18,
+            B19 => 19,
+            R20 => 20,
+            R21 => 21,
+            P22 => 22,
+            P23 => 23,
+            P24 => 24,
+            P25 => 25,
+            P26 => 26,
+            P27 => 27,
+            P28 => 28,
+            P29 => 29,
+            P30 => 30,
+            P31 => 31,
+            P32 => 32,
+            P33 => 33,
+            P34 => 34,
+            P35 => 35,
+            P36 => 36,
+            P37 => 37,
+            P38 => 38,
+            P39 => 39,
+        }
     }
 }
 
@@ -138,6 +185,7 @@ impl IdentifiedPiece {
         self.id
     }
 
+    /* obsolute
     pub fn get_id_number(self) -> i16 {
         use piece_etc::PieceIdentify::*;
         match self.id {
@@ -183,6 +231,7 @@ impl IdentifiedPiece {
             P39 => 39,
         }
     }
+    */
 
     pub fn get_type(self) -> PieceType {
         use piece_etc::PieceIdentify::*;
