@@ -3,6 +3,7 @@ extern crate getopts;
 
 use kifuwarabe_wcsc29_lib::*;
 use kifuwarabe_wcsc29_lib::kif_conv::kif_converter::KifConverter;
+use kifuwarabe_wcsc29_lib::csa_conv::csa_converter::CsaConverter;
 use std::ffi::OsStr;
 use std::path::Path;
 
@@ -50,10 +51,10 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif(&in_file, &out_file);
+                let rrecord = KifConverter::convert_kif(&in_file, &out_file);
             },
             "CSA" => {
-
+                let rrecord = CsaConverter::convert_csa(&in_file, &out_file);
             }
             _ => {print!("Pass extension: {}", ext)}
         }

@@ -1,18 +1,18 @@
 use common_operation::*;
 use communication::*;
 use config_file::*;
-use kif_conv::kif_player::*;
-use kif_conv::kif_record::*;
+use csa_conv::csa_player::*;
+use csa_conv::csa_record::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use position::*;
 use std::fs;
 use std::path::Path;
 
-pub struct KifConverter {
+pub struct CsaConverter {
 }
-impl KifConverter {
-    pub fn convert_kif(input_path:&str, output_path:&str)
+impl CsaConverter {
+    pub fn convert_csa(input_path:&str, output_path:&str)
     {
         // Logging.
         let comm = Communication::new();
@@ -39,10 +39,10 @@ impl KifConverter {
         // Model.
         let mut rrecord = RpmRecord::default();
         let mut position = Position::default();
-        let krecord = KifRecord::load(&input_path);
+        let crecord = CsaRecord::load(&input_path);
 
         // Play.
-        KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
+        CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
         CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save.

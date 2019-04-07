@@ -33,6 +33,7 @@ cargo clippy --example conv_a_kif
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
 cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak.rpmove"
+cargo run --example conv_a_rec -- --input "C:\shogi-record\go\eating\wcsc\１回戦\kifu.csa" --output "C:/muzudho/shogi-record/rpm/wcsc/１回戦\kifu.rpmove"
 ```
 
 ## How to eat .csa record?
