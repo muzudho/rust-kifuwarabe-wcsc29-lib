@@ -5,19 +5,9 @@ extern crate regex;
 use std::env;
 use getopts::Options;
 
-use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::config_file::*;
-use kifuwarabe_wcsc29_lib::kif_conv::kif_move::*;
-use kifuwarabe_wcsc29_lib::kif_conv::kif_player::*;
-use kifuwarabe_wcsc29_lib::kif_conv::kif_record::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_sheet::*;
-use kifuwarabe_wcsc29_lib::position::*;
+use kifuwarabe_wcsc29_lib::kif_conv::kif_converter::*;
 
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 #[derive(Debug)]
 struct Args {
@@ -48,22 +38,5 @@ pub fn main()
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    // Config.
-    let config = &Config::load();
-
-    // Model.
-    let mut rrecord = RpmRecord::default();
-    let mut position = Position::default();
-    let krecord = KifRecord::load(&path);
-
-    // Play.
-    KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
-    CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
-
-    // Save.
-    let rpm_sheet = RpmSheet::new();
-    let dir = &config.my_record_directory;
-    rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
-
-    comm.println("Finished.");
+    KifConverter::convert_kif(path);
 }

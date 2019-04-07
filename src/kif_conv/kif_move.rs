@@ -1,4 +1,3 @@
-use parser::*;
 use piece_etc::*;
 use regex::Regex;
 
@@ -44,7 +43,7 @@ impl KifMove {
             source_rank : 0,
         };
 
-        /**
+        /*
 Phase   0  1   2   3   4   5  6   7  8  9
        筋  段  同  駒  成  打  (  筋  段  )
        --  --  --  --  --  --  -  -  -  -

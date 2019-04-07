@@ -28,6 +28,7 @@
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
 extern crate serde_json;
 extern crate regex;
+extern crate getopts;
 
 use std::io;
 
@@ -69,7 +70,7 @@ pub fn main_loop() {
     let config = &Config::load();
     // comm.println(&format!("my_record_directory: '{}'.", &config.get_my_record_directory()));
 
-    let rpm_sheet = RpmSheet::new();
+    let rpm_sheet = RpmSheet::default("sheet.txt");
     let mut rpm_record = RpmRecord::default();
 
     let mut position = Position::default();

@@ -11,17 +11,20 @@ use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
 
 pub struct RpmSheet {
+    output_path: String,
     records: Vec<RpmRecord>,
 }
 impl RpmSheet {
-    pub fn new() -> RpmSheet {
+    pub fn default(output_file_path:&str) -> RpmSheet {
         RpmSheet {
+            output_path: output_file_path.to_string(),
             records: Vec::new(),
         }
     }
 
     pub fn read(&mut self, directory:&str) {
-        for result in BufReader::new(File::open(Path::new(directory).join("sheet.txt")).unwrap()).lines() {
+        let out_path = &self.output_path;
+        for result in BufReader::new(File::open(Path::new(directory).join(out_path)).unwrap()).lines() {
             let line = result.unwrap();
             println!("Read line: `{}`.", line);
             // TODO self.records.push(record);
@@ -32,14 +35,12 @@ impl RpmSheet {
     pub fn append(&self, comm:&Communication, board_size:BoardSize, directory:&str, rpm_record:&RpmRecord) {
         comm.println("#Sheet saving...");
 
-        let path = "sheet.txt";
-
         // 新規作成、またはレコードを追記。
         let mut file = OpenOptions::new()
         .create(true)
         .write(true)
         .append(true)
-        .open(Path::new(directory).join(path))
+        .open(Path::new(directory).join(&self.output_path))
         .unwrap();
 
         // 末尾にカンマを付けて終わる。
