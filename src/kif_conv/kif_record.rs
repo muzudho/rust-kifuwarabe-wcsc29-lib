@@ -1,6 +1,4 @@
 use kif_conv::kif_move::*;
-use piece_etc::*;
-use position::*;
 use std::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -27,12 +25,12 @@ impl KifRecord {
                 let mut first_ch = line.trim_start().to_string();
                 first_ch = first_ch.chars().nth(0).unwrap().to_string();
                 match first_ch.parse::<i8>() {
-                    Ok(x) => {
+                    Ok(_x) => {
                         if let Some(kif_move) = KifMove::parse(&line) {
                             record.push(kif_move);
                         }
                     },
-                    Err(err) => {
+                    Err(_err) => {
                         // この行は無視。
                     },
                 }

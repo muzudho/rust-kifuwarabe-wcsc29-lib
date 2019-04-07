@@ -14,10 +14,10 @@ pub struct CsaPlayer {
 impl CsaPlayer {
     /// 変換には、現局面が必要。
     pub fn convert_move(
-        comm:&Communication,
+        _comm:&Communication,
         cmove:&CsaMove,
         position:&Position,
-        ply:i16) -> Vec<RpmNote> {
+        _ply:i16) -> Vec<RpmNote> {
         let mut p_moves = Vec::new();
 
         let destination_address = Address::create_by_cell(

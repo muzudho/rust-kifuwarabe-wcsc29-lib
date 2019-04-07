@@ -53,7 +53,6 @@ use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
 use rpm_conv::rpm_operation_note::*;
-use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_sheet::*;
 use usi_conv::fen::*;
@@ -76,7 +75,7 @@ pub fn main_loop() {
     let mut rpm_record = RpmRecord::default();
 
     let mut position = Position::default();
-    let mut best_move_picker = BestMovePicker::new();
+    let best_move_picker = BestMovePicker::new();
 
     loop {
         // Standard input.

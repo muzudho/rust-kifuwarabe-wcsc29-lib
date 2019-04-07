@@ -1,13 +1,13 @@
 use communication::*;
-use conf::kifuwarabe_wcsc29_lib_config::*;
+// use conf::kifuwarabe_wcsc29_lib_config::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
-use std::io::Read;
+// use std::io::Read;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
 use position::*;
-use rpm_conv::rpm_operation_track::*;
+// use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
 
 pub struct RpmSheet {

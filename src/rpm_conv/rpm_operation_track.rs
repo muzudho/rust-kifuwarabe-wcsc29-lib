@@ -1,7 +1,5 @@
-use communication::*;
 use position::*;
 use rpm_conv::rpm_operation_note::*;
-use rpm_conv::*;
 
 /// Reversible physical move - Operation track.
 #[derive(Default)]
@@ -146,7 +144,7 @@ impl RpmOTrack {
             text = format!("{} \"{}\"", text, iter.next().unwrap().to_sign(board_size, ply));
         }
 
-        for index in 1..self.items.len() {
+        for _index in 1..self.items.len() {
             text = format!("{}, \"{}\"", text, iter.next().unwrap().to_sign(board_size, ply));
         }
 

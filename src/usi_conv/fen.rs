@@ -46,10 +46,10 @@ impl Fen {
             if spaces == 0 {
                 let piece_opt = parse_sign_line_to_piece(line, start);
                 position.activate_piece(piece_opt, file, rank);
-                file += 1;
+                /* file += 1; */
             } else if spaces == -1 {
-                file = 1;
-                rank = 9;
+                /* file = 1; */
+                /* rank = 9; */
             } else {
                 while spaces > 0 {
                     position.set_id_piece(file, rank, None);

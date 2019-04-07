@@ -1,6 +1,6 @@
 use communication::*;
 use position::*;
-use rpm_conv::*;
+// use rpm_conv::*;
 
 const NONE_IDENTIFY:i16 = -1;
 
@@ -19,7 +19,7 @@ impl RpmITrack {
     }
 
     /// TODO 保存。
-    pub fn save(&self, comm:&Communication, board_size:BoardSize) {
+    pub fn save(&self, _comm:&Communication, _board_size:BoardSize) {
         // let book = Book::new();
         // book.save_rpm_i_track(&comm, board_size, &self);
     }
@@ -101,7 +101,7 @@ impl RpmITrack {
     }
 
     /// コマンドライン入力形式。
-    pub fn to_sign(&self, board_size:BoardSize) -> String {
+    pub fn to_sign(&self, _board_size:BoardSize) -> String {
         let mut sign = "".to_string();
         for identify in &self.items {
             sign = format!("{} {}", sign, identify);
@@ -110,7 +110,7 @@ impl RpmITrack {
     }
 
     /// JSONファイル保存形式。
-    pub fn to_json(&self, board_size:BoardSize) -> String {
+    pub fn to_json(&self, _board_size:BoardSize) -> String {
         let mut text = "".to_string();
         let mut iter = self.items.iter();
 
@@ -118,7 +118,7 @@ impl RpmITrack {
             text = format!("{} {}", text, iter.next().unwrap());
         }
 
-        for index in 1..self.items.len() {
+        for _index in 1..self.items.len() {
             text = format!("{}, {}", text, iter.next().unwrap());
         }
         

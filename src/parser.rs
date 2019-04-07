@@ -3,7 +3,7 @@ use communication::*;
 pub struct Parser {
 }
 impl Parser {
-    pub fn match_keyword(comm:&Communication, line:&str, keyword:&str, start:&mut usize) -> bool {
+    pub fn match_keyword(_comm:&Communication, line:&str, keyword:&str, start:&mut usize) -> bool {
         // スタートが文字列の終端を読み終わっていれば、結果は空。
         if line.len() <= *start {
             return false;
@@ -18,7 +18,7 @@ impl Parser {
     }
 
     // 半角空白を読み飛ばします。
-    pub fn skip_spaces(comm:&Communication, line:&str, start:&mut usize) {
+    pub fn skip_spaces(_comm:&Communication, line:&str, start:&mut usize) {
         if line.len() <= *start {
             return;
         }

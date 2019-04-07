@@ -28,13 +28,13 @@ impl KifConverter {
         let out_path = Path::new(output_path);
         let out_dir = out_path.parent().unwrap();
         match fs::create_dir_all(out_dir) {
-            Ok(x) => {},
+            Ok(_x) => {},
             Err(err) => panic!("Directory create fail: {}", err),
         }
 
         let eating_dir = kw29_config.learning;
         match fs::create_dir_all(&eating_dir) {
-            Ok(x) => {},
+            Ok(_x) => {},
             Err(err) => panic!("Directory create fail: {}", err),
         }
 
