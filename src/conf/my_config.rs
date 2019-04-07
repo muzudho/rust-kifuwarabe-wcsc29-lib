@@ -4,7 +4,7 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
 
-/// この実行ファイルの設定。
+/// このライブラリの設定。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct MyConfig {
@@ -15,7 +15,7 @@ impl MyConfig {
 
     /// 設定ファイル読込。
     pub fn load() -> MyConfig {
-        let path = "./config.json";
+        let path = "./kifuwarabe-wcsc29-lib-config.json";
 
         let mut file = match File::open(path) {
             Ok(x) => x,
