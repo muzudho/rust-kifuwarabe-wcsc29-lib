@@ -46,6 +46,7 @@ pub mod parser;
 pub mod piece_etc;
 pub mod position;
 pub mod rpm_conv;
+pub mod rpm_model;
 pub mod usi_conv;
 pub mod thought;
 
