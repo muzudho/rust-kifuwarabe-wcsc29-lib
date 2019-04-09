@@ -7,9 +7,9 @@ pub struct Address {
     index: usize,
 }
 impl Address {
-    pub fn create_by_cell(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
+    pub fn create_by_file_rank(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
         Address {
-            index: board_size.file_rank_to_cell(file_num, rank_num),
+            index: board_size.file_rank_to_address(file_num, rank_num),
         }
     }
 
@@ -126,7 +126,7 @@ impl Address {
 
     pub fn to_physical_sign(self, board_size:BoardSize) -> String {
         if self.is_on_board(board_size) {
-            let (file, rank) = board_size.cell_to_file_rank(self.index);
+            let (file, rank) = board_size.address_to_file_rank(self.index);
             format!(
                 "{}{}",
                 file,

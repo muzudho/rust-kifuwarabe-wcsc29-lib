@@ -20,7 +20,7 @@ impl KifPlayer {
         _ply:i16) -> Vec<RpmNote> {
         let mut rmoves = Vec::new();
 
-        let destination_address = Address::create_by_cell(
+        let destination_address = Address::create_by_file_rank(
             kmove.destination_file,
             kmove.destination_rank,
             position.get_board_size()
@@ -65,7 +65,7 @@ impl KifPlayer {
             }
 
             // board-off
-            let board_off = RpmNote::create_by_address(Address::create_by_cell(
+            let board_off = RpmNote::create_by_address(Address::create_by_file_rank(
                 kmove.source_file,
                 kmove.source_rank,
                 position.get_board_size()

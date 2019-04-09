@@ -372,7 +372,7 @@ fn read_tape(comm:&Communication, line:&str, rpm_record:&mut RpmRecord, position
                 comm.print(&format!("{}{}", ch1, ch2));
                 let file = Parser::file_char_to_i8(ch1);
                 let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_cell(file, rank, position.get_board_size());
+                let address = Address::create_by_file_rank(file, rank, position.get_board_size());
                 Some(RpmNote::create_by_address(address))
             },
             '+' => {

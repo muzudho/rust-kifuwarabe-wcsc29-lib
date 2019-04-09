@@ -60,7 +60,6 @@ impl BestMovePicker {
 
         let know = Knowledge::new();
 
-
         // RPMを検索。
         println!("#match_thread start. Dir: {}", kw29config.rpm_record);
 
@@ -83,21 +82,24 @@ impl BestMovePicker {
                     for id in PieceIdentify::iterator() {
                         let number = id.get_number();
                         // 現局面の駒の番地。
-                        let (board_index, hand) = position.board_index_of(position.get_phase(), id);
-                        comm.println(&format!("id: {:?}, number: {}, board_index: {}, hand: {}.", id, number, board_index, hand));
+                        let (my_address, hand) = position.address_of(position.get_phase(), id);
+                        comm.println(&format!("id: {:?}, number: {}, my_my_addresscell: {}, hand: {}.", id, number, my_address, hand));
 
 
                         // 自分の駒番号を検索。
                         let size = record.body.operation.len();
                         for i in 0..size {
-                            let num = record.body.piece_number[i];
-                            if id.get_number() == num {
+                            let pnum = record.body.piece_number[i];
+                            if id.get_number() == pnum {
                                 // 番地を検索。
                                 let operation = &record.body.operation[i];
+                                comm.println(&format!("matched pnum. operation: {}", operation));
 
                                 match operation.parse::<i8>() {
-                                    Ok(target_board_index) => {
-                                        if target_board_index > 0 && target_board_index == board_index {
+                                    Ok(target_cell) => {
+                                        let target_address = position.get_board_size().cell_to_address(target_cell);
+                                        if target_address >= 0 && target_address == my_address as usize {
+                                            comm.println("matched address.");
                                             // 一致。とりあえず　ここから 数ノートを選んでおく。
 
                                             let mut thread = ThreadsOfPiece::new();
@@ -112,6 +114,7 @@ impl BestMovePicker {
                                             //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
                                             // 差し替え。
                                             self.thread_by_piece_id.insert(number, thread);
+                                            comm.println("Change!");
                                             //}
 
                                             // TODO とりあえず抜ける。

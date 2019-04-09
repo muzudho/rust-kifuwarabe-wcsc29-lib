@@ -20,7 +20,7 @@ impl CsaPlayer {
         _ply:i16) -> Vec<RpmNote> {
         let mut p_moves = Vec::new();
 
-        let destination_address = Address::create_by_cell(
+        let destination_address = Address::create_by_file_rank(
             cmove.destination_file,
             cmove.destination_rank,
             position.get_board_size()
@@ -62,7 +62,7 @@ impl CsaPlayer {
             }
 
             // board-off
-            let board_off = RpmNote::create_by_address(Address::create_by_cell(
+            let board_off = RpmNote::create_by_address(Address::create_by_file_rank(
                 cmove.source_file,
                 cmove.source_rank,
                 position.get_board_size()
