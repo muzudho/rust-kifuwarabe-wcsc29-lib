@@ -111,6 +111,23 @@ impl PieceIdentify {
             P39 => 39,
         }
     }
+
+    /// 背番号からは、先後は分からない。
+    pub fn get_piece_type(self) -> PieceType {
+        use piece_etc::PieceIdentify::*;
+        use piece_etc::PieceType::*;
+        match self {
+            K00 | K01 => K,
+            R20 | R21 => R,
+            B18 | B19 => B,
+            G02 | G03 | G04 | G05 => G,
+            S06 | S07 | S08 | S09 => S,
+            N10 | N11 | N12 | N13 => N,
+            L14 | L15 | L16 | L17 => L,
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
+            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => P,
+        }
+    }
 }
 
 /// IdentifiedPiece with None.

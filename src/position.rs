@@ -9,6 +9,7 @@ pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
 pub const SKY_LEN: usize = 1;
 pub const SKY_ADDRESS: usize = 81;
+pub const BOARD_START: usize = 0;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + SKY_LEN) as usize;
 pub const HANDS_LEN: usize = 3 * 8;
 
@@ -342,6 +343,27 @@ impl Position {
                 }
             }
         }
+    }
+
+    /// # Returns
+    /// 
+    /// 盤上の位置、持ち駒にあるか否か
+    pub fn board_index_of(&self, phase:Phase, id:&PieceIdentify) -> (i8, bool) {
+        for cell in BOARD_START..self.board_size.len() {
+            if let Some(id_piece) = self.board[cell] {
+                if id_piece.get_id() == *id {
+                    return (cell as i8, false);
+                }
+            }
+        }
+
+        // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
+        let hand_count = self.get_hand_count(piece_type_to_piece(Some(phase) ,id.get_piece_type()));
+        if hand_count > 0 {
+            return (-1, true);
+        }
+
+        (-1, false)
     }
 
     /// 持ち駒の１行表示
