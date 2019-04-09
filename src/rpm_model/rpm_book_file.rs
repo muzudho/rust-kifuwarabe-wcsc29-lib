@@ -12,32 +12,32 @@ use std::path::Path;
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordHeaderObject {
-    date: String,
-    event: String,
-    player1: String,
-    player2: String,
-    read_file: String,
+    pub date: String,
+    pub event: String,
+    pub player1: String,
+    pub player2: String,
+    pub read_file: String,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordBodyObject {
-    operation: Vec<String>,
-    piece_number: Vec<i8>,
+    pub operation: Vec<String>,
+    pub piece_number: Vec<i8>,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordObject {
-    header: RpmRecordHeaderObject,
-    body: RpmRecordBodyObject,
+    pub header: RpmRecordHeaderObject,
+    pub body: RpmRecordBodyObject,
 }
 
 /// -rpmrec.json ファイルに対応。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmBookFile {
-    book: Vec<RpmRecordObject>,
+    pub book: Vec<RpmRecordObject>,
 }
 impl RpmBookFile {
     pub fn new()->RpmBookFile{
