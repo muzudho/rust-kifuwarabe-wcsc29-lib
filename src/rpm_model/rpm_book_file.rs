@@ -40,6 +40,11 @@ pub struct RpmBookFile {
     book: Vec<RpmRecordObject>,
 }
 impl RpmBookFile {
+    pub fn new()->RpmBookFile{
+        RpmBookFile{
+            book: Vec::new(),
+        }
+    }
     pub fn load(file:&str) -> RpmBookFile {
         // JSONファイル。
         let path = Path::new(file);
@@ -56,7 +61,13 @@ impl RpmBookFile {
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected config: {}", err),
+            Err(err) =>
+            {
+                print!("info File: {:?}", file);
+                print!("info Unexpected config: {}", err);
+                RpmBookFile::new()
+            },
+            // TODO Err(err) => panic!("Unexpected config: {}", err),
         }
     }
 }

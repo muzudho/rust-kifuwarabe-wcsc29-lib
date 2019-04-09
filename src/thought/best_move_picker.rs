@@ -37,7 +37,7 @@ impl BestMovePicker {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&mut self, comm:&Communication, _kw29_config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
+    pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
 
         let know = Knowledge::new();
 
@@ -47,7 +47,7 @@ impl BestMovePicker {
             comm.println(&format!("id: {:?}, number: {}.", id, number));
 
             // RPMを検索。
-            let thread = know.match_thread(position, id);
+            let thread = know.match_thread(&comm, &kw29config, position, id);
 
             if self.thread_set[&number].max_ply < thread.max_ply {
                 // 差し替え。
