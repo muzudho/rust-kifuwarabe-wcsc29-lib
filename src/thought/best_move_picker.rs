@@ -64,7 +64,7 @@ impl BestMovePicker {
         println!("#match_thread start. Dir: {}", kw29config.rpm_record);
 
         // TODO とりあえず -rpmrec.json ファイルを１個読む。
-        for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
+        'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
             // comm.println(&format!("file: {}", file));
             let book_file = RpmBookFile::load(&file);
@@ -76,7 +76,7 @@ impl BestMovePicker {
 
 
                 // レコードがいっぱいある。
-                'outer: for record in book_file.book {
+                'record_loop: for record in book_file.book {
 
                     // TODO 自分の駒（0～40個）の番地を調べる。
                     for id in PieceIdentify::iterator() {
@@ -118,7 +118,7 @@ impl BestMovePicker {
                                             //}
 
                                             // TODO とりあえず抜ける。
-                                            break 'outer;
+                                            break 'record_loop;
                                         }
                                     },
                                     Err(_e) => {
@@ -134,21 +134,26 @@ impl BestMovePicker {
                         // }
                     }
 
-                } // record
+                } // record_loop
 
-            }
-        }
+                // 手筋の長さが０でない駒の数。
+                let mut count = 0;
+                for pid in PieceIdentify::iterator() {
+                    let pid_num = pid.get_number();
+                    if 0 < self.get_len(pid_num) {
+                        count += 1;
+                    }
+                }
 
-        // 手筋の長さが０でない駒の数。
-        let mut count = 0;
-        for pid in PieceIdentify::iterator() {
-            let pid_num = pid.get_number();
-            if 0 < self.get_len(pid_num) {
-                count += 1;
-            }
-        }
+                if count > 0 {
+                    println!("#Break. Exit piece count = {}.", count);
+                    break 'path_loop;
+                }
 
-        println!("#match_thread loop end. exist piece count = {}.", count);
+            } // book
+        } // path_loop
+
+        println!("#match_thread loop end.");
 
         // let thread = ThreadsOfPiece {
         //     max_ply: 0,
