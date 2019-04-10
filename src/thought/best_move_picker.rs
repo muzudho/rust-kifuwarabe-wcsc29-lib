@@ -98,7 +98,7 @@ impl BestMovePicker {
                                 match operation.parse::<i8>() {
                                     Ok(target_cell) => {
                                         let target_address = position.get_board_size().cell_to_address(target_cell);
-                                        if target_address >= 0 && target_address == my_address as usize {
+                                        if target_address == my_address as usize {
                                             comm.println("matched address.");
                                             // 一致。とりあえず　ここから 数ノートを選んでおく。
 
@@ -154,6 +154,21 @@ impl BestMovePicker {
         } // path_loop
 
         println!("#match_thread loop end.");
+
+        // 検索結果を見てみようぜ☆（＾～＾）
+        for pid in PieceIdentify::iterator() {
+            let pid_num = pid.get_number();
+            let thread = &self.thread_by_piece_id[&pid_num];
+
+            print!("Pid: {}, Begin: ", pid_num);
+            for i in 0..thread.len() {
+                let ope = &thread.operation_notes[i];
+                let num = &thread.piece_number_notes[i];
+                print!("{}[{}] ", ope, num);
+            }
+            println!(" End.");
+
+        }
 
         // let thread = ThreadsOfPiece {
         //     max_ply: 0,
