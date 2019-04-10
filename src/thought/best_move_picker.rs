@@ -67,7 +67,7 @@ impl BestMovePicker {
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
         // RPMを検索。
-        println!("#match_thread start. Dir: {}", kw29config.rpm_record);
+        //println!("#match_thread start. Dir: {}", kw29config.rpm_record);
 
         // TODO とりあえず -rpmrec.json ファイルを１個読む。
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
@@ -182,17 +182,23 @@ impl BestMovePicker {
             } // book
         } // path_loop
 
-        println!("#match_thread loop end.");
+        //println!("#match_thread loop end.");
 
+        let mut best_rpm_move_opt = None;
+
+        
         // 検索結果を見てみようぜ☆（＾～＾）
         for pid in PieceIdentify::iterator() {
             let pid_num = pid.get_number();
             let thread = &self.thread_by_piece_id[&pid_num];
 
             // Header.
-            println!("Pid: {}.", pid_num);
+            // println!("Pid: {}.", pid_num);
 
             if let Some(rmove) = &thread.rpm_move {
+                best_rpm_move_opt = Some(rmove);
+
+                /*
                 // Operation.
                 print!("  Ope: ");
                 print!("{} ", rmove.to_operation_string(position.get_board_size()));
@@ -214,6 +220,7 @@ impl BestMovePicker {
                 }
                  */
                 println!(" End.");
+                */
             }
         }
 
@@ -225,6 +232,10 @@ impl BestMovePicker {
 
         // 自分の駒ごとの、現局面にマッチする最長の手筋を更新していく。
 
-        UsiMove::create_resign()
+        if let Some(best_rpm_move) = best_rpm_move_opt {
+            best_rpm_move.to_usi_sign(position.get_board_size())
+        } else {
+            UsiMove::create_resign()
+        }
     }
 }

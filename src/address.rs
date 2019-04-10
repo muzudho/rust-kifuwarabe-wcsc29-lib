@@ -110,7 +110,10 @@ impl Address {
             103 => { Some(N3)},
             104 => { Some(L3)},
             105 => { Some(P3)},
-            _ => {panic!("Unexpected index print: {0}.", self.index);}
+            _ => {
+                None
+                // panic!("Unexpected index print: {0}.", self.index);
+            }
         }
     }
 

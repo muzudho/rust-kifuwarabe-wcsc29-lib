@@ -9,7 +9,9 @@ use piece_etc::*;
 #[derive(Clone, Copy, PartialEq)]
 pub struct RpmOpeNote {
     pub address: Option<Address>,
+    /// +
     pub sky_turn: bool,
+    /// -
     pub sky_rotate: bool,
     phase_change: bool,
     resign: bool,
