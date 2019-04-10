@@ -94,11 +94,11 @@ impl RpmOpeNote {
     }
 
     /// ノート１つ読取☆（＾～＾）
-    pub fn parse_1note(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn parse_1note(_comm:&Communication, line:&str, start:&mut usize, board_size:&BoardSize) -> Option<RpmOpeNote> {
         let ch1 = line[*start..=*start].chars().nth(0).unwrap();
         match ch1 {
             ' ' => {
-                comm.print(&ch1.to_string());
+                //comm.print(&ch1.to_string());
                 *start += 1;
                 None
             }
@@ -109,27 +109,27 @@ impl RpmOpeNote {
                 let ch2 = line[*start..=*start].chars().nth(0).unwrap();
                 *start += 1;
 
-                let text15;
+                //let text15;
                 match ch2 {
                     'P' | 'p' | 'ﾅ' => {
                         // 成り駒は、不成駒と同じところに置くので、成りのマークは読み飛ばす。
-                        text15 = line[*start..=*start].chars().nth(0).unwrap().to_string();
+                        //text15 = line[*start..=*start].chars().nth(0).unwrap().to_string();
                         *start += 1;
                     },
                     _ => {
                         // Ignored.
-                        text15 = "".to_string();
+                        //text15 = "".to_string();
                     },
                 };
 
                 // 駒の種類、フェーズ。
                 let piece = PhysicalSign::default(ch2.to_string()).to_piece();
 
-                comm.print(&format!("{}{}{}", ch1, text15, ch2));
+                //comm.print(&format!("{}{}{}", ch1, text15, ch2));
                 let address = Address::create_by_hand(
                     piece_to_phase(Some(piece)),
                     piece_to_piece_type(piece));
-                comm.println(&format!("address index = {}.", address.get_index()));
+                //comm.println(&format!("address index = {}.", address.get_index()));
                 Some(RpmOpeNote::create_by_address(address))
             },
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
@@ -137,33 +137,33 @@ impl RpmOpeNote {
                 *start += 1;
                 let ch2 = line[*start..=*start].chars().nth(0).unwrap();
                 *start += 1;
-                comm.print(&format!("{}{}", ch1, ch2));
+                //comm.print(&format!("{}{}", ch1, ch2));
                 let file = Parser::file_char_to_i8(ch1);
                 let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_file_rank(file, rank, position.get_board_size());
+                let address = Address::create_by_file_rank(file, rank, *board_size);
                 Some(RpmOpeNote::create_by_address(address))
             },
             '+' => {
                 // 成り。
-                comm.print(&ch1.to_string());
+                //comm.print(&ch1.to_string());
                 *start += 1;
                 Some(RpmOpeNote::turn_over())
             },
             '-' => {
                 // １８０°回転。
-                comm.print(&ch1.to_string());
+                //comm.print(&ch1.to_string());
                 *start += 1;
                 Some(RpmOpeNote::rotate())
             },
             '|' => {
                 // フェーズ交代。
-                comm.print(&ch1.to_string());
+                //comm.print(&ch1.to_string());
                 *start += 1;
                 Some(RpmOpeNote::change_phase())
             },
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
-                comm.print(&ch1.to_string());
+                //comm.print(&ch1.to_string());
                 *start += 1;
                 loop {
                     if line.len() <= *start {
@@ -171,7 +171,7 @@ impl RpmOpeNote {
                     }
                     
                     let sub_ch = line[*start..=*start].chars().nth(0).unwrap();
-                    comm.print(&sub_ch.to_string());
+                    //comm.print(&sub_ch.to_string());
                     *start += 1;
 
                     if sub_ch == ']' {

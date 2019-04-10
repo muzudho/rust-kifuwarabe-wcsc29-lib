@@ -6,7 +6,7 @@ use getopts::Options;
 use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
-use kifuwarabe_wcsc29_lib::usi_conv::usi_converter::*;
+use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
 //use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
 use kifuwarabe_wcsc29_lib::rpm_operation_track::*;

@@ -2,6 +2,8 @@ use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use piece_etc::*;
 use position::*;
+use rpm_conv::thread::rpm_move::*;
+use rpm_conv::rpm_operation_note::*;
 use rpm_model::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
@@ -10,23 +12,28 @@ use usi_conv::usi_move::*;
 /// 駒と、手筋のペア。
 /// TODO 手筋は複数。
 pub struct ThreadsOfPiece {
-    pub operation_notes: Vec<String>,
-    pub piece_number_notes: Vec<i8>,
+    // 一手分。
+    pub rpm_move: Option<RpmMove>,
 }
 impl ThreadsOfPiece {
     pub fn new() -> ThreadsOfPiece {
         ThreadsOfPiece {
-            operation_notes: Vec::new(),
-            piece_number_notes: Vec::new(),
+            rpm_move: None,
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.operation_notes.len()
+    pub fn len_move(&self) -> usize {
+        match &self.rpm_move {
+            Some(_x) => 1,
+            None => 0,
+        }
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.operation_notes.is_empty()
+    pub fn is_empty_move(&self) -> bool {
+        match &self.rpm_move {
+            Some(_x) => false,
+            None => true,
+        }
     }
 }
 
@@ -48,9 +55,13 @@ impl BestMovePicker {
         instance
     }
 
-    pub fn get_len(&self, i:i8) -> usize {
+    pub fn get_len_note(&self, i:i8) -> usize {
         let thread = &self.thread_by_piece_id[&i];
-        thread.len()
+        if thread.is_empty_move() {
+            0
+        } else {
+            thread.len_move()
+        }
     }
 
     /// TODO 学習ファイルをもとに動く。
@@ -65,9 +76,9 @@ impl BestMovePicker {
             let book_file = RpmBookFile::load(&file);
 
             // ファイルの中身をすこし見てみる。
-            comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
+            //comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
             if !book_file.book.is_empty() {
-                comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
+                //comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
 
 
                 // レコードがいっぱいある。
@@ -77,51 +88,70 @@ impl BestMovePicker {
                     'piece_loop: for id in PieceIdentify::iterator() {
                         let number = id.get_number();
                         // 現局面の駒の番地。
-                        let (my_address, hand) = position.address_of(position.get_phase(), id);
-                        comm.println(&format!("id: {:?}, number: {}, my_my_addresscell: {}, hand: {}.", id, number, my_address, hand));
+                        let (my_address, _hand) = position.address_of(position.get_phase(), id);
+                        //comm.println(&format!("id: {:?}, number: {}, my_my_addresscell: {}, hand: {}.", id, number, my_address, hand));
 
 
                         // 自分の駒番号を検索。
                         let size = record.body.operation.len();
+
                         for i in 0..size {
                             let pnum = record.body.piece_number[i];
                             if id.get_number() == pnum {
                                 // 番地を検索。
-                                let operation = &record.body.operation[i];
-                                comm.println(&format!("matched pnum. operation: {}", operation));
+                                let operation_token = &record.body.operation[i];
+                                //comm.println(&format!("matched pnum. operation: {}", operation_token));
 
-                                match operation.parse::<i8>() {
-                                    Ok(target_cell) => {
-                                        let target_address = position.get_board_size().cell_to_address(target_cell);
-                                        if target_address == my_address as usize {
-                                            comm.println("matched address.");
+                                let ope_note_opt;
+                                {
+                                    let mut start = 0;
+                                    ope_note_opt = RpmOpeNote::parse_1note(&comm, &operation_token, &mut start, &position.get_board_size());
+                                }
+
+                                if let Some(ope_note) = ope_note_opt {
+                                    if let Some(target_address) = ope_note.address {
+                                        if target_address.get_index() == my_address as usize {
+                                            //comm.println("matched address.");
                                             // 一致。
                                             
-                                            // TODO とりあえず　次のターンチェンジまで読み進める。
-
                                             let mut thread = ThreadsOfPiece::new();
-                                            for j in i..size {
-                                                let j_ope = &record.body.operation[j];
-                                                
-                                                thread.operation_notes.push(j_ope.to_string());
+                                            let mut rmove = RpmMove::new();
+                                            {
+                                                // TODO とりあえず　次のターンチェンジまで読み進める。
+                                                'j_loop: for j in i..size {
+                                                    let j_ope_token = &record.body.operation[j];
 
-                                                let j_num = &record.body.piece_number[j];
-                                                thread.piece_number_notes.push(*j_num);
+                                                    let j_ope_note_opt;
+                                                    {
+                                                        let mut start = 0;
+                                                        j_ope_note_opt = RpmOpeNote::parse_1note(&comm, &j_ope_token, &mut start, &position.get_board_size());
+                                                    }
+
+                                                    if let Some(j_ope_note) = j_ope_note_opt {
+                                                        if j_ope_note.is_phase_change() {
+                                                            break 'j_loop;
+                                                        }
+                                                    }
+
+                                                    rmove.operation_notes.push(j_ope_token.to_string());
+                                                    let j_num = &record.body.piece_number[j];
+                                                    rmove.piece_number_notes.push(*j_num);
+                                                }
                                             }
+                                            thread.rpm_move = Some(rmove);
 
                                             //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
                                             // 差し替え。
                                             self.thread_by_piece_id.insert(number, thread);
-                                            comm.println("Change!");
+                                            //comm.println("Change!");
                                             //}
 
                                             // TODO とりあえず抜ける。
                                             break 'piece_loop;
-                                        }
-                                    },
-                                    Err(_e) => {
-                                        // TODO 持ち駒ではないか確認。
-                                    },
+                                        }                                    
+                                    }
+                                } else {
+                                    // TODO 持ち駒ではないか確認。
                                 }
                             }
                         }
@@ -136,14 +166,14 @@ impl BestMovePicker {
                     let mut count = 0;
                     for pid in PieceIdentify::iterator() {
                         let pid_num = pid.get_number();
-                        if 0 < self.get_len(pid_num) {
+                        if 0 < self.get_len_note(pid_num) {
                             count += 1;
                         }
                     }
 
                     // いくつか読み取れれば打ち止め。
-                    if count > 3 {
-                        println!("#Break. Exit piece count = {}.", count);
+                    if count > 6 {
+                        //println!("#Break. Exit piece count = {}.", count);
                         break 'path_loop;
                     }
 
@@ -159,23 +189,25 @@ impl BestMovePicker {
             let thread = &self.thread_by_piece_id[&pid_num];
 
             // Header.
-            print!("Pid: {}.", pid_num);
+            println!("Pid: {}.", pid_num);
 
-            // Operation.
-            print!("Ope: ");
-            for i in 0..thread.len() {
-                let ope = &thread.operation_notes[i];
-                print!("{} ", ope);
-            }
-            println!(" End.");
+            if let Some(rmove) = &thread.rpm_move {
+                // Operation.
+                print!("  Ope: ");
+                for i in 0..rmove.len_note() {
+                    let ope = &rmove.operation_notes[i];
+                    print!("{} ", ope);
+                }
+                println!(" End.");
 
-            // Identify.
-            print!("Num: ");
-            for i in 0..thread.len() {
-                let num = &thread.piece_number_notes[i];
-                print!("{} ", num);
+                // Identify.
+                print!("  Num: ");
+                for i in 0..rmove.len_note() {
+                    let num = &rmove.piece_number_notes[i];
+                    print!("{} ", num);
+                }
+                println!(" End.");
             }
-            println!(" End.");
         }
 
         // let thread = ThreadsOfPiece {

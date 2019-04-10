@@ -94,7 +94,7 @@ impl UsiConverter {
     /// 
     /// * 'position' - USIレコードと 初期局面を合わせてください。
     /// 
-    pub fn convert_record(
+    pub fn play_out_record(
         comm:&Communication,
         position:&mut Position,
         urecord:&UsiRecord,

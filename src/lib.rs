@@ -61,7 +61,7 @@ use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use piece_etc::*;
 use position::*;
-use usi_conv::usi_converter::*;
+use usi_conv::usi_player::*;
 use thought::best_move_picker::*;
 
 pub fn main_loop() {
@@ -304,7 +304,7 @@ pub fn main_loop() {
                 //comm.println("#Position parsed.");
             }
 
-            UsiConverter::convert_record(
+            UsiConverter::play_out_record(
                 &comm,
                 &mut position,
                 &urecord,

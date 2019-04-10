@@ -125,8 +125,7 @@ impl RpmRecord {
                 return;
             }
 
-            let rpm_ope_1note_opt = RpmOpeNote::parse_1note(&comm, &line, &mut start, position);
-
+            let rpm_ope_1note_opt = RpmOpeNote::parse_1note(&comm, &line, &mut start, &position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
                 CommonOperation::touch_talking_beautifle_world(comm, rpm_record, &rpm_note, position);
