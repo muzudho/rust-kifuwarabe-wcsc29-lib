@@ -194,18 +194,24 @@ impl BestMovePicker {
             if let Some(rmove) = &thread.rpm_move {
                 // Operation.
                 print!("  Ope: ");
+                print!("{} ", rmove.to_operation_string());
+                /*
                 for i in 0..rmove.len_note() {
                     let ope = &rmove.operation_notes[i];
                     print!("{} ", ope);
                 }
+                */
                 println!(" End.");
 
                 // Identify.
                 print!("  Num: ");
+                print!("{} ", rmove.to_identify_string());
+                /*
                 for i in 0..rmove.len_note() {
                     let num = &rmove.piece_number_notes[i];
                     print!("{} ", num);
                 }
+                 */
                 println!(" End.");
             }
         }

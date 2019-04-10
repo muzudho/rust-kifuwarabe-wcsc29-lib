@@ -18,4 +18,24 @@ impl RpmMove {
     pub fn is_empty_note(&self) -> bool {
         self.operation_notes.is_empty()
     }
+
+    pub fn to_operation_string(&self) -> String {
+        let mut text = String::new();
+
+        for i in 0..self.len_note() {
+            text = format!("{} {}", text, &self.operation_notes[i]);
+        }
+
+        text
+    }
+
+    pub fn to_identify_string(&self) -> String {
+        let mut text = String::new();
+
+        for i in 0..self.len_note() {
+            text = format!("{} {}", text, &self.piece_number_notes[i]);
+        }
+
+        text
+    }
 }
