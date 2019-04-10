@@ -130,12 +130,13 @@ impl BestMovePicker {
                                                     if let Some(j_ope_note) = j_ope_note_opt {
                                                         if j_ope_note.is_phase_change() {
                                                             break 'j_loop;
+                                                        } else {
+                                                            rmove.operation_notes.push(j_ope_note);
+                                                            let j_num = &record.body.piece_number[j];
+                                                            rmove.piece_number_notes.push(*j_num);
                                                         }
                                                     }
 
-                                                    rmove.operation_notes.push(j_ope_token.to_string());
-                                                    let j_num = &record.body.piece_number[j];
-                                                    rmove.piece_number_notes.push(*j_num);
                                                 }
                                             }
                                             thread.rpm_move = Some(rmove);
@@ -194,7 +195,7 @@ impl BestMovePicker {
             if let Some(rmove) = &thread.rpm_move {
                 // Operation.
                 print!("  Ope: ");
-                print!("{} ", rmove.to_operation_string());
+                print!("{} ", rmove.to_operation_string(position.get_board_size()));
                 /*
                 for i in 0..rmove.len_note() {
                     let ope = &rmove.operation_notes[i];

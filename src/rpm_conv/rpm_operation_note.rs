@@ -69,6 +69,9 @@ impl RpmOpeNote {
         self.phase_change
     }
 
+    /// # Arguments
+    /// 
+    /// * `ply` - 手数表示に使う。負数を入れるとタテボウになる。
     pub fn to_sign(&self, board_size:BoardSize, ply:&mut i16) -> String {
         match self.address {
             Some(address) => {
@@ -81,9 +84,12 @@ impl RpmOpeNote {
                     "-".to_string()
                 } else if self.phase_change {
                     // TODO 手数が出てきた方が嬉しいので [2] といった数で挟みたい。
-                    *ply += 1;
-                    format!("[{}]", ply)
-                    // "|".to_string()
+                    if *ply < 0 {
+                        "|".to_string()
+                    } else {
+                        *ply += 1;
+                        format!("[{}]", ply)
+                    }
                 } else if self.resign {
                     "%resign".to_string()
                 } else {

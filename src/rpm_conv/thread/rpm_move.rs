@@ -1,6 +1,10 @@
+use position::*;
+use rpm_conv::rpm_operation_note::*;
+use usi_conv::usi_move::*;
+
 /// １手分。
 pub struct RpmMove {
-    pub operation_notes: Vec<String>,
+    pub operation_notes: Vec<RpmOpeNote>,
     pub piece_number_notes: Vec<i8>,
 }
 impl RpmMove {
@@ -19,11 +23,24 @@ impl RpmMove {
         self.operation_notes.is_empty()
     }
 
-    pub fn to_operation_string(&self) -> String {
+    /*
+    pub fn to_usi_sign(&self) -> String {
+        UsiMove::create(
+            src_file:i8,
+            src_rank:i8,
+            dst_file:i8,
+            dst_rank:i8,
+            pro:bool,
+            dro:Option<PieceType>);
+    }
+     */
+
+    pub fn to_operation_string(&self, board_size:BoardSize) -> String {
         let mut text = String::new();
 
         for i in 0..self.len_note() {
-            text = format!("{} {}", text, &self.operation_notes[i]);
+            let mut ply = -1;
+            text = format!("{} {}", text, &self.operation_notes[i].to_sign(board_size, &mut ply));
         }
 
         text
