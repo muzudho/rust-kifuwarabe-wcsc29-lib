@@ -11,11 +11,11 @@ pub struct UsiConverter {
 
 }
 impl UsiConverter {
-    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<RpmNote> {
+    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<RpmOpeNote> {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
-            rpm_move.push(RpmNote::create_resign());
+            rpm_move.push(RpmOpeNote::create_resign());
             return rpm_move;
         }
 
@@ -31,11 +31,11 @@ impl UsiConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
+                let hand_off = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
                 rpm_move.push(hand_off);
 
                 // hand-on
-                let hand_on = RpmNote::create_by_address(destination_address);
+                let hand_on = RpmOpeNote::create_by_address(destination_address);
                 rpm_move.push(hand_on);
             },
             None => {
@@ -44,27 +44,27 @@ impl UsiConverter {
                     // 駒を取る動きが入る場合
 
                     // hand-off
-                    let hand_off = RpmNote::create_by_address(destination_address);
+                    let hand_off = RpmOpeNote::create_by_address(destination_address);
                     rpm_move.push(hand_off);
 
                     // hand-turn
                     if id_piece.is_promoted() {
-                        let hand_turn = RpmNote::turn_over();
+                        let hand_turn = RpmOpeNote::turn_over();
                         rpm_move.push(hand_turn);
                     }
 
                     // hand-rotate
-                    let hand_rotate = RpmNote::rotate();
+                    let hand_rotate = RpmOpeNote::rotate();
                     rpm_move.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
-                    let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    let hand_on = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                     rpm_move.push(hand_on);
                 }
 
                 // board-off
-                let board_off = RpmNote::create_by_address(Address::create_by_file_rank(
+                let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
                     umove.source_file,
                     umove.source_rank,
                     position.get_board_size()
@@ -73,18 +73,18 @@ impl UsiConverter {
 
                 // board-turn-over
                 if umove.promotion {
-                    let board_turn = RpmNote::turn_over();
+                    let board_turn = RpmOpeNote::turn_over();
                     rpm_move.push(board_turn);
                 }
 
                 // board-on
-                let board_on = RpmNote::create_by_address(destination_address);
+                let board_on = RpmOpeNote::create_by_address(destination_address);
                 rpm_move.push(board_on);
             },
         }
 
         // change-phase
-        let change_phase = RpmNote::change_phase();
+        let change_phase = RpmOpeNote::change_phase();
         rpm_move.push(change_phase);
 
         rpm_move

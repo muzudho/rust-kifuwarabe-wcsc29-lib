@@ -278,7 +278,7 @@ impl Position {
     /// # Returns
     /// 
     /// Identified piece.
-    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmNote) -> Option<IdentifiedPiece> {
+    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmOpeNote) -> Option<IdentifiedPiece> {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。

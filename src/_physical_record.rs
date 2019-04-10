@@ -3,7 +3,7 @@ impl RpmOTrack {
         self.items.len()
     }
 
-    pub fn get_last_move(&self) -> Option<RpmNote> {
+    pub fn get_last_move(&self) -> Option<RpmOpeNote> {
         if self.items.is_empty() {
             None
         } else {

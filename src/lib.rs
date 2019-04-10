@@ -50,19 +50,16 @@ pub mod rpm_model;
 pub mod usi_conv;
 pub mod thought;
 
-use address::*;
 use common_operation::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
-use rpm_conv::rpm_operation_note::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_object_sheet::*;
 use std::path::Path;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
 use piece_etc::*;
-use parser::*;
 use position::*;
 use usi_conv::usi_converter::*;
 use thought::best_move_picker::*;
@@ -127,7 +124,7 @@ pub fn main_loop() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            read_tape(&comm, &line, &mut rpm_record, &mut position);
+            RpmRecord::read_tape(&comm, &line, &mut rpm_record, &mut position);
 
         // #####
         // # B #
@@ -268,7 +265,8 @@ pub fn main_loop() {
         // #########
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
-            read_tape(&comm, &line, &mut rpm_record, &mut position);
+
+            RpmRecord::read_tape(&comm, &line, &mut rpm_record, &mut position);
 
         // #####
         // # Q #
@@ -314,112 +312,6 @@ pub fn main_loop() {
             //comm.println("#Record converted1.");
             //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
             //comm.println("#Record converted2.");
-        }
-    }
-}
-
-/// 
-fn read_tape(comm:&Communication, line:&str, rpm_record:&mut RpmRecord, position:&mut Position) {
-    let mut start = 0;
-
-    loop {
-        if line.len() <= start {
-            return;
-        }
-
-        let ch1 = line[start..=start].chars().nth(0).unwrap();
-        let rpm_note_opt = match ch1 {
-            ' ' => {
-                comm.print(&ch1.to_string());
-                start += 1;
-                None
-            }
-            '0' => {
-                // 駒台。
-                start += 1;
-
-                let ch2 = line[start..=start].chars().nth(0).unwrap();
-                start += 1;
-
-                let text15;
-                match ch2 {
-                    'P' | 'p' | 'ﾅ' => {
-                        // 成り駒は、不成駒と同じところに置くので、成りのマークは読み飛ばす。
-                        text15 = line[start..=start].chars().nth(0).unwrap().to_string();
-                        start += 1;
-                    },
-                    _ => {
-                        // Ignored.
-                        text15 = "".to_string();
-                    },
-                };
-
-                // 駒の種類、フェーズ。
-                let piece = PhysicalSign::default(ch2.to_string()).to_piece();
-
-                comm.print(&format!("{}{}{}", ch1, text15, ch2));
-                let address = Address::create_by_hand(
-                    piece_to_phase(Some(piece)),
-                    piece_to_piece_type(piece));
-                comm.println(&format!("address index = {}.", address.get_index()));
-                Some(RpmNote::create_by_address(address))
-            },
-            '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
-                // セル
-                start += 1;
-                let ch2 = line[start..=start].chars().nth(0).unwrap();
-                start += 1;
-                comm.print(&format!("{}{}", ch1, ch2));
-                let file = Parser::file_char_to_i8(ch1);
-                let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_file_rank(file, rank, position.get_board_size());
-                Some(RpmNote::create_by_address(address))
-            },
-            '+' => {
-                // 成り。
-                comm.print(&ch1.to_string());
-                start += 1;
-                Some(RpmNote::turn_over())
-            },
-            '-' => {
-                // １８０°回転。
-                comm.print(&ch1.to_string());
-                start += 1;
-                Some(RpmNote::rotate())
-            },
-            '|' => {
-                // フェーズ交代。
-                comm.print(&ch1.to_string());
-                start += 1;
-                Some(RpmNote::change_phase())
-            },
-            '[' => {
-                // フェーズ交代。 ']' まで読み飛ばす。
-                comm.print(&ch1.to_string());
-                start += 1;
-                loop {
-                    if line.len() <= start {
-                        break;
-                    }
-                    
-                    let sub_ch = line[start..=start].chars().nth(0).unwrap();
-                    comm.print(&sub_ch.to_string());
-                    start += 1;
-
-                    if sub_ch == ']' {
-                        break;
-                    }
-                };
-                Some(RpmNote::change_phase())
-            },
-            _ => {
-                let last = line.len();
-                panic!("Unexpected line '{}'.", &line[start..last]);
-            }
-        };
-
-        if let Some(rpm_note) = rpm_note_opt {
-            CommonOperation::touch_talking_beautifle_world(comm, rpm_record, &rpm_note, position);
         }
     }
 }

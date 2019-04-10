@@ -3,16 +3,16 @@ use position::*;
 
 /// Vector に入れるときコピーする。
 #[derive(Clone, Copy, PartialEq)]
-pub struct RpmNote {
+pub struct RpmOpeNote {
     pub address: Option<Address>,
     pub sky_turn: bool,
     pub sky_rotate: bool,
     phase_change: bool,
     resign: bool,
 }
-impl RpmNote {
-    pub fn create_by_address(address:Address) -> RpmNote {
-        RpmNote {
+impl RpmOpeNote {
+    pub fn create_by_address(address:Address) -> RpmOpeNote {
+        RpmOpeNote {
             address: Some(address),
             sky_turn: false,
             sky_rotate: false,
@@ -21,8 +21,8 @@ impl RpmNote {
         }
     }
 
-    pub fn turn_over() -> RpmNote {
-        RpmNote {
+    pub fn turn_over() -> RpmOpeNote {
+        RpmOpeNote {
             address: None,
             sky_turn: true,
             sky_rotate: false,
@@ -31,8 +31,8 @@ impl RpmNote {
         }
     }
 
-    pub fn rotate() -> RpmNote {
-        RpmNote {
+    pub fn rotate() -> RpmOpeNote {
+        RpmOpeNote {
             address: None,
             sky_turn: false,
             sky_rotate: true,
@@ -41,8 +41,8 @@ impl RpmNote {
         }
     }
 
-    pub fn change_phase() -> RpmNote {
-        RpmNote {
+    pub fn change_phase() -> RpmOpeNote {
+        RpmOpeNote {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -51,8 +51,8 @@ impl RpmNote {
         }
     }
 
-    pub fn create_resign() -> RpmNote {
-        RpmNote {
+    pub fn create_resign() -> RpmOpeNote {
+        RpmOpeNote {
             address: None,
             sky_turn: false,
             sky_rotate: false,

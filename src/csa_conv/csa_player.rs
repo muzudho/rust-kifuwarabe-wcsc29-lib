@@ -17,7 +17,7 @@ impl CsaPlayer {
         _comm:&Communication,
         cmove:&CsaMove,
         position:&Position,
-        _ply:i16) -> Vec<RpmNote> {
+        _ply:i16) -> Vec<RpmOpeNote> {
         let mut p_moves = Vec::new();
 
         let destination_address = Address::create_by_file_rank(
@@ -30,11 +30,11 @@ impl CsaPlayer {
             // 駒を打つ動きの場合
 
             // hand-off
-            let hand_off = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
+            let hand_off = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
             p_moves.push(hand_off);
 
             // hand-on
-            let hand_on = RpmNote::create_by_address(destination_address);
+            let hand_on = RpmOpeNote::create_by_address(destination_address);
             p_moves.push(hand_on);
         } else {
             // 駒を進める動きの場合
@@ -42,27 +42,27 @@ impl CsaPlayer {
                 // 駒を取る動きが入る場合
 
                 // hand-off
-                let hand_off = RpmNote::create_by_address(destination_address);
+                let hand_off = RpmOpeNote::create_by_address(destination_address);
                 p_moves.push(hand_off);
 
                 // hand-turn
                 if capture_id_piece.is_promoted() {
-                    let hand_turn = RpmNote::turn_over();
+                    let hand_turn = RpmOpeNote::turn_over();
                     p_moves.push(hand_turn);
                 }
 
                 // hand-rotate
-                let hand_rotate = RpmNote::rotate();
+                let hand_rotate = RpmOpeNote::rotate();
                 p_moves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                let hand_on = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
             }
 
             // board-off
-            let board_off = RpmNote::create_by_address(Address::create_by_file_rank(
+            let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
                 cmove.source_file,
                 cmove.source_rank,
                 position.get_board_size()
@@ -78,17 +78,17 @@ impl CsaPlayer {
             };
             let cur_promoted = is_promoted_piece_type(cmove.koma);
             if !pre_promoted && cur_promoted {
-                let board_turn = RpmNote::turn_over();
+                let board_turn = RpmOpeNote::turn_over();
                 p_moves.push(board_turn);
             }
 
             // board-on
-            let board_on = RpmNote::create_by_address(destination_address);
+            let board_on = RpmOpeNote::create_by_address(destination_address);
             p_moves.push(board_on);
         };
 
         // change-phase
-        let change_phase = RpmNote::change_phase();
+        let change_phase = RpmOpeNote::change_phase();
         p_moves.push(change_phase);
 
         p_moves

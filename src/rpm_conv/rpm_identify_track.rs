@@ -8,7 +8,7 @@ const NONE_IDENTIFY:i8 = -1;
 #[derive(Default)]
 pub struct RpmITrack {
     // piece number.
-    items: Vec<i8>,
+    pub items: Vec<i8>,
     cursor: i16,
 }
 impl RpmITrack {
@@ -17,6 +17,11 @@ impl RpmITrack {
             items: Vec::new(),
             cursor: -1,
         }
+    }
+
+    /// 連結。
+    pub fn append_track(&mut self, track:&mut RpmITrack) {
+        self.items.append(&mut track.items);
     }
 
     /// TODO 保存。

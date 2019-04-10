@@ -17,7 +17,7 @@ impl KifPlayer {
         _comm:&Communication,
         kmove:&KifMove,
         position:&Position,
-        _ply:i16) -> Vec<RpmNote> {
+        _ply:i16) -> Vec<RpmOpeNote> {
         let mut rmoves = Vec::new();
 
         let destination_address = Address::create_by_file_rank(
@@ -33,11 +33,11 @@ impl KifPlayer {
             let drop = position.peek_hand(piece);
 
             // hand-off
-            let hand_off = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop.unwrap().get_type()));
+            let hand_off = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop.unwrap().get_type()));
             rmoves.push(hand_off);
 
             // hand-on
-            let hand_on = RpmNote::create_by_address(destination_address);
+            let hand_on = RpmOpeNote::create_by_address(destination_address);
             rmoves.push(hand_on);
         } else {
             // 駒を進める動きの場合
@@ -45,27 +45,27 @@ impl KifPlayer {
                 // 駒を取る動きが入る場合
 
                 // hand-off
-                let hand_off = RpmNote::create_by_address(destination_address);
+                let hand_off = RpmOpeNote::create_by_address(destination_address);
                 rmoves.push(hand_off);
 
                 // hand-turn
                 if capture_id_piece.is_promoted() {
-                    let hand_turn = RpmNote::turn_over();
+                    let hand_turn = RpmOpeNote::turn_over();
                     rmoves.push(hand_turn);
                 }
 
                 // hand-rotate
-                let hand_rotate = RpmNote::rotate();
+                let hand_rotate = RpmOpeNote::rotate();
                 rmoves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                let hand_on = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
                 rmoves.push(hand_on);
             }
 
             // board-off
-            let board_off = RpmNote::create_by_address(Address::create_by_file_rank(
+            let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
                 kmove.source_file,
                 kmove.source_rank,
                 position.get_board_size()
@@ -81,17 +81,17 @@ impl KifPlayer {
             };
             
             if kmove.is_promote {
-                let board_turn = RpmNote::turn_over();
+                let board_turn = RpmOpeNote::turn_over();
                 rmoves.push(board_turn);
             }
 
             // board-on
-            let board_on = RpmNote::create_by_address(destination_address);
+            let board_on = RpmOpeNote::create_by_address(destination_address);
             rmoves.push(board_on);
         };
 
         // change-phase
-        let change_phase = RpmNote::change_phase();
+        let change_phase = RpmOpeNote::change_phase();
         rmoves.push(change_phase);
 
         rmoves

@@ -2,11 +2,9 @@ use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_record::*;
 use rpm_model::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
-use thought::knowledge::*;
 use usi_conv::usi_move::*;
 
 /// 駒と、手筋のペア。
@@ -57,9 +55,6 @@ impl BestMovePicker {
 
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
-
-        let know = Knowledge::new();
-
         // RPMを検索。
         println!("#match_thread start. Dir: {}", kw29config.rpm_record);
 
@@ -76,10 +71,10 @@ impl BestMovePicker {
 
 
                 // レコードがいっぱいある。
-                'record_loop: for record in book_file.book {
+                for record in book_file.book {
 
                     // TODO 自分の駒（0～40個）の番地を調べる。
-                    for id in PieceIdentify::iterator() {
+                    'piece_loop: for id in PieceIdentify::iterator() {
                         let number = id.get_number();
                         // 現局面の駒の番地。
                         let (my_address, hand) = position.address_of(position.get_phase(), id);
@@ -100,11 +95,14 @@ impl BestMovePicker {
                                         let target_address = position.get_board_size().cell_to_address(target_cell);
                                         if target_address == my_address as usize {
                                             comm.println("matched address.");
-                                            // 一致。とりあえず　ここから 数ノートを選んでおく。
+                                            // 一致。
+                                            
+                                            // TODO とりあえず　次のターンチェンジまで読み進める。
 
                                             let mut thread = ThreadsOfPiece::new();
                                             for j in i..size {
                                                 let j_ope = &record.body.operation[j];
+                                                
                                                 thread.operation_notes.push(j_ope.to_string());
 
                                                 let j_num = &record.body.piece_number[j];
@@ -118,7 +116,7 @@ impl BestMovePicker {
                                             //}
 
                                             // TODO とりあえず抜ける。
-                                            break 'record_loop;
+                                            break 'piece_loop;
                                         }
                                     },
                                     Err(_e) => {
@@ -134,22 +132,22 @@ impl BestMovePicker {
                         // }
                     }
 
-                } // record_loop
-
-                // 手筋の長さが０でない駒の数。
-                let mut count = 0;
-                for pid in PieceIdentify::iterator() {
-                    let pid_num = pid.get_number();
-                    if 0 < self.get_len(pid_num) {
-                        count += 1;
+                    // 手筋の長さが０でない駒の数。
+                    let mut count = 0;
+                    for pid in PieceIdentify::iterator() {
+                        let pid_num = pid.get_number();
+                        if 0 < self.get_len(pid_num) {
+                            count += 1;
+                        }
                     }
-                }
 
-                if count > 0 {
-                    println!("#Break. Exit piece count = {}.", count);
-                    break 'path_loop;
-                }
+                    // いくつか読み取れれば打ち止め。
+                    if count > 3 {
+                        println!("#Break. Exit piece count = {}.", count);
+                        break 'path_loop;
+                    }
 
+                } // record_loop
             } // book
         } // path_loop
 
@@ -160,14 +158,24 @@ impl BestMovePicker {
             let pid_num = pid.get_number();
             let thread = &self.thread_by_piece_id[&pid_num];
 
-            print!("Pid: {}, Begin: ", pid_num);
+            // Header.
+            print!("Pid: {}.", pid_num);
+
+            // Operation.
+            print!("Ope: ");
             for i in 0..thread.len() {
                 let ope = &thread.operation_notes[i];
-                let num = &thread.piece_number_notes[i];
-                print!("{}[{}] ", ope, num);
+                print!("{} ", ope);
             }
             println!(" End.");
 
+            // Identify.
+            print!("Num: ");
+            for i in 0..thread.len() {
+                let num = &thread.piece_number_notes[i];
+                print!("{} ", num);
+            }
+            println!(" End.");
         }
 
         // let thread = ThreadsOfPiece {
