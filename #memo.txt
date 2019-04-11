@@ -49,3 +49,7 @@ http://live4.computer-shogi.org/wcsc28/kifu/WCSC28_F6_PAL_HFW.html
               1  2  3  4  5  6  7  8  9                    1  2  3  4  5  6  7  8  9
                 21 20 18 19 12 13 16 33 25 38 24 28 34 26 35 30
 
+## USIは読めてるか？
+
+position startpos moves 5i6h 3c3d 6i7h 8c8d 3i3h 4c4d
+

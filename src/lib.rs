@@ -132,7 +132,7 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            CommonOperation::back_1mark(&comm, &mut rpm_record, &mut position);
+            CommonOperation::back_1note(&comm, &mut rpm_record, &mut position);
             CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
 
         } else if line == "bb" {
@@ -192,7 +192,7 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            CommonOperation::forward_1mark(&comm, &mut rpm_record, &mut position);
+            CommonOperation::forward_1note(&comm, &mut rpm_record, &mut position);
             CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
 
         } else if line == "ff" {

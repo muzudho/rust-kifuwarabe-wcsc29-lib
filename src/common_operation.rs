@@ -12,7 +12,7 @@ pub struct CommonOperation {
 impl CommonOperation {
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmOpeNote, position:&mut Position) {
-        let piece_id_number = if let Some(piece_identify) = position.touch_world(comm, &rpm_note) {
+        let piece_id_number = if let (_is_legal_move, Some(piece_identify)) = position.touch_world(comm, &rpm_note) {
             piece_identify.get_id().get_number()
         } else {
             -1
@@ -40,7 +40,7 @@ impl CommonOperation {
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_current_1mark(comm:&Communication, rpm_o_track:&mut RpmOTrack, position:&mut Position) -> Option<RpmOpeNote> {
         if let Some(rpm_note) = rpm_o_track.pop_current() {
-            position.touch_world(comm, &rpm_note);
+            let (_is_legal_move, _piece_identify_opt) = position.touch_world(comm, &rpm_note);
             Some(rpm_note)
         } else {
             None
@@ -63,9 +63,9 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
-    pub fn back_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn back_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
         if let Some(rpm_note) = rpm_record.body.operation_track.get_current() {
-            position.touch_world(comm, &rpm_note);
+            let (_is_legal_move, _piece_identify_opt) = position.touch_world(comm, &rpm_note);
             rpm_record.back();
             Some(rpm_note)
         } else {
@@ -77,7 +77,7 @@ impl CommonOperation {
     pub fn back_1ply(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(rpm_note) = CommonOperation::back_1mark(comm, rpm_record, position) {
+        while let Some(rpm_note) = CommonOperation::back_1note(comm, rpm_record, position) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
@@ -89,10 +89,10 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
-    pub fn forward_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn forward_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
         if rpm_record.forward() {
             if let Some(rpm_note) = rpm_record.body.operation_track.get_current() {
-                position.touch_world(comm, &rpm_note);
+                let (_is_legal_move, _piece_identify_opt) = position.touch_world(comm, &rpm_note);
                 return Some(rpm_note)
             } else {
                 panic!("Unexpected forward 1mark.")
@@ -106,7 +106,7 @@ impl CommonOperation {
     pub fn forward_1ply(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) {
         let mut count = 0;
         // 最後尾に達していたのなら終了。
-        while let Some(rpm_note) = CommonOperation::forward_1mark(comm, rpm_record, position) {
+        while let Some(rpm_note) = CommonOperation::forward_1note(comm, rpm_record, position) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;

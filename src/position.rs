@@ -282,10 +282,12 @@ impl Position {
     /// 盤、駒台（Ａ）と、スカイ升（Ｂ）の間で駒を移動する。
     /// ＡとＢは、両方空っぽか、片方だけ駒があるかの　どちらかとする。両方に駒があるケースはないものとする。
     /// 
+    /// 棋譜には記録しない。
+    /// 
     /// # Returns
     /// 
-    /// Identified piece.
-    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmOpeNote) -> Option<IdentifiedPiece> {
+    /// Is legal touch, Identified piece.
+    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmOpeNote) -> (bool, Option<IdentifiedPiece>) {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
@@ -296,64 +298,78 @@ impl Position {
                             // 駒の場所を指定した。
                             match self.board[SKY_ADDRESS] {
                                 Some(sky_id_piece) => {
-                                    // 指に何か持ってた。
-                                    Some(sky_id_piece)
+                                    // 違法。指に既に何か持ってた。
+                                    // 指に持っている駒を返す。
+                                    (false, Some(sky_id_piece))
                                 },
                                 None => {
-                                    // 指が空いてたので駒をつかむ。
+                                    // 合法。指が空いてたので駒をつかむ。
                                     self.board[SKY_ADDRESS] = Some(board_id_piece);
                                     self.board[address.get_index()] = None;
-                                    Some(board_id_piece)
+                                    (true, Some(board_id_piece))
                                 },
                             }
                         },
                         None => {
                             // 空き升を指定した。
                             if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
-                                // 指につまんでいる駒を置く。
+                                // 駒を指につまんでいた。
+                                // 合法。指につまんでいる駒を置く。
                                 self.board[SKY_ADDRESS] = None;
                                 self.board[address.get_index()] = Some(sky_id_piece);
-                                Some(sky_id_piece)
+                                (true, Some(sky_id_piece))
                             } else {
-                                None
+                                // ほこりを取る。
+                                // 一応、違法。
+                                (false, None)
                             }
                         },
                     }
                 // 駒台。
                 } else if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
-                    // 指に何か持っているので、駒台に置く。
+                    // 指に何か持っていた。
+                    // 合法。駒台に置く。
                     self.move_finger_to_hand();
-                    Some(sky_id_piece)
+                    (true, Some(sky_id_piece))
                 } else {
-                    // 指には何も持ってないので、駒台の駒をつかむ。
+                    // 指には何も持ってない。
+                    // 駒台の駒をつかむ。
                     self.move_hand_to_finger(address);
                     if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
-                        Some(sky_id_piece)
+                        // 合法。掴んだ駒を返す。
+                        (true, Some(sky_id_piece))
                     } else {
-                        None
+                        // 違法。駒台のほこりを取った。
+                        (false, None)
                     }
                 }
             },
             None => {
+                // 盤上や駒台の、どこも指していない。
                 if rpm_operation_note.is_phase_change() {
-                    // TODO phase change.
+                    // 合法。 phase change.
                     use piece_etc::Phase::*;
                     self.phase = match self.phase {
                         First => {Second},
                         Second => {First},
                     };
-                    None
+                    (true, None)
                 } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
+                    // 指に何か持っている。
                     if rpm_operation_note.sky_turn {
+                        // 合法。成りの操作。
                         id_piece.turn_over();
                         self.board[SKY_ADDRESS] = Some(id_piece);
                     } else if rpm_operation_note.sky_rotate {
+                        // 合法。先後入れ替えの操作。
                         id_piece.rotate();
                         self.board[SKY_ADDRESS] = Some(id_piece);
                     };
-                    Some(id_piece)
+                    (true, Some(id_piece))
                 } else {
-                    None
+                    // TODO 未定義の操作。投了とか？
+                    // 一応、違法。
+                    (false, None)
                 }
             }
         }

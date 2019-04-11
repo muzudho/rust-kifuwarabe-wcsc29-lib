@@ -165,6 +165,10 @@ impl BestMovePicker {
 
                                                 }
                                             }
+
+                                            // TODO この手は、現在の盤上で指せるのか検証したい。
+                                            // 例えば 味方の駒の上に駒を動かさないだろうか？
+
                                             thread.rpm_move = Some(rmove);
 
                                             //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
