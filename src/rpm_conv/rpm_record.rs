@@ -17,6 +17,7 @@ pub struct RpmRecordHeader {
 
 /// レコードの本体。
 pub struct RpmRecordBody {
+    pub cursor: i16,
     pub operation_track: RpmOTrack,
     pub identify_track: RpmITrack,
 }
@@ -43,6 +44,7 @@ impl RpmRecord {
                 read_file: "".to_string(),
             },
             body : RpmRecordBody {
+                cursor: -1,
                 operation_track: RpmOTrack::default(),
                 identify_track: RpmITrack::default(),
             },
@@ -57,21 +59,24 @@ impl RpmRecord {
 
     /// 追加する。
     pub fn add_note(&mut self, rpm_note:&RpmOpeNote, identify:i8) {
-        self.body.operation_track.add_element(&rpm_note);
-        self.body.identify_track.add_identify(identify);
+        let mut cursor_clone = self.body.cursor.clone();
+        self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor);
+        self.body.identify_track.add_identify(identify, &mut cursor_clone);
     }
 
     pub fn forward(&mut self) -> bool {
-        let i = self.body.identify_track.forward();
-        let o = self.body.operation_track.forward();
+        let mut cursor_clone = self.body.cursor.clone();
+        let i = self.body.identify_track.forward(&mut self.body.cursor);
+        let o = self.body.operation_track.forward(&mut cursor_clone);
         if i!=o {panic!("Can not forward.");}
 
         i
     }
 
     pub fn back(&mut self) {
-        self.body.operation_track.back();
-        self.body.identify_track.back();
+        let mut cursor_clone = self.body.cursor.clone();
+        self.body.operation_track.back(&mut self.body.cursor);
+        self.body.identify_track.back(&mut cursor_clone);
     }
 
     /*

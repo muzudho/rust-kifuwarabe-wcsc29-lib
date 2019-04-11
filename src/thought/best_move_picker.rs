@@ -80,11 +80,11 @@ impl BestMovePicker {
             if !book_file.book.is_empty() {
                 //comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
 
-                let mut record_index = -1;
+                let mut _record_index = -1;
 
                 // レコードがいっぱいある。
                 for record in book_file.book {
-                    record_index += 1;
+                    _record_index += 1;
                     // comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
 
                     // TODO 自分の駒（0～40個）の番地を調べる。

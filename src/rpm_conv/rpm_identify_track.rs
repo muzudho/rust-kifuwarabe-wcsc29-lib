@@ -9,13 +9,11 @@ const NONE_IDENTIFY:i8 = -1;
 pub struct RpmITrack {
     // piece number.
     pub items: Vec<i8>,
-    cursor: i16,
 }
 impl RpmITrack {
     pub fn default() -> RpmITrack {
         RpmITrack {
             items: Vec::new(),
-            cursor: -1,
         }
     }
 
@@ -30,35 +28,28 @@ impl RpmITrack {
         // book.save_rpm_i_track(&comm, board_size, &self);
     }
 
-    fn up_count(&mut self) {
-        self.cursor += 1;
-    }
-
-    fn down_count(&mut self) {
-        self.cursor -= 1;
-    }
-
-    pub fn add_identify(&mut self, identify:i8) {
+    pub fn add_identify(&mut self, identify:i8, cursor:&mut i16) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
-        if (self.cursor + 1) < self.items.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
-            self.items.truncate((self.cursor + 1) as usize)
+        if (*cursor + 1) < self.items.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
+            self.items.truncate((*cursor + 1) as usize)
         };
 
-        if self.items.len() == (self.cursor + 1) as usize {
+        if self.items.len() == (*cursor + 1) as usize {
             // 追加。
             self.items.push(identify);
-            self.up_count();
+
+            *cursor += 1;
         } else {
-            panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.items.len());
+            panic!("Unexpected add: cursor: {}, len: {}.", *cursor, self.items.len());
         }
     }
 
-    pub fn pop_current(&mut self) -> i8 {
+    pub fn pop_current(&mut self, cursor:&mut i16) -> i8 {
         // 後ろの要素がある場合は、削除する。
-        if (self.cursor + 1) < self.items.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.items.len());
-            self.items.truncate((self.cursor + 1) as usize)
+        if (*cursor + 1) < self.items.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
+            self.items.truncate((*cursor + 1) as usize)
         };
 
         if self.items.is_empty() {
@@ -67,43 +58,39 @@ impl RpmITrack {
             let last = self.items.len()-1;
             let deleted_identify = self.items[last];
             self.items.remove(last);
-            self.down_count();
+            *cursor -= 1;
             deleted_identify
         }
     }
 
-    pub fn get_cursor(&self) -> i16 {
-        self.cursor
-    }
-
     /// カーソルが指している要素を返す。
-    pub fn get_current(&self) -> i8 {
-        if self.cursor == -1 {
+    pub fn get_current(&self, cursor:i16) -> i8 {
+        if cursor == -1 {
             NONE_IDENTIFY
         } else {
-            self.items[self.cursor as usize]
+            self.items[cursor as usize]
         }
     }
 
     /// カーソルだけ進める。
-    pub fn forward(&mut self) -> bool {
-        if self.items.len() as i16 <= (self.cursor + 1) {
+    pub fn forward(&mut self, cursor:&mut i16) -> bool {
+        if self.items.len() as i16 <= (*cursor + 1) {
             // 進めない。
             false
         } else {
-            self.up_count();
+            *cursor += 1;
             true
         }
     }
 
     /// カーソルだけ戻す。
-    pub fn back(&mut self) {
-        if self.cursor < 0 {
+    pub fn back(&mut self, cursor:&mut i16) {
+        if *cursor < 0 {
             // 戻れない。
             return
         };
 
-        self.down_count();
+        *cursor -= 1;
     }
 
     /// コマンドライン入力形式。
