@@ -134,7 +134,7 @@ impl CommonOperation {
         // Examples.
         // position startpos moves 2g2f 8c8d
         let mut temp_u_record = UsiRecord::new();
-        temp_u_record.parse_usi_some_moves(&comm, line, start);
+        temp_u_record.parse_usi_some_moves(&comm, line, start, position.get_board_size());
         // comm.println(&format!("#temp_record.items.len: {}", temp_u_record.items.len()));
 
         // TODO 指し手通り、進めたい。

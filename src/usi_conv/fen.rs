@@ -64,7 +64,7 @@ impl Fen {
     }
 
     /// ex.) Parses 7g7f.
-    pub fn parse_usi_1move(_comm:&Communication, line:&str, start:&mut usize) -> UsiMove {
+    pub fn parse_usi_1move(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> UsiMove {
         let drop_opt = parse_sign_to_drop(line, start);
         let mut source_file_num = 0;
         let mut source_rank_num = 0;
@@ -82,13 +82,21 @@ impl Fen {
                 false
             };
 
-        UsiMove::create(
-            source_file_num,
-            source_rank_num,
-            destination_file_num,
-            destination_rank_num,
-            promotion_flag,
-            drop_opt)
+        if let Some(drop) = drop_opt {
+            UsiMove::create_drop(
+                destination_file_num,
+                destination_rank_num,
+                drop,
+                board_size)
+        } else {
+            UsiMove::create_walk(
+                source_file_num,
+                source_rank_num,
+                destination_file_num,
+                destination_rank_num,
+                promotion_flag,
+                board_size)
+        }
     }
 }
 

@@ -66,11 +66,11 @@ impl UsiRecord {
      */
 
     /// ex.) Parses 7g7f 3c3d.
-    pub fn parse_usi_some_moves(&mut self, comm:&Communication, line:&str, start:&mut usize) {
+    pub fn parse_usi_some_moves(&mut self, comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) {
         self.items.clear();
 
         loop {
-            let lmove = Fen::parse_usi_1move(&comm, &line, start);
+            let lmove = Fen::parse_usi_1move(&comm, &line, start, board_size);
             self.items.push(lmove);
 
             if *start + 1 < line.len() {

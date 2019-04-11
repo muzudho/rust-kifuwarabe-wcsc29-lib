@@ -32,13 +32,13 @@ impl RpmMove {
         let mut dfile = -1;
         let mut drank = -1;
         let mut promotion = false;
-        let mut drop = None;
+        let mut drop_opt = None;
         for note in &self.operation_notes {
             if let Some(address) = note.address {
 
                 if let Some(piece) = address.get_hand_piece() {
                     if i_location == 0 {
-                        drop = Some(piece_to_piece_type(piece));
+                        drop_opt = Some(piece_to_piece_type(piece));
                         i_location += 1;
                     }
                 } else {
@@ -69,13 +69,21 @@ impl RpmMove {
             }
         }
 
-        UsiMove::create(
-            sfile,
-            srank,
-            dfile,
-            drank,
-            promotion,
-            drop)
+        if let Some(drop) = drop_opt {
+            UsiMove::create_drop(
+                dfile,
+                drank,
+                drop,
+                board_size)
+        } else {
+            UsiMove::create_walk(
+                sfile,
+                srank,
+                dfile,
+                drank,
+                promotion,
+                board_size)
+        }
     }
 
     pub fn to_operation_string(&self, board_size:BoardSize) -> String {

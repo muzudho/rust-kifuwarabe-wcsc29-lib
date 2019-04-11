@@ -177,8 +177,8 @@ impl BestMovePicker {
                     }
 
                     // いくつか読み取れれば打ち止め。
-                    if count > 6 {
-                        //println!("#Break. Exit piece count = {}.", count);
+                    if count > 0 {
+                        println!("#Break. Exit piece count = {}.", count);
                         break 'path_loop;
                     }
 
@@ -197,34 +197,16 @@ impl BestMovePicker {
             let thread = &self.thread_by_piece_id[&pid_num];
 
             // Header.
-            // println!("Pid: {}.", pid_num);
+            println!("Pid: {}.", pid_num);
 
             if let Some(rmove) = &thread.rpm_move {
                 best_rpm_move_opt = Some(rmove);
 
-                /*
                 // Operation.
-                print!("  Ope: ");
-                print!("{} ", rmove.to_operation_string(position.get_board_size()));
-                /*
-                for i in 0..rmove.len_note() {
-                    let ope = &rmove.operation_notes[i];
-                    print!("{} ", ope);
-                }
-                */
-                println!(" End.");
+                println!("  Ope: {} End.", rmove.to_operation_string(position.get_board_size()));
 
                 // Identify.
-                print!("  Num: ");
-                print!("{} ", rmove.to_identify_string());
-                /*
-                for i in 0..rmove.len_note() {
-                    let num = &rmove.piece_number_notes[i];
-                    print!("{} ", num);
-                }
-                 */
-                println!(" End.");
-                */
+                println!("  Num: {} End.", rmove.to_identify_string());
             }
         }
 

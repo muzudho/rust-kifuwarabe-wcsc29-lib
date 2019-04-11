@@ -45,6 +45,13 @@ impl BoardSize {
     pub fn is_empty(self) -> bool {
         self.file_len * self.rank_len < 1
     }
+
+    pub fn get_file_len(self) -> i8 {
+        self.file_len
+    }
+    pub fn get_rank_len(self) -> i8 {
+        self.rank_len
+    }
 }
 
 pub struct Position {

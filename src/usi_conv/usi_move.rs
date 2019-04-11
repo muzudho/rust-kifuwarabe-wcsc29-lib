@@ -1,5 +1,6 @@
 use std::*;
 use piece_etc::*;
+use position::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {
@@ -12,13 +13,19 @@ pub struct UsiMove {
     resign: bool,
 }
 impl UsiMove {
-    pub fn create(
+    /// 盤上の駒を動かすとき。
+    pub fn create_walk(
         src_file:i8,
         src_rank:i8,
         dst_file:i8,
         dst_rank:i8,
         pro:bool,
-        dro:Option<PieceType>) -> UsiMove {
+        board_size:BoardSize) -> UsiMove {
+
+        debug_assert!(0<src_file && src_file <=board_size.get_file_len(), "Src file: {}.", src_file);
+        debug_assert!(0<src_rank && src_rank <=board_size.get_rank_len(), "Src rank: {}.", src_rank);
+        debug_assert!(0<dst_file && dst_file <=board_size.get_file_len(), "Dst file: {}.", dst_file);
+        debug_assert!(0<dst_rank && dst_rank <=board_size.get_rank_len(), "Dst rank: {}.", dst_rank);
 
         UsiMove {
             source_file: src_file,
@@ -26,7 +33,28 @@ impl UsiMove {
             destination_file: dst_file,
             destination_rank: dst_rank,
             promotion: pro,
-            drop: dro,
+            drop: None,
+            resign: false,
+        }
+    }
+
+    /// 打つとき。
+    pub fn create_drop(
+        dst_file:i8,
+        dst_rank:i8,
+        dro:PieceType,
+        board_size:BoardSize) -> UsiMove {
+
+        debug_assert!(0<dst_file && dst_file <=board_size.get_file_len(), "Dst file: {}.", dst_file);
+        debug_assert!(0<dst_rank && dst_rank <=board_size.get_rank_len(), "Dst rank: {}.", dst_rank);
+
+        UsiMove {
+            source_file: -1,
+            source_rank: -1,
+            destination_file: dst_file,
+            destination_rank: dst_rank,
+            promotion: false,
+            drop: Some(dro),
             resign: false,
         }
     }
