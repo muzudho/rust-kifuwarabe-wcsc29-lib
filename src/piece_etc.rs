@@ -1,5 +1,6 @@
 use std::slice::Iter;
 
+#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum Phase {
     /// Starting first.

@@ -66,8 +66,6 @@ impl RpmMove {
                 promotion = true;
             } else if note.sky_rotate {
                 // -
-            } else {
-
             }
         }
 

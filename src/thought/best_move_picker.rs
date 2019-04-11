@@ -67,29 +67,33 @@ impl BestMovePicker {
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
         // RPMを検索。
-        //println!("#match_thread start. Dir: {}", kw29config.rpm_record);
+        println!("#get_best_move start. Phase: {:?}", position.get_phase());
 
         // TODO とりあえず -rpmrec.json ファイルを１個読む。
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
-            // comm.println(&format!("file: {}", file));
+            comm.println(&format!("file: {}, Phase: {:?}.", file, position.get_phase()));
             let book_file = RpmBookFile::load(&file);
-
+            
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
             if !book_file.book.is_empty() {
                 //comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
 
+                let mut record_index = -1;
 
                 // レコードがいっぱいある。
                 for record in book_file.book {
+                    record_index += 1;
+                    comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
 
                     // TODO 自分の駒（0～40個）の番地を調べる。
                     'piece_loop: for id in PieceIdentify::iterator() {
                         let number = id.get_number();
+
                         // 現局面の駒の番地。
-                        let (my_address, _hand) = position.address_of(position.get_phase(), id);
-                        //comm.println(&format!("id: {:?}, number: {}, my_my_addresscell: {}, hand: {}.", id, number, my_address, hand));
+                        let (piece_address_at_cur_pos, _hand) = position.address_of(Some(position.get_phase()), id);
+                        // comm.println(&format!("id: {:?}, number: {}, piece_address_at_cur_pos: {}, hand: {}.", id, number, piece_address_at_cur_pos, hand));
 
 
                         // 自分の駒番号を検索。
@@ -110,8 +114,8 @@ impl BestMovePicker {
 
                                 if let Some(ope_note) = ope_note_opt {
                                     if let Some(target_address) = ope_note.address {
-                                        if target_address.get_index() == my_address as usize {
-                                            //comm.println("matched address.");
+                                        if target_address.get_index() == piece_address_at_cur_pos as usize {
+                                            comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
                                             // 一致。
                                             
                                             let mut thread = ThreadsOfPiece::new();
