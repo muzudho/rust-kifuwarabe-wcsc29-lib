@@ -67,12 +67,12 @@ impl BestMovePicker {
     /// TODO 学習ファイルをもとに動く。
     pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
         // RPMを検索。
-        println!("#get_best_move start. Phase: {:?}", position.get_phase());
+        // println!("#get_best_move start. Phase: {:?}", position.get_phase());
 
         // TODO とりあえず -rpmrec.json ファイルを１個読む。
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
-            comm.println(&format!("file: {}, Phase: {:?}.", file, position.get_phase()));
+            comm.println(&format!("info file: {}, Phase: {:?}.", file, position.get_phase()));
             let book_file = RpmBookFile::load(&file);
             
             // ファイルの中身をすこし見てみる。
@@ -85,7 +85,7 @@ impl BestMovePicker {
                 // レコードがいっぱいある。
                 for record in book_file.book {
                     record_index += 1;
-                    comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
+                    // comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
 
                     // TODO 自分の駒（0～40個）の番地を調べる。
                     'piece_loop: for id in PieceIdentify::iterator() {
@@ -98,31 +98,53 @@ impl BestMovePicker {
 
                         // 自分の駒番号を検索。
                         let size = record.body.operation.len();
+                        let mut skip_until_phase_change = false;
 
-                        for i in 0..size {
-                            let pnum = record.body.piece_number[i];
-                            if id.get_number() == pnum {
+                        // 駒番号トラックをスキャン。
+                        // 動かす駒番号を調べるので、フェーズの変わり目は -1 なので、 -1 の次に現れた駒番号を調べればよい。
+                        for row_idx in 0..size {
+                            // 駒番号トラックの数。
+                            let idtr_num = record.body.piece_number[row_idx];
+
+                            // スキップ。
+                            if skip_until_phase_change {
+                                if idtr_num == -1 {
+                                    // comm.println(&format!("[{}] Stop: idtr_num: {}.", row_idx, idtr_num));
+                                    skip_until_phase_change = false;
+                                // } else {
+                                    // comm.println(&format!("[{}] Skip: idtr_num: {}.", row_idx, idtr_num));
+                                }
+
+                                continue;
+                            }
+
+                            // 指し手の1文字目以降は読み飛ばす。
+                            skip_until_phase_change = true;
+
+                            if id.get_number() == idtr_num {
+                                // 一致。
+
                                 // 番地を検索。
-                                let operation_token = &record.body.operation[i];
-                                //comm.println(&format!("matched pnum. operation: {}", operation_token));
+                                let optr_note = &record.body.operation[row_idx];
+                                // comm.println(&format!("[{}] Pick: idtr_num: {}, optr_note: '{}'.", row_idx, idtr_num, optr_note));
 
                                 let ope_note_opt;
                                 {
                                     let mut start = 0;
-                                    ope_note_opt = RpmOpeNote::parse_1note(&comm, &operation_token, &mut start, &position.get_board_size());
+                                    ope_note_opt = RpmOpeNote::parse_1note(&comm, &optr_note, &mut start, &position.get_board_size());
                                 }
 
                                 if let Some(ope_note) = ope_note_opt {
                                     if let Some(target_address) = ope_note.address {
                                         if target_address.get_index() == piece_address_at_cur_pos as usize {
-                                            comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
+                                            // comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
                                             // 一致。
                                             
                                             let mut thread = ThreadsOfPiece::new();
                                             let mut rmove = RpmMove::new();
                                             {
                                                 // TODO とりあえず　次のターンチェンジまで読み進める。
-                                                'j_loop: for j in i..size {
+                                                'j_loop: for j in row_idx..size {
                                                     let j_ope_token = &record.body.operation[j];
 
                                                     let j_ope_note_opt;
@@ -158,13 +180,11 @@ impl BestMovePicker {
                                 } else {
                                     // TODO 持ち駒ではないか確認。
                                 }
+                            // } else {
+                                // 一致しなかったら何もしない。
+                                // comm.println(&format!("[{}] No match: idtr_num: {}.", row_idx, idtr_num));
                             }
                         }
-
-                        // if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
-                        //     // 差し替え。
-                        //     self.thread_by_piece_id.insert(number, thread);
-                        // }
                     }
 
                     // 手筋の長さが０でない駒の数。
@@ -178,7 +198,7 @@ impl BestMovePicker {
 
                     // いくつか読み取れれば打ち止め。
                     if count > 0 {
-                        println!("#Break. Exit piece count = {}.", count);
+                        // println!("#Break. Exit piece count = {}.", count);
                         break 'path_loop;
                     }
 
@@ -190,23 +210,23 @@ impl BestMovePicker {
 
         let mut best_rpm_move_opt = None;
 
-        
-        // 検索結果を見てみようぜ☆（＾～＾）
+        // １つチョイスしようぜ☆（*＾～＾*）
         for pid in PieceIdentify::iterator() {
             let pid_num = pid.get_number();
             let thread = &self.thread_by_piece_id[&pid_num];
 
             // Header.
-            println!("Pid: {}.", pid_num);
+            // println!("Pid: {}.", pid_num);
 
             if let Some(rmove) = &thread.rpm_move {
                 best_rpm_move_opt = Some(rmove);
 
+                // 検索結果を見てみようぜ☆（＾～＾）
                 // Operation.
-                println!("  Ope: {} End.", rmove.to_operation_string(position.get_board_size()));
+                // println!("  Ope: {} End.", rmove.to_operation_string(position.get_board_size()));
 
                 // Identify.
-                println!("  Num: {} End.", rmove.to_identify_string());
+                // println!("  Num: {} End.", rmove.to_identify_string());
             }
         }
 
