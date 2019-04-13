@@ -1,28 +1,39 @@
+use address::*;
 use piece_etc::*;
 use regex::Regex;
 
 pub struct KifMove {
-    pub destination_file : i8,
-    pub destination_rank : i8,
+    pub destination : Option<Cell>,
     pub is_same : bool,
     pub piece : Option<JsaPieceType>,
     pub is_promote : bool,
     pub is_drop : bool,
-    pub source_file : i8,
-    pub source_rank : i8,
+    pub source : Option<Cell>,
 }
 impl KifMove {
     pub fn to_sign(&self) -> String {
         let mut sign = "".to_string();
 
-        sign = format!("{} {}", sign, self.destination_file);
-        sign = format!("{} {}", sign, self.destination_rank);
+        match self.destination {
+            Some(x) => {
+                sign = format!("{} {}", sign, x.get_file());
+                sign = format!("{} {}", sign, x.get_rank());
+            },
+            None => {},
+        }
+
         sign = format!("{} {}", sign, self.is_same);
         sign = format!("{} {}", sign, jsa_piece_type_to_sign(self.piece));
         sign = format!("{} {}", sign, self.is_promote);
         sign = format!("{} {}", sign, self.is_drop);
-        sign = format!("{} {}", sign, self.source_file);
-        sign = format!("{} {}", sign, self.source_rank);
+
+        match self.source {
+            Some(x) => {
+                sign = format!("{} {}", sign, x.get_file());
+                sign = format!("{} {}", sign, x.get_rank());
+            },
+            None => {},
+        }
 
         sign
     }
@@ -33,14 +44,12 @@ impl KifMove {
         let sign = caps.get(1).map_or("", |m| m.as_str());
 
         let mut mv = KifMove {
-            destination_file : 0,
-            destination_rank : 0,
+            destination : None,
             is_same : false,
             piece : None,
             is_promote : false,
             is_drop : false,
-            source_file : 0,
-            source_rank : 0,
+            source : None,
         };
 
         /*
@@ -54,41 +63,45 @@ Phase   0  1   2   3   4   5  6   7  8  9
          */
         let mut nth = 0;
 
-        if 0 < sign.len() - nth {
+        let dfile = if 0 < sign.len() - nth {
             // Phase 0.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.destination_file = match ch.as_str() {
-                "１" => 1,
-                "２" => 2,
-                "３" => 3,
-                "４" => 4,
-                "５" => 5,
-                "６" => 6,
-                "７" => 7,
-                "８" => 8,
-                "９" => 9,
-                _ => {nth -= 1; 0},
-            };
-        }
+            match ch.as_str() {
+                "１" => Some(1),
+                "２" => Some(2),
+                "３" => Some(3),
+                "４" => Some(4),
+                "５" => Some(5),
+                "６" => Some(6),
+                "７" => Some(7),
+                "８" => Some(8),
+                "９" => Some(9),
+                _ => {nth -= 1; None},
+            }
+        } else {
+            None
+        };
 
-        if 0 < sign.len() - nth {
+        mv.destination = if 0 < sign.len() - nth {
             // Phase 1.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.destination_rank = match ch.as_str() {
-                "一" => 1,
-                "二" => 2,
-                "三" => 3,
-                "四" => 4,
-                "五" => 5,
-                "六" => 6,
-                "七" => 7,
-                "八" => 8,
-                "九" => 9,
-                _ => {nth -= 1; 0},
-            };
-        }
+            match ch.as_str() {
+                "一" => Some(Cell::from_file_rank(dfile.unwrap(), 1)),
+                "二" => Some(Cell::from_file_rank(dfile.unwrap(), 2)),
+                "三" => Some(Cell::from_file_rank(dfile.unwrap(), 3)),
+                "四" => Some(Cell::from_file_rank(dfile.unwrap(), 4)),
+                "五" => Some(Cell::from_file_rank(dfile.unwrap(), 5)),
+                "六" => Some(Cell::from_file_rank(dfile.unwrap(), 6)),
+                "七" => Some(Cell::from_file_rank(dfile.unwrap(), 7)),
+                "八" => Some(Cell::from_file_rank(dfile.unwrap(), 8)),
+                "九" => Some(Cell::from_file_rank(dfile.unwrap(), 9)),
+                _ => {nth -= 1; None},
+            }
+        } else {
+            None
+        };
 
         if 0 < sign.len() - nth {
             // Phase 2.
@@ -168,41 +181,45 @@ Phase   0  1   2   3   4   5  6   7  8  9
             };
         }
 
-        if 0 < sign.len() - nth {
+        let sfile = if 0 < sign.len() - nth {
             // Phase 7.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            mv.source_file = match ch.as_str() {
-                "1" => 1,
-                "2" => 2,
-                "3" => 3,
-                "4" => 4,
-                "5" => 5,
-                "6" => 6,
-                "7" => 7,
-                "8" => 8,
-                "9" => 9,
-                _ => {nth -= 1; 0},
-            };
-        }
+            match ch.as_str() {
+                "1" => Some(1),
+                "2" => Some(2),
+                "3" => Some(3),
+                "4" => Some(4),
+                "5" => Some(5),
+                "6" => Some(6),
+                "7" => Some(7),
+                "8" => Some(8),
+                "9" => Some(9),
+                _ => {nth -= 1; None},
+            }
+        } else {
+            None
+        };
 
-        if 0 < sign.len() - nth {
+        mv.source = if 0 < sign.len() - nth {
             // Phase 8.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             /*nth += 1;*/
-            mv.source_rank = match ch.as_str() {
-                "1" => 1,
-                "2" => 2,
-                "3" => 3,
-                "4" => 4,
-                "5" => 5,
-                "6" => 6,
-                "7" => 7,
-                "8" => 8,
-                "9" => 9,
-                _ => {/*nth -= 1;*/ 0},
-            };
-        }
+            match ch.as_str() {
+                "1" => Some(Cell::from_file_rank(sfile.unwrap(), 1)),
+                "2" => Some(Cell::from_file_rank(sfile.unwrap(), 2)),
+                "3" => Some(Cell::from_file_rank(sfile.unwrap(), 3)),
+                "4" => Some(Cell::from_file_rank(sfile.unwrap(), 4)),
+                "5" => Some(Cell::from_file_rank(sfile.unwrap(), 5)),
+                "6" => Some(Cell::from_file_rank(sfile.unwrap(), 6)),
+                "7" => Some(Cell::from_file_rank(sfile.unwrap(), 7)),
+                "8" => Some(Cell::from_file_rank(sfile.unwrap(), 8)),
+                "9" => Some(Cell::from_file_rank(sfile.unwrap(), 9)),
+                _ => {/*nth -= 1;*/ None},
+            }
+        } else {
+            None
+        };
 
         /*
         if 0 < sign.len() - nth {

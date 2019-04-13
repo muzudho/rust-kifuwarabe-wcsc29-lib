@@ -1,12 +1,11 @@
+use address::*;
 use parser::*;
 use piece_etc::*;
 
 pub struct CsaMove {
     pub phase:Phase,
-    pub source_file:i8,
-    pub source_rank:i8,
-    pub destination_file:i8,
-    pub destination_rank:i8,
+    pub source:Option<Cell>,
+    pub destination:Cell,
     // 成ったかどうかは、盤上で駒を動かしてみないと分からない。
     pub koma:Option<PieceType>,
 }
@@ -24,11 +23,13 @@ impl CsaMove {
         let ch4 = line.chars().nth(4).unwrap();
         let str5 = &line[5..=6];
 
-        let (src_f, src_r) = if ch1 == '0' {
+        let src_opt = if ch1 == '0' {
             // drop.
-            (0, 0)
+            None
         } else {
-            (Parser::file_char_to_i8(ch1), Parser::rank_char_to_i8(ch2))
+            Some(Cell::from_file_rank(
+                Parser::file_char_to_i8(ch1),
+                Parser::rank_char_to_i8(ch2)))
         };
 
         let piece_type = CsaMove::koma_to_piece_type(str5);
@@ -39,16 +40,21 @@ impl CsaMove {
                 '-' => {Phase::Second}
                 _ => panic!("Unexpected phase: '{}'.", ch1)
             },
-            source_file: src_f,
-            source_rank: src_r,
-            destination_file: Parser::file_char_to_i8(ch3),
-            destination_rank: Parser::rank_char_to_i8(ch4),
+            source: src_opt,
+            destination:
+                Cell::from_file_rank(
+                    Parser::file_char_to_i8(ch3),
+                    Parser::rank_char_to_i8(ch4)),
             koma: piece_type,
         })
     }
 
     pub fn is_drop(&self) -> bool {
-        self.source_file == 0 && self.source_rank == 0
+        if let Some(src) = self.source {
+            false
+        } else {
+            true
+        }
     }
 
     pub fn get_drop(&self) -> Option<PieceType> {
@@ -81,6 +87,7 @@ impl CsaMove {
         }
     }
 
+    /*
     pub fn to_text(&self) -> String {
         format!("{} {} {} {} {} {}",
             phase_to_sign(self.phase),
@@ -90,4 +97,5 @@ impl CsaMove {
             self.destination_rank,
             piece_type_to_sign(self.koma))
     }
+    */
 }

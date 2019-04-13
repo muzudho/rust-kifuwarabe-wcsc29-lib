@@ -20,9 +20,8 @@ impl KifPlayer {
         _ply:i16) -> Vec<RpmOpeNote> {
         let mut rmoves = Vec::new();
 
-        let destination_address = Address::create_by_file_rank(
-            kmove.destination_file,
-            kmove.destination_rank,
+        let destination_address = Address::from_cell(
+            kmove.destination.unwrap(),
             position.get_board_size()
         );
         
@@ -65,16 +64,15 @@ impl KifPlayer {
             }
 
             // board-off
-            let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
-                kmove.source_file,
-                kmove.source_rank,
+            let board_off = RpmOpeNote::create_by_address(Address::from_cell(
+                kmove.source.unwrap(),
                 position.get_board_size()
             ));
             rmoves.push(board_off);
 
             // board-turn-over
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            if let Some(id_piece) = position.get_id_piece(kmove.source_file, kmove.source_rank) {
+            if let Some(id_piece) = position.get_id_piece(kmove.source.unwrap()) {
                 id_piece.is_promoted()
             } else {
                 false

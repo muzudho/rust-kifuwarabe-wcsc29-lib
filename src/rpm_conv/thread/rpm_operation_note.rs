@@ -170,9 +170,10 @@ impl RpmOpeNote {
                 let ch2 = line[*start..=*start].chars().nth(0).unwrap();
                 *start += 1;
                 //comm.print(&format!("{}{}", ch1, ch2));
-                let file = Parser::file_char_to_i8(ch1);
-                let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_file_rank(file, rank, board_size);
+                let address = Address::from_cell(
+                    Cell::from_file_rank(
+                        Parser::file_char_to_i8(ch1),
+                        Parser::rank_char_to_i8(ch2)), board_size);
                 Some(RpmOpeNote::create_by_address(address))
             },
             '+' => {

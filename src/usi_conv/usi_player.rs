@@ -19,11 +19,9 @@ impl UsiConverter {
             return rpm_move;
         }
 
-        let destination_address = Address::create_by_file_rank(
-            umove.destination.unwrap().get_file(),
-            umove.destination.unwrap().get_rank(),
-            position.get_board_size()
-        );
+        let destination_address = Address::from_cell(
+            umove.destination.unwrap(),
+            position.get_board_size());
         
         match umove.get_drop()
         {
@@ -64,11 +62,9 @@ impl UsiConverter {
                 }
 
                 // board-off
-                let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
-                    umove.source.unwrap().get_file(),
-                    umove.source.unwrap().get_rank(),
-                    position.get_board_size()
-                ));
+                let board_off = RpmOpeNote::create_by_address(Address::from_cell(
+                    umove.source.unwrap(),
+                    position.get_board_size()));
                 rpm_move.push(board_off);
 
                 // board-turn-over

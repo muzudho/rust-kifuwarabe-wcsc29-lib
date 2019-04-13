@@ -49,7 +49,7 @@ impl CsaRecord {
             // TODO drop
 
         } else {
-            let source_id_piece_opt = position.remove_id_piece(cmove.source_file, cmove.source_rank);
+            let source_id_piece_opt = position.remove_id_piece(cmove.source.unwrap());
 
             // CSAの棋譜では、成ったかどうかは分からない。
             /*
@@ -58,7 +58,7 @@ impl CsaRecord {
             }
             */
             
-            position.set_id_piece(cmove.destination_file, cmove.destination_rank, source_id_piece_opt);
+            position.set_id_piece(cmove.destination, source_id_piece_opt);
             self.push(cmove);
         }
     }

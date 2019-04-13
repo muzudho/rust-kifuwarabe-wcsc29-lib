@@ -93,13 +93,13 @@ impl UsiRecord {
             // TODO drop
 
         } else {
-            let source_id_piece_opt = position.remove_id_piece(mov.source.unwrap().get_file(), mov.source.unwrap().get_rank());
+            let source_id_piece_opt = position.remove_id_piece(mov.source.unwrap());
             if mov.promotion {
                 if let Some(mut source_id_piece) = source_id_piece_opt {
                     source_id_piece.turn_over();
                 }
             }
-            position.set_id_piece(mov.destination.unwrap().get_file(), mov.destination.unwrap().get_rank(), source_id_piece_opt);
+            position.set_id_piece(mov.destination.unwrap(), source_id_piece_opt);
             self.push(mov);
         }
     }

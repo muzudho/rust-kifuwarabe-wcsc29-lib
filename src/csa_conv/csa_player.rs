@@ -20,9 +20,9 @@ impl CsaPlayer {
         _ply:i16) -> Vec<RpmOpeNote> {
         let mut p_moves = Vec::new();
 
-        let destination_address = Address::create_by_file_rank(
-            cmove.destination_file,
-            cmove.destination_rank,
+        // 盤上の駒の番地。
+        let destination_address = Address::from_cell(
+            cmove.destination,
             position.get_board_size()
         );
         
@@ -62,16 +62,16 @@ impl CsaPlayer {
             }
 
             // board-off
-            let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
-                cmove.source_file,
-                cmove.source_rank,
+            // 盤上の駒の番地。
+            let board_off = RpmOpeNote::create_by_address(Address::from_cell(
+                cmove.source.unwrap(),
                 position.get_board_size()
             ));
             p_moves.push(board_off);
 
             // board-turn-over
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            let pre_promoted = if let Some(id_piece) = position.get_id_piece(cmove.source_file, cmove.source_rank) {
+            let pre_promoted = if let Some(id_piece) = position.get_id_piece(cmove.source.unwrap()) {
                 id_piece.is_promoted()
             } else {
                 false

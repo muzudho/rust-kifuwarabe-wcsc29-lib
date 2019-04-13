@@ -47,7 +47,7 @@ impl RpmMove {
         // とりあえず USI move に変換。
         let umove = self.to_usi_move(board_size);
 
-
+        (umove.source)
     }
 
     pub fn to_usi_move(&self, board_size:BoardSize) -> UsiMove {

@@ -7,10 +7,17 @@ pub struct Cell {
     rank: i8,
 }
 impl Cell {
-    pub fn create_by_file_rank(file_num:i8, rank_num:i8) -> Cell {
+    pub fn from_file_rank(file_num:i8, rank_num:i8) -> Cell {
         Cell {
             file: file_num,
             rank: rank_num,
+        }
+    }
+
+    pub fn from_scalar(scalar:i8) -> Cell {
+        Cell {
+            file: scalar / 10,
+            rank: scalar % 10,
         }
     }
 
@@ -41,9 +48,10 @@ impl fmt::Display for Address {
 }
 */
 impl Address {
-    pub fn create_by_file_rank(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
+    /// 盤上の駒の番地。
+    pub fn from_cell(cell:Cell, board_size:BoardSize) -> Address {
         Address {
-            index: board_size.file_rank_to_address(file_num, rank_num),
+            index: board_size.cell_to_address(cell),
         }
     }
 

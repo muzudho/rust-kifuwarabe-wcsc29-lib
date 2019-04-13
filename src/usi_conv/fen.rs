@@ -46,14 +46,14 @@ impl Fen {
 
             if spaces == 0 {
                 let piece_opt = parse_sign_line_to_piece(line, start);
-                position.activate_piece(piece_opt, file, rank);
+                position.activate_piece(piece_opt, Cell::from_file_rank(file, rank));
                 /* file += 1; */
             } else if spaces == -1 {
                 /* file = 1; */
                 /* rank = 9; */
             } else {
                 while spaces > 0 {
-                    position.set_id_piece(file, rank, None);
+                    position.set_id_piece(Cell::from_file_rank(file, rank), None);
                     file += 1;
                     spaces -= 1;
                 }
@@ -68,14 +68,14 @@ impl Fen {
     pub fn parse_usi_1move(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> UsiMove {
         let drop_opt = parse_sign_to_drop(line, start);
         let source_opt = if drop_opt == None {
-            Some(Cell::create_by_file_rank(
+            Some(Cell::from_file_rank(
                 parse_sign_to_file(line, start),
                 parse_sign_to_rank(line, start)))
         } else {
             None
         };
 
-        let destination = Cell::create_by_file_rank(
+        let destination = Cell::from_file_rank(
             parse_sign_to_file(line, start),
             parse_sign_to_rank(line, start));
 

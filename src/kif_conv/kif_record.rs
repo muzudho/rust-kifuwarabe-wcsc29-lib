@@ -38,16 +38,13 @@ impl KifRecord {
         }
 
         // '同'を解決する。
-        let mut pre_file = 0;
-        let mut pre_rank = 0;
+        let mut pre_cell = None;
         for mov in &mut record.items {
             if mov.is_same {
-                mov.destination_file = pre_file;
-                mov.destination_rank = pre_rank;
+                mov.destination = pre_cell;
             }
 
-            pre_file = mov.destination_file;
-            pre_rank = mov.destination_rank;
+            pre_cell = mov.destination;
         }
 
         // これでレコードはできあがり。

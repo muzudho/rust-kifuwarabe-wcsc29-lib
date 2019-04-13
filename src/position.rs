@@ -26,18 +26,12 @@ impl BoardSize {
         }
     }
 
-    pub fn file_rank_to_address(self, file:i8, rank:i8) -> usize {
-        ((rank-1)*self.file_len + (file-1)) as usize
-    }
-
-    pub fn cell_to_address(self, cell:i8) -> usize {
-        let file = cell / 10;
-        let rank = cell % 10;
-        self.file_rank_to_address(file, rank)
+    pub fn cell_to_address(self, cell:Cell) -> usize {
+        ((cell.get_rank()-1)*self.file_len + (cell.get_file()-1)) as usize
     }
 
     pub fn address_to_cell(self, address:usize) -> Cell {
-        Cell::create_by_file_rank(
+        Cell::from_file_rank(
             (address%self.file_len as usize) as i8 + 1,
             (address/self.file_len as usize) as i8 + 1
         )
@@ -202,8 +196,8 @@ impl Position {
         self.board_size
     }
 
-    pub fn get_id_piece(&self, file:i8, rank:i8) -> Option<IdentifiedPiece> {
-        let address = self.board_size.file_rank_to_address(file, rank);
+    pub fn get_id_piece(&self, cell:Cell) -> Option<IdentifiedPiece> {
+        let address = self.board_size.cell_to_address(cell);
         self.board[address]
     }
 
@@ -230,16 +224,16 @@ impl Position {
 
     /// TODO 識別子を追加していいのか？
     /// Obsolute. new --> add().
-    pub fn set_id_piece(&mut self, file:i8, rank:i8, id_piece:Option<IdentifiedPiece>) {
-        let address = self.board_size.file_rank_to_address(file, rank);
+    pub fn set_id_piece(&mut self, cell:Cell, id_piece:Option<IdentifiedPiece>) {
+        let address = self.board_size.cell_to_address(cell);
         self.board[address] = id_piece;
     }
 
     /// TODO 識別子を消していいのか？
-    pub fn remove_id_piece(&mut self, file:i8, rank:i8) -> Option<IdentifiedPiece> {
-        let address = self.get_board_size().file_rank_to_address(file, rank);
+    pub fn remove_id_piece(&mut self, cell:Cell) -> Option<IdentifiedPiece> {
+        let address = self.get_board_size().cell_to_address(cell);
         let id_piece = self.board[address];
-        self.set_id_piece(file, rank, None);
+        self.set_id_piece(cell, None);
         id_piece
     }
 
@@ -271,13 +265,13 @@ impl Position {
     }
 
     /// USI position 読込時に使う。使ってない駒を盤上に置く。
-    pub fn activate_piece(&mut self, piece_opt:Option<Piece>, file:i8, rank:i8) {
+    pub fn activate_piece(&mut self, piece_opt:Option<Piece>, cell:Cell) {
         if let Some(piece) = piece_opt {
             let disactivate_piece = piece_to_disactivate(piece);
             let hand_index = hand_piece_to_hand_index(disactivate_piece);
             let id_piece = self.hands[hand_index].pop().unwrap();
 
-            let destination = self.board_size.file_rank_to_address(file, rank);
+            let destination = self.board_size.cell_to_address(cell);
             self.board[destination] = Some(id_piece);
         }
     }
@@ -477,15 +471,15 @@ impl Position {
                     // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
                     "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
                     rank, // Parser::i8_to_rank_char(rank),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(1, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(2, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(3, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(4, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(5, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(6, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(7, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(8, rank, self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::create_by_file_rank(9, rank, self.board_size)).to_display()));
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(1, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(2, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(3, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(4, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(5, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(6, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(7, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(8, rank), self.board_size)).to_display(),
+                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(9, rank), self.board_size)).to_display()));
             } else {
                 Parser::append(&mut content, &" +----+----+----+----+----+----+----+----+----+".to_string());
             }
