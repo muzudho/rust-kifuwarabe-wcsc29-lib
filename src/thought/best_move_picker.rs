@@ -85,7 +85,6 @@ impl BestMovePicker {
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
 
-            /*
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
@@ -93,24 +92,27 @@ impl BestMovePicker {
                 CommonOperation::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
-                    let (address_opt, _hand) = position.address_number_of(Some(Phase::First), K00);
-                    comm.println(&format!("info First-K00: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
+                    if let Some((_idp,addr_obj)) = position.find_wild(Some(Phase::First), K00) {
+                        comm.println(&format!("info First-K00: {}.", addr_obj.get_index()));
+                    }
                 }
                 {
-                    let (address_opt, _hand) = position.address_number_of(Some(Phase::First), K01);
-                    comm.println(&format!("info First-K01: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
+                    if let Some((_idp,addr_obj)) = position.find_wild(Some(Phase::First), K01) {
+                        comm.println(&format!("info First-K01: {}.", addr_obj.get_index()));
+                    }
                 }
                 // 後手玉の番地。
                 {
-                    let (address_opt, _hand) = position.address_number_of(Some(Phase::Second), K00);
-                    comm.println(&format!("info Second-K00: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
+                    if let Some((_idp,addr_obj)) = position.find_wild(Some(Phase::Second), K00) {
+                        comm.println(&format!("info Second-K00: {}.", addr_obj.get_index()));
+                    }
                 }
                 {
-                    let (address_opt, _hand) = position.address_number_of(Some(Phase::Second), K01);
-                    comm.println(&format!("info Second-K01: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
+                    if let Some((_idp,addr_obj)) = position.find_wild(Some(Phase::Second), K01) {
+                        comm.println(&format!("info Second-K01: {}.", addr_obj.get_index()));
+                    }
                 }
             }
-            */
 
             let book_file = RpmBookFile::load(&file);
             
@@ -131,9 +133,8 @@ impl BestMovePicker {
 
                         // 現局面の盤上の自駒の番地。
                         // TODO 駒台
-                        let (my_piece_addr_num_opt, hand) = position.address_number_of(Some(position.get_phase()), *my_piece_id);
-                        if let Some(my_piece_addr_num) = my_piece_addr_num_opt {
-                            //comm.println(&format!("My piece on board: Phase: {:?}, id: {:?}, number: {}, my_piece_addr: {}, hand: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number(), my_piece_addr_num, hand));
+                        if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
+                            comm.println(&format!("My piece: {:?}, {:?}, {}.", position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
                             // トラックをスキャン。
                             let mut note_idx = 0;
@@ -147,10 +148,10 @@ impl BestMovePicker {
 
                                     // 背番号と、アドレスの一致。
                                     if my_piece_id.get_number() == ftp_id.get_number() &&
-                                        ftp_address.get_index() == my_piece_addr_num as usize {
+                                        ftp_address.get_index() == my_addr_obj.get_index() as usize {
                                         // 一致。
 
-                                        //comm.println(&format!("matched address. address={}.", my_piece_addr_num));
+                                        //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
                                         
                                         // TODO この手は、現在の盤上で指せるのか検証したい。
                                         // 例えば 味方の駒の上に駒を動かさないだろうか？
@@ -179,13 +180,8 @@ impl BestMovePicker {
                                     break 'track_scan;
                                 }
                             }
-                        } else if hand {
-                            // TODO 駒台。
-                            //comm.println(&format!("My piece in hand: Phase: {:?}, id: {:?}, number: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number()));
-
                         } else {
-                            // その他。
-                            //comm.println(&format!("Not my piece: Phase: {:?}, id: {:?}, number: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number()));
+                            // 自駒ではない。
                         }
                     }
 

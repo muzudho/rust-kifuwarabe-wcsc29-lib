@@ -127,7 +127,7 @@ impl RpmMove {
                 if let Some(piece) = address.get_hand_piece() {
                     // 駒台
                     if i_token == 0 {
-                        drop_opt = Some(piece_to_piece_type(piece));
+                        drop_opt = Some(PieceType::from_piece(piece));
                         ftp_id = Some(note.get_id());
                         ftp_addr = Some(address);
                         i_token += 1;

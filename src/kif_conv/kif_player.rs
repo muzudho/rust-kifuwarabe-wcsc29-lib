@@ -28,11 +28,11 @@ impl KifPlayer {
         if kmove.is_drop {
             // 駒を打つ動きの場合
             let piece_type = jsa_piece_type_to_perfect(kmove.piece);
-            let piece = piece_type_to_piece(Some(position.get_phase()), piece_type.unwrap());
+            let piece = Piece::from_ph_pt(Some(position.get_phase()), piece_type.unwrap());
             let drop = position.peek_hand(piece);
 
             // hand-off
-            let hand_off = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), drop.unwrap().get_type()));
+            let hand_off = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), drop.unwrap().get_type()));
             rmoves.push(hand_off);
 
             // hand-on
@@ -59,7 +59,7 @@ impl KifPlayer {
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), up));
+                let hand_on = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), up));
                 rmoves.push(hand_on);
             }
 

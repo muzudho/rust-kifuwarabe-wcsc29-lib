@@ -30,7 +30,7 @@ impl CsaPlayer {
             // 駒を打つ動きの場合
 
             // hand-off
-            let hand_off = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), drop));
+            let hand_off = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), drop));
             p_moves.push(hand_off);
 
             // hand-on
@@ -57,7 +57,7 @@ impl CsaPlayer {
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), up));
+                let hand_on = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
             }
 

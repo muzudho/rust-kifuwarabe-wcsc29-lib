@@ -193,7 +193,7 @@ impl CellThing {
     /// 逆さにできないから、半角カナにしているだけ☆（＾～＾）右側のスペースに18進数の背番号が入る予定☆（＾～＾）
     pub fn to_display(&self) -> String {
         if let Some(id_piece) = self.id_piece_opt {
-            id_piece.to_physical_display()
+            id_piece.to_human_presentable()
         } else {
             // 空セル☆（＾～＾）
             "    ".to_string()
@@ -208,7 +208,7 @@ pub struct IdentifiedPiece {
     id:PieceIdentify,
 }
 impl IdentifiedPiece {
-    pub fn create(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> IdentifiedPiece {
+    pub fn from_phase_pro_id(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> IdentifiedPiece {
         IdentifiedPiece {
             phase: phase_opt,
             promoted: promoted_flag,
@@ -217,7 +217,7 @@ impl IdentifiedPiece {
     }
 
     pub fn some(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> Option<IdentifiedPiece> {
-        Some(IdentifiedPiece::create(
+        Some(IdentifiedPiece::from_phase_pro_id(
             phase_opt,
             promoted_flag,
             piece_id,
@@ -280,7 +280,7 @@ impl IdentifiedPiece {
         }
     }
 
-    pub fn to_physical_display(self) -> String {
+    pub fn to_human_presentable(self) -> String {
         use piece_etc::PieceIdentify::*;
         use piece_etc::Phase::*;
         if let Some(phase) = self.get_phase() {
@@ -790,6 +790,249 @@ pub enum Piece {
     PP2,
     PP3,
 }
+impl Piece {
+    pub fn from_ph_pt(phase_opt:Option<Phase>, piece_type:PieceType) -> Piece {
+        use piece_etc::Phase::*;
+        use piece_etc::Piece::*;
+        use piece_etc::PieceType::*;
+        match phase_opt {
+            Some(phase) => {
+                match phase {
+                    First => {
+                        match piece_type {
+                            K => K1,
+                            PK => PK1,
+
+                            R => R1,
+                            PR => PR1,
+
+                            B => B1,
+                            PB => PB1,
+
+                            G => G1,
+                            PG => PG1,
+
+                            S => S1,
+                            PS => PS1,
+
+                            N => N1,
+                            PN => PN1,
+
+                            L => L1,
+                            PL => PL1,
+
+                            P => P1,
+                            PP => PP1,
+                        }
+                    },
+                    Second => {
+                        match piece_type {
+                            K => K2,
+                            PK => PK2,
+
+                            R => R2,
+                            PR => PR2,
+
+                            B => B2,
+                            PB => PB2,
+
+                            G => G2,
+                            PG => PG2,
+
+                            S => S2,
+                            PS => PS2,
+
+                            N => N2,
+                            PN => PN2,
+
+                            L => L2,
+                            PL => PL2,
+
+                            P => P2,
+                            PP => PP2,
+                        }
+                    },
+                }
+            },
+            None => {
+                match piece_type {
+                    K => K3,
+                    PK => PK3,
+
+                    R => R3,
+                    PR => PR3,
+
+                    B => B3,
+                    PB => PB3,
+
+                    G => G3,
+                    PG => PG3,
+
+                    S => S3,
+                    PS => PS3,
+
+                    N => N3,
+                    PN => PN3,
+
+                    L => L3,
+                    PL => PL3,
+
+                    P => P3,
+                    PP => PP3,
+                }
+            }
+        }
+    }
+
+    pub fn to_disactivate(self) -> Piece{
+        use piece_etc::Piece::*;
+        match self {
+            K1 | K2 | K3 => K3,
+            PK1 | PK2 | PK3 => PK3,
+
+            R1 | R2 | R3 => R3,
+            PR1 | PR2 | PR3 => PR3,
+
+            B1 | B2 | B3 => B3,
+            PB1 | PB2 | PB3 => PB3,
+
+            G1 | G2 | G3 => G3,
+            PG1 | PG2 | PG3 => PG3,
+
+            S1 | S2 | S3 => S3,
+            PS1 | PS2 | PS3 => PS3,
+
+            N1 | N2 | N3 => N3,
+            PN1 | PN2 | PN3 => PN3,
+
+            L1 | L2 | L3 => L3,
+            PL1 | PL2 | PL3 => PL3,
+
+            P1 | P2 | P3 => P3,
+            PP1 | PP2 | PP3 => PP3,
+        }
+    }
+
+    pub fn promote(self) -> Piece {
+        use piece_etc::Piece::*;
+        match self {
+            K1 => PK1,
+            K2 => PK2,
+            K3 => PK3,
+            PK1 => K1,
+            PK2 => K2,
+            PK3 => K3,
+
+            R1 => PR1,
+            R2 => PR2,
+            R3 => PR3,
+            PR1 => R1,
+            PR2 => R2,
+            PR3 => R3,
+
+            B1 => PB1,
+            B2 => PB2,
+            B3 => PB3,
+            PB1 => B1,
+            PB2 => B2,
+            PB3 => B3,
+
+            G1 => PG1,
+            G2 => PG2,
+            G3 => PG3,
+            PG1 => G1,
+            PG2 => G2,
+            PG3 => G3,
+
+            S1 => PS1,
+            S2 => PS2,
+            S3 => PS3,
+            PS1 => S1,
+            PS2 => S2,
+            PS3 => S3,
+
+            N1 => PN1,
+            N2 => PN2,
+            N3 => PN3,
+            PN1 => N1,
+            PN2 => N2,
+            PN3 => N3,
+
+            L1 => PL1,
+            L2 => PL2,
+            L3 => PL3,
+            PL1 => L1,
+            PL2 => L2,
+            PL3 => L3,
+
+            P1 => PP1,
+            P2 => PP2,
+            P3 => PP3,
+            PP1 => P1,
+            PP2 => P2,
+            PP3 => P3,
+        }
+    }
+
+    pub fn rotate(self) -> Piece {
+        use piece_etc::Piece::*;
+        match self {
+            // K
+            K1 => K2, K2 => K1, K3 => K3,
+            PK1 => PK2, PK2 => PK1, PK3 => PK3,
+
+            // R
+            R1 => R2,
+            R2 => R1,
+            R3 => R3,
+            PR1 => PR2,
+            PR2 => PR1,
+            PR3 => PR3,
+
+            B1 => B2,
+            B2 => B1,
+            B3 => B3,
+            PB1 => PB2,
+            PB2 => PB1,
+            PB3 => PB3,
+
+            G1 => PG2,
+            G2 => PG1,
+            G3 => PG3,
+            PG1 => G2,
+            PG2 => G1,
+            PG3 => G3,
+
+            S1 => S2,
+            S2 => S1,
+            S3 => S3,
+            PS1 => PS2,
+            PS2 => PS1,
+            PS3 => PS3,
+
+            N1 => N2,
+            N2 => N1,
+            N3 => N3,
+            PN1 => PN2,
+            PN2 => PN1,
+            PN3 => PN3,
+
+            L1 => L2,
+            L2 => L1,
+            L3 => L3,
+            PL1 => PL2,
+            PL2 => PL1,
+            PL3 => PL3,
+
+            P1 => P2,
+            P2 => P1,
+            P3 => P3,
+            PP1 => PP2,
+            PP2 => PP1,
+            PP3 => PP3,
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum JsaPieceType{
@@ -865,6 +1108,98 @@ pub enum PieceType{
     // Promoted pawn is と.
     PP,
 }
+impl PieceType {
+    pub fn from_piece(piece:Piece) -> PieceType {
+        use piece_etc::Piece::*;
+        use piece_etc::PieceType::*;
+        match piece {
+            K1 => K,
+            K2 => K,
+            K3 => K,
+            PK1 => PK,
+            PK2 => PK,
+            PK3 => PK,
+
+            R1 => R,
+            R2 => R,
+            R3 => R,
+            PR1 => PR,
+            PR2 => PR,
+            PR3 => PR,
+
+            B1 => B,
+            B2 => B,
+            B3 => B,
+            PB1 => PB,
+            PB2 => PB,
+            PB3 => PB,
+
+            G1 => G,
+            G2 => G,
+            G3 => G,
+            PG1 => PG,
+            PG2 => PG,
+            PG3 => PG,
+
+            S1 => S,
+            S2 => S,
+            S3 => S,
+            PS1 => PS,
+            PS2 => PS,
+            PS3 => PS,
+
+            N1 => N,
+            N2 => N,
+            N3 => N,
+            PN1 => PN,
+            PN2 => PN,
+            PN3 => PN,
+
+            L1 => L,
+            L2 => L,
+            L3 => L,
+            PL1 => PL,
+            PL2 => PL,
+            PL3 => PL,
+
+            P1 => P,
+            P2 => P,
+            P3 => P,
+            PP1 => PP,
+            PP2 => PP,
+            PP3 => PP,
+        }
+    }
+
+    pub fn from_jsa_piece_type(jsa_pt:JsaPieceType) -> PieceType {
+        use piece_etc::JsaPieceType;
+        use piece_etc::PieceType;
+        match jsa_pt {
+            JsaPieceType::K => PieceType::K,
+
+            JsaPieceType::R => PieceType::R,
+            JsaPieceType::PR => PieceType::PR,
+
+            JsaPieceType::B => PieceType::B,
+            JsaPieceType::PB => PieceType::PB,
+
+            JsaPieceType::G => PieceType::G,
+
+            JsaPieceType::S => PieceType::S,
+            JsaPieceType::PS => PieceType::PS,
+
+            JsaPieceType::N => PieceType::N,
+            JsaPieceType::PN => PieceType::PN,
+
+            JsaPieceType::L => PieceType::L,
+            JsaPieceType::PL => PieceType::PL,
+
+            JsaPieceType::P => PieceType::P,
+            JsaPieceType::PP => PieceType::PP,
+        }
+    }
+}
+
 pub fn phase_to_sign(phase:Phase) -> String {
     use piece_etc::Phase::*;
     match phase {
@@ -936,95 +1271,6 @@ pub fn piece_to_sign(piece_opt:Option<Piece>) -> String {
     } else {
         ""
     }.to_string()
-}
-pub fn piece_to_piece_type(piece:Piece) -> PieceType {
-    use piece_etc::Piece::*;
-    use piece_etc::PieceType::*;
-    match piece {
-        K1 => K,
-        K2 => K,
-        K3 => K,
-        PK1 => PK,
-        PK2 => PK,
-        PK3 => PK,
-
-        R1 => R,
-        R2 => R,
-        R3 => R,
-        PR1 => PR,
-        PR2 => PR,
-        PR3 => PR,
-
-        B1 => B,
-        B2 => B,
-        B3 => B,
-        PB1 => PB,
-        PB2 => PB,
-        PB3 => PB,
-
-        G1 => G,
-        G2 => G,
-        G3 => G,
-        PG1 => PG,
-        PG2 => PG,
-        PG3 => PG,
-
-        S1 => S,
-        S2 => S,
-        S3 => S,
-        PS1 => PS,
-        PS2 => PS,
-        PS3 => PS,
-
-        N1 => N,
-        N2 => N,
-        N3 => N,
-        PN1 => PN,
-        PN2 => PN,
-        PN3 => PN,
-
-        L1 => L,
-        L2 => L,
-        L3 => L,
-        PL1 => PL,
-        PL2 => PL,
-        PL3 => PL,
-
-        P1 => P,
-        P2 => P,
-        P3 => P,
-        PP1 => PP,
-        PP2 => PP,
-        PP3 => PP,
-    }
-}
-pub fn piece_to_disactivate(piece:Piece) -> Piece{
-    use piece_etc::Piece::*;
-    match piece {
-        K1 | K2 | K3 => K3,
-        PK1 | PK2 | PK3 => PK3,
-
-        R1 | R2 | R3 => R3,
-        PR1 | PR2 | PR3 => PR3,
-
-        B1 | B2 | B3 => B3,
-        PB1 | PB2 | PB3 => PB3,
-
-        G1 | G2 | G3 => G3,
-        PG1 | PG2 | PG3 => PG3,
-
-        S1 | S2 | S3 => S3,
-        PS1 | PS2 | PS3 => PS3,
-
-        N1 | N2 | N3 => N3,
-        PN1 | PN2 | PN3 => PN3,
-
-        L1 | L2 | L3 => L3,
-        PL1 | PL2 | PL3 => PL3,
-
-        P1 | P2 | P3 => P3,
-        PP1 | PP2 | PP3 => PP3,
-    }
 }
 pub fn hand_id_piece_to_hand_index(id_piece:IdentifiedPiece) -> usize {
     use piece_etc::Phase::*;
@@ -1227,128 +1473,15 @@ pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
 
 pub fn promotion_piece(piece_opt:Option<Piece>) -> Option<Piece> {
     if let Some(piece) = piece_opt {
-        use piece_etc::Piece::*;
-        match piece {
-            K1 => Some(PK1),
-            K2 => Some(PK2),
-            K3 => Some(PK3),
-            PK1 => Some(K1),
-            PK2 => Some(K2),
-            PK3 => Some(K3),
-
-            R1 => Some(PR1),
-            R2 => Some(PR2),
-            R3 => Some(PR3),
-            PR1 => Some(R1),
-            PR2 => Some(R2),
-            PR3 => Some(R3),
-
-            B1 => Some(PB1),
-            B2 => Some(PB2),
-            B3 => Some(PB3),
-            PB1 => Some(B1),
-            PB2 => Some(B2),
-            PB3 => Some(B3),
-
-            G1 => Some(PG1),
-            G2 => Some(PG2),
-            G3 => Some(PG3),
-            PG1 => Some(G1),
-            PG2 => Some(G2),
-            PG3 => Some(G3),
-
-            S1 => Some(PS1),
-            S2 => Some(PS2),
-            S3 => Some(PS3),
-            PS1 => Some(S1),
-            PS2 => Some(S2),
-            PS3 => Some(S3),
-
-            N1 => Some(PN1),
-            N2 => Some(PN2),
-            N3 => Some(PN3),
-            PN1 => Some(N1),
-            PN2 => Some(N2),
-            PN3 => Some(N3),
-
-            L1 => Some(PL1),
-            L2 => Some(PL2),
-            L3 => Some(PL3),
-            PL1 => Some(L1),
-            PL2 => Some(L2),
-            PL3 => Some(L3),
-
-            P1 => Some(PP1),
-            P2 => Some(PP2),
-            P3 => Some(PP3),
-            PP1 => Some(P1),
-            PP2 => Some(P2),
-            PP3 => Some(P3),
-        }
+        Some(piece.promote())
     } else {
         None
     }
 }
+
 pub fn rotate_piece(piece_opt:Option<Piece>) -> Option<Piece> {
     if let Some(piece) = piece_opt {
-        use piece_etc::Piece::*;
-        match piece {
-            K1 => Some(K2),
-            K2 => Some(K1),
-            K3 => Some(K3),
-            PK1 => Some(PK2),
-            PK2 => Some(PK1),
-            PK3 => Some(PK3),
-
-            R1 => Some(R2),
-            R2 => Some(R1),
-            R3 => Some(R3),
-            PR1 => Some(PR2),
-            PR2 => Some(PR1),
-            PR3 => Some(PR3),
-
-            B1 => Some(B2),
-            B2 => Some(B1),
-            B3 => Some(B3),
-            PB1 => Some(PB2),
-            PB2 => Some(PB1),
-            PB3 => Some(PB3),
-
-            G1 => Some(PG2),
-            G2 => Some(PG1),
-            G3 => Some(PG3),
-            PG1 => Some(G2),
-            PG2 => Some(G1),
-            PG3 => Some(G3),
-
-            S1 => Some(S2),
-            S2 => Some(S1),
-            S3 => Some(S3),
-            PS1 => Some(PS2),
-            PS2 => Some(PS1),
-            PS3 => Some(PS3),
-
-            N1 => Some(N2),
-            N2 => Some(N1),
-            N3 => Some(N3),
-            PN1 => Some(PN2),
-            PN2 => Some(PN1),
-            PN3 => Some(PN3),
-
-            L1 => Some(L2),
-            L2 => Some(L1),
-            L3 => Some(L3),
-            PL1 => Some(PL2),
-            PL2 => Some(PL1),
-            PL3 => Some(PL3),
-
-            P1 => Some(P2),
-            P2 => Some(P1),
-            P3 => Some(P3),
-            PP1 => Some(PP2),
-            PP2 => Some(PP1),
-            PP3 => Some(PP3),
-        }
+        Some(piece.rotate())
     } else {
         None
     }
@@ -1377,34 +1510,11 @@ pub fn is_promoted_piece_type(piece_type_opt:Option<PieceType>) -> bool {
         false
     }
 }
-pub fn jsa_piece_type_to_perfect(piece_type_opt:Option<JsaPieceType>) -> Option<PieceType> {
-    use piece_etc::JsaPieceType;
-    use piece_etc::PieceType;
-    match piece_type_opt {
-        Some(piece_type) => {
-            match piece_type {
-                JsaPieceType::K => Some(PieceType::K),
 
-                JsaPieceType::R => Some(PieceType::R),
-                JsaPieceType::PR => Some(PieceType::PR),
-
-                JsaPieceType::B => Some(PieceType::B),
-                JsaPieceType::PB => Some(PieceType::PB),
-
-                JsaPieceType::G => Some(PieceType::G),
-
-                JsaPieceType::S => Some(PieceType::S),
-                JsaPieceType::PS => Some(PieceType::PS),
-
-                JsaPieceType::N => Some(PieceType::N),
-                JsaPieceType::PN => Some(PieceType::PN),
-
-                JsaPieceType::L => Some(PieceType::L),
-                JsaPieceType::PL => Some(PieceType::PL),
-
-                JsaPieceType::P => Some(PieceType::P),
-                JsaPieceType::PP => Some(PieceType::PP),
-            }
+pub fn jsa_piece_type_to_perfect(jsa_pt_opt:Option<JsaPieceType>) -> Option<PieceType> {
+    match jsa_pt_opt {
+        Some(jsa_pt) => {
+            Some(PieceType::from_jsa_piece_type(jsa_pt))
         },
         None => {None},
     }
@@ -1440,11 +1550,11 @@ pub fn jsa_piece_type_to_sign(piece_type_opt:Option<JsaPieceType>) -> String {
         None => {"".to_string()},
     }
 }
-pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
+pub fn piece_type_to_sign(pt_opt:Option<PieceType>) -> String {
     use piece_etc::PieceType::*;
-    match piece_type_opt {
-        Some(piece_type) => {
-            match piece_type {
+    match pt_opt {
+        Some(pt) => {
+            match pt {
                 K => "K".to_string(),
                 PK => "K".to_string(),
 
@@ -1471,98 +1581,6 @@ pub fn piece_type_to_sign(piece_type_opt:Option<PieceType>) -> String {
             }
         },
         None => {"".to_string()},
-    }
-}
-pub fn piece_type_to_piece(phase_opt:Option<Phase>, piece_type:PieceType) -> Piece {
-    use piece_etc::Phase::*;
-    use piece_etc::Piece::*;
-    use piece_etc::PieceType::*;
-    match phase_opt {
-        Some(phase) => {
-            match phase {
-                First => {
-                    match piece_type {
-                        K => K1,
-                        PK => PK1,
-
-                        R => R1,
-                        PR => PR1,
-
-                        B => B1,
-                        PB => PB1,
-
-                        G => G1,
-                        PG => PG1,
-
-                        S => S1,
-                        PS => PS1,
-
-                        N => N1,
-                        PN => PN1,
-
-                        L => L1,
-                        PL => PL1,
-
-                        P => P1,
-                        PP => PP1,
-                    }
-                },
-                Second => {
-                    match piece_type {
-                        K => K2,
-                        PK => PK2,
-
-                        R => R2,
-                        PR => PR2,
-
-                        B => B2,
-                        PB => PB2,
-
-                        G => G2,
-                        PG => PG2,
-
-                        S => S2,
-                        PS => PS2,
-
-                        N => N2,
-                        PN => PN2,
-
-                        L => L2,
-                        PL => PL2,
-
-                        P => P2,
-                        PP => PP2,
-                    }
-                },
-            }
-        },
-        None => {
-            match piece_type {
-                K => K3,
-                PK => PK3,
-
-                R => R3,
-                PR => PR3,
-
-                B => B3,
-                PB => PB3,
-
-                G => G3,
-                PG => PG3,
-
-                S => S3,
-                PS => PS3,
-
-                N => N3,
-                PN => PN3,
-
-                L => L3,
-                PL => PL3,
-
-                P => P3,
-                PP => PP3,
-            }
-        }
     }
 }
 

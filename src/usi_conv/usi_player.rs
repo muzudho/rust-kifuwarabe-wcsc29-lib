@@ -29,7 +29,7 @@ impl UsiConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), drop));
+                let hand_off = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), drop));
                 rpm_move.push(hand_off);
 
                 // hand-on
@@ -57,7 +57,7 @@ impl UsiConverter {
 
                     // hand-on
                     let up = id_piece.get_type();
-                    let hand_on = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    let hand_on = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), up));
                     rpm_move.push(hand_on);
                 }
 

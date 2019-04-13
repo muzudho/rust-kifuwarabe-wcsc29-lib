@@ -158,9 +158,9 @@ impl RpmNoteOpe {
                 let piece = PhysicalSign::default(ch2.to_string()).to_piece();
 
                 //comm.print(&format!("{}{}{}", ch1, text15, ch2));
-                let address = Address::create_by_hand(
+                let address = Address::from_hand(
                     piece_to_phase(Some(piece)),
-                    piece_to_piece_type(piece));
+                    PieceType::from_piece(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
                 Some(RpmNoteOpe::from_address(address))
             },

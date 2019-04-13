@@ -91,74 +91,74 @@ impl Position {
         // 玉2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(K3)];
-            vec.push(IdentifiedPiece::create(None, false, K00));
-            vec.push(IdentifiedPiece::create(None, false, K01));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, K00));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, K01));
         }
         // 飛2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(R3)];
-            vec.push(IdentifiedPiece::create(None, false, R20));
-            vec.push(IdentifiedPiece::create(None, false, R21));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, R20));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, R21));
         }
         // 角2枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(B3)];
-            vec.push(IdentifiedPiece::create(None, false, B18));
-            vec.push(IdentifiedPiece::create(None, false, B19));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, B18));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, B19));
         }
         // 金4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(G3)];
-            vec.push(IdentifiedPiece::create(None, false, G02));
-            vec.push(IdentifiedPiece::create(None, false, G03));
-            vec.push(IdentifiedPiece::create(None, false, G04));
-            vec.push(IdentifiedPiece::create(None, false, G05));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G02));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G03));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G04));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G05));
         }
         // 銀4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(S3)];
-            vec.push(IdentifiedPiece::create(None, false, S06));
-            vec.push(IdentifiedPiece::create(None, false, S07));
-            vec.push(IdentifiedPiece::create(None, false, S08));
-            vec.push(IdentifiedPiece::create(None, false, S09));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S06));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S07));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S08));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S09));
         }
         // 桂4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(N3)];
-            vec.push(IdentifiedPiece::create(None, false, N10));
-            vec.push(IdentifiedPiece::create(None, false, N11));
-            vec.push(IdentifiedPiece::create(None, false, N12));
-            vec.push(IdentifiedPiece::create(None, false, N13));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N10));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N11));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N12));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N13));
         }
         // 香4枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(L3)];
-            vec.push(IdentifiedPiece::create(None, false, L14));
-            vec.push(IdentifiedPiece::create(None, false, L15));
-            vec.push(IdentifiedPiece::create(None, false, L16));
-            vec.push(IdentifiedPiece::create(None, false, L17));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L14));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L15));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L16));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L17));
         }
         // 歩18枚。
         {
             let vec = &mut self.hands[hand_piece_to_hand_index(P3)];
-            vec.push(IdentifiedPiece::create(None, false, P22));
-            vec.push(IdentifiedPiece::create(None, false, P23));
-            vec.push(IdentifiedPiece::create(None, false, P24));
-            vec.push(IdentifiedPiece::create(None, false, P25));
-            vec.push(IdentifiedPiece::create(None, false, P26));
-            vec.push(IdentifiedPiece::create(None, false, P27));
-            vec.push(IdentifiedPiece::create(None, false, P28));
-            vec.push(IdentifiedPiece::create(None, false, P29));
-            vec.push(IdentifiedPiece::create(None, false, P30));
-            vec.push(IdentifiedPiece::create(None, false, P31));
-            vec.push(IdentifiedPiece::create(None, false, P32));
-            vec.push(IdentifiedPiece::create(None, false, P33));
-            vec.push(IdentifiedPiece::create(None, false, P34));
-            vec.push(IdentifiedPiece::create(None, false, P35));
-            vec.push(IdentifiedPiece::create(None, false, P36));
-            vec.push(IdentifiedPiece::create(None, false, P37));
-            vec.push(IdentifiedPiece::create(None, false, P38));
-            vec.push(IdentifiedPiece::create(None, false, P39));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P22));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P23));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P24));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P25));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P26));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P27));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P28));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P29));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P30));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P31));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P32));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P33));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P34));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P35));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P36));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P37));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P38));
+            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P39));
         }
     }
 
@@ -242,6 +242,21 @@ impl Position {
         self.hands[hand_index].len() as i8
     }
 
+    pub fn search_hand(&self, ph_opt:Option<Phase>, pid:PieceIdentify) -> Option<IdentifiedPiece> {
+        let pt = pid.get_piece_type();
+        let pi = Piece::from_ph_pt(ph_opt, pt);
+
+        let hand_index = hand_piece_to_hand_index(pi);
+
+        for idp in &self.hands[hand_index] {
+            if idp.get_id() == pid {
+                return Some(*idp);
+            }
+        }
+
+        None
+    }
+
     pub fn add_hand(&mut self, id_piece_opt:Option<IdentifiedPiece>) {
         if let Some(id_piece) = id_piece_opt {
             let hand_index = hand_id_piece_to_hand_index(id_piece);
@@ -267,7 +282,7 @@ impl Position {
     /// USI position 読込時に使う。使ってない駒を盤上に置く。
     pub fn activate_piece(&mut self, piece_opt:Option<Piece>, cell:Cell) {
         if let Some(piece) = piece_opt {
-            let disactivate_piece = piece_to_disactivate(piece);
+            let disactivate_piece = piece.to_disactivate();
             let hand_index = hand_piece_to_hand_index(disactivate_piece);
             let id_piece = self.hands[hand_index].pop().unwrap();
 
@@ -372,27 +387,31 @@ impl Position {
         }
     }
 
+    /// 駒の検索。
+    /// 
     /// # Returns
     /// 
-    /// 盤上の位置、持ち駒にあるか否か
-    pub fn address_number_of(&self, phase_opt:Option<Phase>, id:PieceIdentify) -> (Option<i8>, bool) {
+    /// 識別駒、番地。
+    pub fn find_wild(&self, ph_opt:Option<Phase>, pid:PieceIdentify) -> Option<(IdentifiedPiece, Address)> {
         // 盤上のスキャン。
         for addr in BOARD_START..self.board_size.len() {
-            if let Some(id_piece) = self.board[addr] {
-                if id_piece.get_phase() == phase_opt && id_piece.get_id() == id {
+            // Id piece.
+            if let Some(idp) = self.board[addr] {
+                if idp.get_phase() == ph_opt && idp.get_id() == pid {
                     // 駒の先後と、背番号が一致したら。
-                    return (Some(addr as i8), false);
+                    let addr_obj = Address::from_raw(addr);
+                    return Some((idp, addr_obj));
                 }
             }
         }
 
         // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
-        let hand_count = self.get_hand_count(piece_type_to_piece(phase_opt ,id.get_piece_type()));
-        if hand_count > 0 {
-            return (None, true);
+        if let Some(idp) = self.search_hand(ph_opt, pid) {
+            let addr_obj = Address::from_hand(ph_opt, idp.get_type());
+            Some((idp, addr_obj))
+        } else {
+            None
         }
-
-        (None, false)
     }
 
     /// 持ち駒の１行表示
@@ -418,7 +437,7 @@ impl Position {
         for piece in &array {
             let hand_index = hand_piece_to_hand_index(*piece);
             for id_piece in self.hands[hand_index].iter() {
-                text = format!("{} {}", text, id_piece.to_physical_display())
+                text = format!("{} {}", text, id_piece.to_human_presentable())
             }
         }
 
@@ -457,7 +476,7 @@ impl Position {
                         2 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         3 => {Parser::append(&mut content, &"    | | | | ".to_string())},
                         4 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
-                        5 => {Parser::append(&mut content, &format!("     {}   ", self.get_cell_thing_by_address(Address::create_as_sky()).to_display()))},
+                        5 => {Parser::append(&mut content, &format!("     {}   ", self.get_cell_thing_by_address(Address::from_sky()).to_display()))},
                         6|7|8|9|10|11|12|13|14|15|16 => {Parser::append(&mut content, &"            ".to_string())},
                         _ => { panic!("Unexpected row: {0}.", row) },
                     };
@@ -490,7 +509,7 @@ impl Position {
                 Second => {
                     match row {
                         0|1|2|3|4|5|6|7|8|9|10 => {},
-                        11 => {Parser::append(&mut content, &format!("  {}", self.get_cell_thing_by_address(Address::create_as_sky()).to_display()))},
+                        11 => {Parser::append(&mut content, &format!("  {}", self.get_cell_thing_by_address(Address::from_sky()).to_display()))},
                         12 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
                         13 => {Parser::append(&mut content, &" | | | |".to_string())},
                         14 => {Parser::append(&mut content, &" | | | |".to_string())},

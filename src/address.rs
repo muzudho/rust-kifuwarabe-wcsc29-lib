@@ -48,6 +48,12 @@ impl fmt::Display for Address {
 }
 */
 impl Address {
+    pub fn from_raw(raw:usize) -> Address {
+        Address {
+            index: raw,
+        }
+    }
+
     /// 盤上の駒の番地。
     pub fn from_cell(cell:Cell, board_size:BoardSize) -> Address {
         Address {
@@ -55,13 +61,13 @@ impl Address {
         }
     }
 
-    pub fn create_as_sky() -> Address {
+    pub fn from_sky() -> Address {
         Address {
             index: SKY_ADDRESS,
         }
     }
 
-    pub fn create_by_hand(phase_opt:Option<Phase>, piece_type:PieceType) -> Address {
+    pub fn from_hand(phase_opt:Option<Phase>, pt:PieceType) -> Address {
         use piece_etc::Phase::*;
         use piece_etc::PieceType::*;
 
@@ -69,7 +75,7 @@ impl Address {
             Some(phase) => {
                 match phase {
                     First => {
-                        match piece_type {
+                        match pt {
                             K => {82},
                             R | PR => {83},
                             B | PB => {84},
@@ -78,11 +84,11 @@ impl Address {
                             N | PN => {87},
                             L | PL => {88},
                             P | PP => {89},
-                            _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(piece_type)))
+                            _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(pt)))
                         }
                     },
                     Second => {
-                        match piece_type {
+                        match pt {
                             K => {90},
                             R | PR => {91},
                             B | PB => {92},
@@ -91,13 +97,13 @@ impl Address {
                             N | PN => {95},
                             L | PL => {96},
                             P | PP => {97},
-                            _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(piece_type)))
+                            _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(pt)))
                         }
                     },
                 }
             },
             None => {
-                match piece_type {
+                match pt {
                     K => {98},
                     R => {99},
                     B => {100},
@@ -106,7 +112,7 @@ impl Address {
                     N => {103},
                     L => {104},
                     P => {105},
-                    _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(piece_type)))
+                    _ => panic!("Unexpected hand piece_type {}.", piece_type_to_sign(Some(pt)))
                 }
             },
         };
