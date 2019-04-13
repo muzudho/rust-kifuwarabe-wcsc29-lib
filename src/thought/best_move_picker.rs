@@ -121,12 +121,12 @@ impl BestMovePicker {
             if !book_file.book.is_empty() {
                 //comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
 
-                let mut _record_index = -1;
+                let mut record_index = -1;
 
                 // レコードがいっぱいある。
                 for record_for_json in book_file.book {
-                    _record_index += 1;
-                    //comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
+                    record_index += 1;
+                    comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                     'piece_loop: for my_piece_id in PieceIdentify::iterator() {
@@ -144,10 +144,10 @@ impl BestMovePicker {
                                 if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, &mut note_idx, position.get_board_size()) {
                                     //comm.println("Scanning.");
                                     // どの駒が動いた１手なのか、またその番地。
-                                    let (ftp_id, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
+                                    let (ftp_id_opt, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
 
                                     // 背番号と、アドレスの一致。
-                                    if my_piece_id.get_number() == ftp_id.get_number() &&
+                                    if my_piece_id.get_number() == ftp_id_opt.unwrap().get_number() &&
                                         ftp_address.get_index() == my_addr_obj.get_index() as usize {
                                         // 一致。
 
@@ -156,19 +156,19 @@ impl BestMovePicker {
                                         // TODO この手は、現在の盤上で指せるのか検証したい。
                                         // 例えば 味方の駒の上に駒を動かさないだろうか？
 
-                                        //comm.println(&format!("Rmove: {:?}.", rmove));
+                                        comm.println(&format!("Rmove: {}.", rmove));
 
                                         let mut thread = ThreadsOfPiece::new();
                                         thread.rpm_move = Some(rmove);
 
                                         //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
-                                        // 差し替え。
+                                        // 最後に見つかったものに、差し替え。
                                         self.thread_by_piece_id.insert(my_piece_id.get_number(), thread);
                                         //comm.println("Change!");
                                         //}
 
                                         // TODO とりあえず抜ける。
-                                        break 'piece_loop;
+                                        // break 'piece_loop;
                                     } else {
                                         // 一致しなかったら何もしない。
                                         // No match.
@@ -176,12 +176,10 @@ impl BestMovePicker {
                                     }
                                 } else {
                                     // トラックの終わり。
-                                    //comm.println("Break: End of track.");
+                                    // comm.println("Break: End of track.");
                                     break 'track_scan;
                                 }
                             }
-                        } else {
-                            // 自駒ではない。
                         }
                     }
 

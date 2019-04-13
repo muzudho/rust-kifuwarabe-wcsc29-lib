@@ -1,3 +1,4 @@
+use std::fmt;
 use std::slice::Iter;
 
 #[derive(Debug)]
@@ -12,7 +13,6 @@ pub enum Phase {
 /// Piece identify. Order of "大橋"(Ohashi) mode.
 /// With out phase.
 #[derive(Clone, Copy, PartialEq)]
-#[derive(Debug)]
 pub enum PieceIdentify {
     K00,
     K01,
@@ -54,6 +54,11 @@ pub enum PieceIdentify {
     P37,
     P38,
     P39,
+}
+impl fmt::Display for PieceIdentify {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_human_presentable())
+    }
 }
 impl PieceIdentify {
     pub fn iterator() -> Iter<'static, PieceIdentify> {
@@ -175,6 +180,52 @@ impl PieceIdentify {
             P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
             P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => P,
         }
+    }
+
+    pub fn to_human_presentable(self) -> String {
+        use piece_etc::PieceIdentify::*;
+        match self {
+            K00 => "K00",
+            K01 => "K01",
+            G02 => "G02",
+            G03 => "G03",
+            G04 => "G04",
+            G05 => "G05",
+            S06 => "S06",
+            S07 => "S07",
+            S08 => "S08",
+            S09 => "S09",
+            N10 => "N10",
+            N11 => "N11",
+            N12 => "N12",
+            N13 => "N13",
+            L14 => "L14",
+            L15 => "L15",
+            L16 => "L16",
+            L17 => "L17",
+            B18 => "B18",
+            B19 => "B19",
+            R20 => "R20",
+            R21 => "R21",
+            P22 => "P22",
+            P23 => "P23",
+            P24 => "P24",
+            P25 => "P25",
+            P26 => "P26",
+            P27 => "P27",
+            P28 => "P28",
+            P29 => "P29",
+            P30 => "P30",
+            P31 => "P31",
+            P32 => "P32",
+            P33 => "P33",
+            P34 => "P34",
+            P35 => "P35",
+            P36 => "P36",
+            P37 => "P37",
+            P38 => "P38",
+            P39 => "P39",
+        }.to_string()
     }
 }
 

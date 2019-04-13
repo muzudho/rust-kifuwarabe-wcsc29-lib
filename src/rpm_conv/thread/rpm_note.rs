@@ -1,19 +1,34 @@
 use communication::*;
+use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_for_json::rpm_book_file::*;
+use std::fmt;
 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct RpmNote {
     operation: RpmNoteOpe,
-    // 駒の背番号。
-    identify: i8,
+    // 駒の背番号。フェーズ・チェンジのときは None。
+    identify: Option<PieceIdentify>,
+}
+impl fmt::Display for RpmNote {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "'{}'{}",
+            match self.identify {
+                Some(pid) => {
+                    pid.to_human_presentable()
+                },
+                None => { "--".to_string() },
+            },
+            self.operation
+        )
+    }
 }
 impl RpmNote {
-    pub fn create_rpm_note(operation_note: RpmNoteOpe, identify_num: i8) -> RpmNote {
+    pub fn create_rpm_note(operation_note: RpmNoteOpe, pid:Option<PieceIdentify>) -> RpmNote {
         RpmNote {
             operation: operation_note,
-            identify: identify_num,
+            identify: pid,
         }
     }
 
@@ -21,7 +36,7 @@ impl RpmNote {
         self.operation
     }
 
-    pub fn get_id(&self) -> i8 {
+    pub fn get_id(&self) -> Option<PieceIdentify> {
         self.identify
     }
 
@@ -49,10 +64,16 @@ impl RpmNote {
             panic!("Unexpected operation note token. {}", record_for_json.body.operation[*note_start])
         };
 
-        let piece_num = record_for_json.body.piece_number[*note_start];
+        let pnum = record_for_json.body.piece_number[*note_start];
+        let pid_opt = if pnum == -1 {
+            // フェーズ・チェンジ。
+            None
+        } else {
+            PieceIdentify::from_number(pnum)
+        };
 
         // カウントアップ。
         *note_start += 1;
-        Some(RpmNote::create_rpm_note(note_ope, piece_num))
+        Some(RpmNote::create_rpm_note(note_ope, pid_opt))
     }
 }

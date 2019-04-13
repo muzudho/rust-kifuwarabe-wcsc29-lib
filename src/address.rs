@@ -1,5 +1,6 @@
 use piece_etc::*;
 use position::*;
+use std::fmt;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Cell {
@@ -35,18 +36,15 @@ impl Cell {
 }
 
 /// Vector に入れるときコピーする。
-#[derive(Debug)]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq)] // Debug, 
 pub struct Address {
     index: usize,
 }
-/*
 impl fmt::Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "index: {}.", self.index)
+        write!(f, "Ad.{}", self.index)
     }
 }
-*/
 impl Address {
     pub fn from_raw(raw:usize) -> Address {
         Address {

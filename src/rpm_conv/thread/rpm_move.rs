@@ -5,27 +5,25 @@ use position::*;
 use rpm_conv::thread::rpm_note::*;
 // use rpm_conv::thread::rpm_note_operation::*;
 use rpm_for_json::rpm_book_file::*;
+use std::fmt;
 use usi_conv::usi_move::*;
 
 /// １手分。
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct RpmMove {
     pub notes: Vec<RpmNote>,
 }
-/*
 impl fmt::Display for RpmMove {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut text = String::new();
 
-        let size = self.operation_notes.len();
-        for i in 0..size {
-            text = format!("{} ({} {})", text, self.operation_notes[i], self.piece_number_notes[i]).to_string()
+        for note in &self.notes {
+            text = format!("{} {}", text, note).to_string()
         }
 
         write!(f, "{}", text)
     }
 }
-*/
 impl RpmMove {
     fn new() -> RpmMove {
         RpmMove {
@@ -98,19 +96,19 @@ impl RpmMove {
     }
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
-    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (PieceIdentify, Address) {
+    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (Option<PieceIdentify>, Address) {
         // とりあえず USI move に変換するついでに、欲しい情報を得る。
-        let (_umove, first_touch_id, first_touch_addr) = self.to_usi_move(board_size);
+        let (_umove, first_touch_pid_opt, first_touch_addr) = self.to_usi_move(board_size);
 
-        (first_touch_id, first_touch_addr)
+        (first_touch_pid_opt, first_touch_addr)
     }
 
     /// # Returns
     /// 
     /// Usi move,
-    /// どの駒を動かした一手か,
+    /// どの駒を動かした一手か、フェーズチェンジのときは None,
     /// どこの駒を動かした一手か,
-    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
+    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, Option<PieceIdentify>, Address) {
         // 順番は決まっている。
         let mut i_token = 0;
 
@@ -119,7 +117,7 @@ impl RpmMove {
         let mut promotion = false;
         let mut drop_opt = None;
         // first touch piece.
-        let mut ftp_id = None;
+        let mut ftp_id_opt = None;
         let mut ftp_addr = None;
         for note in &self.notes {
             // 数が入っているとき。
@@ -128,7 +126,7 @@ impl RpmMove {
                     // 駒台
                     if i_token == 0 {
                         drop_opt = Some(PieceType::from_piece(piece));
-                        ftp_id = Some(note.get_id());
+                        ftp_id_opt = note.get_id();
                         ftp_addr = Some(address);
                         i_token += 1;
                     }
@@ -137,14 +135,14 @@ impl RpmMove {
                     match i_token {
                         0 => {
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
-                            ftp_id = Some(note.get_id());
+                            ftp_id_opt = note.get_id();
                             ftp_addr = Some(address);
                             i_token += 1;
                         },
                         1 => {
                             dst_opt = Some(board_size.address_to_cell(address.get_index()));
                             // ２つ目に出てくる場合、１つ目は取った相手の駒の動き。
-                            ftp_id = Some(note.get_id());
+                            ftp_id_opt = note.get_id();
                             ftp_addr = Some(address);
                             i_token += 1;
                         },
@@ -172,11 +170,11 @@ impl RpmMove {
                 promotion,
                 board_size)
         } else {
-            panic!("Unexpected dst. move.len: '{}' > 1, move: '{:?}'.", self.len(), self)
+            panic!("Unexpected dst. move.len: '{}' > 1, move: '{}'.", self.len(), self)
         };
 
         // USIの指し手が作れれば、 first touch が分からないことはないはず。
-        (umove, PieceIdentify::from_number(ftp_id.unwrap()).unwrap(), ftp_addr.unwrap())
+        (umove, ftp_id_opt, ftp_addr.unwrap())
     }
 
     pub fn to_operation_string(&self, board_size:BoardSize) -> String {
@@ -194,7 +192,16 @@ impl RpmMove {
         let mut text = String::new();
 
         for i in 0..self.len() {
-            text = format!("{} {}", text, &self.notes[i].get_id());
+            text = format!("{} {}", text,
+                match &self.notes[i].get_id() {
+                    Some(pid) => {
+                        pid.get_number().to_string()
+                    },
+                    None => {
+                        "-1".to_string()
+                    },
+                }
+            );
         }
 
         text

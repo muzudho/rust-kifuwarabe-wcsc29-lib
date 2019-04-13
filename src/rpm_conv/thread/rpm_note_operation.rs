@@ -3,9 +3,10 @@ use communication::*;
 use parser::*;
 use piece_etc::*;
 use position::*;
+use std::fmt;
 
 /// Vector に入れるときコピーする。
-#[derive(Debug)]
+//#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct RpmNoteOpe {
     pub address: Option<Address>,
@@ -16,7 +17,6 @@ pub struct RpmNoteOpe {
     phase_change: bool,
     resign: bool,
 }
-/*
 impl fmt::Display for RpmNoteOpe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.address {
@@ -39,7 +39,6 @@ impl fmt::Display for RpmNoteOpe {
         }
     }
 }
-*/
 impl RpmNoteOpe {
     pub fn from_address(address:Address) -> RpmNoteOpe {
         RpmNoteOpe {
