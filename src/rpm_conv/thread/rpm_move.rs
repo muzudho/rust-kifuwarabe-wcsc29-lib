@@ -1,3 +1,4 @@
+use address::*;
 use communication::*;
 use piece_etc::*;
 use position::*;
@@ -41,13 +42,19 @@ impl RpmMove {
         self.operation_notes.is_empty()
     }
 
-    pub fn to_usi_sign(&self, board_size:BoardSize) -> UsiMove {
+    /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
+    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (PieceIdentify, Address) {
+        // とりあえず USI move に変換。
+        let umove = self.to_usi_move(board_size);
+
+
+    }
+
+    pub fn to_usi_move(&self, board_size:BoardSize) -> UsiMove {
         let mut i_location = 0;
 
-        let mut sfile = -1;
-        let mut srank = -1;
-        let mut dfile = -1;
-        let mut drank = -1;
+        let mut src_opt = None;
+        let mut dst_opt = None;
         let mut promotion = false;
         let mut drop_opt = None;
         for note in &self.operation_notes {
@@ -61,20 +68,14 @@ impl RpmMove {
                 } else {
                     match i_location {
                         0 => {
-                            let (sf, sr) = board_size.address_to_file_rank(address.get_index());
-                            sfile = sf;
-                            srank = sr;
+                            src_opt = Some(board_size.address_to_cell(address.get_index()));
                             i_location += 1;
                         },
                         1 => {
-                            let (df, dr) = board_size.address_to_file_rank(address.get_index());
-                            dfile = df;
-                            drank = dr;
+                            dst_opt = Some(board_size.address_to_cell(address.get_index()));
                             i_location += 1;
                         },
-                        _ => {
-
-                        },
+                        _ => {},
                     }
                 }
 
@@ -88,16 +89,13 @@ impl RpmMove {
 
         if let Some(drop) = drop_opt {
             UsiMove::create_drop(
-                dfile,
-                drank,
+                dst_opt.unwrap(),
                 drop,
                 board_size)
         } else {
             UsiMove::create_walk(
-                sfile,
-                srank,
-                dfile,
-                drank,
+                src_opt.unwrap(),
+                dst_opt.unwrap(),
                 promotion,
                 board_size)
         }
@@ -124,12 +122,12 @@ impl RpmMove {
         text
     }
 
-    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, row_idx:usize, board_size:BoardSize) -> Option<RpmMove> {
+    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_idx:usize, board_size:BoardSize) -> Option<RpmMove> {
         let mut rmove = RpmMove::new();
         let size = record_for_json.body.operation.len();
 
         // TODO とりあえず　次のターンチェンジまで読み進める。
-        'j_loop: for j in row_idx..size {
+        'j_loop: for j in note_idx..size {
             let j_ope_token = &record_for_json.body.operation[j];
 
             let j_ope_note_opt;

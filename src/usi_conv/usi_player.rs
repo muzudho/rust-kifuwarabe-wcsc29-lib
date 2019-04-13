@@ -20,8 +20,8 @@ impl UsiConverter {
         }
 
         let destination_address = Address::create_by_file_rank(
-            umove.destination_file,
-            umove.destination_rank,
+            umove.destination.unwrap().get_file(),
+            umove.destination.unwrap().get_rank(),
             position.get_board_size()
         );
         
@@ -65,8 +65,8 @@ impl UsiConverter {
 
                 // board-off
                 let board_off = RpmOpeNote::create_by_address(Address::create_by_file_rank(
-                    umove.source_file,
-                    umove.source_rank,
+                    umove.source.unwrap().get_file(),
+                    umove.source.unwrap().get_rank(),
                     position.get_board_size()
                 ));
                 rpm_move.push(board_off);

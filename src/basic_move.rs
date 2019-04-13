@@ -1,3 +1,4 @@
+/*
 use position::*;
 
 pub reverse_cell_vec(phase:&Phase, cell_vec:&Vec<i8>) -> Vec<i8> {
@@ -115,3 +116,5 @@ pub generate_rook_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
     (file, rank) = address_to_file_rank(address);
     v
 }
+
+*/

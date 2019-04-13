@@ -1,6 +1,32 @@
 use piece_etc::*;
 use position::*;
 
+#[derive(Clone, Copy, PartialEq)]
+pub struct Cell {
+    file: i8,
+    rank: i8,
+}
+impl Cell {
+    pub fn create_by_file_rank(file_num:i8, rank_num:i8) -> Cell {
+        Cell {
+            file: file_num,
+            rank: rank_num,
+        }
+    }
+
+    pub fn get_file(self) -> i8 {
+        self.file
+    }
+
+    pub fn get_rank(self) -> i8 {
+        self.rank
+    }
+
+    pub fn to_scalar(self) -> i8 {
+        self.file * 10 + self.rank
+    }
+}
+
 /// Vector に入れるときコピーする。
 #[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
@@ -137,11 +163,8 @@ impl Address {
 
     pub fn to_physical_sign(self, board_size:BoardSize) -> String {
         if self.is_on_board(board_size) {
-            let (file, rank) = board_size.address_to_file_rank(self.index);
-            format!(
-                "{}{}",
-                file,
-                rank) // Parser::i8_to_rank_char(rank)
+            let cell = board_size.address_to_cell(self.index);
+            cell.to_scalar().to_string()
         } else if self.is_hand() {
             // 持ち駒
             format!(

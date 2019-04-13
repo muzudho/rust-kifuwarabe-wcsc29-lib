@@ -1,4 +1,5 @@
 /// フォーサイス エドワーズ記法
+use address::*;
 use communication::*;
 use position::*;
 use usi_conv::usi_move::*;
@@ -66,15 +67,18 @@ impl Fen {
     /// ex.) Parses 7g7f.
     pub fn parse_usi_1move(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> UsiMove {
         let drop_opt = parse_sign_to_drop(line, start);
-        let mut source_file_num = 0;
-        let mut source_rank_num = 0;
-        if drop_opt == None {
-            source_file_num = parse_sign_to_file(line, start);
-            source_rank_num = parse_sign_to_rank(line, start);
+        let source_opt = if drop_opt == None {
+            Some(Cell::create_by_file_rank(
+                parse_sign_to_file(line, start),
+                parse_sign_to_rank(line, start)))
+        } else {
+            None
         };
 
-        let destination_file_num = parse_sign_to_file(line, start);
-        let destination_rank_num = parse_sign_to_rank(line, start);
+        let destination = Cell::create_by_file_rank(
+            parse_sign_to_file(line, start),
+            parse_sign_to_rank(line, start));
+
         let promotion_flag =
             if drop_opt == None {
                 parse_sign_to_promotion(line, start)
@@ -84,16 +88,13 @@ impl Fen {
 
         if let Some(drop) = drop_opt {
             UsiMove::create_drop(
-                destination_file_num,
-                destination_rank_num,
+                destination,
                 drop,
                 board_size)
         } else {
             UsiMove::create_walk(
-                source_file_num,
-                source_rank_num,
-                destination_file_num,
-                destination_rank_num,
+                source_opt.unwrap(),
+                destination,
                 promotion_flag,
                 board_size)
         }

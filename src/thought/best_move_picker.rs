@@ -135,78 +135,88 @@ impl BestMovePicker {
 
                             // 自分の駒番号を検索。
                             let size = record_for_json.body.operation.len();
-                            let mut skip_until_phase_change = false;
+                            // let mut skip_until_phase_change = false;
 
                             // 駒番号トラックをスキャン。
                             // 動かす駒番号を調べるので、フェーズの変わり目は -1 なので、 -1 の次に現れた駒番号を調べればよい。
-                            for row_idx in 0..size {
-                                // 駒番号トラックの数。
-                                let idtr_num = record_for_json.body.piece_number[row_idx];
+                            for note_idx in 0..size {
 
-                                // スキップ。
-                                if skip_until_phase_change {
-                                    if idtr_num == -1 {
-                                        comm.println(&format!("[{:>3}] --- {:>3} // Stop.", row_idx, idtr_num));
-                                        skip_until_phase_change = false;
-                                    } else {
-                                        comm.println(&format!("[{:>3}] --- {:>3} // Skip.", row_idx, idtr_num));
-                                    }
+                                // とりあえず 1手分をパースします。
+                                if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, note_idx, position.get_board_size()) {
+                                    // どの駒が動いた１手なのか、またその番地。
+                                    let (ftp_id, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
 
-                                    continue;
-                                }
+                                    /*
+                                    // 駒番号トラックの数。
+                                    let idtr_num = record_for_json.body.piece_number[note_idx];
 
-                                // 指し手の1文字目以降は読み飛ばす。
-                                skip_until_phase_change = true;
-
-                                if my_piece_id.get_number() == idtr_num {
-                                    // 一致。
-
-                                    // 番地を検索。
-                                    let optr_note = &record_for_json.body.operation[row_idx];
-                                    comm.println(&format!("[{:>3}] {} {:>3} // Pick.", row_idx, optr_note, idtr_num));
-
-                                    let ope_note_opt;
-                                    {
-                                        let mut start = 0;
-                                        ope_note_opt = RpmOpeNote::parse_1note(&comm, &optr_note, &mut start, position.get_board_size());
-                                    }
-
-                                    if let Some(ope_note) = ope_note_opt {
-                                        if let Some(target_address) = ope_note.address {
-                                            if target_address.get_index() == piece_address_at_cur_pos as usize {
-                                                comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
-                                                // 一致。
-                                                
-                                                // １手分読み進める。
-                                                if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, row_idx, position.get_board_size()) {
-                                                    // TODO この手は、現在の盤上で指せるのか検証したい。
-                                                    // 例えば 味方の駒の上に駒を動かさないだろうか？
-
-                                                    comm.println(&format!("Rmove: {:?}.", rmove));
-
-                                                    let mut thread = ThreadsOfPiece::new();
-                                                    thread.rpm_move = Some(rmove);
-
-                                                    //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
-                                                    // 差し替え。
-                                                    self.thread_by_piece_id.insert(number, thread);
-                                                    comm.println("Change!");
-                                                    //}
-
-                                                    // TODO とりあえず抜ける。
-                                                    break 'piece_loop;
-                                                } else {
-                                                    panic!("Unexpected move in record.")
-                                                }
-                                            }                                    
+                                    // スキップ。
+                                    if skip_until_phase_change {
+                                        if idtr_num == -1 {
+                                            comm.println(&format!("[{:>3}] --- {:>3} // Stop.", note_idx, idtr_num));
+                                            skip_until_phase_change = false;
+                                        } else {
+                                            comm.println(&format!("[{:>3}] --- {:>3} // Skip.", note_idx, idtr_num));
                                         }
+
+                                        continue;
+                                    }
+
+                                    // 指し手の1文字目以降は読み飛ばす。
+                                    skip_until_phase_change = true;
+                                    */
+
+                                    if my_piece_id.get_number() == ftp_id.get_number() {
+                                        // 一致。
+
+                                        /*
+                                        // 番地を検索。
+                                        let optr_note = &record_for_json.body.operation[note_idx];
+                                        comm.println(&format!("[{:>3}] {} {:>3} // Pick.", note_idx, optr_note, idtr_num));
+                                        let ope_note_opt;
+                                        {
+                                            let mut start = 0;
+                                            ope_note_opt = RpmOpeNote::parse_1note(&comm, &optr_note, &mut start, position.get_board_size());
+                                        }
+
+                                        if let Some(ope_note) = ope_note_opt {
+                                            if let Some(target_address) = ope_note.address {
+                                        */
+
+                                        if ftp_address.get_index() == piece_address_at_cur_pos as usize {
+                                            comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
+                                            // 一致。
+                                            
+                                            // TODO この手は、現在の盤上で指せるのか検証したい。
+                                            // 例えば 味方の駒の上に駒を動かさないだろうか？
+
+                                            comm.println(&format!("Rmove: {:?}.", rmove));
+
+                                            let mut thread = ThreadsOfPiece::new();
+                                            thread.rpm_move = Some(rmove);
+
+                                            //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
+                                            // 差し替え。
+                                            self.thread_by_piece_id.insert(number, thread);
+                                            comm.println("Change!");
+                                            //}
+
+                                            // TODO とりあえず抜ける。
+                                            break 'piece_loop;
+                                        }   
+                                        /*                                 
+                                            }
+                                        } else {
+                                            // TODO 持ち駒ではないか確認。
+                                        }
+                                         */
                                     } else {
-                                        // TODO 持ち駒ではないか確認。
+                                        // 一致しなかったら何もしない。
+                                        // No match.
+                                        comm.println(&format!("[{:>3}] --- {:>3} // -", note_idx, ftp_id.get_number()));
                                     }
                                 } else {
-                                    // 一致しなかったら何もしない。
-                                    // No match.
-                                    comm.println(&format!("[{:>3}] --- {:>3} // -", row_idx, idtr_num));
+                                    panic!("Unexpected move in record.")
                                 }
                             }
                         } // piece_address_at_cur_pos
@@ -264,7 +274,7 @@ impl BestMovePicker {
         // 自分の駒ごとの、現局面にマッチする最長の手筋を更新していく。
 
         if let Some(best_rpm_move) = best_rpm_move_opt {
-            best_rpm_move.to_usi_sign(position.get_board_size())
+            best_rpm_move.to_usi_move(position.get_board_size())
         } else {
             UsiMove::create_resign()
         }

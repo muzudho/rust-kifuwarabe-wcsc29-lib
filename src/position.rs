@@ -36,8 +36,11 @@ impl BoardSize {
         self.file_rank_to_address(file, rank)
     }
 
-    pub fn address_to_file_rank(self, address:usize) -> (i8, i8) {
-        ((address%self.file_len as usize) as i8 + 1, (address/self.file_len as usize) as i8 + 1)
+    pub fn address_to_cell(self, address:usize) -> Cell {
+        Cell::create_by_file_rank(
+            (address%self.file_len as usize) as i8 + 1,
+            (address/self.file_len as usize) as i8 + 1
+        )
     }
     pub fn len(self) -> usize {
         (self.file_len * self.rank_len) as usize

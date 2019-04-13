@@ -1,13 +1,12 @@
+use address::*;
 use std::*;
 use piece_etc::*;
 use position::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {
-    pub source_file:i8,
-    pub source_rank:i8,
-    pub destination_file:i8,
-    pub destination_rank:i8,
+    pub source:Option<Cell>,
+    pub destination:Option<Cell>,
     pub promotion:bool,
     drop:Option<PieceType>,
     resign: bool,
@@ -15,23 +14,19 @@ pub struct UsiMove {
 impl UsiMove {
     /// 盤上の駒を動かすとき。
     pub fn create_walk(
-        src_file:i8,
-        src_rank:i8,
-        dst_file:i8,
-        dst_rank:i8,
+        src:Cell,
+        dst:Cell,
         pro:bool,
         board_size:BoardSize) -> UsiMove {
 
-        debug_assert!(0<src_file && src_file <=board_size.get_file_len(), "Src file: {}.", src_file);
-        debug_assert!(0<src_rank && src_rank <=board_size.get_rank_len(), "Src rank: {}.", src_rank);
-        debug_assert!(0<dst_file && dst_file <=board_size.get_file_len(), "Dst file: {}.", dst_file);
-        debug_assert!(0<dst_rank && dst_rank <=board_size.get_rank_len(), "Dst rank: {}.", dst_rank);
+        debug_assert!(0<src.get_file() && src.get_file() <=board_size.get_file_len(), "Src file: {}.", src.to_scalar().to_string());
+        debug_assert!(0<src.get_rank() && src.get_rank() <=board_size.get_rank_len(), "Src rank: {}.", src.to_scalar().to_string());
+        debug_assert!(0<dst.get_file() && dst.get_file() <=board_size.get_file_len(), "Dst file: {}.", dst.to_scalar().to_string());
+        debug_assert!(0<dst.get_rank() && dst.get_rank() <=board_size.get_rank_len(), "Dst rank: {}.", dst.to_scalar().to_string());
 
         UsiMove {
-            source_file: src_file,
-            source_rank: src_rank,
-            destination_file: dst_file,
-            destination_rank: dst_rank,
+            source: Some(src),
+            destination: Some(dst),
             promotion: pro,
             drop: None,
             resign: false,
@@ -40,19 +35,16 @@ impl UsiMove {
 
     /// 打つとき。
     pub fn create_drop(
-        dst_file:i8,
-        dst_rank:i8,
+        dst:Cell,
         dro:PieceType,
         board_size:BoardSize) -> UsiMove {
 
-        debug_assert!(0<dst_file && dst_file <=board_size.get_file_len(), "Dst file: {}.", dst_file);
-        debug_assert!(0<dst_rank && dst_rank <=board_size.get_rank_len(), "Dst rank: {}.", dst_rank);
+        debug_assert!(0<dst.get_file() && dst.get_file() <=board_size.get_file_len(), "Dst file: {}.", dst.to_scalar().to_string());
+        debug_assert!(0<dst.get_rank() && dst.get_rank() <=board_size.get_rank_len(), "Dst rank: {}.", dst.to_scalar().to_string());
 
         UsiMove {
-            source_file: -1,
-            source_rank: -1,
-            destination_file: dst_file,
-            destination_rank: dst_rank,
+            source: None,
+            destination: Some(dst),
             promotion: false,
             drop: Some(dro),
             resign: false,
@@ -61,10 +53,8 @@ impl UsiMove {
 
     pub fn create_resign() -> UsiMove {
         UsiMove {
-            source_file: -1,
-            source_rank: -1,
-            destination_file: -1,
-            destination_rank: -1,
+            source: None,
+            destination: None,
             promotion: false,
             drop: None,
             resign: true,
@@ -98,10 +88,10 @@ impl UsiMove {
         if self.drop != None {
             sign.push_str(&format!("{}*", piece_type_to_sign(self.drop)));
         } else {
-            sign.push_str(&format!("{}{}", self.source_file, rank_to_sign(self.source_rank)));
+            sign.push_str(&format!("{}{}", self.source.unwrap().get_file(), rank_to_sign(self.source.unwrap().get_rank())));
         }
 
-        sign.push_str(&format!("{}{}", self.destination_file, rank_to_sign(self.destination_rank)));
+        sign.push_str(&format!("{}{}", self.destination.unwrap().get_file(), rank_to_sign(self.destination.unwrap().get_rank())));
 
         if self.promotion {
             sign.push_str("+");
