@@ -1,11 +1,11 @@
 use address::*;
-use position::*;
-
 use communication::*;
 use parser::*;
 use piece_etc::*;
+use position::*;
 
 /// Vector に入れるときコピーする。
+#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct RpmOpeNote {
     pub address: Option<Address>,
@@ -16,6 +16,30 @@ pub struct RpmOpeNote {
     phase_change: bool,
     resign: bool,
 }
+/*
+impl fmt::Display for RpmOpeNote {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.address {
+            Some(address) => {
+                write!(f, "{}", address.get_index())
+            },
+            None => {
+                if self.sky_turn {
+                    write!(f, "+")
+                } else if self.sky_rotate {
+                    write!(f, "-")
+                } else if self.phase_change {
+                    write!(f, "|")
+                } else if self.resign {
+                    write!(f, "%resign")
+                } else {
+                    write!(f, "PANIC!")
+                }
+            },
+        }
+    }
+}
+*/
 impl RpmOpeNote {
     pub fn create_by_address(address:Address) -> RpmOpeNote {
         RpmOpeNote {
@@ -102,7 +126,7 @@ impl RpmOpeNote {
     }
 
     /// ノート１つ読取☆（＾～＾）
-    pub fn parse_1note(_comm:&Communication, line:&str, start:&mut usize, board_size:&BoardSize) -> Option<RpmOpeNote> {
+    pub fn parse_1note(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> Option<RpmOpeNote> {
         let ch1 = line[*start..=*start].chars().nth(0).unwrap();
         match ch1 {
             ' ' => {
@@ -148,7 +172,7 @@ impl RpmOpeNote {
                 //comm.print(&format!("{}{}", ch1, ch2));
                 let file = Parser::file_char_to_i8(ch1);
                 let rank = Parser::rank_char_to_i8(ch2);
-                let address = Address::create_by_file_rank(file, rank, *board_size);
+                let address = Address::create_by_file_rank(file, rank, board_size);
                 Some(RpmOpeNote::create_by_address(address))
             },
             '+' => {

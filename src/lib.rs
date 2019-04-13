@@ -47,6 +47,7 @@ pub mod piece_etc;
 pub mod position;
 pub mod rpm_conv;
 pub mod rpm_model;
+pub mod rpm_play;
 pub mod usi_conv;
 pub mod thought;
 
@@ -56,6 +57,7 @@ use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_object_sheet::*;
+use rpm_play::rpm_player::*;
 use std::path::Path;
 use usi_conv::fen::*;
 use usi_conv::usi_record::*;
@@ -192,25 +194,25 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            CommonOperation::forward_1note(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::forward_1note(&comm, &mut rpm_record, &mut position);
             CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
-            CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
             CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
             CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
             CommonOperation::bo(&comm, &rpm_record, &position);
 

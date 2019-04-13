@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use parser::*;
 use piece_etc::*;
-use rpm_conv::rpm_operation_note::*;
+use rpm_conv::thread::rpm_operation_note::*;
 use std::*;
 
 pub const DEFAULT_FILE_LEN: usize = 9;
@@ -378,12 +378,13 @@ impl Position {
     /// # Returns
     /// 
     /// 盤上の位置、持ち駒にあるか否か
-    pub fn address_of(&self, phase_opt:Option<Phase>, id:&PieceIdentify) -> (i8, bool) {
-        for cell in BOARD_START..self.board_size.len() {
-            if let Some(id_piece) = self.board[cell] {
-                if id_piece.get_phase() == phase_opt && id_piece.get_id() == *id {
+    pub fn address_of(&self, phase_opt:Option<Phase>, id:PieceIdentify) -> (Option<i8>, bool) {
+        // 盤上のスキャン。
+        for addr in BOARD_START..self.board_size.len() {
+            if let Some(id_piece) = self.board[addr] {
+                if id_piece.get_phase() == phase_opt && id_piece.get_id() == id {
                     // 駒の先後と、背番号が一致したら。
-                    return (cell as i8, false);
+                    return (Some(addr as i8), false);
                 }
             }
         }
@@ -391,10 +392,10 @@ impl Position {
         // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
         let hand_count = self.get_hand_count(piece_type_to_piece(phase_opt ,id.get_piece_type()));
         if hand_count > 0 {
-            return (-1, true);
+            return (None, true);
         }
 
-        (-1, false)
+        (None, false)
     }
 
     /// 持ち駒の１行表示

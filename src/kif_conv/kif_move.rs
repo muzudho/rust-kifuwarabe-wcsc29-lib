@@ -189,7 +189,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
         if 0 < sign.len() - nth {
             // Phase 8.
             let ch = sign.chars().nth(nth).unwrap().to_string();
-            nth += 1;
+            /*nth += 1;*/
             mv.source_rank = match ch.as_str() {
                 "1" => 1,
                 "2" => 2,
@@ -200,10 +200,11 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 "7" => 7,
                 "8" => 8,
                 "9" => 9,
-                _ => {nth -= 1; 0},
+                _ => {/*nth -= 1;*/ 0},
             };
         }
 
+        /*
         if 0 < sign.len() - nth {
             // Phase 9.
             let ch = sign.chars().nth(nth).unwrap().to_string();
@@ -213,6 +214,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 _ => {/*nth -= 1*/},
             };
         }
+        */
 
         Some(mv)
     }

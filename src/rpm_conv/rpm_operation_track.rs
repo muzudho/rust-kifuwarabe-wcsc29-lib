@@ -1,5 +1,5 @@
 use position::*;
-use rpm_conv::rpm_operation_note::*;
+use rpm_conv::thread::rpm_operation_note::*;
 
 /// Reversible physical move - Operation track.
 #[derive(Default)]

@@ -2,10 +2,18 @@ use piece_etc::*;
 use position::*;
 
 /// Vector に入れるときコピーする。
+#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct Address {
     index: usize,
 }
+/*
+impl fmt::Display for Address {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "index: {}.", self.index)
+    }
+}
+*/
 impl Address {
     pub fn create_by_file_rank(file_num:i8, rank_num:i8, board_size:BoardSize) -> Address {
         Address {

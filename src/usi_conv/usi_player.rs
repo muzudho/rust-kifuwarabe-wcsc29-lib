@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use common_operation::*;
 use position::*;
-use rpm_conv::rpm_operation_note::*;
+use rpm_conv::thread::rpm_operation_note::*;
 use rpm_conv::rpm_record::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;

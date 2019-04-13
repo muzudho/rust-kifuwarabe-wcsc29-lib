@@ -23,7 +23,7 @@ pub struct RpmRecordBodyObject {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmRecordObject {
+pub struct RpmRecordForJson {
     pub header: RpmRecordHeaderObject,
     pub body: RpmRecordBodyObject,
 }
@@ -32,7 +32,7 @@ pub struct RpmRecordObject {
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmBookFile {
-    pub book: Vec<RpmRecordObject>,
+    pub book: Vec<RpmRecordForJson>,
 }
 impl RpmBookFile {
     pub fn new()->RpmBookFile{
