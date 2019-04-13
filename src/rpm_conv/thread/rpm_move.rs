@@ -42,18 +42,18 @@ impl RpmMove {
             panic!("操作トラックが 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
         }
 
-        // comm.print(&format!("P1M: note_start: {}, size: {}.", *note_start, size));
+        //comm.print(&format!("Parse 1move: note_start: {}, size: {}.", *note_start, size));
         let mut is_first = true;
 
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
-            if *note_start < size {
+            if size <= *note_start {
                 // トラックの終わり。
-                // comm.print("Break: End of track.");
+                //comm.print("Break: End of track.");
                 break 'j_loop;
             }
 
-            // comm.print(&format!("P1Mb: note_start: {}.", note_start));
+            //comm.print(&format!("Scanning: note_start: {}.", note_start));
 
             let note_opt = RpmNote::parse_1note(comm, record_for_json, note_start, board_size);
 
@@ -63,16 +63,16 @@ impl RpmMove {
                         if is_first {
 
                         } else {
-                            comm.print("Break: Phase change.");
+                            //comm.print("Break: Phase change.");
                             break 'j_loop;
                         }
                     }
 
-                    comm.print(&format!("Push: {:?}.", note));
+                    //comm.print(&format!("Push: {:?}.", note));
                     rmove.notes.push(note);
                 },
                 None => {
-                    comm.print("Break: None.");
+                    //comm.print("Break: None.");
                     break 'j_loop;
                 },
             }

@@ -375,7 +375,7 @@ impl Position {
     /// # Returns
     /// 
     /// 盤上の位置、持ち駒にあるか否か
-    pub fn address_of(&self, phase_opt:Option<Phase>, id:PieceIdentify) -> (Option<i8>, bool) {
+    pub fn address_number_of(&self, phase_opt:Option<Phase>, id:PieceIdentify) -> (Option<i8>, bool) {
         // 盤上のスキャン。
         for addr in BOARD_START..self.board_size.len() {
             if let Some(id_piece) = self.board[addr] {

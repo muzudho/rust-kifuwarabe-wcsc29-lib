@@ -85,6 +85,7 @@ impl BestMovePicker {
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
 
+            /*
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
@@ -92,23 +93,24 @@ impl BestMovePicker {
                 CommonOperation::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
-                    let (address_opt, _hand) = position.address_of(Some(Phase::First), K00);
+                    let (address_opt, _hand) = position.address_number_of(Some(Phase::First), K00);
                     comm.println(&format!("info First-K00: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
                 }
                 {
-                    let (address_opt, _hand) = position.address_of(Some(Phase::First), K01);
+                    let (address_opt, _hand) = position.address_number_of(Some(Phase::First), K01);
                     comm.println(&format!("info First-K01: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
                 }
                 // 後手玉の番地。
                 {
-                    let (address_opt, _hand) = position.address_of(Some(Phase::Second), K00);
+                    let (address_opt, _hand) = position.address_number_of(Some(Phase::Second), K00);
                     comm.println(&format!("info Second-K00: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
                 }
                 {
-                    let (address_opt, _hand) = position.address_of(Some(Phase::Second), K01);
+                    let (address_opt, _hand) = position.address_number_of(Some(Phase::Second), K01);
                     comm.println(&format!("info Second-K01: {}.", if let Some(address) = address_opt {address.to_string()}else{"".to_string()}));
                 }
             }
+            */
 
             let book_file = RpmBookFile::load(&file);
             
@@ -122,107 +124,69 @@ impl BestMovePicker {
                 // レコードがいっぱいある。
                 for record_for_json in book_file.book {
                     _record_index += 1;
-                    // comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
+                    //comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                     'piece_loop: for my_piece_id in PieceIdentify::iterator() {
-                        let number = my_piece_id.get_number();
 
-                        // 現局面の駒の番地。
-                        let (piece_address_at_cur_pos_opt, _hand) = position.address_of(Some(position.get_phase()), *my_piece_id);
-                        if let Some(piece_address_at_cur_pos) = piece_address_at_cur_pos_opt {
-                            //comm.println(&format!("Phase: {:?}, id: {:?}, number: {}, piece_address_at_cur_pos: {}, hand: {}.", position.get_phase(), my_piece_id, number, piece_address_at_cur_pos, _hand));
+                        // 現局面の盤上の自駒の番地。
+                        // TODO 駒台
+                        let (my_piece_addr_num_opt, hand) = position.address_number_of(Some(position.get_phase()), *my_piece_id);
+                        if let Some(my_piece_addr_num) = my_piece_addr_num_opt {
+                            //comm.println(&format!("My piece on board: Phase: {:?}, id: {:?}, number: {}, my_piece_addr: {}, hand: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number(), my_piece_addr_num, hand));
 
-                            // 自分の駒番号を検索。
-                            let size = record_for_json.body.operation.len();
-                            // let mut skip_until_phase_change = false;
-
-                            // 駒番号トラックをスキャン。
-                            // 動かす駒番号を調べるので、フェーズの変わり目は -1 なので、 -1 の次に現れた駒番号を調べればよい。
+                            // トラックをスキャン。
                             let mut note_idx = 0;
-                            'track_scan: while note_idx < size {
+                            'track_scan: loop {
 
                                 // とりあえず 1手分をパースします。
                                 if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, &mut note_idx, position.get_board_size()) {
+                                    //comm.println("Scanning.");
                                     // どの駒が動いた１手なのか、またその番地。
                                     let (ftp_id, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
 
-                                    /*
-                                    // 駒番号トラックの数。
-                                    let idtr_num = record_for_json.body.piece_number[note_idx];
-
-                                    // スキップ。
-                                    if skip_until_phase_change {
-                                        if idtr_num == -1 {
-                                            comm.println(&format!("[{:>3}] --- {:>3} // Stop.", note_idx, idtr_num));
-                                            skip_until_phase_change = false;
-                                        } else {
-                                            comm.println(&format!("[{:>3}] --- {:>3} // Skip.", note_idx, idtr_num));
-                                        }
-
-                                        continue;
-                                    }
-
-                                    // 指し手の1文字目以降は読み飛ばす。
-                                    skip_until_phase_change = true;
-                                    */
-
-                                    if my_piece_id.get_number() == ftp_id.get_number() {
+                                    // 背番号と、アドレスの一致。
+                                    if my_piece_id.get_number() == ftp_id.get_number() &&
+                                        ftp_address.get_index() == my_piece_addr_num as usize {
                                         // 一致。
 
-                                        /*
-                                        // 番地を検索。
-                                        let optr_note = &record_for_json.body.operation[note_idx];
-                                        comm.println(&format!("[{:>3}] {} {:>3} // Pick.", note_idx, optr_note, idtr_num));
-                                        let ope_note_opt;
-                                        {
-                                            let mut start = 0;
-                                            ope_note_opt = RpmNoteOpe::parse_1note(&comm, &optr_note, &mut start, position.get_board_size());
-                                        }
+                                        //comm.println(&format!("matched address. address={}.", my_piece_addr_num));
+                                        
+                                        // TODO この手は、現在の盤上で指せるのか検証したい。
+                                        // 例えば 味方の駒の上に駒を動かさないだろうか？
 
-                                        if let Some(ope_note) = ope_note_opt {
-                                            if let Some(target_address) = ope_note.address {
-                                        */
+                                        //comm.println(&format!("Rmove: {:?}.", rmove));
 
-                                        if ftp_address.get_index() == piece_address_at_cur_pos as usize {
-                                            comm.println(&format!("matched address. address={}.", piece_address_at_cur_pos));
-                                            // 一致。
-                                            
-                                            // TODO この手は、現在の盤上で指せるのか検証したい。
-                                            // 例えば 味方の駒の上に駒を動かさないだろうか？
+                                        let mut thread = ThreadsOfPiece::new();
+                                        thread.rpm_move = Some(rmove);
 
-                                            comm.println(&format!("Rmove: {:?}.", rmove));
+                                        //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
+                                        // 差し替え。
+                                        self.thread_by_piece_id.insert(my_piece_id.get_number(), thread);
+                                        //comm.println("Change!");
+                                        //}
 
-                                            let mut thread = ThreadsOfPiece::new();
-                                            thread.rpm_move = Some(rmove);
-
-                                            //if self.thread_by_piece_id[&number].max_ply < thread.max_ply {
-                                            // 差し替え。
-                                            self.thread_by_piece_id.insert(number, thread);
-                                            comm.println("Change!");
-                                            //}
-
-                                            // TODO とりあえず抜ける。
-                                            break 'piece_loop;
-                                        }   
-                                        /*                                 
-                                            }
-                                        } else {
-                                            // TODO 持ち駒ではないか確認。
-                                        }
-                                         */
+                                        // TODO とりあえず抜ける。
+                                        break 'piece_loop;
                                     } else {
                                         // 一致しなかったら何もしない。
                                         // No match.
-                                        comm.println(&format!("[{:>3}] --- {:>3} // -", note_idx, ftp_id.get_number()));
+                                        //comm.println(&format!("[{:>3}] --- {:>3} // -", note_idx, ftp_id.get_number()));
                                     }
                                 } else {
                                     // トラックの終わり。
-                                    // comm.println("Break: End of track.");
+                                    //comm.println("Break: End of track.");
                                     break 'track_scan;
                                 }
                             }
-                        } // piece_address_at_cur_pos
+                        } else if hand {
+                            // TODO 駒台。
+                            //comm.println(&format!("My piece in hand: Phase: {:?}, id: {:?}, number: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number()));
+
+                        } else {
+                            // その他。
+                            //comm.println(&format!("Not my piece: Phase: {:?}, id: {:?}, number: {}.", position.get_phase(), my_piece_id, my_piece_id.get_number()));
+                        }
                     }
 
                     // 手筋の長さが０でない駒の数。
@@ -236,7 +200,7 @@ impl BestMovePicker {
 
                     // いくつか読み取れれば打ち止め。
                     if count > 0 {
-                        println!("#Break. Exit piece count = {}.", count);
+                        //println!("#Break. Exit piece count = {}.", count);
                         break 'path_loop;
                     }
 
