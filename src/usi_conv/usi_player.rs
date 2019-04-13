@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use common_operation::*;
 use position::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
@@ -11,11 +11,11 @@ pub struct UsiConverter {
 
 }
 impl UsiConverter {
-    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<RpmOpeNote> {
+    pub fn convert_move(umove:UsiMove, position:&Position) -> Vec<RpmNoteOpe> {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
-            rpm_move.push(RpmOpeNote::create_resign());
+            rpm_move.push(RpmNoteOpe::create_resign());
             return rpm_move;
         }
 
@@ -29,11 +29,11 @@ impl UsiConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), drop));
+                let hand_off = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), drop));
                 rpm_move.push(hand_off);
 
                 // hand-on
-                let hand_on = RpmOpeNote::create_by_address(destination_address);
+                let hand_on = RpmNoteOpe::from_address(destination_address);
                 rpm_move.push(hand_on);
             },
             None => {
@@ -42,45 +42,45 @@ impl UsiConverter {
                     // 駒を取る動きが入る場合
 
                     // hand-off
-                    let hand_off = RpmOpeNote::create_by_address(destination_address);
+                    let hand_off = RpmNoteOpe::from_address(destination_address);
                     rpm_move.push(hand_off);
 
                     // hand-turn
                     if id_piece.is_promoted() {
-                        let hand_turn = RpmOpeNote::turn_over();
+                        let hand_turn = RpmNoteOpe::turn_over();
                         rpm_move.push(hand_turn);
                     }
 
                     // hand-rotate
-                    let hand_rotate = RpmOpeNote::rotate();
+                    let hand_rotate = RpmNoteOpe::rotate();
                     rpm_move.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
-                    let hand_on = RpmOpeNote::create_by_address(Address::create_by_hand(Some(position.get_phase()), up));
+                    let hand_on = RpmNoteOpe::from_address(Address::create_by_hand(Some(position.get_phase()), up));
                     rpm_move.push(hand_on);
                 }
 
                 // board-off
-                let board_off = RpmOpeNote::create_by_address(Address::from_cell(
+                let board_off = RpmNoteOpe::from_address(Address::from_cell(
                     umove.source.unwrap(),
                     position.get_board_size()));
                 rpm_move.push(board_off);
 
                 // board-turn-over
                 if umove.promotion {
-                    let board_turn = RpmOpeNote::turn_over();
+                    let board_turn = RpmNoteOpe::turn_over();
                     rpm_move.push(board_turn);
                 }
 
                 // board-on
-                let board_on = RpmOpeNote::create_by_address(destination_address);
+                let board_on = RpmNoteOpe::from_address(destination_address);
                 rpm_move.push(board_on);
             },
         }
 
         // change-phase
-        let change_phase = RpmOpeNote::change_phase();
+        let change_phase = RpmNoteOpe::change_phase();
         rpm_move.push(change_phase);
 
         rpm_move

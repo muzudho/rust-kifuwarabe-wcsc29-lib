@@ -1,7 +1,7 @@
 use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 
 use common_operation::*;
 use communication::*;
@@ -65,7 +65,7 @@ impl RpmRecord {
     }
 
     /// 追加する。
-    pub fn add_note(&mut self, rpm_note:&RpmOpeNote, identify:i8) {
+    pub fn add_note(&mut self, rpm_note:&RpmNoteOpe, identify:i8) {
         let mut cursor_clone = self.body.cursor; // .clone();
         self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor, &mut self.body.ply);
         self.body.identify_track.add_identify(identify, &mut cursor_clone);
@@ -137,7 +137,7 @@ impl RpmRecord {
                 return;
             }
 
-            let rpm_ope_1note_opt = RpmOpeNote::parse_1note(&comm, &line, &mut start, position.get_board_size());
+            let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
                 CommonOperation::touch_talking_beautifle_world(comm, rpm_record, &rpm_note, position);

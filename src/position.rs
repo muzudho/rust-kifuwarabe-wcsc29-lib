@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use parser::*;
 use piece_etc::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 use std::*;
 
 pub const DEFAULT_FILE_LEN: usize = 9;
@@ -284,7 +284,7 @@ impl Position {
     /// # Returns
     /// 
     /// Is legal touch, Identified piece.
-    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmOpeNote) -> (bool, Option<IdentifiedPiece>) {
+    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmNoteOpe) -> (bool, Option<IdentifiedPiece>) {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。

@@ -3,7 +3,7 @@ use communication::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note::*;
-use rpm_conv::thread::rpm_operation_note::*;
+// use rpm_conv::thread::rpm_note_operation::*;
 use rpm_model::rpm_book_file::*;
 use usi_conv::usi_move::*;
 
@@ -55,6 +55,7 @@ impl RpmMove {
     /// どの駒を動かした一手か,
     /// どこの駒を動かした一手か,
     pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
+        // 順番は決まっている。
         let mut i_token = 0;
 
         let mut src_opt = None;
@@ -64,6 +65,7 @@ impl RpmMove {
         let mut first_touch_id = None;
         let mut first_touch_address = None;
         for note in &self.notes {
+            // 数が入っているとき。
             if let Some(address) = note.get_ope().address {
                 if let Some(piece) = address.get_hand_piece() {
                     // 駒台
@@ -139,27 +141,26 @@ impl RpmMove {
         text
     }
 
-    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_idx:usize, board_size:BoardSize) -> Option<RpmMove> {
+    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:usize, board_size:BoardSize) -> Option<RpmMove> {
         let mut rmove = RpmMove::new();
         let size = record_for_json.body.operation.len();
 
-        // TODO とりあえず　次のターンチェンジまで読み進める。
-        'j_loop: for j in note_idx..size {
-            let j_ope_token = &record_for_json.body.operation[j];
+        // 次のフェーズ・チェンジまで読み進める。
+        'j_loop: for j_note_start in note_start..size {
 
-            let j_ope_note_opt;
-            {
-                let mut start = 0;
-                j_ope_note_opt = RpmOpeNote::parse_1note(&comm, &j_ope_token, &mut start, board_size);
-            }
+            let note_opt = RpmNote::parse_1note(comm, record_for_json, j_note_start, board_size);
 
-            if let Some(j_ope_note) = j_ope_note_opt {
-                if j_ope_note.is_phase_change() {
+            match note_opt {
+                Some(note) => {
+                    if note.is_phase_change() {
+                        break 'j_loop;
+                    }
+
+                    rmove.notes.push(note);
+                },
+                None => {
                     break 'j_loop;
-                } else {
-                    let j_num = &record_for_json.body.piece_number[j];
-                    rmove.notes.push(RpmNote::create(j_ope_note, *j_num));
-                }
+                },
             }
         }
 

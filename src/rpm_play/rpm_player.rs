@@ -1,7 +1,7 @@
 use communication::*;
 // use parser::*;
 use position::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 // use rpm_conv::rpm_operation_track::*;
 use rpm_conv::rpm_record::*;
 use std::*;
@@ -12,7 +12,7 @@ pub struct RpmPlayer {
 impl RpmPlayer {
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
     /// 動かせなかったなら、Noneを返す。
-    pub fn forward_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn forward_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNoteOpe> {
         if rpm_record.forward() {
             if let Some(rpm_note) = rpm_record.body.operation_track.get_current(rpm_record.body.cursor) {
                 let (is_legal_touch, _piece_identify_opt) = position.touch_world(comm, &rpm_note);

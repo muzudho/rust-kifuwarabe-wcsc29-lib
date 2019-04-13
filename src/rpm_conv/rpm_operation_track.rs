@@ -1,10 +1,10 @@
 use position::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 
 /// Reversible physical move - Operation track.
 #[derive(Default)]
 pub struct RpmOTrack {
-    pub items: Vec<RpmOpeNote>,
+    pub items: Vec<RpmNoteOpe>,
     // ply: i16,
 }
 impl RpmOTrack {
@@ -21,7 +21,7 @@ impl RpmOTrack {
         self.items.append(&mut track.items);
     }
 
-    fn up_count(&mut self, rpm_note:&RpmOpeNote, ply:&mut i16) {
+    fn up_count(&mut self, rpm_note:&RpmNoteOpe, ply:&mut i16) {
         if rpm_note.is_phase_change() {
             *ply += 1;
         }
@@ -34,7 +34,7 @@ impl RpmOTrack {
         }
     }
 
-    fn down_count(&mut self, rpm_note:&RpmOpeNote, ply:&mut i16) {
+    fn down_count(&mut self, rpm_note:&RpmNoteOpe, ply:&mut i16) {
         if rpm_note.is_phase_change() {
             *ply -= 1;
         }
@@ -54,7 +54,7 @@ impl RpmOTrack {
         }
     }
 
-    pub fn add_element(&mut self, rpm_note:&RpmOpeNote, cursor:&mut i16, ply:&mut i16) {
+    pub fn add_element(&mut self, rpm_note:&RpmNoteOpe, cursor:&mut i16, ply:&mut i16) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -72,7 +72,7 @@ impl RpmOTrack {
         }
     }
 
-    pub fn pop_current(&mut self, cursor:&mut i16, ply:&mut i16) -> Option<RpmOpeNote> {
+    pub fn pop_current(&mut self, cursor:&mut i16, ply:&mut i16) -> Option<RpmNoteOpe> {
         // 後ろの要素がある場合は、削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -92,7 +92,7 @@ impl RpmOTrack {
     }
 
     /// カーソルが指している要素を返す。
-    pub fn get_current(&self, cursor:i16) -> Option<RpmOpeNote> {
+    pub fn get_current(&self, cursor:i16) -> Option<RpmNoteOpe> {
         if cursor == -1 { // self.items.is_empty()
             None
         } else {

@@ -4,7 +4,7 @@ use conf::kifuwarabe_wcsc29_config::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
-// use rpm_conv::thread::rpm_operation_note::*;
+// use rpm_conv::thread::rpm_note_operation::*;
 use rpm_model::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
@@ -176,7 +176,7 @@ impl BestMovePicker {
                                         let ope_note_opt;
                                         {
                                             let mut start = 0;
-                                            ope_note_opt = RpmOpeNote::parse_1note(&comm, &optr_note, &mut start, position.get_board_size());
+                                            ope_note_opt = RpmNoteOpe::parse_1note(&comm, &optr_note, &mut start, position.get_board_size());
                                         }
 
                                         if let Some(ope_note) = ope_note_opt {

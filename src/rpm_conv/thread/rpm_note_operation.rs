@@ -7,7 +7,7 @@ use position::*;
 /// Vector に入れるときコピーする。
 #[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
-pub struct RpmOpeNote {
+pub struct RpmNoteOpe {
     pub address: Option<Address>,
     /// +
     pub sky_turn: bool,
@@ -17,7 +17,7 @@ pub struct RpmOpeNote {
     resign: bool,
 }
 /*
-impl fmt::Display for RpmOpeNote {
+impl fmt::Display for RpmNoteOpe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.address {
             Some(address) => {
@@ -40,9 +40,9 @@ impl fmt::Display for RpmOpeNote {
     }
 }
 */
-impl RpmOpeNote {
-    pub fn create_by_address(address:Address) -> RpmOpeNote {
-        RpmOpeNote {
+impl RpmNoteOpe {
+    pub fn from_address(address:Address) -> RpmNoteOpe {
+        RpmNoteOpe {
             address: Some(address),
             sky_turn: false,
             sky_rotate: false,
@@ -51,8 +51,8 @@ impl RpmOpeNote {
         }
     }
 
-    pub fn turn_over() -> RpmOpeNote {
-        RpmOpeNote {
+    pub fn turn_over() -> RpmNoteOpe {
+        RpmNoteOpe {
             address: None,
             sky_turn: true,
             sky_rotate: false,
@@ -61,8 +61,8 @@ impl RpmOpeNote {
         }
     }
 
-    pub fn rotate() -> RpmOpeNote {
-        RpmOpeNote {
+    pub fn rotate() -> RpmNoteOpe {
+        RpmNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: true,
@@ -71,8 +71,8 @@ impl RpmOpeNote {
         }
     }
 
-    pub fn change_phase() -> RpmOpeNote {
-        RpmOpeNote {
+    pub fn change_phase() -> RpmNoteOpe {
+        RpmNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -81,8 +81,8 @@ impl RpmOpeNote {
         }
     }
 
-    pub fn create_resign() -> RpmOpeNote {
-        RpmOpeNote {
+    pub fn create_resign() -> RpmNoteOpe {
+        RpmNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -126,7 +126,7 @@ impl RpmOpeNote {
     }
 
     /// ノート１つ読取☆（＾～＾）
-    pub fn parse_1note(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> Option<RpmOpeNote> {
+    pub fn parse_1note(_comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> Option<RpmNoteOpe> {
         let ch1 = line[*start..=*start].chars().nth(0).unwrap();
         match ch1 {
             ' ' => {
@@ -162,7 +162,7 @@ impl RpmOpeNote {
                     piece_to_phase(Some(piece)),
                     piece_to_piece_type(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
-                Some(RpmOpeNote::create_by_address(address))
+                Some(RpmNoteOpe::from_address(address))
             },
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
@@ -174,25 +174,25 @@ impl RpmOpeNote {
                     Cell::from_file_rank(
                         Parser::file_char_to_i8(ch1),
                         Parser::rank_char_to_i8(ch2)), board_size);
-                Some(RpmOpeNote::create_by_address(address))
+                Some(RpmNoteOpe::from_address(address))
             },
             '+' => {
                 // 成り。
                 //comm.print(&ch1.to_string());
                 *start += 1;
-                Some(RpmOpeNote::turn_over())
+                Some(RpmNoteOpe::turn_over())
             },
             '-' => {
                 // １８０°回転。
                 //comm.print(&ch1.to_string());
                 *start += 1;
-                Some(RpmOpeNote::rotate())
+                Some(RpmNoteOpe::rotate())
             },
             '|' => {
                 // フェーズ交代。
                 //comm.print(&ch1.to_string());
                 *start += 1;
-                Some(RpmOpeNote::change_phase())
+                Some(RpmNoteOpe::change_phase())
             },
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
@@ -211,7 +211,7 @@ impl RpmOpeNote {
                         break;
                     }
                 };
-                Some(RpmOpeNote::change_phase())
+                Some(RpmNoteOpe::change_phase())
             },
             _ => {
                 let last = line.len();

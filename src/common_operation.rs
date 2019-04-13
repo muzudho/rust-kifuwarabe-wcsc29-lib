@@ -1,7 +1,7 @@
 use communication::*;
 use parser::*;
 use position::*;
-use rpm_conv::thread::rpm_operation_note::*;
+use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
 use std::*;
 use usi_conv::usi_record::*;
@@ -10,7 +10,7 @@ pub struct CommonOperation {
 }
 impl CommonOperation {
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmOpeNote, position:&mut Position) {
+    pub fn touch_beautiful_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNoteOpe, position:&mut Position) {
         let piece_id_number = if let (_is_legal_touch, Some(piece_identify)) = position.touch_world(comm, &rpm_note) {
             piece_identify.get_id().get_number()
         } else {
@@ -37,13 +37,13 @@ impl CommonOperation {
     }
 
     /// 局面表示付きだぜ☆（＾～＾）
-    pub fn touch_talking_beautifle_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmOpeNote, position:&mut Position) {
+    pub fn touch_talking_beautifle_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmNoteOpe, position:&mut Position) {
         CommonOperation::touch_beautiful_world(comm, rpm_record, rpm_note, position);
         CommonOperation::bo(comm, &rpm_record, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
-    pub fn pop_current_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn pop_current_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNoteOpe> {
         let mut cursor_clone = rpm_record.body.cursor; // .clone();
         if let Some(rpm_note) = rpm_record.body.operation_track.pop_current(&mut rpm_record.body.cursor, &mut rpm_record.body.ply) {
             rpm_record.body.identify_track.pop_current(&mut cursor_clone);
@@ -71,7 +71,7 @@ impl CommonOperation {
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
-    pub fn back_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
+    pub fn back_1note(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNoteOpe> {
         if let Some(rpm_note) = rpm_record.body.operation_track.get_current(rpm_record.body.cursor) {
             let (_is_legal_touch, _piece_identify_opt) = position.touch_world(comm, &rpm_note);
             rpm_record.back();
