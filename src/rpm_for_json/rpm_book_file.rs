@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+#[derive(Debug)]
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordHeaderObject {
@@ -14,6 +15,7 @@ pub struct RpmRecordHeaderObject {
     pub read_file: String,
 }
 
+#[derive(Debug)]
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordBodyObject {
@@ -21,6 +23,7 @@ pub struct RpmRecordBodyObject {
     pub piece_number: Vec<i8>,
 }
 
+#[derive(Debug)]
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmRecordForJson {
@@ -29,6 +32,7 @@ pub struct RpmRecordForJson {
 }
 
 /// -rpmrec.json ファイルに対応。
+#[derive(Debug)]
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmBookFile {

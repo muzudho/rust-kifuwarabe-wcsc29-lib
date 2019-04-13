@@ -4,7 +4,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note::*;
 // use rpm_conv::thread::rpm_note_operation::*;
-use rpm_model::rpm_book_file::*;
+use rpm_for_json::rpm_book_file::*;
 use usi_conv::usi_move::*;
 
 /// １手分。
@@ -27,9 +27,65 @@ impl fmt::Display for RpmMove {
 }
 */
 impl RpmMove {
-    pub fn new() -> RpmMove {
+    fn new() -> RpmMove {
         RpmMove {
             notes: Vec::new(),
+        }
+    }
+
+    /// 1手分解析。
+    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmMove> {
+        let mut rmove = RpmMove::new();
+
+        let size = record_for_json.body.operation.len();
+        if size == 1 {
+            panic!("操作トラックが 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
+        }
+
+        // comm.print(&format!("P1M: note_start: {}, size: {}.", *note_start, size));
+        let mut is_first = true;
+
+        // 次のフェーズ・チェンジまで読み進める。
+        'j_loop: loop {
+            if *note_start < size {
+                // トラックの終わり。
+                // comm.print("Break: End of track.");
+                break 'j_loop;
+            }
+
+            // comm.print(&format!("P1Mb: note_start: {}.", note_start));
+
+            let note_opt = RpmNote::parse_1note(comm, record_for_json, note_start, board_size);
+
+            match note_opt {
+                Some(note) => {
+                    if note.is_phase_change() {
+                        if is_first {
+
+                        } else {
+                            comm.print("Break: Phase change.");
+                            break 'j_loop;
+                        }
+                    }
+
+                    comm.print(&format!("Push: {:?}.", note));
+                    rmove.notes.push(note);
+                },
+                None => {
+                    comm.print("Break: None.");
+                    break 'j_loop;
+                },
+            }
+
+            is_first = false;
+        }
+
+        if rmove.is_empty() {
+            None
+        } else if rmove.len() == 1 {
+            panic!("指し手が 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
+        } else {
+            Some(rmove)
         }
     }
 
@@ -62,8 +118,9 @@ impl RpmMove {
         let mut dst_opt = None;
         let mut promotion = false;
         let mut drop_opt = None;
-        let mut first_touch_id = None;
-        let mut first_touch_address = None;
+        // first touch piece.
+        let mut ftp_id = None;
+        let mut ftp_addr = None;
         for note in &self.notes {
             // 数が入っているとき。
             if let Some(address) = note.get_ope().address {
@@ -71,8 +128,8 @@ impl RpmMove {
                     // 駒台
                     if i_token == 0 {
                         drop_opt = Some(piece_to_piece_type(piece));
-                        first_touch_id = Some(note.get_id());
-                        first_touch_address = Some(address);
+                        ftp_id = Some(note.get_id());
+                        ftp_addr = Some(address);
                         i_token += 1;
                     }
                 } else {
@@ -80,15 +137,15 @@ impl RpmMove {
                     match i_token {
                         0 => {
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
-                            first_touch_id = Some(note.get_id());
-                            first_touch_address = Some(address);
+                            ftp_id = Some(note.get_id());
+                            ftp_addr = Some(address);
                             i_token += 1;
                         },
                         1 => {
                             dst_opt = Some(board_size.address_to_cell(address.get_index()));
                             // ２つ目に出てくる場合、１つ目は取った相手の駒の動き。
-                            first_touch_id = Some(note.get_id());
-                            first_touch_address = Some(address);
+                            ftp_id = Some(note.get_id());
+                            ftp_addr = Some(address);
                             i_token += 1;
                         },
                         _ => {},
@@ -108,16 +165,18 @@ impl RpmMove {
                 dst_opt.unwrap(),
                 drop,
                 board_size)
-        } else {
+        } else if let Some(dst) = dst_opt {
             UsiMove::create_walk(
                 src_opt.unwrap(),
-                dst_opt.unwrap(),
+                dst,
                 promotion,
                 board_size)
+        } else {
+            panic!("Unexpected dst. move.len: '{}' > 1, move: '{:?}'.", self.len(), self)
         };
 
         // USIの指し手が作れれば、 first touch が分からないことはないはず。
-        (umove, PieceIdentify::from_number(first_touch_id.unwrap()).unwrap(), first_touch_address.unwrap())
+        (umove, PieceIdentify::from_number(ftp_id.unwrap()).unwrap(), ftp_addr.unwrap())
     }
 
     pub fn to_operation_string(&self, board_size:BoardSize) -> String {
@@ -139,35 +198,5 @@ impl RpmMove {
         }
 
         text
-    }
-
-    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:usize, board_size:BoardSize) -> Option<RpmMove> {
-        let mut rmove = RpmMove::new();
-        let size = record_for_json.body.operation.len();
-
-        // 次のフェーズ・チェンジまで読み進める。
-        'j_loop: for j_note_start in note_start..size {
-
-            let note_opt = RpmNote::parse_1note(comm, record_for_json, j_note_start, board_size);
-
-            match note_opt {
-                Some(note) => {
-                    if note.is_phase_change() {
-                        break 'j_loop;
-                    }
-
-                    rmove.notes.push(note);
-                },
-                None => {
-                    break 'j_loop;
-                },
-            }
-        }
-
-        if rmove.is_empty() {
-            None
-        } else {
-            Some(rmove)
-        }
     }
 }

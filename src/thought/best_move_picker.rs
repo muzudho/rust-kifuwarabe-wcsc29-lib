@@ -5,7 +5,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
 // use rpm_conv::thread::rpm_note_operation::*;
-use rpm_model::rpm_book_file::*;
+use rpm_for_json::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
 use usi_conv::usi_move::*;
@@ -131,7 +131,7 @@ impl BestMovePicker {
                         // 現局面の駒の番地。
                         let (piece_address_at_cur_pos_opt, _hand) = position.address_of(Some(position.get_phase()), *my_piece_id);
                         if let Some(piece_address_at_cur_pos) = piece_address_at_cur_pos_opt {
-                            comm.println(&format!("Phase: {:?}, id: {:?}, number: {}, piece_address_at_cur_pos: {}, hand: {}.", position.get_phase(), my_piece_id, number, piece_address_at_cur_pos, _hand));
+                            //comm.println(&format!("Phase: {:?}, id: {:?}, number: {}, piece_address_at_cur_pos: {}, hand: {}.", position.get_phase(), my_piece_id, number, piece_address_at_cur_pos, _hand));
 
                             // 自分の駒番号を検索。
                             let size = record_for_json.body.operation.len();
@@ -139,10 +139,11 @@ impl BestMovePicker {
 
                             // 駒番号トラックをスキャン。
                             // 動かす駒番号を調べるので、フェーズの変わり目は -1 なので、 -1 の次に現れた駒番号を調べればよい。
-                            for note_idx in 0..size {
+                            let mut note_idx = 0;
+                            'track_scan: while note_idx < size {
 
                                 // とりあえず 1手分をパースします。
-                                if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, note_idx, position.get_board_size()) {
+                                if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, &mut note_idx, position.get_board_size()) {
                                     // どの駒が動いた１手なのか、またその番地。
                                     let (ftp_id, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
 
@@ -216,7 +217,9 @@ impl BestMovePicker {
                                         comm.println(&format!("[{:>3}] --- {:>3} // -", note_idx, ftp_id.get_number()));
                                     }
                                 } else {
-                                    panic!("Unexpected move in record.")
+                                    // トラックの終わり。
+                                    // comm.println("Break: End of track.");
+                                    break 'track_scan;
                                 }
                             }
                         } // piece_address_at_cur_pos

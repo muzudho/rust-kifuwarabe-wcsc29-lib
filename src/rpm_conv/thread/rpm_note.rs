@@ -1,7 +1,7 @@
 use communication::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
-use rpm_model::rpm_book_file::*;
+use rpm_for_json::rpm_book_file::*;
 
 #[derive(Debug)]
 pub struct RpmNote {
@@ -30,26 +30,29 @@ impl RpmNote {
     }
 
     /// 操作と、駒番号を解析。レコードの終端なら None を返す。
-    pub fn parse_1note(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:usize, board_size:BoardSize) -> Option<RpmNote> {
+    pub fn parse_1note(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmNote> {
         let size = record_for_json.body.operation.len();
 
-        if size <= note_start {
-            return None;
+        if size <= *note_start {
+            // 範囲外はエラーで落とす。
+            panic!("Out of bounds exception: size: {}, note_start: {}.", size, *note_start);
         }
 
         let mut token_start = 0;
         let note_ope = if let Some(note_ope) = RpmNoteOpe::parse_1note(
             &comm,
-            &record_for_json.body.operation[note_start],
+            &record_for_json.body.operation[*note_start],
             &mut token_start,
             board_size) {
             note_ope
         } else {
-            panic!("Unexpected operation note token. {}", record_for_json.body.operation[note_start])
+            panic!("Unexpected operation note token. {}", record_for_json.body.operation[*note_start])
         };
 
-        let piece_num = record_for_json.body.piece_number[note_start];
+        let piece_num = record_for_json.body.piece_number[*note_start];
 
+        // カウントアップ。
+        *note_start += 1;
         Some(RpmNote::create_rpm_note(note_ope, piece_num))
     }
 }
