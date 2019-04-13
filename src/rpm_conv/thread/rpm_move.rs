@@ -2,6 +2,7 @@ use address::*;
 use communication::*;
 use piece_etc::*;
 use position::*;
+use rpm_conv::thread::rpm_note::*;
 use rpm_conv::thread::rpm_operation_note::*;
 use rpm_model::rpm_book_file::*;
 use usi_conv::usi_move::*;
@@ -9,8 +10,7 @@ use usi_conv::usi_move::*;
 /// １手分。
 #[derive(Debug)]
 pub struct RpmMove {
-    pub operation_notes: Vec<RpmOpeNote>,
-    pub piece_number_notes: Vec<i8>,
+    pub notes: Vec<RpmNote>,
 }
 /*
 impl fmt::Display for RpmMove {
@@ -29,17 +29,16 @@ impl fmt::Display for RpmMove {
 impl RpmMove {
     pub fn new() -> RpmMove {
         RpmMove {
-            operation_notes: Vec::new(),
-            piece_number_notes: Vec::new(),
+            notes: Vec::new(),
         }
     }
 
     pub fn len(&self) -> usize {
-        self.operation_notes.len()
+        self.notes.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.operation_notes.is_empty()
+        self.notes.is_empty()
     }
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
@@ -57,8 +56,8 @@ impl RpmMove {
         let mut dst_opt = None;
         let mut promotion = false;
         let mut drop_opt = None;
-        for note in &self.operation_notes {
-            if let Some(address) = note.address {
+        for note in &self.notes {
+            if let Some(address) = note.get_ope().address {
 
                 if let Some(piece) = address.get_hand_piece() {
                     if i_location == 0 {
@@ -79,10 +78,10 @@ impl RpmMove {
                     }
                 }
 
-            } else if note.sky_turn {
+            } else if note.get_ope().sky_turn {
                 // +
                 promotion = true;
-            } else if note.sky_rotate {
+            } else if note.get_ope().sky_rotate {
                 // -
             }
         }
@@ -106,7 +105,7 @@ impl RpmMove {
 
         for i in 0..self.len() {
             let mut ply = -1;
-            text = format!("{} {}", text, &self.operation_notes[i].to_sign(board_size, &mut ply));
+            text = format!("{} {}", text, &self.notes[i].get_ope().to_sign(board_size, &mut ply));
         }
 
         text
@@ -116,7 +115,7 @@ impl RpmMove {
         let mut text = String::new();
 
         for i in 0..self.len() {
-            text = format!("{} {}", text, &self.piece_number_notes[i]);
+            text = format!("{} {}", text, &self.notes[i].get_id());
         }
 
         text
@@ -140,9 +139,8 @@ impl RpmMove {
                 if j_ope_note.is_phase_change() {
                     break 'j_loop;
                 } else {
-                    rmove.operation_notes.push(j_ope_note);
                     let j_num = &record_for_json.body.piece_number[j];
-                    rmove.piece_number_notes.push(*j_num);
+                    rmove.notes.push(RpmNote::create(j_ope_note, *j_num));
                 }
             }
         }
