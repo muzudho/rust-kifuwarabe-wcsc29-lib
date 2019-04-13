@@ -14,11 +14,11 @@ impl RpmNote {
         }
     }
 
-    pub fn get_ope(self) -> RpmOpeNote {
+    pub fn get_ope(&self) -> RpmOpeNote {
         self.operation
     }
 
-    pub fn get_id(self) -> i8 {
+    pub fn get_id(&self) -> i8 {
         self.identify
     }
 }

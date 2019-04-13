@@ -50,7 +50,7 @@ impl CsaMove {
     }
 
     pub fn is_drop(&self) -> bool {
-        if let Some(src) = self.source {
+        if let Some(_src) = self.source {
             false
         } else {
             true

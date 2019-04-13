@@ -4,7 +4,7 @@ use conf::kifuwarabe_wcsc29_config::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
-use rpm_conv::thread::rpm_operation_note::*;
+// use rpm_conv::thread::rpm_operation_note::*;
 use rpm_model::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
@@ -274,7 +274,8 @@ impl BestMovePicker {
         // 自分の駒ごとの、現局面にマッチする最長の手筋を更新していく。
 
         if let Some(best_rpm_move) = best_rpm_move_opt {
-            best_rpm_move.to_usi_move(position.get_board_size())
+            let (umove, _id, _address) = best_rpm_move.to_usi_move(position.get_board_size());
+            umove
         } else {
             UsiMove::create_resign()
         }

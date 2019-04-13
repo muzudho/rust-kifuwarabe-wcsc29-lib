@@ -67,6 +67,53 @@ impl PieceIdentify {
         PIECE_IDENTIFIES.into_iter()
     }
 
+    pub fn from_number(number:i8) -> Option<PieceIdentify> {
+        use piece_etc::PieceIdentify::*;
+        match number {
+            0 => Some(K00),
+            1 => Some(K01),
+            2 => Some(G02),
+            3 => Some(G03),
+            4 => Some(G04),
+            5 => Some(G05),
+            6 => Some(S06),
+            7 => Some(S07),
+            8 => Some(S08),
+            9 => Some(S09),
+            10 => Some(N10),
+            11 => Some(N11),
+            12 => Some(N12),
+            13 => Some(N13),
+            14 => Some(L14),
+            15 => Some(L15),
+            16 => Some(L16),
+            17 => Some(L17),
+            18 => Some(B18),
+            19 => Some(B19),
+            20 => Some(R20),
+            21 => Some(R21),
+            22 => Some(P22),
+            23 => Some(P23),
+            24 => Some(P24),
+            25 => Some(P25),
+            26 => Some(P26),
+            27 => Some(P27),
+            28 => Some(P28),
+            29 => Some(P29),
+            30 => Some(P30),
+            31 => Some(P31),
+            32 => Some(P32),
+            33 => Some(P33),
+            34 => Some(P34),
+            35 => Some(P35),
+            36 => Some(P36),
+            37 => Some(P37),
+            38 => Some(P38),
+            39 => Some(P39),
+            _ => None,
+        }
+    }
+
     pub fn get_number(self) -> i8 {
         use piece_etc::PieceIdentify::*;
         match self {
@@ -202,54 +249,6 @@ impl IdentifiedPiece {
     pub fn get_id(self) -> PieceIdentify {
         self.id
     }
-
-    /* obsolute
-    pub fn get_id_number(self) -> i16 {
-        use piece_etc::PieceIdentify::*;
-        match self.id {
-            K00 => 0,
-            K01 => 1,
-            G02 => 2,
-            G03 => 3,
-            G04 => 4,
-            G05 => 5,
-            S06 => 6,
-            S07 => 7,
-            S08 => 8,
-            S09 => 9,
-            N10 => 10,
-            N11 => 11,
-            N12 => 12,
-            N13 => 13,
-            L14 => 14,
-            L15 => 15,
-            L16 => 16,
-            L17 => 17,
-            B18 => 18,
-            B19 => 19,
-            R20 => 20,
-            R21 => 21,
-            P22 => 22,
-            P23 => 23,
-            P24 => 24,
-            P25 => 25,
-            P26 => 26,
-            P27 => 27,
-            P28 => 28,
-            P29 => 29,
-            P30 => 30,
-            P31 => 31,
-            P32 => 32,
-            P33 => 33,
-            P34 => 34,
-            P35 => 35,
-            P36 => 36,
-            P37 => 37,
-            P38 => 38,
-            P39 => 39,
-        }
-    }
-    */
 
     pub fn get_type(self) -> PieceType {
         use piece_etc::PieceIdentify::*;

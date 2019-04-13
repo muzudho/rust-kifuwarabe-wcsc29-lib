@@ -43,36 +43,51 @@ impl RpmMove {
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
     pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (PieceIdentify, Address) {
-        // とりあえず USI move に変換。
-        let umove = self.to_usi_move(board_size);
+        // とりあえず USI move に変換するついでに、欲しい情報を得る。
+        let (_umove, first_touch_id, first_touch_addr) = self.to_usi_move(board_size);
 
-        (umove.source)
+        (first_touch_id, first_touch_addr)
     }
 
-    pub fn to_usi_move(&self, board_size:BoardSize) -> UsiMove {
-        let mut i_location = 0;
+    /// # Returns
+    /// 
+    /// Usi move,
+    /// どの駒を動かした一手か,
+    /// どこの駒を動かした一手か,
+    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
+        let mut i_token = 0;
 
         let mut src_opt = None;
         let mut dst_opt = None;
         let mut promotion = false;
         let mut drop_opt = None;
+        let mut first_touch_id = None;
+        let mut first_touch_address = None;
         for note in &self.notes {
             if let Some(address) = note.get_ope().address {
-
                 if let Some(piece) = address.get_hand_piece() {
-                    if i_location == 0 {
+                    // 駒台
+                    if i_token == 0 {
                         drop_opt = Some(piece_to_piece_type(piece));
-                        i_location += 1;
+                        first_touch_id = Some(note.get_id());
+                        first_touch_address = Some(address);
+                        i_token += 1;
                     }
                 } else {
-                    match i_location {
+                    // 盤上
+                    match i_token {
                         0 => {
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
-                            i_location += 1;
+                            first_touch_id = Some(note.get_id());
+                            first_touch_address = Some(address);
+                            i_token += 1;
                         },
                         1 => {
                             dst_opt = Some(board_size.address_to_cell(address.get_index()));
-                            i_location += 1;
+                            // ２つ目に出てくる場合、１つ目は取った相手の駒の動き。
+                            first_touch_id = Some(note.get_id());
+                            first_touch_address = Some(address);
+                            i_token += 1;
                         },
                         _ => {},
                     }
@@ -86,7 +101,7 @@ impl RpmMove {
             }
         }
 
-        if let Some(drop) = drop_opt {
+        let umove = if let Some(drop) = drop_opt {
             UsiMove::create_drop(
                 dst_opt.unwrap(),
                 drop,
@@ -97,7 +112,10 @@ impl RpmMove {
                 dst_opt.unwrap(),
                 promotion,
                 board_size)
-        }
+        };
+
+        // USIの指し手が作れれば、 first touch が分からないことはないはず。
+        (umove, PieceIdentify::from_number(first_touch_id.unwrap()).unwrap(), first_touch_address.unwrap())
     }
 
     pub fn to_operation_string(&self, board_size:BoardSize) -> String {
