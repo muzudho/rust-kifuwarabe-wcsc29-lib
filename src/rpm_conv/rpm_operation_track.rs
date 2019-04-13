@@ -5,14 +5,14 @@ use rpm_conv::rpm_operation_note::*;
 #[derive(Default)]
 pub struct RpmOTrack {
     pub items: Vec<RpmOpeNote>,
-    ply: i16,
+    // ply: i16,
 }
 impl RpmOTrack {
     pub fn default() -> RpmOTrack {
         RpmOTrack {
             items: Vec::new(),
             // 開始時点で、1手目進行中 として扱います。
-            ply: 1,
+            // ply: 1,
         }
     }
 
@@ -21,30 +21,30 @@ impl RpmOTrack {
         self.items.append(&mut track.items);
     }
 
-    fn up_count(&mut self, rpm_note:&RpmOpeNote) {
+    fn up_count(&mut self, rpm_note:&RpmOpeNote, ply:&mut i16) {
         if rpm_note.is_phase_change() {
-            self.ply += 1;
+            *ply += 1;
         }
     }
 
-    fn up_count_retry(&mut self, cursor:i16) {
+    fn up_count_retry(&mut self, cursor:i16, ply:&mut i16) {
         let rpm_note = self.items[cursor as usize];
         if rpm_note.is_phase_change() {
-            self.ply += 1;
+            *ply += 1;
         }
     }
 
-    fn down_count(&mut self, rpm_note:&RpmOpeNote) {
+    fn down_count(&mut self, rpm_note:&RpmOpeNote, ply:&mut i16) {
         if rpm_note.is_phase_change() {
-            self.ply -= 1;
+            *ply -= 1;
         }
     }
 
-    fn down_count_retry(&mut self, cursor:&mut i16) {
+    fn down_count_retry(&mut self, cursor:&mut i16, ply:&mut i16) {
         // フェーズ切り替えがあったら、手目を１つ減らす。
         let rpm_note = self.items[*cursor as usize];
         if rpm_note.is_phase_change() {
-            self.ply -= 1;
+            *ply -= 1;
         }
 
         *cursor -= 1;
@@ -54,7 +54,7 @@ impl RpmOTrack {
         }
     }
 
-    pub fn add_element(&mut self, rpm_note:&RpmOpeNote, cursor:&mut i16) {
+    pub fn add_element(&mut self, rpm_note:&RpmOpeNote, cursor:&mut i16, ply:&mut i16) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -66,13 +66,13 @@ impl RpmOTrack {
             self.items.push(*rpm_note);
 
             *cursor += 1;
-            self.up_count(rpm_note);
+            self.up_count(rpm_note, ply);
         } else {
             panic!("Unexpected add: cursor: {}, len: {}.", *cursor, self.items.len());
         }
     }
 
-    pub fn pop_current(&mut self, cursor:&mut i16) -> Option<RpmOpeNote> {
+    pub fn pop_current(&mut self, cursor:&mut i16, ply:&mut i16) -> Option<RpmOpeNote> {
         // 後ろの要素がある場合は、削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -86,13 +86,9 @@ impl RpmOTrack {
             let deleted_rpm_note = self.items[last];
             self.items.remove(last);
             *cursor -= 1;
-            self.down_count(&deleted_rpm_note);
+            self.down_count(&deleted_rpm_note, ply);
             Some(deleted_rpm_note)
         }
-    }
-
-    pub fn get_ply(&self) -> i16 {
-        self.ply
     }
 
     /// カーソルが指している要素を返す。
@@ -105,25 +101,25 @@ impl RpmOTrack {
     }
 
     /// カーソルだけ進める。
-    pub fn forward(&mut self, cursor:&mut i16) -> bool {
+    pub fn forward(&mut self, cursor:&mut i16, ply:&mut i16) -> bool {
         if self.items.len() as i16 <= (*cursor + 1) {
             // 進めない。
             false
         } else {
             *cursor += 1;
-            self.up_count_retry(*cursor);
+            self.up_count_retry(*cursor, ply);
             true
         }
     }
 
     /// カーソルだけ戻す。
-    pub fn back(&mut self, cursor:&mut i16) {
+    pub fn back(&mut self, cursor:&mut i16, ply:&mut i16) {
         if *cursor < 0 {
             // 戻れない。
             return
         };
 
-        self.down_count_retry(cursor);
+        self.down_count_retry(cursor, ply);
     }
 
     /// コマンドライン入力形式。

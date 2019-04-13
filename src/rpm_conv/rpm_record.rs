@@ -17,11 +17,22 @@ pub struct RpmRecordHeader {
 
 /// レコードの本体。
 pub struct RpmRecordBody {
+    /// 何も進めていない状態で -1。
     pub cursor: i16,
+    /// 何も指していない状態で 1。
+    pub ply: i16,
     pub operation_track: RpmOTrack,
     pub identify_track: RpmITrack,
 }
 impl RpmRecordBody {
+    pub fn default() -> RpmRecordBody {
+        RpmRecordBody {
+            cursor: -1,
+            ply: 1,
+            operation_track: RpmOTrack::default(),
+            identify_track: RpmITrack::default(),
+        }
+    }
     pub fn append_track(&mut self, body:&mut RpmRecordBody) {
         self.operation_track.append_track(&mut body.operation_track);
         self.identify_track.append_track(&mut body.identify_track);
@@ -43,11 +54,7 @@ impl RpmRecord {
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            body : RpmRecordBody {
-                cursor: -1,
-                operation_track: RpmOTrack::default(),
-                identify_track: RpmITrack::default(),
-            },
+            body : RpmRecordBody::default(),
         }
     }
 
@@ -60,14 +67,14 @@ impl RpmRecord {
     /// 追加する。
     pub fn add_note(&mut self, rpm_note:&RpmOpeNote, identify:i8) {
         let mut cursor_clone = self.body.cursor.clone();
-        self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor);
+        self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor, &mut self.body.ply);
         self.body.identify_track.add_identify(identify, &mut cursor_clone);
     }
 
     pub fn forward(&mut self) -> bool {
         let mut cursor_clone = self.body.cursor.clone();
         let i = self.body.identify_track.forward(&mut self.body.cursor);
-        let o = self.body.operation_track.forward(&mut cursor_clone);
+        let o = self.body.operation_track.forward(&mut cursor_clone,   &mut self.body.ply);
         if i!=o {panic!("Can not forward.");}
 
         i
@@ -75,7 +82,7 @@ impl RpmRecord {
 
     pub fn back(&mut self) {
         let mut cursor_clone = self.body.cursor.clone();
-        self.body.operation_track.back(&mut self.body.cursor);
+        self.body.operation_track.back(&mut self.body.cursor, &mut self.body.ply);
         self.body.identify_track.back(&mut cursor_clone);
     }
 

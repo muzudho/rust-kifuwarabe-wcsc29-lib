@@ -133,30 +133,30 @@ pub fn main_loop() {
         } else if line == "b" {
             // Back 1mark.
             CommonOperation::back_1note(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "bb" {
             // Back 1ply.
             CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
                 CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
                 CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         // #####
         // # D #
@@ -165,26 +165,26 @@ pub fn main_loop() {
         } else if line == "d" {
             // Delete 1mark.
             CommonOperation::pop_current_1mark(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
             CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
                 CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
                 CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         // #####
         // # F #
@@ -193,26 +193,26 @@ pub fn main_loop() {
         } else if line == "f" {
             // Forward 1mark.
             CommonOperation::forward_1note(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
             CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
                 CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
                 CommonOperation::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            CommonOperation::bo(&comm, &rpm_record, &position);
 
         // #####
         // # G #

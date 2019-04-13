@@ -21,26 +21,26 @@ impl CommonOperation {
     }
 
     /// 局面表示。
-    pub fn bo(comm:&Communication, rpm_o_track:&RpmOTrack, position:&Position) {
+    pub fn bo(comm:&Communication, rpm_record:&RpmRecord, position:&Position) {
         // 何手目か。
-        comm.println(&format!("[{}]", rpm_o_track.get_ply()));
+        comm.println(&format!("[{}]", rpm_record.body.ply));
         // 盤面。
         comm.println(&position.to_text(comm, position.get_phase()));
         // 棋譜。
         let mut unused_ply = 0;
-        comm.println(&rpm_o_track.to_sign(position.get_board_size(), &mut unused_ply));
+        comm.println(&rpm_record.body.operation_track.to_sign(position.get_board_size(), &mut unused_ply));
     }
 
     /// 局面表示付きだぜ☆（＾～＾）
     pub fn touch_talking_beautifle_world(comm:&Communication, rpm_record:&mut RpmRecord, rpm_note:&RpmOpeNote, position:&mut Position) {
         CommonOperation::touch_beautiful_world(comm, rpm_record, rpm_note, position);
-        CommonOperation::bo(comm, &rpm_record.body.operation_track, &position);
+        CommonOperation::bo(comm, &rpm_record, &position);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_current_1mark(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmOpeNote> {
         let mut cursor_clone = rpm_record.body.cursor.clone();
-        if let Some(rpm_note) = rpm_record.body.operation_track.pop_current(&mut rpm_record.body.cursor) {
+        if let Some(rpm_note) = rpm_record.body.operation_track.pop_current(&mut rpm_record.body.cursor, &mut rpm_record.body.ply) {
             rpm_record.body.identify_track.pop_current(&mut cursor_clone);
 
             let (_is_legal_touch, _piece_identify_opt) = position.touch_world(comm, &rpm_note);
