@@ -196,8 +196,10 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            RpmNotePlayer::forward_1note_on_record(&comm, &mut rrecord, &mut position);
-            HumanInterface::bo(&comm, &rrecord, &position);
+            if let Some(mut rnote) = rrecord.body.rpm_tape.get_current_note() {
+                RpmNotePlayer::forward_1note(&comm, &mut rnote, &mut position, &mut rrecord.body.ply);
+                HumanInterface::bo(&comm, &rrecord, &position);
+            }
 
         } else if line == "ff" {
             // Forward 1ply.

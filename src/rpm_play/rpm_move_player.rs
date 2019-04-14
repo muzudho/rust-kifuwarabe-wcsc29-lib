@@ -103,10 +103,11 @@ impl RpmMovePlayer {
         let mut is_first = true;
         let mut forwarding_count = 0;
 
-        // 最後尾に達していたのなら動かさず終了。
-        while let (is_legal_touch, Some(rpm_note)) = RpmNotePlayer::forward_1note_on_record(comm, rrecord, position) {
+        // 最後尾に達していたのなら終了。
+        while let Some(mut rnote) = rrecord.body.rpm_tape.get_current_note() {
+            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &mut rnote, position, &mut rrecord.body.ply);
             if !is_legal_touch {
-                // TODO 非合法タッチなら、動かした分 戻したい。
+                // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..forwarding_count {
                     RpmNotePlayer::back_1note_on_record(comm, rrecord, position);
                 }
@@ -114,7 +115,7 @@ impl RpmMovePlayer {
                 return false;
             }
 
-            if !is_first && rpm_note.is_phase_change() {
+            if !is_first && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
             }

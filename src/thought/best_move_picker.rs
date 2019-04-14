@@ -6,7 +6,7 @@ use position::*;
 use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_thread::*;
 use rpm_for_json::rpm_book_file::*;
-//use rpm_play::rpm_move_player::*;
+use rpm_play::rpm_move_player::*;
 use std::collections::HashMap;
 use std::fs;
 use usi_conv::usi_move::*;
@@ -149,6 +149,7 @@ impl BestMovePicker {
                                             }
                                         }
 */
+
 
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);

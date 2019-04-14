@@ -38,28 +38,33 @@ impl RpmNotePlayer {
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
     /// 動かせなかったなら、Noneを返す。
     /// 
-    /// # Returns
+    /// # Return
     /// 
-    /// 現在のノート, 合法タッチか否か。
-    pub fn forward_1note_on_record(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> (bool, Option<RpmNote>) {
-        if rpm_record.forward() {
-            if let Some(rpm_note) = rpm_record.body.rpm_tape.get_current_note() {
-                let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rpm_note.get_ope());
+    /// 合法タッチか否か。
+    pub fn forward_1note(comm:&Communication, rnote:&mut RpmNote, position:&mut Position, ply:&mut i16) -> bool {
+        // if rpm_record.forward() {
+            //if let Some(rnote) = rpm_record.body.rpm_tape.get_current_note() {
+                let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
 
                 if is_legal_touch {
-                    (true, Some(rpm_note))
+                    *ply += 1;
+                    true
                 } else {
                     // 非合法タッチなら戻す。
                     // もう１回タッチすれば戻る。（トグル式なんで）
-                    position.touch_beautiful_1note(comm, &rpm_note.get_ope());
-                    (false, None)
+                    position.touch_beautiful_1note(comm, &rnote.get_ope());
+                    false
                 }
+            /*
             } else {
                 panic!("Unexpected forward 1 note.")
             }
+            */
+        /*
         } else {
             (false, None)
         }
+        */
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
