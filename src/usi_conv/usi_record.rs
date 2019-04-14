@@ -1,3 +1,4 @@
+use board_size::*;
 use common_operation::*;
 use communication::*;
 use piece_etc::*;

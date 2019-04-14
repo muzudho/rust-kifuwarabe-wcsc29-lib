@@ -14,26 +14,20 @@ impl KifMove {
     pub fn to_sign(&self) -> String {
         let mut sign = "".to_string();
 
-        match self.destination {
-            Some(x) => {
-                sign = format!("{} {}", sign, x.get_file());
-                sign = format!("{} {}", sign, x.get_rank());
-            },
-            None => {},
-        }
+        if let Some(x) = self.destination {
+            sign = format!("{} {}", sign, x.get_file());
+            sign = format!("{} {}", sign, x.get_rank());
+        };
 
         sign = format!("{} {}", sign, self.is_same);
         sign = format!("{} {}", sign, jsa_piece_type_to_sign(self.piece));
         sign = format!("{} {}", sign, self.is_promote);
         sign = format!("{} {}", sign, self.is_drop);
 
-        match self.source {
-            Some(x) => {
-                sign = format!("{} {}", sign, x.get_file());
-                sign = format!("{} {}", sign, x.get_rank());
-            },
-            None => {},
-        }
+        if let Some(x) = self.source {
+            sign = format!("{} {}", sign, x.get_file());
+            sign = format!("{} {}", sign, x.get_rank());
+        };
 
         sign
     }

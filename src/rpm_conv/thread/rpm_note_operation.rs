@@ -1,8 +1,13 @@
+///
+/// Rpm棋譜のノートの操作属性。
+/// 
+/// 局面から独立しています。
+/// 
 use address::*;
+use board_size::*;
 use communication::*;
 use parser::*;
 use piece_etc::*;
-use position::*;
 use std::fmt;
 
 /// Vector に入れるときコピーする。

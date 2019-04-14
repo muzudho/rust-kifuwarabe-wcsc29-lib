@@ -36,6 +36,7 @@ use rand::Rng;
 use std::io;
 
 pub mod address;
+pub mod board_size;
 pub mod common_operation;
 pub mod communication;
 pub mod csa_conv;

@@ -1,3 +1,4 @@
+use board_size::*;
 use piece_etc::*;
 use position::*;
 use std::fmt;

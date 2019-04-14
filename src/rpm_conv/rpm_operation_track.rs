@@ -1,4 +1,4 @@
-use position::*;
+use board_size::*;
 use rpm_conv::thread::rpm_note_operation::*;
 
 /// Reversible physical move - Operation track.

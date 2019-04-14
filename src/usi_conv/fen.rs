@@ -1,10 +1,9 @@
 /// フォーサイス エドワーズ記法
 use address::*;
+use board_size::*;
 use communication::*;
 use position::*;
 use usi_conv::usi_move::*;
-// use usi_conv::usi_record::*;
-// use parser::*;
 use piece_etc::*;
 use std::*;
 

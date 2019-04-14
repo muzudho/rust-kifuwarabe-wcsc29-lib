@@ -1,3 +1,9 @@
+///
+/// Rpm棋譜のノート。
+/// 
+/// 局面から独立しています。
+/// 
+use board_size::*;
 use communication::*;
 use piece_etc::*;
 use position::*;
@@ -7,9 +13,9 @@ use std::fmt;
 
 //#[derive(Debug)]
 pub struct RpmNote {
-    operation: RpmNoteOpe,
     // 駒の背番号。フェーズ・チェンジのときは None。
     identify: Option<PieceIdentify>,
+    operation: RpmNoteOpe,
 }
 impl fmt::Display for RpmNote {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -27,8 +33,8 @@ impl fmt::Display for RpmNote {
 impl RpmNote {
     pub fn create_rpm_note(operation_note: RpmNoteOpe, pid:Option<PieceIdentify>) -> RpmNote {
         RpmNote {
-            operation: operation_note,
             identify: pid,
+            operation: operation_note,
         }
     }
 

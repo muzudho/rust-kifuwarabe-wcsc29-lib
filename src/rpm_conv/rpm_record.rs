@@ -1,3 +1,4 @@
+use board_size::*;
 use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;

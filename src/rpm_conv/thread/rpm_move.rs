@@ -1,9 +1,13 @@
+///
+/// Rpm棋譜のムーブ。
+/// 
+/// 局面から独立しています。
+/// 
 use address::*;
+use board_size::*;
 use communication::*;
 use piece_etc::*;
-use position::*;
 use rpm_conv::thread::rpm_note::*;
-// use rpm_conv::thread::rpm_note_operation::*;
 use rpm_for_json::rpm_book_file::*;
 use std::fmt;
 use usi_conv::usi_move::*;
@@ -12,6 +16,10 @@ use usi_conv::usi_move::*;
 //#[derive(Debug)]
 pub struct RpmMove {
     pub notes: Vec<RpmNote>,
+
+    // 動作確認用。
+    pub start: usize,
+    pub end: usize,
 }
 impl fmt::Display for RpmMove {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -21,19 +29,17 @@ impl fmt::Display for RpmMove {
             text = format!("{} {}", text, note).to_string()
         }
 
-        write!(f, "{}", text)
+        write!(f, "({}:{}){}", self.start, self.end, text)
     }
 }
 impl RpmMove {
-    fn new() -> RpmMove {
-        RpmMove {
-            notes: Vec::new(),
-        }
-    }
-
     /// 1手分解析。
     pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmMove> {
-        let mut rmove = RpmMove::new();
+        let mut rmove = RpmMove {
+            notes: Vec::new(),
+            start: *note_start,
+            end: *note_start,
+        };
 
         let size = record_for_json.body.operation.len();
         if size == 1 {
@@ -83,6 +89,7 @@ impl RpmMove {
         } else if rmove.len() == 1 {
             panic!("指し手が 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
         } else {
+            rmove.end = *note_start;
             Some(rmove)
         }
     }
@@ -96,19 +103,21 @@ impl RpmMove {
     }
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
-    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (Option<PieceIdentify>, Address) {
+    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (PieceIdentify, Address) {
         // とりあえず USI move に変換するついでに、欲しい情報を得る。
-        let (_umove, first_touch_pid_opt, first_touch_addr) = self.to_usi_move(board_size);
+        let (_umove, first_touch_pid, first_touch_addr) = self.to_usi_move(board_size);
 
-        (first_touch_pid_opt, first_touch_addr)
+        (first_touch_pid, first_touch_addr)
     }
 
+    /// 一手。フェーズ・チェンジ・ノートや「ほこり取り」は含まない。
+    /// 
     /// # Returns
     /// 
     /// Usi move,
-    /// どの駒を動かした一手か、フェーズチェンジのときは None,
+    /// どの駒を動かした一手か,
     /// どこの駒を動かした一手か,
-    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, Option<PieceIdentify>, Address) {
+    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
         // 順番は決まっている。
         let mut i_token = 0;
 
@@ -174,7 +183,11 @@ impl RpmMove {
         };
 
         // USIの指し手が作れれば、 first touch が分からないことはないはず。
-        (umove, ftp_id_opt, ftp_addr.unwrap())
+        if let Some(ftp_id) = ftp_id_opt {
+            (umove, ftp_id, ftp_addr.unwrap())
+        } else {
+            panic!("Unexpected rpm move. id fail.")
+        }
     }
 
     pub fn to_operation_string(&self, board_size:BoardSize) -> String {

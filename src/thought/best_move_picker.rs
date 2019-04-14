@@ -132,7 +132,6 @@ impl BestMovePicker {
                     'piece_loop: for my_piece_id in PieceIdentify::iterator() {
 
                         // 現局面の盤上の自駒の番地。
-                        // TODO 駒台
                         if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
                             comm.println(&format!("My piece: {:?}, {:?}, {}.", position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
@@ -147,7 +146,7 @@ impl BestMovePicker {
                                     let (ftp_id_opt, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
 
                                     // 背番号と、アドレスの一致。
-                                    if my_piece_id.get_number() == ftp_id_opt.unwrap().get_number() &&
+                                    if my_piece_id.get_number() == ftp_id_opt.get_number() &&
                                         ftp_address.get_index() == my_addr_obj.get_index() as usize {
                                         // 一致。
 
@@ -168,7 +167,8 @@ impl BestMovePicker {
                                         //}
 
                                         // TODO とりあえず抜ける。
-                                        // break 'piece_loop;
+                                        comm.println("Hit and break!");
+                                        break 'piece_loop;
                                     } else {
                                         // 一致しなかったら何もしない。
                                         // No match.

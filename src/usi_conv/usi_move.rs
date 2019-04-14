@@ -1,7 +1,7 @@
 use address::*;
+use board_size::*;
 use std::*;
 use piece_etc::*;
-use position::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {

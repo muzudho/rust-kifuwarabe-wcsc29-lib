@@ -1,6 +1,5 @@
+use board_size::*;
 use communication::*;
-use position::*;
-// use rpm_conv::*;
 
 const NONE_IDENTIFY:i8 = -1;
 
