@@ -5,15 +5,16 @@ use rpm_conv::thread::rpm_note_operation::*;
 #[derive(Default)]
 pub struct RpmOTrack {
     pub items: Vec<RpmNoteOpe>,
-    // ply: i16,
 }
 impl RpmOTrack {
     pub fn default() -> RpmOTrack {
         RpmOTrack {
             items: Vec::new(),
-            // 開始時点で、1手目進行中 として扱います。
-            // ply: 1,
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.items.clear();
     }
 
     /// 連結。

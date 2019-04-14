@@ -9,6 +9,7 @@ pub struct Cell {
     rank: i8,
 }
 impl Cell {
+    /// ボード・サイズは考慮しません。
     pub fn from_file_rank(file_num:i8, rank_num:i8) -> Cell {
         Cell {
             file: file_num,
@@ -47,26 +48,30 @@ impl fmt::Display for Address {
     }
 }
 impl Address {
-    pub fn from_raw(raw:usize) -> Address {
+    pub fn from_raw(raw:usize) -> Self {
         Address {
             index: raw,
         }
     }
 
     /// 盤上の駒の番地。
-    pub fn from_cell(cell:Cell, board_size:BoardSize) -> Address {
+    pub fn from_cell(cell:Cell, board_size:BoardSize) -> Self {
         Address {
             index: board_size.cell_to_address(cell),
         }
     }
 
-    pub fn from_sky() -> Address {
+    pub fn from_sky() -> Self {
         Address {
             index: SKY_ADDRESS,
         }
     }
 
-    pub fn from_hand(phase_opt:Option<Phase>, pt:PieceType) -> Address {
+    pub fn from_hand_pi(pi:Piece) -> Self {
+        Address::from_hand_ph_pt(pi.get_phase(), pi.get_type())
+    }
+
+    pub fn from_hand_ph_pt(phase_opt:Option<Phase>, pt:PieceType) -> Self {
         use piece_etc::Phase::*;
         use piece_etc::PieceType::*;
 

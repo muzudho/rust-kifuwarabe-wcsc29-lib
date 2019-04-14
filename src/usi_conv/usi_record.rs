@@ -63,38 +63,6 @@ impl UsiRecord {
         }
     }
 
-    /*
-    pub fn parse_line(comm:&Communication, line:&str) -> UsiRecord {
-        let mut position = Position::default();
-        let mut urecord = UsiRecord::new();
-
-        comm.println(&format!("#Parse line: `{}`.", line));
-        let mut start = 0;
-        if Fen::parse_position(&comm, &line, &mut start, &mut position) {
-            comm.println("Position parsed.");
-
-            if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size()) {
-                comm.println("Moves parsed.");
-                urecord = parsed_urecord;
-            };
-        }
-
-        urecord
-    }
-     */
-
-    /*
-    pub fn get_items(self) -> Vec<UsiMove> {
-        self.moves
-    }
-     */
-
-    /*
-    pub fn clear(&mut self) {
-        self.moves.clear();
-    }
-     */
-
     pub fn get_current_phase(&self) -> Phase {
         match self.moves.len() % 2 {
             0 => Phase::First,

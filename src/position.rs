@@ -33,12 +33,13 @@ impl Position {
             ],
         };
 
-        instance.reset_default();
+        instance.reset_origin_position();
         instance
     }
 
-    pub fn reset_default(&mut self) {
-        //println!("#Position: reset_default.");
+    /// 自分の駒を持ち駒として持っているところから始めます。
+    pub fn reset_origin_position(&mut self) {
+        //println!("#Position: reset_origin_position.");
         self.phase = Phase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
@@ -47,7 +48,7 @@ impl Position {
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
         ];
-        // 自分の駒を持ち駒として持っているところから始まめます。
+
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
@@ -150,31 +151,94 @@ impl Position {
         }
     }
 
-    pub fn reset_startpos(&mut self) {
-        //println!("#Position: reset_startpos().");
-        use piece_etc::IdentifiedPiece;
-        use piece_etc::Phase::*;
-        use piece_etc::PieceIdentify::*;
+    /// ゲームに使う駒がまだ決まっていないところから始めます。
+    pub fn reset_empty_position(&mut self) {
+        //println!("#Position: reset_empty_position.");
+        self.phase = Phase::First;
         self.board_size = BoardSize::create_hon_shogi();
-        // Sente view to flip upside down.
-        self.board = [
-            // rank 1, file 1.
-            IdentifiedPiece::some(Some(Second), false, L14), IdentifiedPiece::some(Some(Second), false, N10), IdentifiedPiece::some(Some(Second), false, S06), IdentifiedPiece::some(Some(Second), false, G02), IdentifiedPiece::some(Some(Second), false, K00), IdentifiedPiece::some(Some(Second), false, G04), IdentifiedPiece::some(Some(Second), false, S08), IdentifiedPiece::some(Some(Second), false, N12), IdentifiedPiece::some(Some(Second), false, L16),
-            None, IdentifiedPiece::some(Some(Second), false, B18), None, None, None, None, None, IdentifiedPiece::some(Some(Second), false, R20), None,
-            IdentifiedPiece::some(Some(Second), false, P36), IdentifiedPiece::some(Some(Second), false, P32), IdentifiedPiece::some(Some(Second), false, P28), IdentifiedPiece::some(Some(Second), false, P24), IdentifiedPiece::some(Some(Second), false, P22), IdentifiedPiece::some(Some(Second), false, P26), IdentifiedPiece::some(Some(Second), false, P30), IdentifiedPiece::some(Some(Second), false, P34), IdentifiedPiece::some(Some(Second), false, P38),
-            None, None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None, None,
-            IdentifiedPiece::some(Some(First), false, P39), IdentifiedPiece::some(Some(First), false, P35), IdentifiedPiece::some(Some(First), false, P31), IdentifiedPiece::some(Some(First), false, P27), IdentifiedPiece::some(Some(First), false, P23), IdentifiedPiece::some(Some(First), false, P25), IdentifiedPiece::some(Some(First), false, P29), IdentifiedPiece::some(Some(First), false, P33), IdentifiedPiece::some(Some(First), false, P37),
-            None, IdentifiedPiece::some(Some(First), false, R21), None, None, None, None, None, IdentifiedPiece::some(Some(First), false, B19), None,
-            IdentifiedPiece::some(Some(First), false, L17), IdentifiedPiece::some(Some(First), false, N13), IdentifiedPiece::some(Some(First), false, S09), IdentifiedPiece::some(Some(First), false, G05), IdentifiedPiece::some(Some(First), false, K01), IdentifiedPiece::some(Some(First), false, G03), IdentifiedPiece::some(Some(First), false, S07), IdentifiedPiece::some(Some(First), false, N11), IdentifiedPiece::some(Some(First), false, L15),
-            None, // Sky
-        ];
+        self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
         ];
+
+        use piece_etc::Phase::*;
+        use piece_etc::Piece::*;
+        use piece_etc::PieceIdentify::*;
+        use piece_etc::IdentifiedPiece;
+        // 玉2枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(K3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, K00));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, K01));
+        }
+        // 飛2枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(R3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, R20));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, R21));
+        }
+        // 角2枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(B3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, B18));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, B19));
+        }
+        // 金4枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(G3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G02));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G04));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G03));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G05));
+        }
+        // 銀4枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(S3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S06));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S08));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S07));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S09));
+        }
+        // 桂4枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(N3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N10));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N12));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N11));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N13));
+        }
+        // 香4枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(L3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L14));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L16));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L15));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L17));
+        }
+        // 歩18枚。
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(P3).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P22));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P24));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P26));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P28));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P30));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P32));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P34));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P36));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P38));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P23));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P25));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P27));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P29));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P31));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P33));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P35));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P37));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P39));
+        }
     }
 
     pub fn get_phase(&self) -> Phase {
@@ -396,7 +460,7 @@ impl Position {
 
         // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
         if let Some(idp) = self.search_hand(ph_opt, pid) {
-            let addr_obj = Address::from_hand(ph_opt, idp.get_type());
+            let addr_obj = Address::from_hand_ph_pt(ph_opt, idp.get_type());
             Some((idp, addr_obj))
         } else {
             None

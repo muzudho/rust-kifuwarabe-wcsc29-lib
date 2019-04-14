@@ -30,7 +30,7 @@ impl CsaPlayer {
             // 駒を打つ動きの場合
 
             // hand-off
-            let hand_off = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), drop));
+            let hand_off = RpmNoteOpe::from_address(Address::from_hand_ph_pt(Some(position.get_phase()), drop));
             p_moves.push(hand_off);
 
             // hand-on
@@ -57,7 +57,7 @@ impl CsaPlayer {
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), up));
+                let hand_on = RpmNoteOpe::from_address(Address::from_hand_ph_pt(Some(position.get_phase()), up));
                 p_moves.push(hand_on);
             }
 
@@ -98,15 +98,17 @@ impl CsaPlayer {
     pub fn play_out_record(
         comm:&Communication,
         position:&mut Position,
-        c_record:&CsaRecord,
-        rpm_record:&mut RpmRecord) {
+        crecord:&CsaRecord,
+        rrecord:&mut RpmRecord) {
 
         // TODO とりあえず平手初期局面だけ対応。
-        comm.println("#CsaP: position startpos");
-        position.reset_startpos();
+        comm.println("#CsaP: play_out_to_starting_position");
+        rrecord.clear();
+        position.reset_origin_position();
+        RpmPlayer::play_out_to_starting_position(comm, rrecord, position);
 
         let mut ply = 1;
-        for cmove in &c_record.items {
+        for cmove in &crecord.items {
             let p_moves = CsaPlayer::convert_move(
                 comm,
                 cmove,
@@ -114,7 +116,7 @@ impl CsaPlayer {
                 ply);
 
             for rpm_note in p_moves {
-                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmPlayer::touch_beautiful_world(comm, rrecord, &rpm_note, position);
             }
 
             ply += 1;

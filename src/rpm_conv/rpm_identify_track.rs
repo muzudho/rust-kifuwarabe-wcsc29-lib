@@ -16,6 +16,10 @@ impl RpmITrack {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.items.clear();
+    }
+
     /// 連結。
     pub fn append_track(&mut self, track:&mut RpmITrack) {
         self.items.append(&mut track.items);

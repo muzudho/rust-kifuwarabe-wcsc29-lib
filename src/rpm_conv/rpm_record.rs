@@ -15,6 +15,15 @@ pub struct RpmRecordHeader {
     pub player2: String,
     pub read_file: String,
 }
+impl RpmRecordHeader {
+    pub fn clear(&mut self) {
+        self.date = "".to_string();
+        self.event = "".to_string();
+        self.player1 = "".to_string();
+        self.player2 = "".to_string();
+        self.read_file = "".to_string();
+    }
+}
 
 /// レコードの本体。
 pub struct RpmRecordBody {
@@ -26,13 +35,24 @@ pub struct RpmRecordBody {
     pub identify_track: RpmITrack,
 }
 impl RpmRecordBody {
-    pub fn default() -> RpmRecordBody {
-        RpmRecordBody {
+    pub fn default() -> Self {
+        let mut instance = RpmRecordBody {
             cursor: -1,
             ply: 1,
             operation_track: RpmOTrack::default(),
             identify_track: RpmITrack::default(),
-        }
+        };
+
+        // 共通処理にする。
+        instance.clear();
+
+        instance
+    }
+    pub fn clear(&mut self) {
+        self.cursor = -1;
+        self.ply = 1;
+        self.operation_track.clear();
+        self.identify_track.clear();
     }
     pub fn append_track(&mut self, body:&mut RpmRecordBody) {
         self.operation_track.append_track(&mut body.operation_track);
@@ -46,7 +66,7 @@ pub struct RpmRecord {
     pub body: RpmRecordBody,
 }
 impl RpmRecord {
-    pub fn default() -> RpmRecord {
+    pub fn default() -> Self {
         RpmRecord {
             header : RpmRecordHeader {
                 date: "".to_string(),
@@ -57,6 +77,11 @@ impl RpmRecord {
             },
             body : RpmRecordBody::default(),
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.header.clear();
+        self.body.clear();
     }
 
     /// 後ろにレコードを連結する。

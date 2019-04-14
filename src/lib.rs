@@ -294,7 +294,7 @@ pub fn main_loop() {
             let mut start = 0;
 
             //comm.println("#Lib: 'position' command(1).");
-            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+            if Fen::parse_position(&comm, &line, &mut start, &mut rpm_record, &mut position) {
                 urecord_opt = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size());
             }
             //comm.println("#Position parse end1.");
@@ -306,7 +306,7 @@ pub fn main_loop() {
             {
                 //comm.println("#Lib: 'position' command(2).");
                 let mut start = 0;
-                if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+                if Fen::parse_position(&comm, &line, &mut start, &mut rpm_record, &mut position) {
                     //comm.println("#Position parsed.");
                 }
 

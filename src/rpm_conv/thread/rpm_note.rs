@@ -30,7 +30,7 @@ impl fmt::Display for RpmNote {
     }
 }
 impl RpmNote {
-    pub fn create_rpm_note(operation_note: RpmNoteOpe, pid:Option<PieceIdentify>) -> RpmNote {
+    pub fn from_id_ope(pid:Option<PieceIdentify>, operation_note: RpmNoteOpe) -> RpmNote {
         RpmNote {
             identify: pid,
             operation: operation_note,
@@ -79,6 +79,6 @@ impl RpmNote {
 
         // カウントアップ。
         *note_start += 1;
-        Some(RpmNote::create_rpm_note(note_ope, pid_opt))
+        Some(RpmNote::from_id_ope(pid_opt, note_ope))
     }
 }

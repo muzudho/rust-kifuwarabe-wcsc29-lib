@@ -32,7 +32,7 @@ impl KifPlayer {
             let drop = position.peek_hand(piece);
 
             // hand-off
-            let hand_off = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), drop.unwrap().get_type()));
+            let hand_off = RpmNoteOpe::from_address(Address::from_hand_ph_pt(Some(position.get_phase()), drop.unwrap().get_type()));
             rmoves.push(hand_off);
 
             // hand-on
@@ -59,7 +59,7 @@ impl KifPlayer {
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNoteOpe::from_address(Address::from_hand(Some(position.get_phase()), up));
+                let hand_on = RpmNoteOpe::from_address(Address::from_hand_ph_pt(Some(position.get_phase()), up));
                 rmoves.push(hand_on);
             }
 
@@ -103,8 +103,10 @@ impl KifPlayer {
         rrecord:&mut RpmRecord) {
 
         // TODO とりあえず平手初期局面だけ対応。
-        comm.println("#KifP: position startpos");
-        position.reset_startpos();
+        comm.println("#KifP: play_out_to_starting_position");
+        rrecord.clear();
+        position.reset_origin_position();
+        RpmPlayer::play_out_to_starting_position(comm, rrecord, position);
 
         let mut ply = 1;
         for kmove in &krecord.items {

@@ -2,64 +2,79 @@
 use address::*;
 use board_size::*;
 use communication::*;
-use position::*;
-use usi_conv::usi_move::*;
 use piece_etc::*;
+use position::*;
+use rpm_conv::rpm_record::*;
+use rpm_play::rpm_player::*;
 use std::*;
+use usi_conv::usi_move::*;
+use usi_conv::usi_position::*;
 
 pub struct Fen {
 
 }
 impl Fen {
-    // 解析と、局面の編集は同時に行う。
-    pub fn parse_position(_comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
-        if line.starts_with("position startpos") {
-            //comm.println("#Fen: position startpos");
-            // 平手初期局面にリセット。
-            *start = "position startpos".len();
-            position.reset_startpos();
-            true
-        } else if line.starts_with("position sfen ") {
-            //comm.println("#position sfen ");
-            // TODO 初期局面を設定。
-            position.reset_default();
+    pub fn do_startpos(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position) -> bool {
+        // 平手初期局面にリセット。
+        rrecord.clear();
+        position.reset_origin_position();
+        RpmPlayer::play_out_to_starting_position(comm, rrecord, position);
+        true
+    }
 
-            *start = 14;
-            let rank=9;
-            let mut file=1;
+    pub fn do_sfen(line:&str, start:&mut usize, position:&mut Position) -> bool {
+        // ゲームに使う駒がまだ決まっていないところから始めます。
+        position.reset_empty_position();
 
-            let sign = line.to_string().chars().next().unwrap();
-            let mut spaces = match sign {
-                '1' => {1},
-                '2' => {2},
-                '3' => {3},
-                '4' => {4},
-                '5' => {5},
-                '6' => {6},
-                '7' => {7},
-                '8' => {8},
-                '9' => {9},
-                '/' => {-1},
-                _ => {0},
-            };
+        let rank=9;
+        let mut file=1;
 
-            if spaces == 0 {
-                let piece_opt = parse_sign_line_to_piece(line, start);
-                position.activate_piece(piece_opt, Cell::from_file_rank(file, rank));
-                /* file += 1; */
-            } else if spaces == -1 {
-                /* file = 1; */
-                /* rank = 9; */
-            } else {
-                while spaces > 0 {
-                    position.set_id_piece(Cell::from_file_rank(file, rank), None);
-                    file += 1;
-                    spaces -= 1;
-                }
-            }
-            true
+        let sign = line.to_string().chars().next().unwrap();
+        let mut spaces = match sign {
+            '1' => {1},
+            '2' => {2},
+            '3' => {3},
+            '4' => {4},
+            '5' => {5},
+            '6' => {6},
+            '7' => {7},
+            '8' => {8},
+            '9' => {9},
+            '/' => {-1},
+            _ => {0},
+        };
+
+        if spaces == 0 {
+            let piece_opt = parse_sign_line_to_piece(line, start);
+            position.activate_piece(piece_opt, Cell::from_file_rank(file, rank));
+            /* file += 1; */
+        } else if spaces == -1 {
+            /* file = 1; */
+            /* rank = 9; */
         } else {
-            false
+            while spaces > 0 {
+                position.set_id_piece(Cell::from_file_rank(file, rank), None);
+                file += 1;
+                spaces -= 1;
+            }
+        }
+        true
+    }
+
+    // 解析と、局面の編集は同時に行う。
+    pub fn parse_position(comm:&Communication, line:&str, start:&mut usize, rrecord:&mut RpmRecord, position:&mut Position) -> bool {
+        match UsiPosition::parse_startpos_test(comm, line, start)
+        {
+            Some(is_startpos) => {
+                if is_startpos {
+                    Fen::do_startpos(comm, rrecord, position)
+                } else {
+                    Fen::do_sfen(line, start, position)
+                }
+            },
+            None => {
+                false
+            },
         }
     }
 

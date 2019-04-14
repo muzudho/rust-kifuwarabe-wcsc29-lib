@@ -842,7 +842,11 @@ pub enum Piece {
     PP3,
 }
 impl Piece {
-    pub fn from_ph_pt(phase_opt:Option<Phase>, piece_type:PieceType) -> Piece {
+    pub fn from_ph_pid(phase_opt:Option<Phase>, pid:PieceIdentify) -> Self {
+        Piece::from_ph_pt(phase_opt, pid.get_piece_type())
+    }
+
+    pub fn from_ph_pt(phase_opt:Option<Phase>, piece_type:PieceType) -> Self {
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceType::*;
@@ -935,7 +939,7 @@ impl Piece {
         }
     }
 
-    pub fn to_disactivate(self) -> Piece{
+    pub fn to_disactivate(self) -> Self {
         use piece_etc::Piece::*;
         match self {
             K1 | K2 | K3 => K3,
@@ -964,7 +968,7 @@ impl Piece {
         }
     }
 
-    pub fn promote(self) -> Piece {
+    pub fn promote(self) -> Self {
         use piece_etc::Piece::*;
         match self {
             K1 => PK1,
@@ -1025,7 +1029,7 @@ impl Piece {
         }
     }
 
-    pub fn rotate(self) -> Piece {
+    pub fn rotate(self) -> Self {
         use piece_etc::Piece::*;
         match self {
             // K
@@ -1081,6 +1085,38 @@ impl Piece {
             PP1 => PP2,
             PP2 => PP1,
             PP3 => PP3,
+        }
+    }
+
+    pub fn get_phase(self) -> Option<Phase> {
+        use piece_etc::Piece::*;
+        match self {
+            K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1 | PP1 => Some(Phase::First),
+            K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2 | PP2 => Some(Phase::Second),
+            K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3 | PP3 => None,
+        }
+    }
+
+    pub fn get_type(self) -> PieceType {
+        use piece_etc::Piece::*;
+        use piece_etc::PieceType::*;
+        match self {
+            K1 | K2 | K3 => K,
+            PK1 | PK2 | PK3 => PK,
+            R1 | R2 | R3 => R,
+            PR1 | PR2 | PR3 => PR,
+            B1 | B2 | B3 => B,
+            PB1 | PB2 | PB3 => PB,
+            G1 | G2 | G3 => G,
+            PG1 | PG2 | PG3 => PG,
+            S1 | S2 | S3 => S,
+            PS1 | PS2 | PS3 => PS,
+            N1 | N2 | N3 => N,
+            PN1 | PN2 | PN3 => PN,
+            L1 | L2 | L3 => L,
+            PL1 | PL2 | PL3 => PL,
+            P1 | P2 | P3 => P,
+            PP1 | PP2 | PP3 => PP,
         }
     }
 }
@@ -1543,19 +1579,6 @@ impl PhysicalSign {
             "PP" | "pp" => PP,
             _ => panic!("Unexpected sign: '{}'.", self.text)
         }
-    }
-}
-pub fn piece_to_phase(piece:Option<Piece>) -> Option<Phase> {
-    match piece {
-        Some(x) => {
-            use piece_etc::Piece::*;
-            match x {
-                K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1 | PP1 => Some(Phase::First),
-                K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2 | PP2 => Some(Phase::Second),
-                K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3 | PP3 => None,
-            }
-        },
-        None => None,
     }
 }
 
