@@ -99,17 +99,18 @@ impl RpmMovePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn forward_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position) -> bool {
+    pub fn forward_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position, is_auto_reverse:bool) -> bool {
         let mut is_first = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let Some(mut rnote) = rrecord.body.rpm_tape.get_current_note() {
-            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &mut rnote, position, &mut rrecord.body.ply);
-            if !is_legal_touch {
+        while let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
+            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &rnote, position, &mut rrecord.body.ply);
+
+            if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..forwarding_count {
-                    RpmNotePlayer::back_1note_on_record(comm, rrecord, position);
+                    RpmNotePlayer::back_1note(comm, &rnote, position, &mut rrecord.body.ply);
                 }
 
                 return false;
@@ -129,17 +130,35 @@ impl RpmMovePlayer {
     }
 
     /// 1手戻す。
-    pub fn back_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position) {
-        let mut count = 0;
+    /// 
+    /// # Return
+    /// 
+    /// 合法タッチか否か。
+    pub fn back_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position, is_auto_reverse:bool) -> bool {
+        let mut backwarding_count = 0;
+
         // 開始前に達したら終了。
-        while let Some(rpm_note) = RpmNotePlayer::back_1note_on_record(comm, rrecord, position) {
-            if count != 0 && rpm_note.is_phase_change() {
+        while let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
+            let is_legal_touch = RpmNotePlayer::back_1note(comm, &rnote, position, &mut rrecord.body.ply);
+
+            if is_auto_reverse && !is_legal_touch {
+                // TODO 非合法タッチなら、以前に動かした分 戻したい。
+                for _i in 0..backwarding_count {
+                    RpmNotePlayer::forward_1note(comm, &rnote, position, &mut rrecord.body.ply);
+                }
+
+                return false;
+            }
+
+            if backwarding_count != 0 && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
             }
 
             // それ以外は繰り返す。
-            count += 1;
+            backwarding_count += 1;
         }
+
+        true
     }
 }

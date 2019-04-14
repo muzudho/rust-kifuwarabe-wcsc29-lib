@@ -136,25 +136,27 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            RpmNotePlayer::back_1note_on_record(&comm, &mut rrecord, &mut position);
-            HumanInterface::bo(&comm, &rrecord, &position);
+            if let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
+                RpmNotePlayer::back_1note(&comm, &rnote, &mut position, &mut rrecord.body.ply);
+                HumanInterface::bo(&comm, &rrecord, &position);
+            }
 
         } else if line == "bb" {
             // Back 1ply.
-            RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
+            RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -196,27 +198,27 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            if let Some(mut rnote) = rrecord.body.rpm_tape.get_current_note() {
-                RpmNotePlayer::forward_1note(&comm, &mut rnote, &mut position, &mut rrecord.body.ply);
+            if let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
+                RpmNotePlayer::forward_1note(&comm, &rnote, &mut position, &mut rrecord.body.ply);
                 HumanInterface::bo(&comm, &rrecord, &position);
             }
 
         } else if line == "ff" {
             // Forward 1ply.
-            RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
+            RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
