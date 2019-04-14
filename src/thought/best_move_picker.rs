@@ -129,10 +129,15 @@ impl BestMovePicker {
 
                                         //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
                                         
-                                        // TODO この手は、現在の盤上で指せるのか検証したい。
-                                        // 例えば 味方の駒の上に駒を動かさないだろうか？
 
                                         comm.println(&format!("Rmove: {}.", rmove));
+
+                                        // TODO 現局面で この手を指せるか試してみる。
+                                        // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
+                                        {
+
+                                        }
+
 
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);

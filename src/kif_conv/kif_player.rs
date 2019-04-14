@@ -6,6 +6,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_note_player::*;
 use rpm_play::rpm_player::*;
 
 pub struct KifPlayer {
@@ -117,7 +118,7 @@ impl KifPlayer {
                 ply);
 
             for rnote in rmoves {
-                RpmPlayer::touch_beautiful_world(comm, rrecord, &rnote, position);
+                RpmNotePlayer::touch_brandnew_note(comm, rrecord, &rnote, position);
             }
 
             ply += 1;

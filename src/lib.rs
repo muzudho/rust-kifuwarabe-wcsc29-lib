@@ -58,6 +58,7 @@ use conf::kifuwarabe_wcsc29_lib_config::*;
 use human::human_interface::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_object_sheet::*;
+use rpm_play::rpm_note_player::*;
 use rpm_play::rpm_player::*;
 use std::path::Path;
 use usi_conv::fen::*;
@@ -135,25 +136,25 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            RpmPlayer::back_1note(&comm, &mut rpm_record, &mut position);
+            RpmNotePlayer::back_1note_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bb" {
             // Back 1ply.
-            RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
@@ -167,25 +168,25 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            RpmPlayer::pop_current_1mark(&comm, &mut rpm_record, &mut position);
+            RpmNotePlayer::pop_current_1note_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
@@ -195,25 +196,25 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            RpmPlayer::forward_1note(&comm, &mut rpm_record, &mut position);
+            RpmNotePlayer::forward_1note_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
-            RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
@@ -233,7 +234,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                RpmPlayer::touch_beautiful_world(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
+                RpmNotePlayer::touch_brandnew_note(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {

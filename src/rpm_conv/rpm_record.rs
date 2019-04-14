@@ -5,7 +5,8 @@ use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::thread::rpm_note_operation::*;
-use rpm_play::rpm_player::*;
+use rpm_play::rpm_note_player::*;
+//use rpm_play::rpm_player::*;
 
 /// 対局情報。
 pub struct RpmRecordHeader {
@@ -166,7 +167,7 @@ impl RpmRecord {
             let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(comm, rpm_record, &rpm_note, position);
                 HumanInterface::bo(comm, &rpm_record, &position);
             }
         }

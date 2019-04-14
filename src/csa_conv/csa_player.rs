@@ -6,6 +6,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_note_player::*;
 use rpm_play::rpm_player::*;
 
 pub struct CsaPlayer {
@@ -116,7 +117,7 @@ impl CsaPlayer {
                 ply);
 
             for rpm_note in p_moves {
-                RpmPlayer::touch_beautiful_world(comm, rrecord, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(comm, rrecord, &rpm_note, position);
             }
 
             ply += 1;

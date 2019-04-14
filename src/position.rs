@@ -352,7 +352,7 @@ impl Position {
     /// # Returns
     /// 
     /// Is legal touch, Identified piece.
-    pub fn touch_world(&mut self, _comm:&Communication, rpm_operation_note:&RpmNoteOpe) -> (bool, Option<IdentifiedPiece>) {
+    pub fn touch_beautiful_1note(&mut self, _comm:&Communication, rpm_operation_note:&RpmNoteOpe) -> (bool, Option<IdentifiedPiece>) {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。

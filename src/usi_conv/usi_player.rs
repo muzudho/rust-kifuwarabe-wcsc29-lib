@@ -3,7 +3,8 @@ use communication::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
-use rpm_play::rpm_player::*;
+use rpm_play::rpm_note_player::*;
+//use rpm_play::rpm_player::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 
@@ -104,7 +105,7 @@ impl UsiConverter {
 
             for rpm_note in rpm_move {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(comm, rpm_record, &rpm_note, position);
             }
         }
     }
