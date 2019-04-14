@@ -6,7 +6,7 @@ use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
-//use rpm_play::rpm_player::*;
+//use rpm_play::rpm_note_player::*;
 
 /// 対局情報。
 pub struct RpmRecordHeader {

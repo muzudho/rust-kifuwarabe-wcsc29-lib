@@ -5,7 +5,8 @@ use communication::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_record::*;
-use rpm_play::rpm_player::*;
+use rpm_play::rpm_move_player::*;
+//use rpm_play::rpm_note_player::*;
 use std::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_position::*;
@@ -18,7 +19,7 @@ impl Fen {
         // 平手初期局面にリセット。
         rrecord.clear();
         position.reset_origin_position();
-        RpmPlayer::play_out_to_starting_position(comm, rrecord, position);
+        RpmMovePlayer::play_out_to_starting_position(comm, rrecord, position);
         true
     }
 

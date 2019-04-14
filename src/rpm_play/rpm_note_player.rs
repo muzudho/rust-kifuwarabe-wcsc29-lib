@@ -38,24 +38,28 @@ impl RpmNotePlayer {
     /// 既存の棋譜を前方に移動するだけ。
     /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
     /// 動かせなかったなら、Noneを返す。
-    pub fn forward_1note_on_record(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNoteOpe> {
+    /// 
+    /// # Returns
+    /// 
+    /// 現在のノート, 合法タッチか否か。
+    pub fn forward_1note_on_record(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> (bool, Option<RpmNoteOpe>) {
         if rpm_record.forward() {
             if let Some(rpm_note) = rpm_record.body.operation_track.get_current(rpm_record.body.cursor) {
                 let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rpm_note);
 
-                // 非合法タッチなら戻す。
                 if is_legal_touch {
-                    Some(rpm_note)
+                    (true, Some(rpm_note))
                 } else {
+                    // 非合法タッチなら戻す。
                     // もう１回タッチすれば戻る。（トグル式なんで）
                     position.touch_beautiful_1note(comm, &rpm_note);
-                    None
+                    (false, None)
                 }
             } else {
                 panic!("Unexpected forward 1 note.")
             }
         } else {
-            None
+            (false, None)
         }
     }
 

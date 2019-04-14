@@ -6,6 +6,7 @@ use position::*;
 use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_thread::*;
 use rpm_for_json::rpm_book_file::*;
+//use rpm_play::rpm_move_player::*;
 use std::collections::HashMap;
 use std::fs;
 use usi_conv::usi_move::*;
@@ -135,7 +136,7 @@ impl BestMovePicker {
                                         // TODO 現局面で この手を指せるか試してみる。
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
-
+                                            //RpmMovePlayer::forward_1move_on_record(&comm, &mut position);
                                         }
 
 

@@ -58,8 +58,8 @@ use conf::kifuwarabe_wcsc29_lib_config::*;
 use human::human_interface::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_object_sheet::*;
+use rpm_play::rpm_move_player::*;
 use rpm_play::rpm_note_player::*;
-use rpm_play::rpm_player::*;
 use std::path::Path;
 use usi_conv::fen::*;
 use usi_conv::usi_position::*;
@@ -89,7 +89,7 @@ pub fn main_loop() {
 
     // 学習中の棋譜を入れる。
     let rpm_object_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
-    let mut rpm_record = RpmRecord::default();
+    let mut rrecord = RpmRecord::default();
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -128,7 +128,7 @@ pub fn main_loop() {
             line.starts_with('-') ||
             line.starts_with('|')
         {
-            RpmRecord::read_tape(&comm, &line, &mut rpm_record, &mut position);
+            RpmRecord::read_tape(&comm, &line, &mut rrecord, &mut position);
 
         // #####
         // # B #
@@ -136,31 +136,31 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            RpmNotePlayer::back_1note_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmNotePlayer::back_1note_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bb" {
             // Back 1ply.
-            RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                RpmPlayer::back_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         // #####
         // # D #
@@ -168,27 +168,27 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            RpmNotePlayer::pop_current_1note_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmNotePlayer::pop_current_1note_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                RpmPlayer::pop_current_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         // #####
         // # F #
@@ -196,27 +196,27 @@ pub fn main_loop() {
 
         } else if line == "f" {
             // Forward 1mark.
-            RpmNotePlayer::forward_1note_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmNotePlayer::forward_1note_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
-            RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                RpmPlayer::forward_1ply_on_record(&comm, &mut rpm_record, &mut position);
+                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position);
             }
-            HumanInterface::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rrecord, &position);
 
         // #####
         // # G #
@@ -234,13 +234,13 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                RpmNotePlayer::touch_brandnew_note(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
+                RpmNotePlayer::touch_brandnew_note(&comm, &mut rrecord, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            rpm_object_sheet.append(&comm, position.get_board_size(), &rpm_record);
+            rpm_object_sheet.append(&comm, position.get_board_size(), &rrecord);
 
         // #####
         // # H #
@@ -270,7 +270,7 @@ pub fn main_loop() {
         } else if line.starts_with('B') | line.starts_with('G') | line.starts_with('K') | line.starts_with('L') |
             line.starts_with('N') | line.starts_with('P') | line.starts_with('S') | line.starts_with('R') {
 
-            RpmRecord::read_tape(&comm, &line, &mut rpm_record, &mut position);
+            RpmRecord::read_tape(&comm, &line, &mut rrecord, &mut position);
 
         // #####
         // # Q #
@@ -295,11 +295,11 @@ pub fn main_loop() {
             let mut start = 0;
 
             //comm.println("#Lib: 'position' command(1).");
-            if Fen::parse_position(&comm, &line, &mut start, &mut rpm_record, &mut position) {
+            if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
                 urecord_opt = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size());
             }
             //comm.println("#Position parse end1.");
-            //HumanInterface::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
 
             // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
             // TODO できれば USI -> RPM 変換したい。
@@ -307,7 +307,7 @@ pub fn main_loop() {
             {
                 //comm.println("#Lib: 'position' command(2).");
                 let mut start = 0;
-                if Fen::parse_position(&comm, &line, &mut start, &mut rpm_record, &mut position) {
+                if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
                     //comm.println("#Position parsed.");
                 }
 
@@ -316,10 +316,10 @@ pub fn main_loop() {
                         &comm,
                         &mut position,
                         &urecord,
-                        &mut rpm_record);
+                        &mut rrecord);
                 }
                 //comm.println("#Record converted1.");
-                //HumanInterface::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+                //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
                 //comm.println("#Record converted2.");
             }
         }

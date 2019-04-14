@@ -3,8 +3,8 @@ use communication::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+//use rpm_play::rpm_move_player::*;
 use rpm_play::rpm_note_player::*;
-//use rpm_play::rpm_player::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 

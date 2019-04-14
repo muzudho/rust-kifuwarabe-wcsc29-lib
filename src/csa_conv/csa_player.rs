@@ -6,8 +6,8 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_move_player::*;
 use rpm_play::rpm_note_player::*;
-use rpm_play::rpm_player::*;
 
 pub struct CsaPlayer {
 
@@ -106,7 +106,7 @@ impl CsaPlayer {
         comm.println("#CsaP: play_out_to_starting_position");
         rrecord.clear();
         position.reset_origin_position();
-        RpmPlayer::play_out_to_starting_position(comm, rrecord, position);
+        RpmMovePlayer::play_out_to_starting_position(comm, rrecord, position);
 
         let mut ply = 1;
         for cmove in &crecord.items {
