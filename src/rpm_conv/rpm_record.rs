@@ -1,12 +1,12 @@
 use board_size::*;
 use communication::*;
 use human::human_interface::*;
+use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
-//use rpm_play::rpm_note_player::*;
 
 /// 対局情報。
 pub struct RpmRecordHeader {
@@ -92,10 +92,10 @@ impl RpmRecord {
     }
 
     /// 追加する。
-    pub fn add_note(&mut self, rpm_note:&RpmNoteOpe, identify:i8) {
+    pub fn add_note(&mut self, pid:Option<PieceIdentify>, rpm_note:&RpmNoteOpe) {
         let mut cursor_clone = self.body.cursor; // .clone();
         self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor, &mut self.body.ply);
-        self.body.identify_track.add_identify(identify, &mut cursor_clone);
+        self.body.identify_track.add_identify(pid, &mut cursor_clone);
     }
 
     pub fn forward(&mut self) -> bool {

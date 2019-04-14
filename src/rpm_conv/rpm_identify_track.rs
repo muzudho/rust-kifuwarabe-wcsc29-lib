@@ -1,13 +1,14 @@
 use board_size::*;
 use communication::*;
+use piece_etc::*;
 
-const NONE_IDENTIFY:i8 = -1;
+const NONE_VALUE:i8 = -1;
 
 /// Reversible physical move - Identify track.
 #[derive(Default)]
 pub struct RpmITrack {
     // piece number.
-    pub items: Vec<i8>,
+    pub items: Vec<Option<PieceIdentify>>,
 }
 impl RpmITrack {
     pub fn default() -> RpmITrack {
@@ -31,7 +32,7 @@ impl RpmITrack {
         // book.save_rpm_i_track(&comm, board_size, &self);
     }
 
-    pub fn add_identify(&mut self, identify:i8, cursor:&mut i16) {
+    pub fn add_identify(&mut self, pid_opt:Option<PieceIdentify>, cursor:&mut i16) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -40,7 +41,7 @@ impl RpmITrack {
 
         if self.items.len() == (*cursor + 1) as usize {
             // 追加。
-            self.items.push(identify);
+            self.items.push(pid_opt);
 
             *cursor += 1;
         } else {
@@ -48,7 +49,7 @@ impl RpmITrack {
         }
     }
 
-    pub fn pop_current(&mut self, cursor:&mut i16) -> i8 {
+    pub fn pop_current(&mut self, cursor:&mut i16) -> Option<PieceIdentify> {
         // 後ろの要素がある場合は、削除する。
         if (*cursor + 1) < self.items.len() as i16 {
             println!("後ろの要素を削除。 {}, {}.", *cursor, self.items.len());
@@ -56,7 +57,7 @@ impl RpmITrack {
         };
 
         if self.items.is_empty() {
-            NONE_IDENTIFY
+            None
         } else {
             let last = self.items.len()-1;
             let deleted_identify = self.items[last];
@@ -67,9 +68,9 @@ impl RpmITrack {
     }
 
     /// カーソルが指している要素を返す。
-    pub fn get_current(&self, cursor:i16) -> i8 {
+    pub fn get_current(&self, cursor:i16) -> Option<PieceIdentify> {
         if cursor == -1 {
-            NONE_IDENTIFY
+            None
         } else {
             self.items[cursor as usize]
         }
@@ -99,8 +100,8 @@ impl RpmITrack {
     /// コマンドライン入力形式。
     pub fn to_sign(&self, _board_size:BoardSize) -> String {
         let mut sign = "".to_string();
-        for identify in &self.items {
-            sign = format!("{} {}", sign, identify);
+        for pid_opt in &self.items {
+            sign = format!("{} {}", sign, if let Some(pid) = pid_opt {pid.get_number().to_string()} else {NONE_VALUE.to_string()});
         }
         sign
     }
@@ -110,12 +111,15 @@ impl RpmITrack {
         let mut text = "".to_string();
         let mut iter = self.items.iter();
 
+        // 最初はカンマなし。
         if !self.items.is_empty() {
-            text = format!("{} {}", text, iter.next().unwrap());
+            let token = if let Some(pid) = iter.next().unwrap() {pid.get_number().to_string()} else {NONE_VALUE.to_string()};
+            text = format!("{} {}", text, token);
         }
 
         for _index in 1..self.items.len() {
-            text = format!("{}, {}", text, iter.next().unwrap());
+            let token = if let Some(pid) = iter.next().unwrap() {pid.get_number().to_string()} else {NONE_VALUE.to_string()};
+            text = format!("{}, {}", text, token);
         }
         
         text.trim_start().to_string()

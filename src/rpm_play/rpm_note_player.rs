@@ -1,7 +1,5 @@
-//use address::*;
-//use board_size::*;
 use communication::*;
-//use piece_etc::*;
+use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
@@ -14,12 +12,12 @@ impl RpmNotePlayer {
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_brandnew_note(comm:&Communication, rrecord:&mut RpmRecord, rpm_note_ope:&RpmNoteOpe, position:&mut Position) {
-        let piece_id_number = if let (_is_legal_touch, Some(piece_identify)) = position.touch_beautiful_1note(comm, &rpm_note_ope) {
-            piece_identify.get_id().get_number()
+        let pid_opt = if let (_is_legal_touch, Some(piece_identify)) = position.touch_beautiful_1note(comm, &rpm_note_ope) {
+            PieceIdentify::from_number(piece_identify.get_id().get_number())
         } else {
-            -1
+            None
         };
-        rrecord.add_note(&rpm_note_ope, piece_id_number);
+        rrecord.add_note(pid_opt, &rpm_note_ope);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
