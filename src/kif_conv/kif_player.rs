@@ -1,12 +1,12 @@
 use address::*;
 use communication::*;
-use common_operation::*;
 use kif_conv::kif_move::*;
 use kif_conv::kif_record::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_player::*;
 
 pub struct KifPlayer {
 
@@ -115,7 +115,7 @@ impl KifPlayer {
                 ply);
 
             for rnote in rmoves {
-                CommonOperation::touch_beautiful_world(comm, rrecord, &rnote, position);
+                RpmPlayer::touch_beautiful_world(comm, rrecord, &rnote, position);
             }
 
             ply += 1;

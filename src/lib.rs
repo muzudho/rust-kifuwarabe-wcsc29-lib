@@ -37,7 +37,6 @@ use std::io;
 
 pub mod address;
 pub mod board_size;
-pub mod common_operation;
 pub mod communication;
 pub mod csa_conv;
 pub mod human;
@@ -53,7 +52,6 @@ pub mod rpm_play;
 pub mod usi_conv;
 pub mod thought;
 
-use common_operation::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
@@ -63,6 +61,7 @@ use rpm_conv::rpm_object_sheet::*;
 use rpm_play::rpm_player::*;
 use std::path::Path;
 use usi_conv::fen::*;
+use usi_conv::usi_position::*;
 use piece_etc::*;
 use position::*;
 use usi_conv::usi_player::*;
@@ -136,25 +135,25 @@ pub fn main_loop() {
 
         } else if line == "b" {
             // Back 1mark.
-            CommonOperation::back_1note(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::back_1note(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bb" {
             // Back 1ply.
-            CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::back_1ply(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
@@ -168,25 +167,25 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            CommonOperation::pop_current_1mark(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::pop_current_1mark(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+            RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
+                RpmPlayer::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
             HumanInterface::bo(&comm, &rpm_record, &position);
 
@@ -234,7 +233,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                CommonOperation::touch_beautiful_world(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
+                RpmPlayer::touch_beautiful_world(&comm, &mut rpm_record, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {
@@ -296,10 +295,10 @@ pub fn main_loop() {
 
             //comm.println("#Lib: 'position' command(1).");
             if Fen::parse_position(&comm, &line, &mut start, &mut position) {
-                urecord_opt = CommonOperation::parse_usi_1record(&comm, &line, &mut start, position.get_board_size());
+                urecord_opt = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size());
             }
             //comm.println("#Position parse end1.");
-            //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+            //HumanInterface::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
 
             // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
             // TODO できれば USI -> RPM 変換したい。
@@ -319,7 +318,7 @@ pub fn main_loop() {
                         &mut rpm_record);
                 }
                 //comm.println("#Record converted1.");
-                //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+                //HumanInterface::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
                 //comm.println("#Record converted2.");
             }
         }

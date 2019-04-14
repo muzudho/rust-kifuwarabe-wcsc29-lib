@@ -73,7 +73,7 @@ impl UsiRecord {
         if Fen::parse_position(&comm, &line, &mut start, &mut position) {
             comm.println("Position parsed.");
 
-            if let Some(parsed_urecord) = CommonOperation::parse_usi_1record(&comm, &line, &mut start, position.get_board_size()) {
+            if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size()) {
                 comm.println("Moves parsed.");
                 urecord = parsed_urecord;
             };

@@ -1,12 +1,11 @@
 use board_size::*;
+use communication::*;
 use human::human_interface::*;
 use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
 use rpm_conv::thread::rpm_note_operation::*;
-
-use common_operation::*;
-use communication::*;
+use rpm_play::rpm_player::*;
 
 /// 対局情報。
 pub struct RpmRecordHeader {
@@ -142,7 +141,7 @@ impl RpmRecord {
             let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
                 HumanInterface::bo(comm, &rpm_record, &position);
             }
         }

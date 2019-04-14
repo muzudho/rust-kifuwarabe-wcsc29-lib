@@ -1,12 +1,12 @@
 use address::*;
 use communication::*;
-use common_operation::*;
 use csa_conv::csa_move::*;
 use csa_conv::csa_record::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_player::*;
 
 pub struct CsaPlayer {
 
@@ -114,7 +114,7 @@ impl CsaPlayer {
                 ply);
 
             for rpm_note in p_moves {
-                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
             }
 
             ply += 1;

@@ -53,7 +53,7 @@ pub fn main() {
     if Fen::parse_position(&comm, &line, &mut start, &mut position) {
         comm.println("Position parsed.");
 
-        if let Some(parsed_urecord) = CommonOperation::parse_usi_1record(&comm, &line, &mut start, position.get_board_size()) {
+        if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size()) {
             comm.println("Moves parsed.");
             urecord = parsed_urecord;
         };
@@ -67,5 +67,5 @@ pub fn main() {
     }
 
     UsiConverter::convert_record(&comm, &mut position, &urecord, &mut rpm_o_track);
-    CommonOperation::bo(&comm, &rpm_o_track, &position);
+    HumanInterface::bo(&comm, &rpm_o_track, &position);
 }

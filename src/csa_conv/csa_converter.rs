@@ -36,7 +36,7 @@ impl CsaConverter {
 
         // Play.
         CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
-        // CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
+        // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
         let rpm_object_sheet = RpmObjectSheet::default(output_path);

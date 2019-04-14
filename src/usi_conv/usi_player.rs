@@ -1,9 +1,9 @@
 use address::*;
 use communication::*;
-use common_operation::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_play::rpm_player::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 
@@ -104,7 +104,7 @@ impl UsiConverter {
 
             for rpm_note in rpm_move {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                RpmPlayer::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
             }
         }
     }

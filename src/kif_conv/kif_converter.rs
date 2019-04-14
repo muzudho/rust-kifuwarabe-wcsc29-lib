@@ -36,7 +36,7 @@ impl KifConverter {
 
         // Play.
         KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
-        // CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
+        // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
         let rpm_object_sheet = RpmObjectSheet::default(output_path);

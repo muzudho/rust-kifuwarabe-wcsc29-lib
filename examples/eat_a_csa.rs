@@ -55,7 +55,7 @@ pub fn main() {
 
     // Play.
     CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
-    CommonOperation::bo(&comm, &rrecord.body.operation_track, &position);
+    HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
     // Save.
     let rpm_sheet = RpmSheet::new();
