@@ -112,14 +112,15 @@ impl RpmMove {
 
     /// 一手。フェーズ・チェンジ・ノートや「ほこり取り」は含まない。
     /// 
+    /// 決まっている並びをしているものとする。
+    /// 
     /// # Returns
     /// 
     /// Usi move,
     /// どの駒を動かした一手か,
     /// どこの駒を動かした一手か,
     pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
-        // 順番は決まっている。
-        let mut i_token = 0;
+        let mut touched_source = false;
 
         let mut src_opt = None;
         let mut dst_opt = None;
@@ -132,33 +133,25 @@ impl RpmMove {
             // 数が入っているとき。
             if let Some(address) = note.get_ope().address {
                 if let Some(piece) = address.get_hand_piece() {
-                    // 駒台
-                    if i_token == 0 {
-                        drop_opt = Some(PieceType::from_piece(piece));
+                    // 駒台を操作してるので　取った駒か、打った駒。
+                    if !touched_source {
                         ftp_id_opt = note.get_id();
                         ftp_addr = Some(address);
-                        i_token += 1;
+                        touched_source = true;
                     }
+                    drop_opt = Some(PieceType::from_piece(piece));
                 } else {
                     // 盤上
-                    match i_token {
-                        0 => {
-                            src_opt = Some(board_size.address_to_cell(address.get_index()));
-                            ftp_id_opt = note.get_id();
-                            ftp_addr = Some(address);
-                            i_token += 1;
-                        },
-                        1 => {
-                            dst_opt = Some(board_size.address_to_cell(address.get_index()));
-                            // ２つ目に出てくる場合、１つ目は取った相手の駒の動き。
-                            ftp_id_opt = note.get_id();
-                            ftp_addr = Some(address);
-                            i_token += 1;
-                        },
-                        _ => {},
+                    if !touched_source {
+                        // 先に駒台を触るので、盤上の駒を触ったら、上書きして盤上の駒を優先します。
+                        ftp_id_opt = note.get_id();
+                        ftp_addr = Some(address);
+                        src_opt = Some(board_size.address_to_cell(address.get_index()));
+                        touched_source = true;
+                    } else {
+                        dst_opt = Some(board_size.address_to_cell(address.get_index()));
                     }
                 }
-
             } else if note.get_ope().sky_turn {
                 // +
                 promotion = true;

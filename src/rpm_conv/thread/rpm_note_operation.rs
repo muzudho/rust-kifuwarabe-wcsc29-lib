@@ -45,7 +45,7 @@ impl fmt::Display for RpmNoteOpe {
     }
 }
 impl RpmNoteOpe {
-    pub fn from_address(address:Address) -> RpmNoteOpe {
+    pub fn from_address(address:Address) -> Self {
         RpmNoteOpe {
             address: Some(address),
             sky_turn: false,
@@ -55,7 +55,7 @@ impl RpmNoteOpe {
         }
     }
 
-    pub fn turn_over() -> RpmNoteOpe {
+    pub fn turn_over() -> Self {
         RpmNoteOpe {
             address: None,
             sky_turn: true,
@@ -65,7 +65,7 @@ impl RpmNoteOpe {
         }
     }
 
-    pub fn rotate() -> RpmNoteOpe {
+    pub fn rotate() -> Self {
         RpmNoteOpe {
             address: None,
             sky_turn: false,
@@ -75,7 +75,7 @@ impl RpmNoteOpe {
         }
     }
 
-    pub fn change_phase() -> RpmNoteOpe {
+    pub fn change_phase() -> Self {
         RpmNoteOpe {
             address: None,
             sky_turn: false,
@@ -85,7 +85,7 @@ impl RpmNoteOpe {
         }
     }
 
-    pub fn create_resign() -> RpmNoteOpe {
+    pub fn resign() -> Self {
         RpmNoteOpe {
             address: None,
             sky_turn: false,

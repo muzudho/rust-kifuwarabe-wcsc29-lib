@@ -15,7 +15,7 @@ impl UsiConverter {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
-            rpm_move.push(RpmNoteOpe::create_resign());
+            rpm_move.push(RpmNoteOpe::resign());
             return rpm_move;
         }
 

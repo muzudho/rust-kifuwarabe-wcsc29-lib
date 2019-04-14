@@ -12,10 +12,11 @@ pub struct RpmPlayer {
 }
 impl RpmPlayer {
     /// 初期化に使う。
-    fn init_note(ph:Phase, file:i8, rank:i8, pid:PieceIdentify, bs:BoardSize) -> (RpmNoteOpe, RpmNoteOpe) {
+    fn init_note(ph:Phase, file:i8, rank:i8, pid:PieceIdentify, bs:BoardSize) -> (RpmNoteOpe, RpmNoteOpe, RpmNoteOpe) {
         (
             RpmNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(Some(ph), pid))),
-            RpmNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs))
+            RpmNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs)),
+            RpmNoteOpe::change_phase()
         )
     }
 
@@ -28,7 +29,7 @@ impl RpmPlayer {
 
         // 大橋流の順序にしてください。
         let bs = pos.get_board_size();
-        let array : [(RpmNoteOpe, RpmNoteOpe);40] = [
+        let array : [(RpmNoteOpe, RpmNoteOpe, RpmNoteOpe);40] = [
             RpmPlayer::init_note(Second, 5,1,K00,bs),
             RpmPlayer::init_note(First, 5,9,K01,bs),
             RpmPlayer::init_note(Second, 4,1,G02,bs),
@@ -74,6 +75,7 @@ impl RpmPlayer {
         for element in array.iter() {
             RpmPlayer::touch_beautiful_world(comm, rpm_record, &element.0, pos);
             RpmPlayer::touch_beautiful_world(comm, rpm_record, &element.1, pos);
+            RpmPlayer::touch_beautiful_world(comm, rpm_record, &element.2, pos);
         }
     }
 
