@@ -42,29 +42,18 @@ impl RpmNotePlayer {
     /// 
     /// 合法タッチか否か。
     pub fn forward_1note(comm:&Communication, rnote:&RpmNote, position:&mut Position, ply:&mut i16) -> bool {
-        // if rpm_record.forward() {
-            //if let Some(rnote) = rpm_record.body.rpm_tape.get_current_note() {
-                let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
+        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
 
-                if is_legal_touch {
-                    *ply += 1;
-                    true
-                } else {
-                    // 非合法タッチなら戻す。
-                    // もう１回タッチすれば戻る。（トグル式なんで）
-                    position.touch_beautiful_1note(comm, &rnote.get_ope());
-                    false
-                }
-            /*
-            } else {
-                panic!("Unexpected forward 1 note.")
-            }
-            */
-        /*
+        if is_legal_touch {
+            print!("[F{}]", ply);
+            *ply += 1;
+            true
         } else {
-            (false, None)
+            // 非合法タッチなら戻す。
+            // もう１回タッチすれば戻る。（トグル式なんで）
+            position.touch_beautiful_1note(comm, &rnote.get_ope());
+            false
         }
-        */
     }
 
     /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
@@ -73,26 +62,17 @@ impl RpmNotePlayer {
     /// 
     /// 合法タッチか否か。
     pub fn back_1note(comm:&Communication, rnote:&RpmNote, position:&mut Position, ply:&mut i16) -> bool {
-        //if let Some(rnote) = rpm_record.body.rpm_tape.get_current_note() {
-            let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
+        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
 
-            if is_legal_touch {
-                *ply -= 1;
-                // rpm_record.back();
-                // Some(rnote)
-                true
-            } else {
-                // 非合法タッチなら戻す。
-                // もう１回タッチすれば戻る。（トグル式なんで）
-                position.touch_beautiful_1note(comm, &rnote.get_ope());
-                false
-            }
-
-
-        /*
+        if is_legal_touch {
+            print!("[B{}]", ply);
+            *ply -= 1;
+            true
         } else {
-            None
+            // 非合法タッチなら戻す。
+            // もう１回タッチすれば戻る。（トグル式なんで）
+            position.touch_beautiful_1note(comm, &rnote.get_ope());
+            false
         }
-        */
     }
 }

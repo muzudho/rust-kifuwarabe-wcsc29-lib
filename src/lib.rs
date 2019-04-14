@@ -143,20 +143,20 @@ pub fn main_loop() {
 
         } else if line == "bb" {
             // Back 1ply.
-            RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
+            RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
+                RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::back_1move_on_record(&comm, &mut rrecord, &mut position, true);
+                RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -205,20 +205,20 @@ pub fn main_loop() {
 
         } else if line == "ff" {
             // Forward 1ply.
-            RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
+            RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
+                RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::forward_1move_on_record(&comm, &mut rrecord, &mut position, true);
+                RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -227,7 +227,7 @@ pub fn main_loop() {
         // #####
 
         } else if line.starts_with("go") {
-            let best_logical_move = best_move_picker.get_best_move(&comm, &kw29_config, &position);
+            let best_logical_move = best_move_picker.get_best_move(&comm, &kw29_config, &mut rrecord, &mut position);
             // Examples.
             // println!("bestmove 7g7f");
             // println!("bestmove win");

@@ -1,9 +1,7 @@
 /// Reversible physical move.
 use board_size::*;
-//use communication::*;
-//use piece_etc::*;
+use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_note::*;
-//use rpm_conv::thread::rpm_note_operation::*;
 
 const NONE_VALUE:i8 = -1;
 
@@ -69,15 +67,37 @@ impl RpmTape {
         };
 
         if self.notes.len() == (self.cursor + 1) as usize {
+            // 最後尾に達していれば、追加。
             self.cursor += 1;
 
             if note.get_ope().is_phase_change() {
                 *ply += 1;
             }
 
-            // 追加。
             self.notes.push(note);
+        } else {
+            panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.notes.len());
+        }
+    }
 
+    pub fn add_move(&mut self, rmove:&RpmMove, ply:&mut i16) {
+        // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
+        if (self.cursor + 1) < self.notes.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.notes.len());
+            self.notes.truncate((self.cursor + 1) as usize)
+        };
+
+        if self.notes.len() == (self.cursor + 1) as usize {
+            // 最後尾に達していれば、追加。
+            for note in rmove.notes.iter() {
+                self.cursor += 1;
+
+                if note.get_ope().is_phase_change() {
+                    *ply += 1;
+                }
+
+                self.notes.push(*note);
+            }
         } else {
             panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.notes.len());
         }
@@ -89,6 +109,26 @@ impl RpmTape {
             None
         } else {
             Some(self.notes[self.cursor as usize])
+        }
+    }
+    /// 現在の要素を返してから、カーソルを進める。
+    pub fn get_and_forward(&mut self) -> Option<RpmNote> {
+        if self.cursor + 1 < self.notes.len() as i16 {
+            let note_opt = Some(self.notes[self.cursor as usize]);
+            self.cursor += 1;
+            note_opt
+        } else {
+            None
+        }
+    }
+    /// 現在の要素を返してから、カーソルを戻す。
+    pub fn get_and_back(&mut self) -> Option<RpmNote> {
+        if -1 < self.cursor - 1 {
+            let note_opt = Some(self.notes[self.cursor as usize]);
+            self.cursor -= 1;
+            note_opt
+        } else {
+            None
         }
     }
 

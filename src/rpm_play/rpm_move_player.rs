@@ -5,6 +5,7 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_tape::*;
 use rpm_play::rpm_note_player::*;
 use std::*;
 
@@ -99,18 +100,20 @@ impl RpmMovePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn forward_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position, is_auto_reverse:bool) -> bool {
+    pub fn forward_1move_on_tape(comm:&Communication, rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool) -> bool {
         let mut is_first = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
-            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &rnote, position, &mut rrecord.body.ply);
+        while let Some(rnote) = rtape.get_and_forward() {
+            print!("<Fok{}>", forwarding_count);
+            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &rnote, position, ply);
 
             if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..forwarding_count {
-                    RpmNotePlayer::back_1note(comm, &rnote, position, &mut rrecord.body.ply);
+                    print!("Fil");
+                    RpmNotePlayer::back_1note(comm, &rnote, position, ply);
                 }
 
                 return false;
@@ -126,7 +129,8 @@ impl RpmMovePlayer {
             forwarding_count += 1;
         }
 
-        true
+        // 1つ以上読んでいれば合法。
+        forwarding_count > 0
     }
 
     /// 1手戻す。
@@ -134,17 +138,19 @@ impl RpmMovePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn back_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position, is_auto_reverse:bool) -> bool {
+    pub fn back_1move_on_tape(comm:&Communication, rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool) -> bool {
         let mut backwarding_count = 0;
 
         // 開始前に達したら終了。
-        while let Some(rnote) = rrecord.body.rpm_tape.get_current_note() {
-            let is_legal_touch = RpmNotePlayer::back_1note(comm, &rnote, position, &mut rrecord.body.ply);
+        while let Some(rnote) = rtape.get_and_back() {
+            print!("<Bok{}>", backwarding_count);
+            let is_legal_touch = RpmNotePlayer::back_1note(comm, &rnote, position, ply);
 
             if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..backwarding_count {
-                    RpmNotePlayer::forward_1note(comm, &rnote, position, &mut rrecord.body.ply);
+                    print!("Bil");
+                    RpmNotePlayer::forward_1note(comm, &rnote, position, ply);
                 }
 
                 return false;
@@ -159,6 +165,7 @@ impl RpmMovePlayer {
             backwarding_count += 1;
         }
 
-        true
+        // 1つ以上読んでいれば合法。
+        backwarding_count > 0
     }
 }

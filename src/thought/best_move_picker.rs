@@ -5,6 +5,8 @@ use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_thread::*;
+use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_tape::*;
 use rpm_for_json::rpm_book_file::*;
 use rpm_play::rpm_move_player::*;
 use std::collections::HashMap;
@@ -49,7 +51,7 @@ impl BestMovePicker {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, position:&Position) -> UsiMove {
+    pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, rrecord:&mut RpmRecord, position:&mut Position) -> UsiMove {
 
         // クリアー。
         self.clear();
@@ -111,7 +113,7 @@ impl BestMovePicker {
 
                         // 現局面の盤上の自駒の番地。
                         if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
-                            comm.println(&format!("My piece: {:?}, {:?}, {}.", position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
+                            comm.println(&format!("[{}] My piece: {:?}, {:?}, {}.", rrecord.body.ply, position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
                             // トラックをスキャン。
                             let mut note_idx = 0;
@@ -129,26 +131,28 @@ impl BestMovePicker {
                                         // 一致。
 
                                         //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
-                                        comm.println(&format!("Rmove: {}.", rmove));
+                                        //comm.println(&format!("Rmove: {}.", rmove));
                                         
-/*
+
                                         // TODO 現局面で この手を指せるか試してみる。
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
-                                            let rtape = RpmTape::default::();
-                                            if RpmMovePlayer::forward_1move_on_record(&comm, &mut position) {
+                                            let mut rtape = RpmTape::default();
+                                            let mut unused_ply = 0;
+                                            rtape.add_move(&rmove, &mut unused_ply);
+                                            if RpmMovePlayer::forward_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, true) {
                                                 // 合法タッチ。
-                                                comm.println(&format!("Rmove: {}.", rmove));
+                                                comm.println(&format!("Rmove: {}.", &rmove));
 
                                                 // 局面を動かしてしまったので戻す。
-                                                RpmMovePlayer::back_1move_on_record(&comm, &mut position);
+                                                RpmMovePlayer::back_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, false);
                                             } else {
                                                 // 非合法タッチ。（ムーブはキャンセルされる）
-                                                comm.println(&format!("Illegal rmove: {}.", rmove));
+                                                comm.println(&format!("Illegal rmove: {}.", &rmove));
                                                 continue 'track_scan;
                                             }
                                         }
-*/
+
 
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);
