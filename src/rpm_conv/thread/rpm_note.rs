@@ -11,6 +11,7 @@ use rpm_for_json::rpm_book_file::*;
 use std::fmt;
 
 //#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct RpmNote {
     // 駒の背番号。フェーズ・チェンジのときは None。
     identify: Option<PieceIdentify>,

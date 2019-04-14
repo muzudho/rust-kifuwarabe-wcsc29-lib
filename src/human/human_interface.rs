@@ -15,11 +15,13 @@ impl HumanInterface {
     }
 
     /// 局面と棋譜の表示。
-    pub fn bo(comm:&Communication, rpm_record:&RpmRecord, position:&Position) {
+    pub fn bo(comm:&Communication, rrecord:&RpmRecord, position:&Position) {
         // 局面。
-        HumanInterface::show_position(comm, rpm_record.body.ply, position);
+        HumanInterface::show_position(comm, rrecord.body.ply, position);
+        
         // 棋譜。
         let mut unused_ply = 0;
-        comm.println(&rpm_record.body.operation_track.to_sign(position.get_board_size(), &mut unused_ply));
+        let (_numbers, operations) = &rrecord.body.rpm_tape.to_sign(position.get_board_size(), &mut unused_ply);
+        comm.println(operations);
     }
 }

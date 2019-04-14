@@ -3,8 +3,8 @@ use communication::*;
 use human::human_interface::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_identify_track::*;
-use rpm_conv::rpm_operation_track::*;
+use rpm_conv::rpm_tape::*;
+use rpm_conv::thread::rpm_note::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
 
@@ -32,16 +32,14 @@ pub struct RpmRecordBody {
     pub cursor: i16,
     /// 何も指していない状態で 1。
     pub ply: i16,
-    pub operation_track: RpmOTrack,
-    pub identify_track: RpmITrack,
+    pub rpm_tape: RpmTape,
 }
 impl RpmRecordBody {
     pub fn default() -> Self {
         let mut instance = RpmRecordBody {
             cursor: -1,
             ply: 1,
-            operation_track: RpmOTrack::default(),
-            identify_track: RpmITrack::default(),
+            rpm_tape: RpmTape::default(),
         };
 
         // 共通処理にする。
@@ -52,12 +50,10 @@ impl RpmRecordBody {
     pub fn clear(&mut self) {
         self.cursor = -1;
         self.ply = 1;
-        self.operation_track.clear();
-        self.identify_track.clear();
+        self.rpm_tape.clear();
     }
-    pub fn append_track(&mut self, body:&mut RpmRecordBody) {
-        self.operation_track.append_track(&mut body.operation_track);
-        self.identify_track.append_track(&mut body.identify_track);
+    pub fn append_tape(&mut self, tape:&mut RpmTape) {
+        self.rpm_tape.append_tape(tape);
     }
 }
 
@@ -88,52 +84,34 @@ impl RpmRecord {
     /// 後ろにレコードを連結する。
     /// TODO ヘッダーも連結したい。
     pub fn append_record(&mut self, record:&mut RpmRecord){
-        self.body.append_track(&mut record.body);
+        self.body.append_tape(&mut record.body.rpm_tape);
     }
 
     /// 追加する。
     pub fn add_note(&mut self, pid:Option<PieceIdentify>, rpm_note:&RpmNoteOpe) {
-        let mut cursor_clone = self.body.cursor; // .clone();
-        self.body.operation_track.add_element(&rpm_note, &mut self.body.cursor, &mut self.body.ply);
-        self.body.identify_track.add_identify(pid, &mut cursor_clone);
+        self.body.rpm_tape.add_note(RpmNote::from_id_ope(pid, *rpm_note), &mut self.body.cursor, &mut self.body.ply);
     }
 
     pub fn forward(&mut self) -> bool {
-        let mut cursor_clone = self.body.cursor; // .clone();
-        let i = self.body.identify_track.forward(&mut self.body.cursor);
-        let o = self.body.operation_track.forward(&mut cursor_clone,   &mut self.body.ply);
-        if i!=o {panic!("Can not forward.");}
-
-        i
+        self.body.rpm_tape.forward(&mut self.body.cursor, &mut self.body.ply)
     }
 
     pub fn back(&mut self) {
-        let mut cursor_clone = self.body.cursor; // .clone();
-        self.body.operation_track.back(&mut self.body.cursor, &mut self.body.ply);
-        self.body.identify_track.back(&mut cursor_clone);
+        self.body.rpm_tape.back(&mut self.body.cursor, &mut self.body.ply);
     }
 
-    /*
-    pub fn get_operation_track(self) -> RpmOTrack {
-        self.operation_track
-    }
-     */
-
-    pub fn get_mut_operation_track(&mut self) -> &mut RpmOTrack {
-        &mut self.body.operation_track
+    pub fn get_tape(self) -> RpmTape {
+        self.body.rpm_tape
     }
 
-    pub fn get_identify_track(self) -> RpmITrack {
-        self.body.identify_track
-    }
-
-    pub fn get_mut_identify_track(&mut self) -> &mut RpmITrack {
-        &mut self.body.identify_track
+    pub fn get_mut_tape(&mut self) -> &mut RpmTape {
+        &mut self.body.rpm_tape
     }
 
     /// JSONのオブジェクト形式。
     pub fn to_json_object(&self, board_size:BoardSize) -> String {
         let mut unused_ply = 0;
+        let (numbers, operations) = self.body.rpm_tape.to_json(board_size, &mut unused_ply);
 
         let mut text = "{\n".to_string();
         text = format!("{}    \"header\" : {{\n", text);
@@ -145,10 +123,10 @@ impl RpmRecord {
         text = format!("{}    }},\n", text);
         text = format!("{}    \"body\" : {{\n", text);
         text = format!("{}        \"operation\" : [\n", text);
-        text = format!("{}            {}\n", text, self.body.operation_track.to_json(board_size, &mut unused_ply));
+        text = format!("{}            {}\n", text, operations);
         text = format!("{}        ],\n", text);
         text = format!("{}        \"piece_number\" : [\n", text);
-        text = format!("{}            {}\n", text, self.body.identify_track.to_json(board_size));
+        text = format!("{}            {}\n", text, numbers);
         text = format!("{}        ]\n", text);
         text = format!("{}    }}\n", text);
         text = format!("{}}}", text);
