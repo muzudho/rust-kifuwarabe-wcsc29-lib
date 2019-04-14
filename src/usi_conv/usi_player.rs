@@ -98,7 +98,7 @@ impl UsiConverter {
 
         // 局面を動かしながら変換していく。
         // let mut ply = 0;
-        for umove in &urecord.items {
+        for umove in &urecord.moves {
             let rpm_move = UsiConverter::convert_move(*umove, position);
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 

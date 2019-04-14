@@ -53,7 +53,7 @@ pub fn main() {
     if Fen::parse_position(&comm, &line, &mut start, &mut position) {
         comm.println("Position parsed.");
 
-        if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
+        if let Some(parsed_urecord) = CommonOperation::parse_usi_1record(&comm, &line, &mut start, position.get_board_size()) {
             comm.println("Moves parsed.");
             urecord = parsed_urecord;
         };

@@ -20,7 +20,7 @@ pub struct Position {
 }
 impl Position {
     pub fn default() -> Position {
-        println!("#Position: default.");
+        //println!("#Position: default.");
         // このあと すぐリセットする。
         let mut instance = Position {
             phase: Phase::First,
@@ -38,7 +38,7 @@ impl Position {
     }
 
     pub fn reset_default(&mut self) {
-        println!("#Position: reset_default.");
+        //println!("#Position: reset_default.");
         self.phase = Phase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
@@ -151,7 +151,7 @@ impl Position {
     }
 
     pub fn reset_startpos(&mut self) {
-        println!("#Position: reset_startpos().");
+        //println!("#Position: reset_startpos().");
         use piece_etc::IdentifiedPiece;
         use piece_etc::Phase::*;
         use piece_etc::PieceIdentify::*;

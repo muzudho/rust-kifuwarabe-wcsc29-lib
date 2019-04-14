@@ -63,7 +63,6 @@ use rpm_conv::rpm_object_sheet::*;
 use rpm_play::rpm_player::*;
 use std::path::Path;
 use usi_conv::fen::*;
-use usi_conv::usi_record::*;
 use piece_etc::*;
 use position::*;
 use usi_conv::usi_player::*;
@@ -292,31 +291,37 @@ pub fn main_loop() {
         // #####
         } else if line.starts_with("position") {
             // 相手が指したあとの局面まで進める。
-            let mut urecord = UsiRecord::new();
+            let mut urecord_opt = None;
             let mut start = 0;
+
+            //comm.println("#Lib: 'position' command(1).");
             if Fen::parse_position(&comm, &line, &mut start, &mut position) {
-                if let Some(parsed_urecord) = CommonOperation::read_usi_moves(&comm, &line, &mut start, &mut position) {
-                    urecord = parsed_urecord;
-                };
+                urecord_opt = CommonOperation::parse_usi_1record(&comm, &line, &mut start, position.get_board_size());
             }
             //comm.println("#Position parse end1.");
             //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
-            //comm.println("#Position parse end2.");
 
-            // ポジションをもう１回初期局面に戻す。
-            let mut start = 0;
-            if Fen::parse_position(&comm, &line, &mut start, &mut position) {
-                //comm.println("#Position parsed.");
+            // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
+            // TODO できれば USI -> RPM 変換したい。
+            // comm.println("#Lib: TODO 'position' command(2).");
+            {
+                //comm.println("#Lib: 'position' command(2).");
+                let mut start = 0;
+                if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+                    //comm.println("#Position parsed.");
+                }
+
+                if let Some(urecord) = urecord_opt {
+                    UsiConverter::play_out_record(
+                        &comm,
+                        &mut position,
+                        &urecord,
+                        &mut rpm_record);
+                }
+                //comm.println("#Record converted1.");
+                //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
+                //comm.println("#Record converted2.");
             }
-
-            UsiConverter::play_out_record(
-                &comm,
-                &mut position,
-                &urecord,
-                &mut rpm_record);
-            //comm.println("#Record converted1.");
-            //CommonOperation::bo(&comm, &rpm_record.get_mut_operation_track(), &position);
-            //comm.println("#Record converted2.");
         }
     }
 }

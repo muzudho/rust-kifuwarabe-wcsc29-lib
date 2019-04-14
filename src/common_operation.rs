@@ -1,3 +1,4 @@
+use board_size::*;
 use communication::*;
 use parser::*;
 use position::*;
@@ -73,7 +74,7 @@ impl CommonOperation {
         }
     }
 
-    pub fn read_usi_moves(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> Option<UsiRecord> {
+    pub fn parse_usi_1record(comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> Option<UsiRecord> {
         if Parser::match_keyword(&comm, &line, "moves", start) || 
             Parser::match_keyword(&comm, &line, " moves", start) {
         } else {
@@ -81,25 +82,6 @@ impl CommonOperation {
             return None;
         }
 
-        Parser::skip_spaces(&comm, &line, start);
-
-        let mut logical_record = UsiRecord::new();
-
-        // `position startpos moves `. [0]p, [1]o, ...
-
-        // Examples.
-        // position startpos moves 2g2f 8c8d
-        let mut temp_u_record = UsiRecord::new();
-        temp_u_record.parse_usi_some_moves(&comm, line, start, position.get_board_size());
-        // comm.println(&format!("#temp_record.items.len: {}", temp_u_record.items.len()));
-
-        // TODO 指し手通り、進めたい。
-        for mov in &temp_u_record.items {
-            // comm.println(&format!("#Move: `{}`.", mov.to_sign()));
-            logical_record.make_move(*mov, position);
-            //comm.println(&position.to_text(comm, logical_record.get_current_phase()));
-        }
-
-        Some(logical_record)
+        UsiRecord::parse_usi_1record(&comm, line, start, board_size)
     }
 }
