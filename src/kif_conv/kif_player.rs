@@ -118,7 +118,7 @@ impl KifPlayer {
                 ply);
 
             for rnote in rmoves {
-                RpmNotePlayer::touch_brandnew_note(comm, rrecord, &rnote, position);
+                RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &rnote, position);
             }
 
             ply += 1;

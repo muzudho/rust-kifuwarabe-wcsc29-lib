@@ -9,16 +9,20 @@ const NONE_VALUE:i8 = -1;
 
 #[derive(Default)]
 pub struct RpmTape {
+    /// 何も進めていない状態で -1。
+    pub cursor: i16,
     pub notes: Vec<RpmNote>,
 }
 impl RpmTape {
     pub fn default() -> Self {
         RpmTape {
+            cursor: -1,
             notes: Vec::new(),
         }
     }
 
     pub fn clear(&mut self) {
+        self.cursor = -1;
         self.notes.clear();
     }
 
@@ -27,8 +31,8 @@ impl RpmTape {
         self.notes.append(&mut tape.notes);
     }
 
-    fn up_count_retry(&mut self, cursor:i16, ply:&mut i16) {
-        let rpm_note = &self.notes[cursor as usize];
+    fn up_count_retry(&mut self, ply:&mut i16) {
+        let rpm_note = &self.notes[self.cursor as usize];
         if rpm_note.is_phase_change() {
             *ply += 1;
         }
@@ -40,29 +44,32 @@ impl RpmTape {
         }
     }
 
-    fn down_count_retry(&mut self, cursor:&mut i16, ply:&mut i16) {
+    fn down_count_retry(&mut self, ply:&mut i16) {
         // フェーズ切り替えがあったら、手目を１つ減らす。
-        let rpm_note = &self.notes[*cursor as usize];
+        let rpm_note = &self.notes[self.cursor as usize];
         if rpm_note.is_phase_change() {
             *ply -= 1;
         }
 
-        *cursor -= 1;
-        if *cursor < 0 {
+        self.cursor -= 1;
+        if self.cursor < 0 {
             // 何も記録していない内部状態に相当。
             return;
         }
     }
 
-    pub fn add_note(&mut self, note:RpmNote, cursor:&mut i16, ply:&mut i16) {
+    /// # Arguments
+    /// 
+    /// * `ply` - 1を足してくれるだけ。
+    pub fn add_note(&mut self, note:RpmNote, ply:&mut i16) {
         // 追加しようとしたとき、すでに後ろの要素がある場合は、後ろの要素を削除する。
-        if (*cursor + 1) < self.notes.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", *cursor, self.notes.len());
-            self.notes.truncate((*cursor + 1) as usize)
+        if (self.cursor + 1) < self.notes.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.notes.len());
+            self.notes.truncate((self.cursor + 1) as usize)
         };
 
-        if self.notes.len() == (*cursor + 1) as usize {
-            *cursor += 1;
+        if self.notes.len() == (self.cursor + 1) as usize {
+            self.cursor += 1;
 
             if note.get_ope().is_phase_change() {
                 *ply += 1;
@@ -72,28 +79,28 @@ impl RpmTape {
             self.notes.push(note);
 
         } else {
-            panic!("Unexpected add: cursor: {}, len: {}.", *cursor, self.notes.len());
+            panic!("Unexpected add: cursor: {}, len: {}.", self.cursor, self.notes.len());
         }
     }
 
     /// カーソルが指している要素を返す。
-    pub fn get_current_note(&self, cursor:i16) -> Option<RpmNote> {
-        if cursor == -1 {
+    pub fn get_current_note(&self) -> Option<RpmNote> {
+        if self.cursor == -1 {
             None
         } else {
-            Some(self.notes[cursor as usize])
+            Some(self.notes[self.cursor as usize])
         }
     }
 
-    pub fn pop_current(&mut self, cursor:&mut i16, ply:&mut i16) -> Option<RpmNote> {
+    pub fn pop_current(&mut self, ply:&mut i16) -> Option<RpmNote> {
         // 後ろの要素がある場合は、削除する。
-        if (*cursor + 1) < self.notes.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", *cursor, self.notes.len());
-            self.notes.truncate((*cursor + 1) as usize)
+        if (self.cursor + 1) < self.notes.len() as i16 {
+            println!("後ろの要素を削除。 {}, {}.", self.cursor, self.notes.len());
+            self.notes.truncate((self.cursor + 1) as usize)
         };
 
         if let Some(deleted_note) = self.notes.pop() {
-            *cursor -= 1;
+            self.cursor -= 1;
             self.down_count(&deleted_note, ply);
             Some(deleted_note)
         } else {
@@ -103,25 +110,25 @@ impl RpmTape {
     }
 
     /// カーソルだけ進める。
-    pub fn forward(&mut self, cursor:&mut i16, ply:&mut i16) -> bool {
-        if self.notes.len() as i16 <= (*cursor + 1) {
+    pub fn forward(&mut self, ply:&mut i16) -> bool {
+        if self.notes.len() as i16 <= (self.cursor + 1) {
             // 進めない。
             false
         } else {
-            *cursor += 1;
-            self.up_count_retry(*cursor, ply);
+            self.cursor += 1;
+            self.up_count_retry(ply);
             true
         }
     }
 
     /// カーソルだけ戻す。
-    pub fn back(&mut self, cursor:&mut i16, ply:&mut i16) {
-        if *cursor < 0 {
+    pub fn back(&mut self, ply:&mut i16) {
+        if self.cursor < 0 {
             // 戻れない。
             return
         };
 
-        self.down_count_retry(cursor, ply);
+        self.down_count_retry(ply);
     }
 
     /// コマンドライン入力形式。

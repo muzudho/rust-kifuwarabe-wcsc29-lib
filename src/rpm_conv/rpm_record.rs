@@ -1,10 +1,11 @@
+/// Reversible physical move.
 use board_size::*;
 use communication::*;
 use human::human_interface::*;
-use piece_etc::*;
+//use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_tape::*;
-use rpm_conv::thread::rpm_note::*;
+//use rpm_conv::thread::rpm_note::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
 
@@ -28,8 +29,6 @@ impl RpmRecordHeader {
 
 /// レコードの本体。
 pub struct RpmRecordBody {
-    /// 何も進めていない状態で -1。
-    pub cursor: i16,
     /// 何も指していない状態で 1。
     pub ply: i16,
     pub rpm_tape: RpmTape,
@@ -37,7 +36,6 @@ pub struct RpmRecordBody {
 impl RpmRecordBody {
     pub fn default() -> Self {
         let mut instance = RpmRecordBody {
-            cursor: -1,
             ply: 1,
             rpm_tape: RpmTape::default(),
         };
@@ -48,7 +46,6 @@ impl RpmRecordBody {
         instance
     }
     pub fn clear(&mut self) {
-        self.cursor = -1;
         self.ply = 1;
         self.rpm_tape.clear();
     }
@@ -57,7 +54,6 @@ impl RpmRecordBody {
     }
 }
 
-/// Reversible physical move - Record.
 pub struct RpmRecord {
     pub header: RpmRecordHeader,
     pub body: RpmRecordBody,
@@ -87,17 +83,19 @@ impl RpmRecord {
         self.body.append_tape(&mut record.body.rpm_tape);
     }
 
+    /*
     /// 追加する。
-    pub fn add_note(&mut self, pid:Option<PieceIdentify>, rpm_note:&RpmNoteOpe) {
-        self.body.rpm_tape.add_note(RpmNote::from_id_ope(pid, *rpm_note), &mut self.body.cursor, &mut self.body.ply);
+    pub fn add_note_to_tape(&mut self, pid:Option<PieceIdentify>, rpm_note:&RpmNoteOpe) {
+        self.body.rpm_tape.add_note(RpmNote::from_id_ope(pid, *rpm_note), &mut self.body.ply);
     }
+     */
 
     pub fn forward(&mut self) -> bool {
-        self.body.rpm_tape.forward(&mut self.body.cursor, &mut self.body.ply)
+        self.body.rpm_tape.forward(&mut self.body.ply)
     }
 
     pub fn back(&mut self) {
-        self.body.rpm_tape.back(&mut self.body.cursor, &mut self.body.ply);
+        self.body.rpm_tape.back(&mut self.body.ply);
     }
 
     pub fn get_tape(self) -> RpmTape {
@@ -145,7 +143,7 @@ impl RpmRecord {
             let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                RpmNotePlayer::touch_brandnew_note(comm, rpm_record, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(comm, &mut rpm_record.body.rpm_tape, &rpm_note, position);
                 HumanInterface::bo(comm, &rpm_record, &position);
             }
         }

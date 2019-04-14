@@ -129,16 +129,26 @@ impl BestMovePicker {
                                         // 一致。
 
                                         //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
+                                        comm.println(&format!("Rmove: {}.", rmove));
                                         
 
-                                        comm.println(&format!("Rmove: {}.", rmove));
-
+/*
                                         // TODO 現局面で この手を指せるか試してみる。
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
-                                            //RpmMovePlayer::forward_1move_on_record(&comm, &mut position);
-                                        }
+                                            if RpmMovePlayer::forward_1move_on_record(&comm, &mut position) {
+                                                // 合法タッチ。
+                                                comm.println(&format!("Rmove: {}.", rmove));
 
+                                                // 局面を動かしてしまったので戻す。
+                                                RpmMovePlayer::back_1move_on_record(&comm, &mut position);
+                                            } else {
+                                                // 非合法タッチ。（ムーブはキャンセルされる）
+                                                comm.println(&format!("Illegal rmove: {}.", rmove));
+                                                continue 'track_scan;
+                                            }
+                                        }
+*/
 
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);

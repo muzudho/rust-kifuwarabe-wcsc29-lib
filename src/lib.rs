@@ -234,7 +234,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                RpmNotePlayer::touch_brandnew_note(&comm, &mut rrecord, &rpm_operation_note, &mut position);
+                RpmNotePlayer::touch_brandnew_note(&comm, &mut rrecord.body.rpm_tape, &rpm_operation_note, &mut position);
             }
 
         } else if line.starts_with("gameover") {

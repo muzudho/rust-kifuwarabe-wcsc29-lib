@@ -73,9 +73,9 @@ impl RpmMovePlayer {
         ];
 
         for element in array.iter() {
-            RpmNotePlayer::touch_brandnew_note(comm, rrecord, &element.0, pos);
-            RpmNotePlayer::touch_brandnew_note(comm, rrecord, &element.1, pos);
-            RpmNotePlayer::touch_brandnew_note(comm, rrecord, &element.2, pos);
+            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.0, pos);
+            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.1, pos);
+            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.2, pos);
         }
     }
 
