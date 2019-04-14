@@ -103,6 +103,7 @@ impl KifPlayer {
         rrecord:&mut RpmRecord) {
 
         // TODO とりあえず平手初期局面だけ対応。
+        comm.println("#KifP: position startpos");
         position.reset_startpos();
 
         let mut ply = 1;

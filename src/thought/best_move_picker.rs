@@ -1,10 +1,9 @@
-use common_operation::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
+use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
-// use rpm_conv::thread::rpm_note_operation::*;
 use rpm_for_json::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
@@ -12,6 +11,7 @@ use usi_conv::usi_move::*;
 
 /// 駒と、手筋のペア。
 /// TODO 手筋は複数。
+#[derive(Default)]
 pub struct ThreadsOfPiece {
     // 一手分。
     pub rpm_move: Option<RpmMove>,
@@ -89,7 +89,7 @@ impl BestMovePicker {
             {
                 use piece_etc::PieceIdentify::*;
                 comm.println(&format!("info file: {}, Phase: {:?}.", file, position.get_phase()));
-                CommonOperation::show_position(&comm, -1, &position);
+                HumanInterface::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
                     if let Some((_idp,addr_obj)) = position.find_wild(Some(Phase::First), K00) {

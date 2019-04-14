@@ -20,6 +20,7 @@ pub struct Position {
 }
 impl Position {
     pub fn default() -> Position {
+        println!("#Position: default.");
         // このあと すぐリセットする。
         let mut instance = Position {
             phase: Phase::First,
@@ -37,6 +38,7 @@ impl Position {
     }
 
     pub fn reset_default(&mut self) {
+        println!("#Position: reset_default.");
         self.phase = Phase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
@@ -45,85 +47,111 @@ impl Position {
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
             Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
         ];
-        // 使わない駒
+        // 自分の駒を持ち駒として持っているところから始まめます。
+        use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
         use piece_etc::IdentifiedPiece;
         // 玉2枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(K3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, K00));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, K01));
+            let vec = &mut self.hands[HandIndex::from_piece(K2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, K00));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(K1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, K01));
         }
         // 飛2枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(R3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, R20));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, R21));
+            let vec = &mut self.hands[HandIndex::from_piece(R2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, R20));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(R1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, R21));
         }
         // 角2枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(B3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, B18));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, B19));
+            let vec = &mut self.hands[HandIndex::from_piece(B2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, B18));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(B1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, B19));
         }
         // 金4枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(G3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G02));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G03));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G04));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, G05));
+            let vec = &mut self.hands[HandIndex::from_piece(G2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G02));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G04));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(G1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G03));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G05));
         }
         // 銀4枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(S3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S06));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S07));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S08));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, S09));
+            let vec = &mut self.hands[HandIndex::from_piece(S2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S06));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S08));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(S1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S07));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S09));
         }
         // 桂4枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(N3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N10));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N11));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N12));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, N13));
+            let vec = &mut self.hands[HandIndex::from_piece(N2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N10));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N12));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(N1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N11));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N13));
         }
         // 香4枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(L3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L14));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L15));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L16));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, L17));
+            let vec = &mut self.hands[HandIndex::from_piece(L2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L14));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L16));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(L1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L15));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L17));
         }
         // 歩18枚。
         {
-            let vec = &mut self.hands[hand_piece_to_hand_index(P3)];
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P22));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P23));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P24));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P25));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P26));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P27));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P28));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P29));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P30));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P31));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P32));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P33));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P34));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P35));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P36));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P37));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P38));
-            vec.push(IdentifiedPiece::from_phase_pro_id(None, false, P39));
+            let vec = &mut self.hands[HandIndex::from_piece(P2).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P22));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P24));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P26));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P28));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P30));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P32));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P34));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P36));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P38));
+        }
+        {
+            let vec = &mut self.hands[HandIndex::from_piece(P1).get_index()];
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P23));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P25));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P27));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P29));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P31));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P33));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P35));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P37));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P39));
         }
     }
 
     pub fn reset_startpos(&mut self) {
+        println!("#Position: reset_startpos().");
         use piece_etc::IdentifiedPiece;
         use piece_etc::Phase::*;
         use piece_etc::PieceIdentify::*;
@@ -178,8 +206,8 @@ impl Position {
     }
 
     pub fn move_hand_to_finger(&mut self, address:Address) {
-        let hand_index = hand_piece_to_hand_index(address.get_hand_piece().unwrap());
-        let id_piece = self.hands[hand_index].pop();
+        let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
+        let id_piece = self.hands[hand_index_obj.get_index()].pop();
         self.board[SKY_ADDRESS] = id_piece;
     }
 
@@ -199,17 +227,17 @@ impl Position {
     }
 
     pub fn get_hand_count(&self, piece:Piece) -> i8 {
-        let hand_index = hand_piece_to_hand_index(piece);
-        self.hands[hand_index].len() as i8
+        let hand_index_obj = HandIndex::from_piece(piece);
+        self.hands[hand_index_obj.get_index()].len() as i8
     }
 
     pub fn search_hand(&self, ph_opt:Option<Phase>, pid:PieceIdentify) -> Option<IdentifiedPiece> {
         let pt = pid.get_piece_type();
         let pi = Piece::from_ph_pt(ph_opt, pt);
 
-        let hand_index = hand_piece_to_hand_index(pi);
+        let hand_index_obj = HandIndex::from_piece(pi);
 
-        for idp in &self.hands[hand_index] {
+        for idp in &self.hands[hand_index_obj.get_index()] {
             if idp.get_id() == pid {
                 return Some(*idp);
             }
@@ -226,13 +254,13 @@ impl Position {
     }
 
     pub fn remove_hand(&mut self, piece:Piece) -> IdentifiedPiece {
-        let hand_index = hand_piece_to_hand_index(piece);
-        self.hands[hand_index].pop().unwrap()
+        let hand_index_obj = HandIndex::from_piece(piece);
+        self.hands[hand_index_obj.get_index()].pop().unwrap()
     }
 
     pub fn peek_hand(&self, piece:Piece) -> Option<IdentifiedPiece> {
-        let hand_index = hand_piece_to_hand_index(piece);
-        let stack = &self.hands[hand_index];
+        let hand_index_obj = HandIndex::from_piece(piece);
+        let stack = &self.hands[hand_index_obj.get_index()];
         if stack.is_empty() {
             None
         } else {
@@ -244,8 +272,8 @@ impl Position {
     pub fn activate_piece(&mut self, piece_opt:Option<Piece>, cell:Cell) {
         if let Some(piece) = piece_opt {
             let disactivate_piece = piece.to_disactivate();
-            let hand_index = hand_piece_to_hand_index(disactivate_piece);
-            let id_piece = self.hands[hand_index].pop().unwrap();
+            let hand_index_obj = HandIndex::from_piece(disactivate_piece);
+            let id_piece = self.hands[hand_index_obj.get_index()].pop().unwrap();
 
             let destination = self.board_size.cell_to_address(cell);
             self.board[destination] = Some(id_piece);
@@ -396,8 +424,8 @@ impl Position {
         };
 
         for piece in &array {
-            let hand_index = hand_piece_to_hand_index(*piece);
-            for id_piece in self.hands[hand_index].iter() {
+            let hand_index_obj = HandIndex::from_piece(*piece);
+            for id_piece in self.hands[hand_index_obj.get_index()].iter() {
                 text = format!("{} {}", text, id_piece.to_human_presentable())
             }
         }

@@ -12,9 +12,9 @@ pub struct Fen {
 }
 impl Fen {
     // 解析と、局面の編集は同時に行う。
-    pub fn parse_position(_comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
+    pub fn parse_position(comm:&Communication, line:&str, start:&mut usize, position:&mut Position) -> bool {
         if line.starts_with("position startpos") {
-            //comm.println("#position startpos");
+            comm.println("#Fen: position startpos");
             // 平手初期局面にリセット。
             *start = "position startpos".len();
             position.reset_startpos();

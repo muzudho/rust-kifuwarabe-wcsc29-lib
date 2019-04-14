@@ -40,6 +40,7 @@ pub mod board_size;
 pub mod common_operation;
 pub mod communication;
 pub mod csa_conv;
+pub mod human;
 pub mod kif_conv;
 pub mod learn;
 pub mod conf;
@@ -56,6 +57,7 @@ use common_operation::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use conf::kifuwarabe_wcsc29_lib_config::*;
+use human::human_interface::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_object_sheet::*;
 use rpm_play::rpm_player::*;
@@ -136,30 +138,30 @@ pub fn main_loop() {
         } else if line == "b" {
             // Back 1mark.
             CommonOperation::back_1note(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bb" {
             // Back 1ply.
             CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
                 CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
                 CommonOperation::back_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line.starts_with("bo") {
             // Board.
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         // #####
         // # D #
@@ -168,26 +170,26 @@ pub fn main_loop() {
         } else if line == "d" {
             // Delete 1mark.
             CommonOperation::pop_current_1mark(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
             CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
                 CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
                 CommonOperation::pop_current_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         // #####
         // # F #
@@ -196,26 +198,26 @@ pub fn main_loop() {
         } else if line == "f" {
             // Forward 1mark.
             RpmPlayer::forward_1note(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ff" {
             // Forward 1ply.
             RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "fff" {
             // Forward 10ply.
             for _i in 0..10 {
                 RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         } else if line == "ffff" {
             // Forward 400ply.
             for _i in 0..400 {
                 RpmPlayer::forward_1ply(&comm, &mut rpm_record, &mut position);
             }
-            CommonOperation::bo(&comm, &rpm_record, &position);
+            HumanInterface::bo(&comm, &rpm_record, &position);
 
         // #####
         // # G #

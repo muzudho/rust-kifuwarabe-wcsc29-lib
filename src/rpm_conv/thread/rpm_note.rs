@@ -6,7 +6,6 @@
 use board_size::*;
 use communication::*;
 use piece_etc::*;
-use position::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_for_json::rpm_book_file::*;
 use std::fmt;

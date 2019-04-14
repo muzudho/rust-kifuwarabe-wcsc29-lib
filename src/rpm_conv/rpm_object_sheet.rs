@@ -1,6 +1,5 @@
 use board_size::*;
 use communication::*;
-use position::*;
 use rpm_conv::rpm_record::*;
 use std::fs::File;
 use std::fs::OpenOptions;

@@ -1,4 +1,5 @@
 use board_size::*;
+use human::human_interface::*;
 use position::*;
 use rpm_conv::rpm_identify_track::*;
 use rpm_conv::rpm_operation_track::*;
@@ -141,7 +142,8 @@ impl RpmRecord {
             let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                CommonOperation::touch_talking_beautifle_world(comm, rpm_record, &rpm_note, position);
+                CommonOperation::touch_beautiful_world(comm, rpm_record, &rpm_note, position);
+                HumanInterface::bo(comm, &rpm_record, &position);
             }
         }
     }

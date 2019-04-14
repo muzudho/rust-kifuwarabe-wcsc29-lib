@@ -32,8 +32,7 @@ pub struct RpmRecordForJson {
 }
 
 /// -rpmrec.json ファイルに対応。
-#[derive(Debug)]
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmBookFile {
     pub book: Vec<RpmRecordForJson>,

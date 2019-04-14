@@ -1369,40 +1369,77 @@ pub fn hand_id_piece_to_hand_index(id_piece:IdentifiedPiece) -> usize {
         }
     }
 }
-pub fn hand_piece_to_hand_index(piece:Piece) -> usize {
-    use piece_etc::Piece::*;
-    match piece {
-        K1 | PK1 => {0},
-        K2 | PK2 => {8},
-        K3 | PK3 => {16},
 
-        R1 | PR1 => {1},
-        R2 | PR2 => {9},
-        R3 | PR3 => {17},
-        
-        B1 | PB1 => {2},
-        B2 | PB2 => {10},
-        B3 | PB3 => {18},
+#[derive(Copy, Clone)]
+pub enum HandIndex {
+    HndK1,
+    HndR1,
+    HndB1,
+    HndG1,
+    HndS1,
+    HndN1,
+    HndL1,
+    HndP1,
 
-        G1 | PG1 => {3},
-        G2 | PG2 => {11},
-        G3 | PG3 => {19},
+    HndK2,
+    HndR2,
+    HndB2,
+    HndG2,
+    HndS2,
+    HndN2,
+    HndL2,
+    HndP2,
 
-        S1 | PS1 => {4},
-        S2 | PS2 => {12},
-        S3 | PS3 => {20},
+    HndK3,
+    HndR3,
+    HndB3,
+    HndG3,
+    HndS3,
+    HndN3,
+    HndL3,
+    HndP3,
+}
+impl HandIndex {
+    pub fn from_piece(piece:Piece) -> HandIndex {
+        use piece_etc::Piece::*;
+        use piece_etc::HandIndex::*;
+        match piece {
+            K1 | PK1 => HndK1,
+            K2 | PK2 => HndK2,
+            K3 | PK3 => HndK3,
 
-        N1 | PN1 => {5},
-        N2 | PN2 => {13},
-        N3 | PN3 => {21},
+            R1 | PR1 => HndR1,
+            R2 | PR2 => HndR2,
+            R3 | PR3 => HndR3,
+            
+            B1 | PB1 => HndB1,
+            B2 | PB2 => HndB2,
+            B3 | PB3 => HndB3,
 
-        L1 | PL1 => {6},
-        L2 | PL2 => {14},
-        L3 | PL3 => {22},
+            G1 | PG1 => HndG1,
+            G2 | PG2 => HndG2,
+            G3 | PG3 => HndG3,
 
-        P1 | PP1 => {7},
-        P2 | PP2 => {15},
-        P3 | PP3 => {23},
+            S1 | PS1 => HndS1,
+            S2 | PS2 => HndS2,
+            S3 | PS3 => HndS3,
+
+            N1 | PN1 => HndN1,
+            N2 | PN2 => HndN2,
+            N3 | PN3 => HndN3,
+
+            L1 | PL1 => HndL1,
+            L2 | PL2 => HndL2,
+            L3 | PL3 => HndL3,
+
+            P1 | PP1 => HndP1,
+            P2 | PP2 => HndP2,
+            P3 | PP3 => HndP3,
+        }
+    }
+
+    pub fn get_index(self) -> usize {
+        self as usize
     }
 }
 
