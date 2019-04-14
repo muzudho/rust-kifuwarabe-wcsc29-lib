@@ -140,17 +140,16 @@ impl RpmMove {
                         touched_source = true;
                     }
                     drop_opt = Some(PieceType::from_piece(piece));
-                } else {
+
                     // 盤上
-                    if !touched_source {
-                        // 先に駒台を触るので、盤上の駒を触ったら、上書きして盤上の駒を優先します。
-                        ftp_id_opt = note.get_id();
-                        ftp_addr = Some(address);
-                        src_opt = Some(board_size.address_to_cell(address.get_index()));
-                        touched_source = true;
-                    } else {
-                        dst_opt = Some(board_size.address_to_cell(address.get_index()));
-                    }
+                } else if !touched_source {
+                    // 先に駒台を触るので、盤上の駒を触ったら、上書きして盤上の駒を優先します。
+                    ftp_id_opt = note.get_id();
+                    ftp_addr = Some(address);
+                    src_opt = Some(board_size.address_to_cell(address.get_index()));
+                    touched_source = true;
+                } else {
+                    dst_opt = Some(board_size.address_to_cell(address.get_index()));
                 }
             } else if note.get_ope().sky_turn {
                 // +

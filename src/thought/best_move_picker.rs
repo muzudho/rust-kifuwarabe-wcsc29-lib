@@ -1,48 +1,20 @@
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
-use human::human_interface::*;
+//use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
+use rpm_conv::thread::rpm_thread::*;
 use rpm_for_json::rpm_book_file::*;
 use std::collections::HashMap;
 use std::fs;
 use usi_conv::usi_move::*;
 
-/// 駒と、手筋のペア。
-/// TODO 手筋は複数。
-#[derive(Default)]
-pub struct ThreadsOfPiece {
-    // 一手分。
-    pub rpm_move: Option<RpmMove>,
-}
-impl ThreadsOfPiece {
-    pub fn new() -> ThreadsOfPiece {
-        ThreadsOfPiece {
-            rpm_move: None,
-        }
-    }
-
-    pub fn len_move(&self) -> usize {
-        match &self.rpm_move {
-            Some(_x) => 1,
-            None => 0,
-        }
-    }
-
-    pub fn is_empty_move(&self) -> bool {
-        match &self.rpm_move {
-            Some(_x) => false,
-            None => true,
-        }
-    }
-}
-
 pub struct BestMovePicker {
-    thread_by_piece_id : HashMap<i8, ThreadsOfPiece>,
+    thread_by_piece_id : HashMap<i8, RpmThread>,
 }
 impl BestMovePicker {
-    pub fn default() -> BestMovePicker {
+    pub fn default() -> Self {
         let mut instance = BestMovePicker {
             thread_by_piece_id: HashMap::new(),
         };
@@ -58,18 +30,21 @@ impl BestMovePicker {
 
         for id in PieceIdentify::iterator() {
             let number = id.get_number();
-            let thread = ThreadsOfPiece::new();
+            let thread = RpmThread::new();
             self.thread_by_piece_id.insert(number, thread);
         }
     }
 
-    pub fn get_len_note(&self, i:i8) -> usize {
-        let thread = &self.thread_by_piece_id[&i];
-        if thread.is_empty_move() {
-            0
-        } else {
-            thread.len_move()
+    pub fn get_max_note_len(&self) -> usize {
+        let mut max = 0;
+
+        for thread in self.thread_by_piece_id.values() {
+            if max < thread.len() {
+                max = thread.len();
+            }
         }
+
+        max
     }
 
     /// TODO 学習ファイルをもとに動く。
@@ -85,6 +60,7 @@ impl BestMovePicker {
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
 
+            /*
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
@@ -113,6 +89,7 @@ impl BestMovePicker {
                     }
                 }
             }
+            */
 
             let book_file = RpmBookFile::load(&file);
             
@@ -157,8 +134,8 @@ impl BestMovePicker {
 
                                         comm.println(&format!("Rmove: {}.", rmove));
 
-                                        let mut thread = ThreadsOfPiece::new();
-                                        thread.rpm_move = Some(rmove);
+                                        let mut thread = RpmThread::new();
+                                        thread.push_move(rmove);
 
                                         //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
                                         // 最後に見つかったものに、差し替え。
@@ -183,17 +160,8 @@ impl BestMovePicker {
                         }
                     }
 
-                    // 手筋の長さが０でない駒の数。
-                    let mut count = 0;
-                    for pid in PieceIdentify::iterator() {
-                        let pid_num = pid.get_number();
-                        if 0 < self.get_len_note(pid_num) {
-                            count += 1;
-                        }
-                    }
-
                     // いくつか読み取れれば打ち止め。
-                    if count > 0 {
+                    if self.get_max_note_len() > 0 {
                         //println!("#Break. Exit piece count = {}.", count);
                         break 'path_loop;
                     }
@@ -207,15 +175,16 @@ impl BestMovePicker {
         let mut best_rpm_move_opt = None;
 
         // １つチョイスしようぜ☆（*＾～＾*）
-        for pid in PieceIdentify::iterator() {
+        'choice: for pid in PieceIdentify::iterator() {
             let pid_num = pid.get_number();
             let thread = &self.thread_by_piece_id[&pid_num];
 
             // Header.
             // println!("Pid: {}.", pid_num);
 
-            if let Some(rmove) = &thread.rpm_move {
-                best_rpm_move_opt = Some(rmove);
+            // とりあえず１つチョイス☆（＾～＾）
+            if !thread.is_empty() {
+                best_rpm_move_opt = Some(&thread.moves[0]);
 
                 // 検索結果を見てみようぜ☆（＾～＾）
                 // Operation.
@@ -223,6 +192,7 @@ impl BestMovePicker {
 
                 // Identify.
                 // println!("  Num: {} End.", rmove.to_identify_string());
+                break 'choice;
             }
         }
 
