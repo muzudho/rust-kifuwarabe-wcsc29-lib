@@ -105,8 +105,10 @@ impl RpmMovePlayer {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = rtape.get_and_forward() {
-            print!("<Fok{}>", forwarding_count);
+        print!("Rtape<{}>", rtape);
+        while let Some(rnote) = rtape.next_note() {
+            print!("Rta<{}>", rtape);
+            print!("<Fok{} {}>", forwarding_count, rnote);
             let is_legal_touch = RpmNotePlayer::forward_1note(comm, &rnote, position, ply);
 
             if is_auto_reverse && !is_legal_touch {
@@ -116,11 +118,13 @@ impl RpmMovePlayer {
                     RpmNotePlayer::back_1note(comm, &rnote, position, ply);
                 }
 
+                print!("<FilE{} {}>", forwarding_count, rnote);
                 return false;
             }
 
             if !is_first && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("<Fpc{} {}>", forwarding_count, rnote);
                 break;
             }
 
@@ -128,8 +132,10 @@ impl RpmMovePlayer {
             is_first = false;
             forwarding_count += 1;
         }
+        print!("Rtap<{}>", rtape);
 
         // 1つ以上読んでいれば合法。
+        print!("<Fe>");
         forwarding_count > 0
     }
 
@@ -142,8 +148,8 @@ impl RpmMovePlayer {
         let mut backwarding_count = 0;
 
         // 開始前に達したら終了。
-        while let Some(rnote) = rtape.get_and_back() {
-            print!("<Bok{}>", backwarding_count);
+        while let Some(rnote) = rtape.back_note() {
+            print!("<Bok{} {}>", backwarding_count, rnote);
             let is_legal_touch = RpmNotePlayer::back_1note(comm, &rnote, position, ply);
 
             if is_auto_reverse && !is_legal_touch {

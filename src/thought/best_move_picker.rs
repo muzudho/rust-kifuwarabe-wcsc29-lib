@@ -115,7 +115,7 @@ impl BestMovePicker {
                         if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
                             comm.println(&format!("[{}] My piece: {:?}, {:?}, {}.", rrecord.body.ply, position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
-                            // トラックをスキャン。
+                            // ノートをスキャン。
                             let mut note_idx = 0;
                             'track_scan: loop {
 
@@ -138,8 +138,15 @@ impl BestMovePicker {
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
                                             let mut rtape = RpmTape::default();
+                                            println!("BMP: Rtape(1): {}.", rtape);
+
                                             let mut unused_ply = 0;
-                                            rtape.add_move(&rmove, &mut unused_ply);
+                                            rtape.record_next_move(&rmove, &mut unused_ply);
+                                            println!("BMP: Rtape(2): {}.", rtape);
+
+                                            rtape.go_to_origin();
+                                            println!("BMP: Rtape(3): {}.", rtape);
+
                                             if RpmMovePlayer::forward_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, true) {
                                                 // 合法タッチ。
                                                 comm.println(&format!("Rmove: {}.", &rmove));

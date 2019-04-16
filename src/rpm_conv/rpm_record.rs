@@ -49,8 +49,11 @@ impl RpmRecordBody {
         self.ply = 1;
         self.rpm_tape.clear();
     }
-    pub fn append_tape(&mut self, tape:&mut RpmTape) {
-        self.rpm_tape.append_tape(tape);
+    pub fn append_next_tape(&mut self, tape:&mut RpmTape) {
+        self.rpm_tape.append_next_tape(tape);
+    }
+    pub fn append_back_tape(&mut self, tape:&mut RpmTape) {
+        self.rpm_tape.append_back_tape(tape);
     }
 }
 
@@ -79,8 +82,11 @@ impl RpmRecord {
 
     /// 後ろにレコードを連結する。
     /// TODO ヘッダーも連結したい。
-    pub fn append_record(&mut self, record:&mut RpmRecord){
-        self.body.append_tape(&mut record.body.rpm_tape);
+    pub fn append_next_record(&mut self, record:&mut RpmRecord){
+        self.body.append_next_tape(&mut record.body.rpm_tape);
+    }
+    pub fn append_back_record(&mut self, record:&mut RpmRecord){
+        self.body.append_back_tape(&mut record.body.rpm_tape);
     }
 
     /*
@@ -90,12 +96,27 @@ impl RpmRecord {
     }
      */
 
-    pub fn forward(&mut self) -> bool {
-        self.body.rpm_tape.forward(&mut self.body.ply)
-    }
+    pub fn next_note(&mut self) -> bool {
+        if let Some(note) = self.body.rpm_tape.next_note() {
+            if note.get_ope().is_phase_change() {
+                self.body.ply += 1;
+            }
 
-    pub fn back(&mut self) {
-        self.body.rpm_tape.back(&mut self.body.ply);
+            true
+        } else {
+            false
+        }
+    }
+    pub fn back_note(&mut self) -> bool {
+        if let Some(note) = self.body.rpm_tape.back_note() {
+            if note.get_ope().is_phase_change() {
+                self.body.ply -= 1;
+            }
+
+            true
+        } else {
+            false
+        }
     }
 
     pub fn get_tape(self) -> RpmTape {

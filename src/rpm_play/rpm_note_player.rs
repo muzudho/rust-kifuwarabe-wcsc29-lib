@@ -20,13 +20,12 @@ impl RpmNotePlayer {
             None
         };
 
-        let mut unused_ply = 0;
-        rtape.add_note(RpmNote::from_id_ope(pid_opt, *rpm_note_ope), &mut unused_ply);
+        rtape.record_next_note(RpmNote::from_id_ope(pid_opt, *rpm_note_ope));
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_current_1note_on_record(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
-        if let Some(rpm_note) = rpm_record.body.rpm_tape.pop_current(&mut rpm_record.body.ply) {
+        if let Some(rpm_note) = rpm_record.body.rpm_tape.delete_next(&mut rpm_record.body.ply) {
             let (_is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rpm_note.get_ope());
             Some(rpm_note)
         } else {
