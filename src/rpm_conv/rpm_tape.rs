@@ -28,6 +28,11 @@ impl RpmTape {
         }
     }
 
+    /// 負のテープにあるときのキャレットを、配列のインデックスに変換。
+    pub fn get_index_in_negative(&self) -> usize {
+        (-self.caret - 1) as usize
+    }
+
     pub fn clear(&mut self) {
         self.caret = ORIGIN_CARET_POSITION;
         self.positive_notes.clear();
@@ -48,92 +53,117 @@ impl RpmTape {
         self.negative_notes.append(&mut tape.positive_notes);
     }
 
+    pub fn get_positive_peak_caret(&self) -> i16 {
+        self.positive_notes.len() as i16
+    }
+    pub fn is_positive_peak(&self) -> bool {
+        self.caret == self.get_positive_peak_caret()
+    }
+    pub fn get_negative_peak_caret(&self) -> i16 {
+        -(self.negative_notes.len() as i16)
+    }
+    pub fn is_negative_peak(&self) -> bool {
+        -(self.get_index_in_negative() as i16) == self.get_negative_peak_caret()
+    }   
+    /*
+    pub fn is_negative_last(&self) -> bool {
+        self.get_index_in_negative() as usize == self.negative_notes.len() - 1
+    }
+     */
+
     pub fn record_next_note(&mut self, note:RpmNote) {
-        if self.caret < 0 {
+        if self.caret >= -1 {
+            // 1を足したら根元が0以上の場合、正のテープ。
+            // 最後尾かどうか判断。
+            if self.is_positive_peak() {
+                // 最後尾に達していれば、追加。
+                self.positive_notes.push(note);
+                self.caret += 1;
+            } else {
+                // 最後尾でなければ、上書き。
+                self.positive_notes[self.caret as usize] = note;
+                self.caret += 1;
+
+                // 仮のおわり を更新。
+                self.positive_notes.truncate(self.caret as usize);
+            }
+        } else {
             // 負のテープの場合、この処理は失敗。
             panic!("Record next fail in negative tape.");
         }
 
-        // 最後尾かどうか判断。
-        if self.caret as usize == self.positive_notes.len() {
-            // 最後尾に達していれば、追加。
-            self.positive_notes.push(note);
-            self.caret += 1;
-        } else {
-            // 最後尾でなければ、上書き。
-            self.positive_notes[self.caret as usize] = note;
-            self.caret += 1;
-
-            // 仮のおわり を更新。
-            self.positive_notes.truncate(self.caret as usize);
-        }
-
-        /*
-        if note.get_ope().is_phase_change() {
-            *ply += 1;
-        }
-         */
+    }
+    pub fn overwrite_note_in_negative(&mut self, note:RpmNote) {
+        let index = self.get_index_in_negative();
+        self.negative_notes[index] = note;
+    }
+    pub fn update_negative_peak(&mut self){
+        let length = self.get_index_in_negative() + 1;
+        self.negative_notes.truncate(length);
     }
     pub fn record_back_note(&mut self, note:RpmNote) {
         if self.caret > 0 {
+            // 1を引いても羽先が0以上なら、正のテープ。
             // 正のテープの場合、この処理は失敗。
             panic!("Record back fail in positive tape.");
         }
 
         // 最後尾かどうか判断。
-        if (-self.caret - 1) as usize == self.negative_notes.len() {
+        if self.is_negative_peak() {
             // 最後尾に達していれば、追加。
             self.negative_notes.push(note);
             self.caret -= 1;
         } else {
             // 最後尾でなければ、上書き。
-            self.negative_notes[(-self.caret - 1) as usize] = note;
+            self.overwrite_note_in_negative(note);
             self.caret -= 1;
 
             // 仮のおわり を更新。
-            self.negative_notes.truncate((-self.caret - 1) as usize);
+            self.update_negative_peak();
         }
-
-        /*
-        if note.get_ope().is_phase_change() {
-            *ply -= 1;
-        }
-        */
     }
 
-    /// 現在の要素を返してから、カーソルを進める。
+    /// 現在の要素を返してから、カーソルを進めます。
     pub fn next_note(&mut self) -> Option<RpmNote> {
-        if self.caret < 0 {
-            // 負のテープの場合、この処理は失敗。
-            panic!("Next fail in negative tape.");
-        }
-
-        // 最後尾かどうか判断。
-        if self.caret as usize == self.positive_notes.len() {
-            // 最後尾に達していれば、終端を示す。
-            print!("GafE<{}>", self);
-            None
+        if self.caret >= -1 {
+            // 1を足したら根元が0以上の場合、正のテープ。
+            // 最後尾かどうか判断。
+            if self.is_positive_peak() {
+                // 最後尾に達していれば、終端を示す。
+                print!("GafE<{}>", self);
+                None
+            } else {
+                print!("Gaf<{}>", self);
+                let note = self.positive_notes[self.caret as usize];
+                self.caret += 1;
+                Some(note)
+            }
         } else {
-            print!("Gaf<{}>", self);
-            let note = self.positive_notes[self.caret as usize];
+            // 負のテープの場合。
+            let note = self.negative_notes[self.get_index_in_negative()];
             self.caret += 1;
             Some(note)
         }
+
     }
-    /// 現在の要素を返してから、カーソルを戻す。
+    /// カーソルを戻してから、現在の要素を返します。
     pub fn back_note(&mut self) -> Option<RpmNote> {
         if self.caret > 0 {
-            // 正のテープの場合、この処理は失敗。
-            panic!("Back fail in positive tape.");
-        }
+            // 1を引いても羽先が0以上なら、正のテープ。
+            self.caret -= 1;
+            println!("caret: {}, +len: {}.", self.caret, self.positive_notes.len());
+            let note = self.positive_notes[self.caret as usize];
+            Some(note)
 
-        // 最後尾かどうか判断。
-        if (-self.caret - 1) as usize == self.negative_notes.len() {
-            // 最後尾に達していれば、終端を示す。
+            // 負のテープの最後尾の場合。
+        } else if self.get_index_in_negative() as i16 - 1 <= self.get_negative_peak_caret() {
+            // 1を引いて先端に達していれば、終端を示す。
             None
         } else {
-            let note = self.negative_notes[(-self.caret - 1) as usize];
             self.caret -= 1;
+            // TODO 長さが 0 なのに、 [0]アクセスすることがある。
+            println!("caret: {}, -index: {}, -len: {}.", self.caret, self.get_index_in_negative(), self.negative_notes.len());
+            let note = self.negative_notes[self.get_index_in_negative()];
             Some(note)
         }
     }
@@ -156,53 +186,59 @@ impl RpmTape {
     }
 
     pub fn delete_back(&mut self, ply:&mut i16) -> Option<RpmNote> {
-        if self.caret < 0 {
-            // 負のテープの場合、この処理は失敗。
-            panic!("Delete back fail in negative tape.");
-        }
+        if self.caret >= 0 {
+            // 正のテープの場合。
 
-        // 後ろの要素がある場合は、削除する。
-        if (self.caret + 1) < self.positive_notes.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", self.caret, self.positive_notes.len());
-            self.positive_notes.truncate((self.caret + 1) as usize)
-        };
+            // キャレットより正の大きい方に要素がある場合は、削除する。
+            if self.caret + 1 < self.positive_notes.len() as i16 {
+                println!("後ろの要素を削除。 {}, {}.", self.caret, self.positive_notes.len());
+                self.positive_notes.truncate((self.caret + 1) as usize)
+            };
 
-        if let Some(deleted_note) = self.positive_notes.pop() {
-            self.caret -= 1;
+            if let Some(deleted_note) = self.positive_notes.pop() {
+                self.caret -= 1;
 
-            if deleted_note.get_ope().is_phase_change() {
-                *ply -= 1;
+                if deleted_note.get_ope().is_phase_change() {
+                    *ply -= 1;
+                }
+
+                Some(deleted_note)
+            } else {
+                // Empty.
+                None
             }
-
-            Some(deleted_note)
         } else {
-            // Empty.
-            None
+            // TODO 負の方向へのデリート・バックは未定義。
+            panic!("負の方向へのデリート・バックは未定義。");
         }
+    }
+    pub fn update_positive_peak(&mut self) {
+        println!("後ろの要素を削除。 {}, {}.", self.caret, self.negative_notes.len());
+        let length = self.get_index_in_negative() + 1;
+        self.negative_notes.truncate(length)
     }
     pub fn delete_next(&mut self, ply:&mut i16) -> Option<RpmNote> {
         if self.caret > 0 {
-            // 正のテープの場合、この処理は失敗。
-            panic!("Delete next fail in positive tape.");
-        }
-
-        // 後ろの要素がある場合は、削除する。
-        if (-self.caret - 1) < self.negative_notes.len() as i16 {
-            println!("後ろの要素を削除。 {}, {}.", self.caret, self.negative_notes.len());
-            self.negative_notes.truncate((-self.caret - 1 + 1) as usize)
-        };
-
-        if let Some(deleted_note) = self.negative_notes.pop() {
-            self.caret += 1;
-
-            if deleted_note.get_ope().is_phase_change() {
-                *ply += 1;
-            }
-
-            Some(deleted_note)
+            // TODO 正の方向へのデリート・ネクストは未定義。
+            panic!("正の方向へのデリート・ネクストは未定義。");
         } else {
-            // Empty.
-            None
+            // キャレットより負の小さい方に要素がある場合は、削除する。
+            if self.get_index_in_negative() + 1 < self.negative_notes.len() {
+                self.update_positive_peak();
+            };
+
+            if let Some(deleted_note) = self.negative_notes.pop() {
+                self.caret += 1;
+
+                if deleted_note.get_ope().is_phase_change() {
+                    *ply += 1;
+                }
+
+                Some(deleted_note)
+            } else {
+                // Empty.
+                None
+            }
         }
     }
 
