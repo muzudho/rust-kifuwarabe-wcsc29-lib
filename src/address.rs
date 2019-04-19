@@ -35,6 +35,10 @@ impl Cell {
     pub fn to_scalar(self) -> i8 {
         self.file * 10 + self.rank
     }
+
+    pub fn to_string(self) -> String {
+        self.to_scalar().to_string()
+    }
 }
 
 /// Vector に入れるときコピーする。

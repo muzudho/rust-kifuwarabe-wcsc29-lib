@@ -31,6 +31,19 @@ impl fmt::Display for RpmNote {
     }
 }
 impl RpmNote {
+    /// Human presentable.
+    pub fn to_log(&self, board_size:BoardSize) -> String {
+        format!("'{}'{}",
+            match self.identify {
+                Some(pid) => {
+                    pid.to_human_presentable()
+                },
+                None => { "--".to_string() },
+            },
+            self.operation.to_log(board_size)
+        )
+    }
+
     pub fn from_id_ope(pid:Option<PieceIdentify>, operation_note: RpmNoteOpe) -> RpmNote {
         RpmNote {
             identify: pid,

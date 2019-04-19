@@ -155,7 +155,7 @@ impl BestMovePicker {
                                                 RpmMovePlayer::back_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, false);
                                             } else {
                                                 // 非合法タッチ。（ムーブはキャンセルされる）
-                                                comm.println(&format!("Illegal rmove: {}.", &rmove));
+                                                comm.println(&format!("Illegal rmove: {}.", rmove.to_log(position.get_board_size())));
                                                 continue 'track_scan;
                                             }
                                         }
@@ -188,8 +188,8 @@ impl BestMovePicker {
                     }
 
                     // いくつか読み取れれば打ち止め。
-                    if self.get_max_note_len() > 0 {
-                        //println!("#Break. Exit piece count = {}.", count);
+                    if self.get_max_note_len() > 4 {
+                        println!("#Break. Exit piece count = {}.", self.get_max_note_len());
                         break 'path_loop;
                     }
 

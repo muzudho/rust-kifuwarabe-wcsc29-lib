@@ -33,6 +33,17 @@ impl fmt::Display for RpmMove {
     }
 }
 impl RpmMove {
+    /// Human presentable.
+    pub fn to_log(&self, board_size:BoardSize) -> String {
+        let mut text = String::new();
+
+        for note in &self.notes {
+            text = format!("{} {}", text, note.to_log(board_size))
+        }
+
+        format!("({}:{}){}", self.start, self.end, text)
+    }
+
     /// 1手分解析。
     pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmMove> {
         let mut rmove = RpmMove {

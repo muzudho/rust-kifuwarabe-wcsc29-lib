@@ -45,6 +45,29 @@ impl fmt::Display for RpmNoteOpe {
     }
 }
 impl RpmNoteOpe {
+    /// Human presentable.
+    pub fn to_log(&self, board_size:BoardSize) -> String {
+        match self.address {
+            Some(address) => {
+                // 人に読みやすいセル表記にします。
+                board_size.address_to_cell(address.get_index()).to_string()
+            },
+            None => {
+                if self.sky_turn {
+                    "+".to_string()
+                } else if self.sky_rotate {
+                    "-".to_string()
+                } else if self.phase_change {
+                    "|".to_string()
+                } else if self.resign {
+                    "%resign".to_string()
+                } else {
+                    "PANIC!".to_string()
+                }
+            },
+        }
+    }
+
     pub fn from_address(address:Address) -> Self {
         RpmNoteOpe {
             address: Some(address),
