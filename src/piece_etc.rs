@@ -9,6 +9,24 @@ pub enum Phase {
     /// Starting second.
     Second,
 }
+impl Phase {
+    /// Human presentalbe.
+    pub fn to_log(self) -> String {
+        use piece_etc::Phase::*;
+        match self {
+            First => "▼".to_string(),
+            Second => "△".to_string(),
+        }
+    }
+
+    pub fn to_sign(self) -> String {
+        use piece_etc::Phase::*;
+        match self {
+            First => "b".to_string(),
+            Second => "w".to_string(),
+        }
+    }
+}
 
 /// Piece identify. Order of "大橋"(Ohashi) mode.
 /// With out phase.
@@ -1284,14 +1302,6 @@ impl PieceType {
             JsaPieceType::P => PieceType::P,
             JsaPieceType::PP => PieceType::PP,
         }
-    }
-}
-
-pub fn phase_to_sign(phase:Phase) -> String {
-    use piece_etc::Phase::*;
-    match phase {
-        First => "b".to_string(),
-        Second => "w".to_string(),
     }
 }
 

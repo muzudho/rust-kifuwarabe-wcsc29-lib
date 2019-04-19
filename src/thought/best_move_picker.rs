@@ -113,7 +113,7 @@ impl BestMovePicker {
 
                         // 現局面の盤上の自駒の番地。
                         if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
-                            comm.println(&format!("[{}] My piece: {:?}, {:?}, {}.", rrecord.body.ply, position.get_phase(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
+                            comm.println(&format!("[{}] My piece: {}'{}'{}.", rrecord.body.ply, position.get_phase().to_log(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
                             // ノートをスキャン。
                             let mut note_idx = 0;
