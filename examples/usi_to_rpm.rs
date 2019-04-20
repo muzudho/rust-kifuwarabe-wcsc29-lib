@@ -1,23 +1,23 @@
-extern crate kifuwarabe_wcsc29_lib;
 extern crate getopts;
-use std::env;
+extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
+use std::env;
 
-use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::human::human_interface::*;
+use kifuwarabe_wcsc29_lib::position::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
-//use kifuwarabe_wcsc29_lib::usi_conv::usi_move::*;
+use kifuwarabe_wcsc29_lib::usi_conv::usi_position::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
-use kifuwarabe_wcsc29_lib::rpm_operation_track::*;
-use kifuwarabe_wcsc29_lib::position::*;
 
 //use std::fs::File;
 //use std::io::{BufRead, BufReader};
 
 #[derive(Debug)]
 struct Args {
-  path: Option<String>,
+    path: Option<String>,
 }
 
 fn parse_args() -> Args {
@@ -26,7 +26,8 @@ fn parse_args() -> Args {
     let mut opts = Options::new();
     opts.optopt("p", "path", "set input usi file name.", "NAME");
 
-    let matches = opts.parse(&args[1..])
+    let matches = opts
+        .parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
 
     Args {
@@ -41,19 +42,21 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut rpm_o_track = RpmOTrack::default();
+    let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
 
     let line = UsiRecord::read_first_line(&comm, &path);
 
     comm.println(&format!("Parse line: `{}`.", line));
-    let mut urecord = UsiRecord::new();
-        
+    let mut urecord = UsiRecord::default();
+
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+    if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
         comm.println("Position parsed.");
 
-        if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size()) {
+        if let Some(parsed_urecord) =
+            UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size())
+        {
             comm.println("Moves parsed.");
             urecord = parsed_urecord;
         };
@@ -62,10 +65,10 @@ pub fn main() {
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut position) {
+    if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
         comm.println("Position parsed.");
     }
 
-    UsiConverter::convert_record(&comm, &mut position, &urecord, &mut rpm_o_track);
-    HumanInterface::bo(&comm, &rpm_o_track, &position);
+    UsiPlayer::play_out_record(&comm, &mut position, &urecord, &mut rrecord);
+    HumanInterface::bo(&comm, &rrecord, &position);
 }

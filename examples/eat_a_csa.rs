@@ -1,21 +1,20 @@
-extern crate kifuwarabe_wcsc29_lib;
 extern crate getopts;
-use std::env;
+extern crate kifuwarabe_wcsc29_lib;
+extern crate rand;
 use getopts::Options;
+use rand::Rng;
+use std::env;
+use std::path::Path;
 
-use kifuwarabe_wcsc29_lib::common_operation::*;
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::config_file::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_move::*;
+use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
+use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_player::*;
 use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_operation_track::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_sheet::*;
+use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::position::*;
-
-use std::fs::File;
-use std::io::{BufRead, BufReader};
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_object_sheet::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
 
 #[derive(Debug)]
 struct Args {
@@ -28,7 +27,8 @@ fn parse_args() -> Args {
     let mut opts = Options::new();
     opts.optopt("p", "path", "set input csa file name.", "NAME");
 
-    let matches = opts.parse(&args[1..])
+    let matches = opts
+        .parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
 
     Args {
@@ -46,7 +46,26 @@ pub fn main() {
     comm.println(&format!("args.path = '{}'.", path));
 
     // Config.
-    let config = &Config::load();
+    let my_config = KifuwarabeWcsc29LibConfig::load();
+    let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
+
+    // ファイル名をランダムに作成する。
+    let rpm_object_sheet_path;
+    {
+        let mut rng = rand::thread_rng();
+        let rand1: i64 = rng.gen();
+        let rand2: i64 = rng.gen();
+        let rand3: i64 = rng.gen();
+        let rand4: i64 = rng.gen();
+        rpm_object_sheet_path = Path::new(&kw29_config.learning)
+            .join(format!(
+                "{}-{}-{}-{}-learning.rpmove",
+                rand1, rand2, rand3, rand4
+            ))
+            .to_str()
+            .unwrap()
+            .to_string();
+    }
 
     // Model.
     let mut rrecord = RpmRecord::default();
@@ -55,12 +74,11 @@ pub fn main() {
 
     // Play.
     CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
-    HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
+    HumanInterface::bo(&comm, &rrecord, &position);
 
     // Save.
-    let rpm_sheet = RpmSheet::new();
-    let dir = &config.my_record_directory;
-    rpm_sheet.append(&comm, position.get_board_size(), &dir, &mut rrecord);
+    let rpm_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
+    rpm_sheet.append(&comm, position.get_board_size(), &rrecord);
 
     comm.println("Finished.");
 }

@@ -1,11 +1,8 @@
-/// Reversible physical move.
 use board_size::*;
 use communication::*;
 use human::human_interface::*;
-//use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_tape::*;
-//use rpm_conv::thread::rpm_note::*;
+use rpm_conv::rpm_cassette_tape::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
 
@@ -27,17 +24,18 @@ impl RpmRecordHeader {
     }
 }
 
+/// Reversible physical move.
 /// レコードの本体。
 pub struct RpmRecordBody {
     /// 何も指していない状態で 1。
     pub ply: i16,
-    pub rpm_tape: RpmTape,
+    pub cassette_tape: RpmCassetteTape,
 }
 impl RpmRecordBody {
     pub fn default() -> Self {
         let mut instance = RpmRecordBody {
             ply: 1,
-            rpm_tape: RpmTape::default(),
+            cassette_tape: RpmCassetteTape::default(),
         };
 
         // 共通処理にする。
@@ -47,13 +45,13 @@ impl RpmRecordBody {
     }
     pub fn clear(&mut self) {
         self.ply = 1;
-        self.rpm_tape.clear();
+        self.cassette_tape = RpmCassetteTape::default();
     }
-    pub fn append_next_tape(&mut self, tape:&mut RpmTape) {
-        self.rpm_tape.append_next_tape(tape);
+    pub fn append_next_cassette_tape(&mut self, cassette_tape: &mut RpmCassetteTape) {
+        self.cassette_tape.append_next_cassette_tape(cassette_tape);
     }
-    pub fn append_back_tape(&mut self, tape:&mut RpmTape) {
-        self.rpm_tape.append_back_tape(tape);
+    pub fn append_back_cassette_tape(&mut self, cassette_tape: &mut RpmCassetteTape) {
+        self.cassette_tape.append_back_cassette_tape(cassette_tape);
     }
 }
 
@@ -64,14 +62,14 @@ pub struct RpmRecord {
 impl RpmRecord {
     pub fn default() -> Self {
         RpmRecord {
-            header : RpmRecordHeader {
+            header: RpmRecordHeader {
                 date: "".to_string(),
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            body : RpmRecordBody::default(),
+            body: RpmRecordBody::default(),
         }
     }
 
@@ -82,22 +80,24 @@ impl RpmRecord {
 
     /// 後ろにレコードを連結する。
     /// TODO ヘッダーも連結したい。
-    pub fn append_next_record(&mut self, record:&mut RpmRecord){
-        self.body.append_next_tape(&mut record.body.rpm_tape);
+    pub fn append_next_record(&mut self, record: &mut RpmRecord) {
+        self.body
+            .append_next_cassette_tape(&mut record.body.cassette_tape);
     }
-    pub fn append_back_record(&mut self, record:&mut RpmRecord){
-        self.body.append_back_tape(&mut record.body.rpm_tape);
+    pub fn append_back_record(&mut self, record: &mut RpmRecord) {
+        self.body
+            .append_back_cassette_tape(&mut record.body.cassette_tape);
     }
 
     /*
     /// 追加する。
     pub fn add_note_to_tape(&mut self, pid:Option<PieceIdentify>, rpm_note:&RpmNoteOpe) {
-        self.body.rpm_tape.add_note(RpmNote::from_id_ope(pid, *rpm_note), &mut self.body.ply);
+        self.body.cassette_tape.add_note(RpmNote::from_id_ope(pid, *rpm_note), &mut self.body.ply);
     }
      */
 
     pub fn next_note(&mut self) -> bool {
-        if let Some(note) = self.body.rpm_tape.next_note() {
+        if let Some(note) = self.body.cassette_tape.next_note() {
             if note.get_ope().is_phase_change() {
                 self.body.ply += 1;
             }
@@ -108,7 +108,7 @@ impl RpmRecord {
         }
     }
     pub fn back_note(&mut self) -> bool {
-        if let Some(note) = self.body.rpm_tape.back_note() {
+        if let Some(note) = self.body.cassette_tape.back_note() {
             if note.get_ope().is_phase_change() {
                 self.body.ply -= 1;
             }
@@ -119,26 +119,35 @@ impl RpmRecord {
         }
     }
 
-    pub fn get_tape(self) -> RpmTape {
-        self.body.rpm_tape
+    pub fn get_cassette_tape(self) -> RpmCassetteTape {
+        self.body.cassette_tape
     }
 
-    pub fn get_mut_tape(&mut self) -> &mut RpmTape {
-        &mut self.body.rpm_tape
+    pub fn get_mut_cassette_tape(&mut self) -> &mut RpmCassetteTape {
+        &mut self.body.cassette_tape
     }
 
     /// JSONのオブジェクト形式。
-    pub fn to_json_object(&self, board_size:BoardSize) -> String {
+    pub fn to_json_object(&self, board_size: BoardSize) -> String {
         let mut unused_ply = 0;
-        let (numbers, operations) = self.body.rpm_tape.to_json(board_size, &mut unused_ply);
+        let (numbers, operations) = self.body.cassette_tape.to_json(board_size, &mut unused_ply);
 
         let mut text = "{\n".to_string();
         text = format!("{}    \"header\" : {{\n", text);
         text = format!("{}        \"date\" : \"{}\",\n", text, self.header.date);
         text = format!("{}        \"event\" : \"{}\",\n", text, self.header.event);
-        text = format!("{}        \"player1\" : \"{}\",\n", text, self.header.player1);
-        text = format!("{}        \"player2\" : \"{}\",\n", text, self.header.player2);
-        text = format!("{}        \"read_file\" : \"{}\"\n", text, self.header.read_file);
+        text = format!(
+            "{}        \"player1\" : \"{}\",\n",
+            text, self.header.player1
+        );
+        text = format!(
+            "{}        \"player2\" : \"{}\",\n",
+            text, self.header.player2
+        );
+        text = format!(
+            "{}        \"read_file\" : \"{}\"\n",
+            text, self.header.read_file
+        );
         text = format!("{}    }},\n", text);
         text = format!("{}    \"body\" : {{\n", text);
         text = format!("{}        \"operation\" : [\n", text);
@@ -153,7 +162,12 @@ impl RpmRecord {
     }
 
     /// 棋譜読取。
-    pub fn read_tape(comm:&Communication, line:&str, rpm_record:&mut RpmRecord, position:&mut Position) {
+    pub fn read_tape(
+        comm: &Communication,
+        line: &str,
+        rpm_record: &mut RpmRecord,
+        position: &mut Position,
+    ) {
         let mut start = 0;
 
         loop {
@@ -161,10 +175,16 @@ impl RpmRecord {
                 return;
             }
 
-            let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
+            let rpm_ope_1note_opt =
+                RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                RpmNotePlayer::touch_brandnew_note(&mut rpm_record.body.rpm_tape, &rpm_note, position, comm);
+                RpmNotePlayer::touch_brandnew_note(
+                    &mut rpm_record.body.cassette_tape,
+                    &rpm_note,
+                    position,
+                    comm,
+                );
                 HumanInterface::bo(comm, &rpm_record, &position);
             }
         }

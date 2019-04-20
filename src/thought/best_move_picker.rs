@@ -3,10 +3,11 @@ use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::thread::rpm_move::*;
-use rpm_conv::thread::rpm_thread::*;
+use rpm_conv::rpm_cassette_tape::*;
 use rpm_conv::rpm_record::*;
 use rpm_conv::rpm_tape::*;
+use rpm_conv::thread::rpm_move::*;
+use rpm_conv::thread::rpm_thread::*;
 use rpm_for_json::rpm_book_file::*;
 use rpm_play::rpm_move_player::*;
 use std::collections::HashMap;
@@ -14,7 +15,7 @@ use std::fs;
 use usi_conv::usi_move::*;
 
 pub struct BestMovePicker {
-    thread_by_piece_id : HashMap<i8, RpmThread>,
+    thread_by_piece_id: HashMap<i8, RpmThread>,
 }
 impl BestMovePicker {
     pub fn default() -> Self {
@@ -51,8 +52,13 @@ impl BestMovePicker {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(&mut self, comm:&Communication, kw29config:&KifuwarabeWcsc29Config, rrecord:&mut RpmRecord, position:&mut Position) -> UsiMove {
-
+    pub fn get_best_move(
+        &mut self,
+        comm: &Communication,
+        kw29config: &KifuwarabeWcsc29Config,
+        rrecord: &mut RpmRecord,
+        position: &mut Position,
+    ) -> UsiMove {
         // クリアー。
         self.clear();
 
@@ -95,7 +101,7 @@ impl BestMovePicker {
             */
 
             let book_file = RpmBookFile::load(&file);
-            
+
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
             if !book_file.book.is_empty() {
@@ -106,61 +112,102 @@ impl BestMovePicker {
                 // レコードがいっぱいある。
                 for record_for_json in book_file.book {
                     record_index += 1;
-                    comm.println(&format!("Record index: {}, Phase: {:?}.", record_index, position.get_phase()));
+                    comm.println(&format!(
+                        "Record index: {}, Phase: {:?}.",
+                        record_index,
+                        position.get_phase()
+                    ));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                     'piece_loop: for my_piece_id in PieceIdentify::iterator() {
-
                         // 現局面の盤上の自駒の番地。
-                        if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
+                        if let Some((my_idp, my_addr_obj)) =
+                            position.find_wild(Some(position.get_phase()), *my_piece_id)
+                        {
                             // Board.
                             HumanInterface::bo(&comm, &rrecord, &position);
-                            comm.println(&format!("[{}] My piece: {}'{}'{}.", rrecord.body.ply, position.get_phase().to_log(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
+                            comm.println(&format!(
+                                "[{}] My piece: {}'{}'{}.",
+                                rrecord.body.ply,
+                                position.get_phase().to_log(),
+                                my_idp.to_human_presentable(),
+                                my_addr_obj.to_physical_sign(position.get_board_size())
+                            ));
 
                             // ノートをスキャン。
                             let mut note_idx = 0;
                             'track_scan: loop {
-
                                 // とりあえず 1手分をパースします。
-                                if let Some(rmove) = RpmMove::parse_1move(comm, &record_for_json, &mut note_idx, position.get_board_size()) {
+                                if let Some(rmove) = RpmMove::parse_1move(
+                                    comm,
+                                    &record_for_json,
+                                    &mut note_idx,
+                                    position.get_board_size(),
+                                ) {
                                     //comm.println("Scanning.");
                                     // どの駒が動いた１手なのか、またその番地。
-                                    let (ftp_id_opt, ftp_address) = rmove.to_first_touch_piece_id(position.get_board_size());
+                                    let (ftp_id_opt, ftp_address) =
+                                        rmove.to_first_touch_piece_id(position.get_board_size());
 
                                     // 背番号と、アドレスの一致。
-                                    if my_piece_id.get_number() == ftp_id_opt.get_number() &&
-                                        ftp_address.get_index() == my_addr_obj.get_index() as usize {
+                                    if my_piece_id.get_number() == ftp_id_opt.get_number()
+                                        && ftp_address.get_index()
+                                            == my_addr_obj.get_index() as usize
+                                    {
                                         // 一致。
 
                                         //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
                                         //comm.println(&format!("Rmove: {}.", rmove));
-                                        
 
                                         // TODO 現局面で この手を指せるか試してみる。
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
-                                            let mut rtape = RpmTape::default();
-                                            println!("BMP: Rtape(1): {}.", rtape);
+                                            let mut cassette_tape = RpmCassetteTape::default();
+                                            println!(
+                                                "BMP: Rtape(1): {}.",
+                                                cassette_tape.to_dump(position.get_board_size())
+                                            );
 
                                             let mut unused_ply = 0;
-                                            rtape.record_next_move(&rmove, &mut unused_ply);
-                                            println!("BMP: Rtape(2): {}.", rtape);
+                                            cassette_tape.record_next_move(&rmove, &mut unused_ply);
+                                            println!(
+                                                "BMP: Rtape(2): {}.",
+                                                cassette_tape.to_dump(position.get_board_size())
+                                            );
 
-                                            rtape.go_to_origin();
-                                            println!("BMP: Rtape(3): {}.", rtape);
+                                            cassette_tape.reset_caret();
+                                            println!(
+                                                "BMP: Rtape(3): {}.",
+                                                cassette_tape.to_dump(position.get_board_size())
+                                            );
 
-                                            if RpmMovePlayer::forward_1move_on_tape(&mut rtape, position, &mut rrecord.body.ply, true, &comm) {
+                                            if RpmMovePlayer::forward_1move_on_tape(
+                                                &mut cassette_tape,
+                                                position,
+                                                &mut rrecord.body.ply,
+                                                true,
+                                                &comm,
+                                            ) {
                                                 // 合法タッチ。
                                                 comm.println(&format!("Rmove: {}.", &rmove));
 
                                                 // 局面を動かしてしまったので戻す。
-                                                RpmMovePlayer::back_1move_on_tape(&mut rtape, position, &mut rrecord.body.ply, false, &comm);
+                                                RpmMovePlayer::back_1move_on_tape(
+                                                    &mut cassette_tape,
+                                                    position,
+                                                    &mut rrecord.body.ply,
+                                                    false,
+                                                    &comm,
+                                                );
 
                                                 comm.println("Legal, go back!");
                                                 HumanInterface::bo(&comm, &rrecord, &position);
                                             } else {
                                                 // 非合法タッチ。（ムーブはキャンセルされる）
-                                                comm.println(&format!("Illegal rmove: {}.", rmove.to_log(position.get_board_size())));
+                                                comm.println(&format!(
+                                                    "Illegal rmove: {}.",
+                                                    rmove.to_log(position.get_board_size())
+                                                ));
 
                                                 comm.println("Are you cancel?");
                                                 HumanInterface::bo(&comm, &rrecord, &position);
@@ -168,13 +215,13 @@ impl BestMovePicker {
                                             }
                                         }
 
-
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);
 
                                         //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
                                         // 最後に見つかったものに、差し替え。
-                                        self.thread_by_piece_id.insert(my_piece_id.get_number(), thread);
+                                        self.thread_by_piece_id
+                                            .insert(my_piece_id.get_number(), thread);
                                         //comm.println("Change!");
                                         //}
 
@@ -200,7 +247,6 @@ impl BestMovePicker {
                         println!("#Break. Exit piece count = {}.", self.get_max_note_len());
                         break 'path_loop;
                     }
-
                 } // record_loop
             } // book
         } // path_loop
@@ -235,7 +281,6 @@ impl BestMovePicker {
         //     max_ply: 0,
         //     record: RpmRecord::default(),
         // };
-
 
         // 自分の駒ごとの、現局面にマッチする最長の手筋を更新していく。
 

@@ -1,263 +1,330 @@
-/// Reversible physical move.
 use board_size::*;
-use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_note::*;
-use std::fmt;
+use std::*;
 
-const ORIGIN_CARET_POSITION:i16 = 0;
-const NONE_VALUE:i8 = -1;
+const NONE_VALUE: i8 = -1;
 
+/// Reversible physical move.
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 #[derive(Default)]
 pub struct RpmTape {
-    pub caret: i16,
     pub positive_notes: Vec<RpmNote>,
     pub negative_notes: Vec<RpmNote>,
 }
 impl fmt::Display for RpmTape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Caret: {}, +Len: {}, -Len: {}.", self.caret, self.positive_notes.len(), self.negative_notes.len())
+        write!(
+            f,
+            "+Len: {}, -Len: {}.",
+            self.positive_notes.len(),
+            self.negative_notes.len()
+        )
     }
 }
 impl RpmTape {
     pub fn default() -> Self {
         RpmTape {
-            caret: ORIGIN_CARET_POSITION,
             positive_notes: Vec::new(),
             negative_notes: Vec::new(),
         }
     }
 
-    /// 負のテープにあるときのキャレットを、配列のインデックスに変換。
-    pub fn get_index_in_negative(&self) -> usize {
-        (-self.caret - 1) as usize
+    /*
+    pub fn from_tape(source: RpmTape) -> Self {
+        RpmTape {
+            positive_notes: source.positive_notes,
+            negative_notes: source.negative_notes,
+        }
+    }
+    */
+
+    pub fn from_vector(positive_v: Vec<RpmNote>, negative_v: Vec<RpmNote>) -> Self {
+        RpmTape {
+            positive_notes: positive_v,
+            negative_notes: negative_v,
+        }
     }
 
+    /// # Returns
+    ///
+    /// (is_positive, index)
+    pub fn caret_to_index(caret: i16) -> (bool, usize) {
+        if caret > -1 {
+            (true, caret as usize)
+        } else {
+            (false, -caret as usize)
+        }
+    }
+
+    /// Human presentable large log.
+    pub fn to_dump(&self, board_size: BoardSize) -> String {
+        let mut dump = "".to_string();
+
+        let mut unused_ply = -1;
+
+        {
+            dump = format!("{}, Negative Len: {}, ", dump, self.negative_notes.len());
+        }
+        for note in &self.negative_notes {
+            dump = format!(
+                "{} ({}'{}')",
+                dump,
+                if let Some(pid) = note.get_id() {
+                    pid.get_number().to_string()
+                } else {
+                    NONE_VALUE.to_string()
+                },
+                note.get_ope().to_sign(board_size, &mut unused_ply),
+            );
+        }
+
+        {
+            dump = format!("{}, Positive Len: {}, ", dump, self.positive_notes.len());
+        }
+        for note in &self.positive_notes {
+            dump = format!(
+                "{} ({}'{}')",
+                dump,
+                if let Some(pid) = note.get_id() {
+                    pid.get_number().to_string()
+                } else {
+                    NONE_VALUE.to_string()
+                },
+                note.get_ope().to_sign(board_size, &mut unused_ply),
+            );
+        }
+
+        dump
+    }
+
+    pub fn len_positive(&self) -> u16 {
+        self.positive_notes.len() as u16
+    }
+    pub fn len_negative(&self) -> u16 {
+        self.negative_notes.len() as u16
+    }
+    /*
+    /// 原点は必ず含む or 何もない。
+    pub fn get_end(&self) -> i16 {
+        self.len_positive()
+    }
+    */
+
+    /*
     pub fn clear(&mut self) {
-        self.caret = ORIGIN_CARET_POSITION;
         self.positive_notes.clear();
         self.negative_notes.clear();
     }
+     */
 
-    pub fn go_to_origin(&mut self) {
-        self.caret = ORIGIN_CARET_POSITION;
+    /// 範囲外を指定しないでください。
+    pub fn get_note_by_caret(&self, caret: i16) -> RpmNote {
+        let (is_positive, index) = RpmTape::caret_to_index(caret);
+        if is_positive {
+            self.positive_notes[index as usize]
+        } else {
+            self.negative_notes[index as usize]
+        }
+    }
+
+    /// start <= end.
+    pub fn slice(&self, start: i16, end: i16) -> Vec<RpmNote> {
+        //let len = end - start;
+        let mut v = Vec::new();
+
+        if start < 0 {
+            // 負のテープ。正のテープに及ぶこともある。
+            if end < 0 {
+                // 負のテープだけで収まります。Endは含めず、Startは含めます。
+                let s = &self.negative_notes[(-end + 1) as usize..(-start + 1) as usize];
+                v.extend_from_slice(s);
+            } else {
+                // ひとまず、負のテープすべて。
+                let s1 = &self.negative_notes[..];
+                v.extend_from_slice(s1);
+
+                // 正のテープの 0 から End まで。
+                let s2 = &self.positive_notes[..end as usize];
+                v.extend_from_slice(s2);
+            }
+        } else {
+            // 正のテープだけ。
+            // こりゃカンタンだ☆（＾～＾）
+            let s = &self.positive_notes[start as usize..end as usize];
+            v.extend_from_slice(s);
+        }
+
+        v
+    }
+
+    /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
+    pub fn overwrite_note(&self, caret: i16, note: RpmNote) -> RpmTape {
+        let (is_positive, index) = RpmTape::caret_to_index(caret);
+
+        let mut posi_v = Vec::new();
+        let mut nega_v = Vec::new();
+
+        if is_positive {
+            // 正のテープ。
+            // こりゃカンタンだ☆（＾～＾）
+            nega_v.extend_from_slice(&self.negative_notes[..]);
+            posi_v.extend_from_slice(&self.slice(0, index as i16));
+            posi_v.push(note);
+            if index < self.len_positive() as usize {
+                posi_v.extend_from_slice(&self.slice(index as i16 + 1, self.len_positive() as i16));
+            }
+        } else {
+            // 負のテープだけ。
+            // 例えば 負のテープに
+            // [-1, -2, -3, -4, -5]
+            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
+
+            // Endは含めず、Startは含めます。
+            nega_v.extend_from_slice(&self.slice(0, index as i16));
+            nega_v.push(note);
+            if index < self.len_negative() as usize {
+                nega_v.extend_from_slice(&self.slice(index as i16 + 1, self.len_negative() as i16));
+            }
+            posi_v.extend_from_slice(&self.positive_notes[..]);
+        }
+
+        RpmTape::from_vector(posi_v, nega_v)
+    }
+
+    /// 正の大きな先端から、原点に向かって削除するぜ☆（＾～＾）
+    ///
+    /// 先端への　削除　も、中ほどからの　切り落とし　もこれで。
+    /// 空テープなど、削除できない場合は None を返す。
+    ///
+    /// # Returns
+    ///
+    /// (RpmTape, Removed note)
+    pub fn delete_back_note(&self, caret: i16) -> (RpmTape, Option<RpmNote>) {
+        let (is_positive, index) = RpmTape::caret_to_index(caret);
+
+        let mut posi_v = Vec::new();
+        let mut nega_v = Vec::new();
+
+        let removed_note_opt = if is_positive {
+            // 正のテープ。
+            // こりゃカンタンだ☆（＾～＾）
+            // 負の部分はそのまま残す☆（＾～＾）
+            nega_v.extend_from_slice(&self.negative_notes[..]);
+            // 正の大きな部分は、切り落とし☆（＾～＾）
+            posi_v.extend_from_slice(&self.slice(0, index as i16));
+
+            if index < self.positive_notes.len() {
+                Some(self.positive_notes[index])
+            } else {
+                None
+            }
+        } else {
+            panic!("原点を含まない 負のテープ は存在しないぜ☆（＾～＾）");
+            /*
+            // 原点を含まない 負のテープ は存在しないので、全部消すぜ☆（＾～＾）
+            if index < self.negative_notes.len() {
+                Some(self.negative_notes[index])
+            } else {
+                None
+            }
+            */
+        };
+
+        (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
+    }
+
+    /// 負の大きな先端から、原点に向かって削除するぜ☆（＾～＾）
+    ///
+    /// 先端への　削除　も、中ほどからの　切り落とし　もこれで。
+    /// 空テープなど、削除できない場合は None を返す。
+    ///
+    /// # Returns
+    ///
+    /// (RpmTape, Removed note)
+    pub fn delete_next_note(&self, caret: i16) -> (RpmTape, Option<RpmNote>) {
+        let (is_positive, index) = RpmTape::caret_to_index(caret);
+
+        let mut posi_v = Vec::new();
+        let mut nega_v = Vec::new();
+
+        let removed_note_opt = if is_positive {
+            panic!("原点を含まない 正のテープ は存在しないぜ☆（＾～＾）");
+        /*
+        // 原点を含まない 正のテープ は存在しないので、全部消すぜ☆（＾～＾）
+        if index < self.positive_notes.len() {
+            Some(self.positive_notes[index])
+        } else {
+            None
+        }
+        */
+        } else {
+            // 負のテープだけ。
+            // 例えば 負のテープに
+            // [-1, -2, -3, -4, -5]
+            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
+
+            // Endは含めず、Startは含めます。
+            nega_v.extend_from_slice(&self.slice(0, index as i16));
+            // 負の大きな部分は、切り落とし☆（＾～＾）
+            // 正の部分はそのまま残す☆（＾～＾）
+            posi_v.extend_from_slice(&self.positive_notes[..]);
+
+            if index < self.negative_notes.len() {
+                Some(self.negative_notes[index])
+            } else {
+                None
+            }
+        };
+
+        (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
     }
 
     /// 連結。
-    pub fn append_next_tape(&mut self, tape:&mut RpmTape) {
-        self.positive_notes.append(&mut tape.negative_notes);
-        self.positive_notes.append(&mut tape.positive_notes);
+    pub fn append_next_tape(&mut self, tape_to_empty: &mut RpmTape) {
+        self.positive_notes
+            .append(&mut tape_to_empty.negative_notes);
+        self.positive_notes
+            .append(&mut tape_to_empty.positive_notes);
     }
-    pub fn append_back_tape(&mut self, tape:&mut RpmTape) {
-        self.negative_notes.append(&mut tape.negative_notes);
-        self.negative_notes.append(&mut tape.positive_notes);
-    }
-
-    pub fn get_positive_peak_caret(&self) -> i16 {
-        self.positive_notes.len() as i16
-    }
-    pub fn is_positive_peak(&self) -> bool {
-        self.caret == self.get_positive_peak_caret()
-    }
-    pub fn get_negative_peak_caret(&self) -> i16 {
-        -(self.negative_notes.len() as i16)
-    }
-    pub fn is_negative_peak(&self) -> bool {
-        -(self.get_index_in_negative() as i16) == self.get_negative_peak_caret()
-    }   
-    /*
-    pub fn is_negative_last(&self) -> bool {
-        self.get_index_in_negative() as usize == self.negative_notes.len() - 1
-    }
-     */
-
-    pub fn record_next_note(&mut self, note:RpmNote) {
-        if self.caret >= -1 {
-            // 1を足したら根元が0以上の場合、正のテープ。
-            // 最後尾かどうか判断。
-            if self.is_positive_peak() {
-                // 最後尾に達していれば、追加。
-                self.positive_notes.push(note);
-                self.caret += 1;
-            } else {
-                // 最後尾でなければ、上書き。
-                self.positive_notes[self.caret as usize] = note;
-                self.caret += 1;
-
-                // 仮のおわり を更新。
-                self.positive_notes.truncate(self.caret as usize);
-            }
-        } else {
-            // 負のテープの場合、この処理は失敗。
-            panic!("Record next fail in negative tape.");
-        }
-
-    }
-    pub fn overwrite_note_in_negative(&mut self, note:RpmNote) {
-        let index = self.get_index_in_negative();
-        self.negative_notes[index] = note;
-    }
-    pub fn update_negative_peak(&mut self){
-        let length = self.get_index_in_negative() + 1;
-        self.negative_notes.truncate(length);
-    }
-    pub fn record_back_note(&mut self, note:RpmNote) {
-        if self.caret > 0 {
-            // 1を引いても羽先が0以上なら、正のテープ。
-            // 正のテープの場合、この処理は失敗。
-            panic!("Record back fail in positive tape.");
-        }
-
-        // 最後尾かどうか判断。
-        if self.is_negative_peak() {
-            // 最後尾に達していれば、追加。
-            self.negative_notes.push(note);
-            self.caret -= 1;
-        } else {
-            // 最後尾でなければ、上書き。
-            self.overwrite_note_in_negative(note);
-            self.caret -= 1;
-
-            // 仮のおわり を更新。
-            self.update_negative_peak();
-        }
-    }
-
-    /// 現在の要素を返してから、カーソルを進めます。
-    pub fn next_note(&mut self) -> Option<RpmNote> {
-        if self.caret >= -1 {
-            // 1を足したら根元が0以上の場合、正のテープ。
-            // 最後尾かどうか判断。
-            if self.is_positive_peak() {
-                // 最後尾に達していれば、終端を示す。
-                print!("GafE<{}>", self);
-                None
-            } else {
-                print!("Gaf<{}>", self);
-                let note = self.positive_notes[self.caret as usize];
-                self.caret += 1;
-                Some(note)
-            }
-        } else {
-            // 負のテープの場合。
-            let note = self.negative_notes[self.get_index_in_negative()];
-            self.caret += 1;
-            Some(note)
-        }
-
-    }
-    /// カーソルを戻してから、現在の要素を返します。
-    pub fn back_note(&mut self) -> Option<RpmNote> {
-        if self.caret > 0 {
-            // 1を引いても羽先が0以上なら、正のテープ。
-            self.caret -= 1;
-            println!("caret: {}, +len: {}.", self.caret, self.positive_notes.len());
-            let note = self.positive_notes[self.caret as usize];
-            Some(note)
-
-            // 負のテープの最後尾の場合。
-        } else if self.get_index_in_negative() as i16 - 1 <= self.get_negative_peak_caret() {
-            // 1を引いて先端に達していれば、終端を示す。
-            None
-        } else {
-            self.caret -= 1;
-            // TODO 長さが 0 なのに、 [0]アクセスすることがある。
-            println!("caret: {}, -index: {}, -len: {}.", self.caret, self.get_index_in_negative(), self.negative_notes.len());
-            let note = self.negative_notes[self.get_index_in_negative()];
-            Some(note)
-        }
-    }
-
-    pub fn record_next_move(&mut self, rmove:&RpmMove, ply:&mut i16) {
-        for note in rmove.notes.iter() {
-            self.record_next_note(*note);
-            if note.get_ope().is_phase_change() {
-                *ply += 1;
-            }
-        }
-    }
-    pub fn record_back_move(&mut self, rmove:&RpmMove, ply:&mut i16) {
-        for note in rmove.notes.iter() {
-            self.record_back_note(*note);
-            if note.get_ope().is_phase_change() {
-                *ply -= 1;
-            }
-        }
-    }
-
-    pub fn delete_back(&mut self, ply:&mut i16) -> Option<RpmNote> {
-        if self.caret >= 0 {
-            // 正のテープの場合。
-
-            // キャレットより正の大きい方に要素がある場合は、削除する。
-            if self.caret + 1 < self.positive_notes.len() as i16 {
-                println!("後ろの要素を削除。 {}, {}.", self.caret, self.positive_notes.len());
-                self.positive_notes.truncate((self.caret + 1) as usize)
-            };
-
-            if let Some(deleted_note) = self.positive_notes.pop() {
-                self.caret -= 1;
-
-                if deleted_note.get_ope().is_phase_change() {
-                    *ply -= 1;
-                }
-
-                Some(deleted_note)
-            } else {
-                // Empty.
-                None
-            }
-        } else {
-            // TODO 負の方向へのデリート・バックは未定義。
-            panic!("負の方向へのデリート・バックは未定義。");
-        }
-    }
-    pub fn update_positive_peak(&mut self) {
-        println!("後ろの要素を削除。 {}, {}.", self.caret, self.negative_notes.len());
-        let length = self.get_index_in_negative() + 1;
-        self.negative_notes.truncate(length)
-    }
-    pub fn delete_next(&mut self, ply:&mut i16) -> Option<RpmNote> {
-        if self.caret > 0 {
-            // TODO 正の方向へのデリート・ネクストは未定義。
-            panic!("正の方向へのデリート・ネクストは未定義。");
-        } else {
-            // キャレットより負の小さい方に要素がある場合は、削除する。
-            if self.get_index_in_negative() + 1 < self.negative_notes.len() {
-                self.update_positive_peak();
-            };
-
-            if let Some(deleted_note) = self.negative_notes.pop() {
-                self.caret += 1;
-
-                if deleted_note.get_ope().is_phase_change() {
-                    *ply += 1;
-                }
-
-                Some(deleted_note)
-            } else {
-                // Empty.
-                None
-            }
-        }
+    pub fn append_back_tape(&mut self, tape_to_empty: &mut RpmTape) {
+        self.negative_notes
+            .append(&mut tape_to_empty.positive_notes);
+        self.negative_notes
+            .append(&mut tape_to_empty.negative_notes);
     }
 
     /// コマンドライン入力形式。
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// 駒の背番号, 操作。
-    pub fn to_sign(&self, board_size:BoardSize, ply:&mut i16) -> (String, String) {
+    pub fn to_sign(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
 
         for note in &self.negative_notes {
-            numbers = format!("{} {}", numbers, if let Some(pid) = note.get_id() {pid.get_number().to_string()} else {NONE_VALUE.to_string()});
+            numbers = format!(
+                "{} {}",
+                numbers,
+                if let Some(pid) = note.get_id() {
+                    pid.get_number().to_string()
+                } else {
+                    NONE_VALUE.to_string()
+                }
+            );
             operations = format!("{} {}", operations, note.get_ope().to_sign(board_size, ply));
         }
 
         for note in &self.positive_notes {
-            numbers = format!("{} {}", numbers, if let Some(pid) = note.get_id() {pid.get_number().to_string()} else {NONE_VALUE.to_string()});
+            numbers = format!(
+                "{} {}",
+                numbers,
+                if let Some(pid) = note.get_id() {
+                    pid.get_number().to_string()
+                } else {
+                    NONE_VALUE.to_string()
+                }
+            );
             operations = format!("{} {}", operations, note.get_ope().to_sign(board_size, ply));
         }
 
@@ -265,16 +332,16 @@ impl RpmTape {
     }
 
     /// JSONファイル保存形式。
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// 駒の背番号, 操作。
-    pub fn to_json(&self, board_size:BoardSize, ply:&mut i16) -> (String, String) {
+    pub fn to_json(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
-        
+
         for i in 0..2 {
-            let mut notes = if i==0 {
+            let mut notes = if i == 0 {
                 &self.negative_notes
             } else {
                 &self.positive_notes
@@ -283,17 +350,44 @@ impl RpmTape {
             // 最初はカンマなし。
             if !notes.is_empty() {
                 let note = notes.iter().next().unwrap();
-                numbers = format!("{} {}", numbers, if let Some(pid) = note.get_id() {pid.get_number().to_string()} else {NONE_VALUE.to_string()});
-                operations = format!("{} \"{}\"", operations, note.get_ope().to_sign(board_size, ply));
+                numbers = format!(
+                    "{} {}",
+                    numbers,
+                    if let Some(pid) = note.get_id() {
+                        pid.get_number().to_string()
+                    } else {
+                        NONE_VALUE.to_string()
+                    }
+                );
+                operations = format!(
+                    "{} \"{}\"",
+                    operations,
+                    note.get_ope().to_sign(board_size, ply)
+                );
             }
 
             for _index in 1..notes.len() {
                 let note = notes.iter().next().unwrap();
-                numbers = format!("{}, {}", numbers, if let Some(pid) = note.get_id() {pid.get_number().to_string()} else {NONE_VALUE.to_string()});
-                operations = format!("{}, \"{}\"", operations, note.get_ope().to_sign(board_size, ply));
+                numbers = format!(
+                    "{}, {}",
+                    numbers,
+                    if let Some(pid) = note.get_id() {
+                        pid.get_number().to_string()
+                    } else {
+                        NONE_VALUE.to_string()
+                    }
+                );
+                operations = format!(
+                    "{}, \"{}\"",
+                    operations,
+                    note.get_ope().to_sign(board_size, ply)
+                );
             }
         }
-        
-        (numbers.trim_start().to_string(), operations.trim_start().to_string())
+
+        (
+            numbers.trim_start().to_string(),
+            operations.trim_start().to_string(),
+        )
     }
 }
