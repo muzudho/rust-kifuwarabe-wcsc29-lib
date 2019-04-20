@@ -6,7 +6,7 @@ use std::env;
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::position::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
+use kifuwarabe_wcsc29_lib::rpm_conv::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_position::*;
@@ -42,16 +42,16 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
 
     let line = UsiRecord::read_first_line(&comm, &path);
 
     comm.println(&format!("Parse line: `{}`.", line));
     let mut urecord = UsiRecord::default();
+    let mut recorder = RpmCassetteTapeRecorder::default();
 
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
+    if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
         comm.println("Position parsed.");
 
         if let Some(parsed_urecord) =
@@ -65,10 +65,10 @@ pub fn main() {
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut rrecord, &mut position) {
+    if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
         comm.println("Position parsed.");
     }
 
-    UsiPlayer::play_out_record(&comm, &mut position, &urecord, &mut rrecord);
-    HumanInterface::bo(&comm, &rrecord, &position);
+    recorder = UsiPlayer::play_out_and_record(&comm, &mut position, &urecord);
+    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 }

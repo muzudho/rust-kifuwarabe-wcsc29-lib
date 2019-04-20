@@ -1,7 +1,7 @@
 use address::*;
 use communication::*;
 use position::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape_recorder::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_note_player::*;
 use usi_conv::usi_move::*;
@@ -9,7 +9,7 @@ use usi_conv::usi_record::*;
 
 pub struct UsiPlayer {}
 impl UsiPlayer {
-    pub fn convert_move(umove: UsiMove, position: &Position) -> Vec<RpmNoteOpe> {
+    pub fn convert_move(umove: UsiMove, position: &Position, ply: i16) -> Vec<RpmNoteOpe> {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
@@ -85,7 +85,7 @@ impl UsiPlayer {
         }
 
         // change-phase
-        let change_phase = RpmNoteOpe::change_phase();
+        let change_phase = RpmNoteOpe::change_phase(ply);
         rpm_move.push(change_phase);
 
         rpm_move
@@ -95,27 +95,25 @@ impl UsiPlayer {
     ///
     /// * 'position' - USIレコードと 初期局面を合わせてください。
     ///
-    pub fn play_out_record(
+    pub fn play_out_and_record(
         comm: &Communication,
         position: &mut Position,
         urecord: &UsiRecord,
-        rpm_record: &mut RpmRecord,
-    ) {
+    ) -> RpmCassetteTapeRecorder {
+        let mut recorder = RpmCassetteTapeRecorder::default();
         // 局面を動かしながら変換していく。
-        // let mut ply = 0;
+        let mut ply = 1;
         for umove in &urecord.moves {
-            let rpm_move = UsiPlayer::convert_move(*umove, position);
+            let rnote_opes = UsiPlayer::convert_move(*umove, position, ply);
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
-            for rpm_note in rpm_move {
+            for rnote_ope in rnote_opes {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                RpmNotePlayer::touch_brandnew_note(
-                    &mut rpm_record.body.cassette_tape,
-                    &rpm_note,
-                    position,
-                    comm,
-                );
+                RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
+
+            ply += 1;
         }
+        recorder
     }
 }

@@ -1,6 +1,6 @@
 use communication::*;
 use position::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape::*;
 use std::*;
 
 pub struct HumanInterface {}
@@ -14,16 +14,17 @@ impl HumanInterface {
     }
 
     /// 局面と棋譜の表示。
-    pub fn bo(comm: &Communication, rrecord: &RpmRecord, position: &Position) {
+    pub fn bo(
+        comm: &Communication,
+        cassette_tape: &RpmCassetteTape,
+        ply: i16,
+        position: &Position,
+    ) {
         // 局面。
-        HumanInterface::show_position(comm, rrecord.body.ply, position);
+        HumanInterface::show_position(comm, ply, position);
 
         // 棋譜。
-        let mut unused_ply = 0;
-        let (_numbers, operations) = &rrecord
-            .body
-            .cassette_tape
-            .to_sign(position.get_board_size(), &mut unused_ply);
+        let (_numbers, operations) = &cassette_tape.to_sign(position.get_board_size());
         comm.println(operations);
     }
 }

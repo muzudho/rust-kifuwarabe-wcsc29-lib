@@ -4,7 +4,7 @@ use kif_conv::kif_move::*;
 use kif_conv::kif_record::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape_recorder::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_move_player::*;
 use rpm_play::rpm_note_player::*;
@@ -16,7 +16,7 @@ impl KifPlayer {
         _comm: &Communication,
         kmove: &KifMove,
         position: &Position,
-        _ply: i16,
+        ply: i16,
     ) -> Vec<RpmNoteOpe> {
         let mut rmoves = Vec::new();
 
@@ -95,39 +95,34 @@ impl KifPlayer {
         };
 
         // change-phase
-        let change_phase = RpmNoteOpe::change_phase();
+        let change_phase = RpmNoteOpe::change_phase(ply);
         rmoves.push(change_phase);
 
         rmoves
     }
 
     /// 変換には、初期局面が必要。
-    pub fn play_out_record(
+    pub fn play_out_and_record(
         comm: &Communication,
         position: &mut Position,
         krecord: &KifRecord,
-        rrecord: &mut RpmRecord,
-    ) {
+    ) -> RpmCassetteTapeRecorder {
         // TODO とりあえず平手初期局面だけ対応。
-        comm.println("#KifP: play_out_to_starting_position");
-        rrecord.clear();
+        let mut recorder = RpmCassetteTapeRecorder::default();
         position.reset_origin_position();
-        RpmMovePlayer::play_out_to_starting_position(comm, rrecord, position);
+        RpmMovePlayer::record_ohashi_starting(comm, &mut recorder, position);
 
         let mut ply = 1;
         for kmove in &krecord.items {
-            let rmoves = KifPlayer::convert_move(comm, kmove, position, ply);
+            let rnote_opes = KifPlayer::convert_move(comm, kmove, position, ply);
 
-            for rnote in rmoves {
-                RpmNotePlayer::touch_brandnew_note(
-                    &mut rrecord.body.cassette_tape,
-                    &rnote,
-                    position,
-                    comm,
-                );
+            for rnote_ope in rnote_opes {
+                RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
 
             ply += 1;
         }
+
+        recorder
     }
 }

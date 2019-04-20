@@ -1,13 +1,31 @@
 use board_size::*;
 use rpm_conv::rpm_tape::*;
-use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_note::*;
 use std::*;
+
+/// 対局情報。
+pub struct RpmCassetteTapeLabel {
+    pub date: String,
+    pub event: String,
+    pub player1: String,
+    pub player2: String,
+    pub read_file: String,
+}
+impl RpmCassetteTapeLabel {
+    pub fn clear(&mut self) {
+        self.date = "".to_string();
+        self.event = "".to_string();
+        self.player1 = "".to_string();
+        self.player2 = "".to_string();
+        self.read_file = "".to_string();
+    }
+}
 
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1753122
 pub struct RpmCassetteTape {
     pub caret: i16,
+    pub label: RpmCassetteTapeLabel,
     pub tape: RpmTape,
 }
 impl fmt::Display for RpmCassetteTape {
@@ -19,10 +37,23 @@ impl RpmCassetteTape {
     pub fn default() -> Self {
         RpmCassetteTape {
             caret: 0,
+            label: RpmCassetteTapeLabel {
+                date: "".to_string(),
+                event: "".to_string(),
+                player1: "".to_string(),
+                player2: "".to_string(),
+                read_file: "".to_string(),
+            },
             tape: RpmTape::default(),
         }
     }
 
+    /*
+    pub fn clear(&mut self) {
+        self.reset_caret();
+        self.label.clear();
+    }
+     */
     pub fn reset_caret(&mut self) {
         self.caret = 0;
     }
@@ -33,17 +64,6 @@ impl RpmCassetteTape {
     pub fn get_negative_peak_caret(&self) -> i16 {
         -(self.tape.len_negative() as i16) - 1
     }
-
-    /*
-    /// 負のテープにあるときのキャレットを、配列のインデックスに変換。
-    pub fn get_index(&self) -> i16 {
-        if self.caret > -1 {
-            self.caret
-        } else {
-            (-self.caret - 1)
-        }
-    }
-     */
 
     pub fn is_positive_peak(&self) -> bool {
         self.caret == self.get_positive_peak_caret()
@@ -104,100 +124,6 @@ impl RpmCassetteTape {
         }
     }
 
-    pub fn record_next_note(&mut self, note: RpmNote) {
-        if self.caret >= -1 {
-            // 1を足したら根元が0以上の場合、正のテープ。
-            // 最後尾かどうか判断。
-            if self.is_positive_peak() {
-                // 最後尾に達していれば、追加。
-                self.tape.positive_notes.push(note);
-                self.caret += 1;
-            } else {
-                // 最後尾でなければ、上書き。
-                self.tape.positive_notes[self.caret as usize] = note;
-                self.caret += 1;
-
-                // 仮のおわり を更新。
-                self.tape.positive_notes.truncate(self.caret as usize);
-            }
-        } else {
-            // 負のテープの場合、この処理は失敗。
-            panic!("Record next fail in negative tape.");
-        }
-    }
-
-    pub fn overwrite_note_in_negative(&mut self, note: RpmNote) {
-        self.tape = self.tape.overwrite_note(self.caret, note);
-    }
-    /*
-    pub fn update_negative_peak(&mut self) {
-        let length = self.get_index() + 1;
-        self.tape.negative_notes.truncate(length as usize);
-    }
-    */
-
-    pub fn record_back_note(&mut self, note: RpmNote) {
-        if self.caret > 0 {
-            // 1を引いても羽先が0以上なら、正のテープ。
-            // 正のテープの場合、この処理は失敗。
-            panic!("Record back fail in positive tape.");
-        }
-
-        // 置換／上書き。新しいテープを作成。
-        self.tape = self.tape.overwrite_note(self.caret, note);
-        self.caret -= 1;
-    }
-
-    pub fn record_next_move(&mut self, rmove: &RpmMove, ply: &mut i16) {
-        for note in rmove.notes.iter() {
-            self.record_next_note(*note);
-            if note.get_ope().is_phase_change() {
-                *ply += 1;
-            }
-        }
-    }
-    pub fn record_back_move(&mut self, rmove: &RpmMove, ply: &mut i16) {
-        for note in rmove.notes.iter() {
-            self.record_back_note(*note);
-            if note.get_ope().is_phase_change() {
-                *ply -= 1;
-            }
-        }
-    }
-
-    pub fn delete_back(&mut self, ply: &mut i16) -> Option<RpmNote> {
-        let (new_tape, removed_note_opt) = self.tape.delete_back_note(self.caret);
-        self.tape = new_tape;
-
-        self.caret -= 1;
-
-        if let Some(removed_note) = removed_note_opt {
-            if removed_note.get_ope().is_phase_change() {
-                *ply -= 1;
-            }
-
-            Some(removed_note)
-        } else {
-            None
-        }
-    }
-    pub fn delete_next(&mut self, ply: &mut i16) -> Option<RpmNote> {
-        let (new_tape, removed_note_opt) = self.tape.delete_next_note(self.caret);
-        self.tape = new_tape;
-
-        self.caret -= 1;
-
-        if let Some(removed_note) = removed_note_opt {
-            if removed_note.get_ope().is_phase_change() {
-                *ply -= 1;
-            }
-
-            Some(removed_note)
-        } else {
-            None
-        }
-    }
-
     /// Human presentable large log.
     pub fn to_dump(&self, board_size: BoardSize) -> String {
         self.tape.to_dump(board_size)
@@ -208,8 +134,8 @@ impl RpmCassetteTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_sign(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
-        self.tape.to_sign(board_size, ply)
+    pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
+        self.tape.to_sign(board_size)
     }
 
     /// JSONファイル保存形式。
@@ -217,7 +143,40 @@ impl RpmCassetteTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_json(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
-        self.tape.to_json(board_size, ply)
+    pub fn to_json(&self, board_size: BoardSize) -> (String, String) {
+        self.tape.to_json(board_size)
+    }
+
+    /// JSONのオブジェクト形式。ラベル付き。
+    pub fn to_json_object(&self, board_size: BoardSize) -> String {
+        let (numbers, operations) = self.to_json(board_size);
+
+        let mut text = "{\n".to_string();
+        text = format!("{}    \"header\" : {{\n", text);
+        text = format!("{}        \"date\" : \"{}\",\n", text, self.label.date);
+        text = format!("{}        \"event\" : \"{}\",\n", text, self.label.event);
+        text = format!(
+            "{}        \"player1\" : \"{}\",\n",
+            text, self.label.player1
+        );
+        text = format!(
+            "{}        \"player2\" : \"{}\",\n",
+            text, self.label.player2
+        );
+        text = format!(
+            "{}        \"read_file\" : \"{}\"\n",
+            text, self.label.read_file
+        );
+        text = format!("{}    }},\n", text);
+        text = format!("{}    \"body\" : {{\n", text);
+        text = format!("{}        \"operation\" : [\n", text);
+        text = format!("{}            {}\n", text, operations);
+        text = format!("{}        ],\n", text);
+        text = format!("{}        \"piece_number\" : [\n", text);
+        text = format!("{}            {}\n", text, numbers);
+        text = format!("{}        ]\n", text);
+        text = format!("{}    }}\n", text);
+        text = format!("{}}}", text);
+        text
     }
 }

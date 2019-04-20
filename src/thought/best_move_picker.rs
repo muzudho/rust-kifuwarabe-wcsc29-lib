@@ -4,7 +4,7 @@ use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_cassette_tape::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape_recorder::*;
 use rpm_conv::rpm_tape::*;
 use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_thread::*;
@@ -56,7 +56,7 @@ impl BestMovePicker {
         &mut self,
         comm: &Communication,
         kw29config: &KifuwarabeWcsc29Config,
-        rrecord: &mut RpmRecord,
+        recorder: &mut RpmCassetteTapeRecorder,
         position: &mut Position,
     ) -> UsiMove {
         // クリアー。
@@ -125,10 +125,15 @@ impl BestMovePicker {
                             position.find_wild(Some(position.get_phase()), *my_piece_id)
                         {
                             // Board.
-                            HumanInterface::bo(&comm, &rrecord, &position);
+                            HumanInterface::bo(
+                                &comm,
+                                &recorder.cassette_tape,
+                                recorder.ply,
+                                &position,
+                            );
                             comm.println(&format!(
                                 "[{}] My piece: {}'{}'{}.",
-                                rrecord.body.ply,
+                                recorder.ply,
                                 position.get_phase().to_log(),
                                 my_idp.to_human_presentable(),
                                 my_addr_obj.to_physical_sign(position.get_board_size())
@@ -162,29 +167,29 @@ impl BestMovePicker {
                                         // TODO 現局面で この手を指せるか試してみる。
                                         // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
                                         {
-                                            let mut cassette_tape = RpmCassetteTape::default();
+                                            // 新規に テープを作る。
+                                            let mut recorder = RpmCassetteTapeRecorder::default();
                                             println!(
                                                 "BMP: Rtape(1): {}.",
-                                                cassette_tape.to_dump(position.get_board_size())
+                                                recorder.to_dump(position.get_board_size())
                                             );
 
-                                            let mut unused_ply = 0;
-                                            cassette_tape.record_next_move(&rmove, &mut unused_ply);
+                                            recorder.record_next_move(&rmove);
                                             println!(
                                                 "BMP: Rtape(2): {}.",
-                                                cassette_tape.to_dump(position.get_board_size())
+                                                recorder.to_dump(position.get_board_size())
                                             );
 
-                                            cassette_tape.reset_caret();
+                                            recorder.reset_caret();
                                             println!(
                                                 "BMP: Rtape(3): {}.",
-                                                cassette_tape.to_dump(position.get_board_size())
+                                                recorder.to_dump(position.get_board_size())
                                             );
 
                                             if RpmMovePlayer::forward_1move_on_tape(
-                                                &mut cassette_tape,
+                                                &mut recorder.cassette_tape,
                                                 position,
-                                                &mut rrecord.body.ply,
+                                                &mut recorder.ply,
                                                 true,
                                                 &comm,
                                             ) {
@@ -193,15 +198,20 @@ impl BestMovePicker {
 
                                                 // 局面を動かしてしまったので戻す。
                                                 RpmMovePlayer::back_1move_on_tape(
-                                                    &mut cassette_tape,
+                                                    &mut recorder.cassette_tape,
                                                     position,
-                                                    &mut rrecord.body.ply,
+                                                    &mut recorder.ply,
                                                     false,
                                                     &comm,
                                                 );
 
                                                 comm.println("Legal, go back!");
-                                                HumanInterface::bo(&comm, &rrecord, &position);
+                                                HumanInterface::bo(
+                                                    &comm,
+                                                    &recorder.cassette_tape,
+                                                    recorder.ply,
+                                                    &position,
+                                                );
                                             } else {
                                                 // 非合法タッチ。（ムーブはキャンセルされる）
                                                 comm.println(&format!(
@@ -210,7 +220,12 @@ impl BestMovePicker {
                                                 ));
 
                                                 comm.println("Are you cancel?");
-                                                HumanInterface::bo(&comm, &rrecord, &position);
+                                                HumanInterface::bo(
+                                                    &comm,
+                                                    &recorder.cassette_tape,
+                                                    recorder.ply,
+                                                    &position,
+                                                );
                                                 continue 'track_scan;
                                             }
                                         }

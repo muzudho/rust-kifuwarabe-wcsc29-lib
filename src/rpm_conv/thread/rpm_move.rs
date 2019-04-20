@@ -1,8 +1,8 @@
 ///
 /// Rpm棋譜のムーブ。
-/// 
+///
 /// 局面から独立しています。
-/// 
+///
 use address::*;
 use board_size::*;
 use communication::*;
@@ -34,7 +34,7 @@ impl fmt::Display for RpmMove {
 }
 impl RpmMove {
     /// Human presentable.
-    pub fn to_log(&self, board_size:BoardSize) -> String {
+    pub fn to_log(&self, board_size: BoardSize) -> String {
         let mut text = String::new();
 
         for note in &self.notes {
@@ -45,7 +45,12 @@ impl RpmMove {
     }
 
     /// 1手分解析。
-    pub fn parse_1move(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmMove> {
+    pub fn parse_1move(
+        comm: &Communication,
+        record_for_json: &RpmRecordForJson,
+        note_start: &mut usize,
+        board_size: BoardSize,
+    ) -> Option<RpmMove> {
         let mut rmove = RpmMove {
             notes: Vec::new(),
             start: *note_start,
@@ -54,7 +59,10 @@ impl RpmMove {
 
         let size = record_for_json.body.operation.len();
         if size == 1 {
-            panic!("操作トラックが 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
+            panic!(
+                "操作トラックが 1ノート ということは無いはず。 {:?}",
+                record_for_json.body.operation
+            )
         }
 
         //comm.print(&format!("Parse 1move: note_start: {}, size: {}.", *note_start, size));
@@ -85,11 +93,11 @@ impl RpmMove {
 
                     //comm.print(&format!("Push: {:?}.", note));
                     rmove.notes.push(note);
-                },
+                }
                 None => {
                     //comm.print("Break: None.");
                     break 'j_loop;
-                },
+                }
             }
 
             is_first = false;
@@ -98,7 +106,10 @@ impl RpmMove {
         if rmove.is_empty() {
             None
         } else if rmove.len() == 1 {
-            panic!("指し手が 1ノート ということは無いはず。 {:?}", record_for_json.body.operation)
+            panic!(
+                "指し手が 1ノート ということは無いはず。 {:?}",
+                record_for_json.body.operation
+            )
         } else {
             rmove.end = *note_start;
             Some(rmove)
@@ -114,7 +125,7 @@ impl RpmMove {
     }
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
-    pub fn to_first_touch_piece_id(&self, board_size:BoardSize) -> (PieceIdentify, Address) {
+    pub fn to_first_touch_piece_id(&self, board_size: BoardSize) -> (PieceIdentify, Address) {
         // とりあえず USI move に変換するついでに、欲しい情報を得る。
         let (_umove, first_touch_pid, first_touch_addr) = self.to_usi_move(board_size);
 
@@ -122,15 +133,15 @@ impl RpmMove {
     }
 
     /// 一手。フェーズ・チェンジ・ノートや「ほこり取り」は含まない。
-    /// 
+    ///
     /// 決まっている並びをしているものとする。
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// Usi move,
     /// どの駒を動かした一手か,
     /// どこの駒を動かした一手か,
-    pub fn to_usi_move(&self, board_size:BoardSize) -> (UsiMove, PieceIdentify, Address) {
+    pub fn to_usi_move(&self, board_size: BoardSize) -> (UsiMove, PieceIdentify, Address) {
         let mut touched_source = false;
 
         let mut src_opt = None;
@@ -152,7 +163,7 @@ impl RpmMove {
                     }
                     drop_opt = Some(PieceType::from_piece(piece));
 
-                    // 盤上
+                // 盤上
                 } else if !touched_source {
                     // 先に駒台を触るので、盤上の駒を触ったら、上書きして盤上の駒を優先します。
                     ftp_id_opt = note.get_id();
@@ -171,18 +182,15 @@ impl RpmMove {
         }
 
         let umove = if let Some(drop) = drop_opt {
-            UsiMove::create_drop(
-                dst_opt.unwrap(),
-                drop,
-                board_size)
+            UsiMove::create_drop(dst_opt.unwrap(), drop, board_size)
         } else if let Some(dst) = dst_opt {
-            UsiMove::create_walk(
-                src_opt.unwrap(),
-                dst,
-                promotion,
-                board_size)
+            UsiMove::create_walk(src_opt.unwrap(), dst, promotion, board_size)
         } else {
-            panic!("Unexpected dst. move.len: '{}' > 1, move: '{}'.", self.len(), self)
+            panic!(
+                "Unexpected dst. move.len: '{}' > 1, move: '{}'.",
+                self.len(),
+                self
+            )
         };
 
         // USIの指し手が作れれば、 first touch が分からないことはないはず。
@@ -193,12 +201,11 @@ impl RpmMove {
         }
     }
 
-    pub fn to_operation_string(&self, board_size:BoardSize) -> String {
+    pub fn to_operation_string(&self, board_size: BoardSize) -> String {
         let mut text = String::new();
 
         for i in 0..self.len() {
-            let mut ply = -1;
-            text = format!("{} {}", text, &self.notes[i].get_ope().to_sign(board_size, &mut ply));
+            text = format!("{} {}", text, &self.notes[i].get_ope().to_sign(board_size));
         }
 
         text
@@ -208,14 +215,12 @@ impl RpmMove {
         let mut text = String::new();
 
         for i in 0..self.len() {
-            text = format!("{} {}", text,
+            text = format!(
+                "{} {}",
+                text,
                 match &self.notes[i].get_id() {
-                    Some(pid) => {
-                        pid.get_number().to_string()
-                    },
-                    None => {
-                        "-1".to_string()
-                    },
+                    Some(pid) => pid.get_number().to_string(),
+                    None => "-1".to_string(),
                 }
             );
         }

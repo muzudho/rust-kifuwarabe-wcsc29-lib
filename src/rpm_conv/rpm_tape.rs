@@ -60,8 +60,6 @@ impl RpmTape {
     pub fn to_dump(&self, board_size: BoardSize) -> String {
         let mut dump = "".to_string();
 
-        let mut unused_ply = -1;
-
         {
             dump = format!("{}, Negative Len: {}, ", dump, self.negative_notes.len());
         }
@@ -74,7 +72,7 @@ impl RpmTape {
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_sign(board_size, &mut unused_ply),
+                note.get_ope().to_sign(board_size),
             );
         }
 
@@ -90,7 +88,7 @@ impl RpmTape {
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_sign(board_size, &mut unused_ply),
+                note.get_ope().to_sign(board_size),
             );
         }
 
@@ -298,7 +296,7 @@ impl RpmTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_sign(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
+    pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
 
@@ -312,7 +310,7 @@ impl RpmTape {
                     NONE_VALUE.to_string()
                 }
             );
-            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size, ply));
+            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
         }
 
         for note in &self.positive_notes {
@@ -325,7 +323,7 @@ impl RpmTape {
                     NONE_VALUE.to_string()
                 }
             );
-            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size, ply));
+            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
         }
 
         (numbers, operations)
@@ -336,7 +334,7 @@ impl RpmTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_json(&self, board_size: BoardSize, ply: &mut i16) -> (String, String) {
+    pub fn to_json(&self, board_size: BoardSize) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
 
@@ -359,11 +357,7 @@ impl RpmTape {
                         NONE_VALUE.to_string()
                     }
                 );
-                operations = format!(
-                    "{} \"{}\"",
-                    operations,
-                    note.get_ope().to_sign(board_size, ply)
-                );
+                operations = format!("{} \"{}\"", operations, note.get_ope().to_sign(board_size));
             }
 
             for _index in 1..notes.len() {
@@ -377,11 +371,7 @@ impl RpmTape {
                         NONE_VALUE.to_string()
                     }
                 );
-                operations = format!(
-                    "{}, \"{}\"",
-                    operations,
-                    note.get_ope().to_sign(board_size, ply)
-                );
+                operations = format!("{}, \"{}\"", operations, note.get_ope().to_sign(board_size));
             }
         }
 

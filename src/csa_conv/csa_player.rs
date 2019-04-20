@@ -4,7 +4,7 @@ use csa_conv::csa_move::*;
 use csa_conv::csa_record::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape_recorder::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use rpm_play::rpm_move_player::*;
 use rpm_play::rpm_note_player::*;
@@ -16,7 +16,7 @@ impl CsaPlayer {
         _comm: &Communication,
         cmove: &CsaMove,
         position: &Position,
-        _ply: i16,
+        ply: i16,
     ) -> Vec<RpmNoteOpe> {
         let mut p_moves = Vec::new();
 
@@ -94,39 +94,34 @@ impl CsaPlayer {
         };
 
         // change-phase
-        let change_phase = RpmNoteOpe::change_phase();
+        let change_phase = RpmNoteOpe::change_phase(ply);
         p_moves.push(change_phase);
 
         p_moves
     }
 
     /// 変換には、初期局面が必要。
-    pub fn play_out_record(
+    pub fn play_out_and_record(
         comm: &Communication,
         position: &mut Position,
         crecord: &CsaRecord,
-        rrecord: &mut RpmRecord,
-    ) {
+    ) -> RpmCassetteTapeRecorder {
         // TODO とりあえず平手初期局面だけ対応。
-        comm.println("#CsaP: play_out_to_starting_position");
-        rrecord.clear();
+        let mut recorder = RpmCassetteTapeRecorder::default();
         position.reset_origin_position();
-        RpmMovePlayer::play_out_to_starting_position(comm, rrecord, position);
+        RpmMovePlayer::record_ohashi_starting(comm, &mut recorder, position);
 
         let mut ply = 1;
         for cmove in &crecord.items {
-            let p_moves = CsaPlayer::convert_move(comm, cmove, position, ply);
+            let rnote_opes = CsaPlayer::convert_move(comm, cmove, position, ply);
 
-            for rpm_note in p_moves {
-                RpmNotePlayer::touch_brandnew_note(
-                    &mut rrecord.body.cassette_tape,
-                    &rpm_note,
-                    position,
-                    comm,
-                );
+            for rnote_ope in rnote_opes {
+                RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
 
             ply += 1;
         }
+
+        recorder
     }
 }

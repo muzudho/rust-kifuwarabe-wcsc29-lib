@@ -1,6 +1,6 @@
 use board_size::*;
 use communication::*;
-use rpm_conv::rpm_record::*;
+use rpm_conv::rpm_cassette_tape_recorder::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -12,7 +12,7 @@ pub struct RpmObjectSheet {
     file_path: String,
 }
 impl RpmObjectSheet {
-    pub fn default(path_text:&str) -> RpmObjectSheet {
+    pub fn default(path_text: &str) -> RpmObjectSheet {
         RpmObjectSheet {
             file_path: path_text.to_string(),
         }
@@ -29,21 +29,30 @@ impl RpmObjectSheet {
     }
 
     /// 物理レコードを追加する。
-    pub fn append(&self, _comm:&Communication, board_size:BoardSize, rpm_record:&RpmRecord) {
+    pub fn append_record(
+        &self,
+        _comm: &Communication,
+        board_size: BoardSize,
+        recorder: &RpmCassetteTapeRecorder,
+    ) {
         // comm.println("#Sheet saving...");
 
         let path = Path::new(&self.file_path);
 
         // 新規作成、またはレコードを追記。
         let mut file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .append(true)
-        .open(path)
-        .unwrap();
+            .create(true)
+            .write(true)
+            .append(true)
+            .open(path)
+            .unwrap();
 
         // 末尾にカンマを付けて終わる。
-        if let Err(e) = writeln!(file, "{},", rpm_record.to_json_object(board_size)) {
+        if let Err(e) = writeln!(
+            file,
+            "{},",
+            recorder.cassette_tape.to_json_object(board_size)
+        ) {
             eprintln!("Couldn't write to file: {}", e);
         }
 

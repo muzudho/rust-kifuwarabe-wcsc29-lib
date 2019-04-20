@@ -14,7 +14,6 @@ use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::position::*;
 use kifuwarabe_wcsc29_lib::rpm_conv::rpm_object_sheet::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_record::*;
 
 #[derive(Debug)]
 struct Args {
@@ -68,17 +67,16 @@ pub fn main() {
     }
 
     // Model.
-    let mut rrecord = RpmRecord::default();
     let mut position = Position::default();
     let crecord = CsaRecord::load(&path);
 
     // Play.
-    CsaPlayer::play_out_record(&comm, &mut position, &crecord, &mut rrecord);
-    HumanInterface::bo(&comm, &rrecord, &position);
+    let mut recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
+    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
     let rpm_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
-    rpm_sheet.append(&comm, position.get_board_size(), &rrecord);
+    rpm_sheet.append_record(&comm, position.get_board_size(), &recorder);
 
     comm.println("Finished.");
 }

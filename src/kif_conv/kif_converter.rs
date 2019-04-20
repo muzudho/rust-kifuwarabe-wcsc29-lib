@@ -1,17 +1,14 @@
 use communication::*;
 use kif_conv::kif_player::*;
 use kif_conv::kif_record::*;
-use rpm_conv::rpm_record::*;
-use rpm_conv::rpm_object_sheet::*;
 use position::*;
+use rpm_conv::rpm_object_sheet::*;
 use std::fs;
 use std::path::Path;
 
-pub struct KifConverter {
-}
+pub struct KifConverter {}
 impl KifConverter {
-    pub fn convert_kif(input_path:&str, output_path:&str)
-    {
+    pub fn convert_kif(input_path: &str, output_path: &str) {
         // Logging.
         let comm = Communication::new();
         // comm.println(&format!("input_path: {}", input_path));
@@ -25,22 +22,21 @@ impl KifConverter {
         let out_path = Path::new(output_path);
         let out_dir = out_path.parent().unwrap();
         match fs::create_dir_all(out_dir) {
-            Ok(_x) => {},
+            Ok(_x) => {}
             Err(err) => panic!("Directory create fail: {}", err),
         }
 
         // Model.
-        let mut rrecord = RpmRecord::default();
         let mut position = Position::default();
         let krecord = KifRecord::load(&input_path);
 
         // Play.
-        KifPlayer::play_out_record(&comm, &mut position, &krecord, &mut rrecord);
+        let mut recorder = KifPlayer::play_out_and_record(&comm, &mut position, &krecord);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
         let rpm_object_sheet = RpmObjectSheet::default(output_path);
-        rpm_object_sheet.append(&comm, position.get_board_size(), &rrecord);
+        rpm_object_sheet.append_record(&comm, position.get_board_size(), &recorder);
 
         // comm.println("Finished.");
     }
