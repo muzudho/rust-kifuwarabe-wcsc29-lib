@@ -141,7 +141,7 @@ pub fn main_loop() {
         } else if line == "b" {
             // Back 1mark.
             if let Some(rnote) = recorder.cassette_tape.back_note() {
-                RpmNotePlayer::back_1note(&rnote, &mut position, &mut recorder.ply, &comm);
+                RpmNotePlayer::back_1note(&rnote, &mut position, recorder.ply, &comm);
                 HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
             }
         } else if line == "bb" {
@@ -149,7 +149,7 @@ pub fn main_loop() {
             RpmMovePlayer::back_1move_on_tape(
                 &mut recorder.cassette_tape,
                 &mut position,
-                &mut recorder.ply,
+                recorder.ply,
                 true,
                 &comm,
             );
@@ -160,7 +160,7 @@ pub fn main_loop() {
                 RpmMovePlayer::back_1move_on_tape(
                     &mut recorder.cassette_tape,
                     &mut position,
-                    &mut recorder.ply,
+                    recorder.ply,
                     true,
                     &comm,
                 );
@@ -172,7 +172,7 @@ pub fn main_loop() {
                 RpmMovePlayer::back_1move_on_tape(
                     &mut recorder.cassette_tape,
                     &mut position,
-                    &mut recorder.ply,
+                    recorder.ply,
                     true,
                     &comm,
                 );
@@ -181,6 +181,15 @@ pub fn main_loop() {
         } else if line.starts_with("bo") {
             // Board.
             HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+
+        /*
+        // #####
+        // # C #
+        // #####
+        } else if line == "cls" {
+            // Clear screen.
+            comm.println(&format!("{}[2J", 27 as char));
+            */
 
         // #####
         // # D #
@@ -203,50 +212,6 @@ pub fn main_loop() {
             // Delete 400ply.
             for _i in 0..400 {
                 RpmMovePlayer::pop_current_1move_on_record(&mut recorder, &mut position, &comm);
-            }
-            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-
-        // #####
-        // # F #
-        // #####
-        } else if line == "f" {
-            // Forward 1note.
-            if let Some(rnote) = recorder.cassette_tape.next_note() {
-                RpmNotePlayer::forward_1note(&rnote, &mut position, &mut recorder.ply, &comm);
-                HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-            }
-        } else if line == "ff" {
-            // Forward 1move.
-            RpmMovePlayer::forward_1move_on_tape(
-                &mut recorder.cassette_tape,
-                &mut position,
-                &mut recorder.ply,
-                true,
-                &comm,
-            );
-            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-        } else if line == "fff" {
-            // Forward 10move.
-            for _i in 0..10 {
-                RpmMovePlayer::forward_1move_on_tape(
-                    &mut recorder.cassette_tape,
-                    &mut position,
-                    &mut recorder.ply,
-                    true,
-                    &comm,
-                );
-            }
-            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-        } else if line == "ffff" {
-            // Forward 400move.
-            for _i in 0..400 {
-                RpmMovePlayer::forward_1move_on_tape(
-                    &mut recorder.cassette_tape,
-                    &mut position,
-                    &mut recorder.ply,
-                    true,
-                    &comm,
-                );
             }
             HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
@@ -304,6 +269,50 @@ pub fn main_loop() {
             | line.starts_with('R')
         {
             recorder.read_tape(&comm, &line, &mut position);
+
+        // #####
+        // # N #
+        // #####
+        } else if line == "n" {
+            // Forward 1note.
+            if let Some(rnote) = recorder.cassette_tape.next_note() {
+                RpmNotePlayer::next_1note(&rnote, &mut position, recorder.ply, &comm);
+                HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+            }
+        } else if line == "nn" {
+            // Forward 1move.
+            RpmMovePlayer::next_1move_on_tape(
+                &mut recorder.cassette_tape,
+                &mut position,
+                recorder.ply,
+                true,
+                &comm,
+            );
+            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+        } else if line == "nnn" {
+            // Forward 10move.
+            for _i in 0..10 {
+                RpmMovePlayer::next_1move_on_tape(
+                    &mut recorder.cassette_tape,
+                    &mut position,
+                    recorder.ply,
+                    true,
+                    &comm,
+                );
+            }
+            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+        } else if line == "nnnn" {
+            // Forward 400move.
+            for _i in 0..400 {
+                RpmMovePlayer::next_1move_on_tape(
+                    &mut recorder.cassette_tape,
+                    &mut position,
+                    recorder.ply,
+                    true,
+                    &comm,
+                );
+            }
+            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
         // #####
         // # Q #

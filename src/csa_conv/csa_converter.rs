@@ -2,7 +2,6 @@ use communication::*;
 use csa_conv::csa_player::*;
 use csa_conv::csa_record::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
 use rpm_conv::rpm_object_sheet::*;
 use std::fs;
 use std::path::Path;
@@ -32,7 +31,7 @@ impl CsaConverter {
         let crecord = CsaRecord::load(&input_path);
 
         // Play.
-        let mut recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
+        let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)

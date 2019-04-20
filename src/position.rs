@@ -27,9 +27,30 @@ impl Position {
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
             hands: [
-                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-                Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
             ],
         };
 
@@ -44,15 +65,36 @@ impl Position {
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
         ];
 
+        use piece_etc::IdentifiedPiece;
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
-        use piece_etc::IdentifiedPiece;
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K2).get_index()];
@@ -158,15 +200,36 @@ impl Position {
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
-            Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new(), 
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
         ];
 
+        use piece_etc::IdentifiedPiece;
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
-        use piece_etc::IdentifiedPiece;
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K3).get_index()];
@@ -249,16 +312,16 @@ impl Position {
         self.board_size
     }
 
-    pub fn get_id_piece(&self, cell:Cell) -> Option<IdentifiedPiece> {
+    pub fn get_id_piece(&self, cell: Cell) -> Option<IdentifiedPiece> {
         let address = self.board_size.cell_to_address(cell);
         self.board[address]
     }
 
-    pub fn get_id_piece_by_address(&self, address:usize) -> Option<IdentifiedPiece> {
+    pub fn get_id_piece_by_address(&self, address: usize) -> Option<IdentifiedPiece> {
         self.board[address]
     }
 
-    pub fn get_cell_thing_by_address(&self, address:Address) -> CellThing {
+    pub fn get_cell_thing_by_address(&self, address: Address) -> CellThing {
         CellThing::create(self.board[address.get_index()])
     }
 
@@ -269,7 +332,7 @@ impl Position {
         self.board[SKY_ADDRESS] = None;
     }
 
-    pub fn move_hand_to_finger(&mut self, address:Address) {
+    pub fn move_hand_to_finger(&mut self, address: Address) {
         let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
         let id_piece = self.hands[hand_index_obj.get_index()].pop();
         self.board[SKY_ADDRESS] = id_piece;
@@ -277,25 +340,29 @@ impl Position {
 
     /// TODO 識別子を追加していいのか？
     /// Obsolute. new --> add().
-    pub fn set_id_piece(&mut self, cell:Cell, id_piece:Option<IdentifiedPiece>) {
+    pub fn set_id_piece(&mut self, cell: Cell, id_piece: Option<IdentifiedPiece>) {
         let address = self.board_size.cell_to_address(cell);
         self.board[address] = id_piece;
     }
 
     /// TODO 識別子を消していいのか？
-    pub fn remove_id_piece(&mut self, cell:Cell) -> Option<IdentifiedPiece> {
+    pub fn remove_id_piece(&mut self, cell: Cell) -> Option<IdentifiedPiece> {
         let address = self.get_board_size().cell_to_address(cell);
         let id_piece = self.board[address];
         self.set_id_piece(cell, None);
         id_piece
     }
 
-    pub fn get_hand_count(&self, piece:Piece) -> i8 {
+    pub fn get_hand_count(&self, piece: Piece) -> i8 {
         let hand_index_obj = HandIndex::from_piece(piece);
         self.hands[hand_index_obj.get_index()].len() as i8
     }
 
-    pub fn search_hand(&self, ph_opt:Option<Phase>, pid:PieceIdentify) -> Option<IdentifiedPiece> {
+    pub fn search_hand(
+        &self,
+        ph_opt: Option<Phase>,
+        pid: PieceIdentify,
+    ) -> Option<IdentifiedPiece> {
         let pt = pid.get_piece_type();
         let pi = Piece::from_ph_pt(ph_opt, pt);
 
@@ -310,30 +377,30 @@ impl Position {
         None
     }
 
-    pub fn add_hand(&mut self, id_piece_opt:Option<IdentifiedPiece>) {
+    pub fn add_hand(&mut self, id_piece_opt: Option<IdentifiedPiece>) {
         if let Some(id_piece) = id_piece_opt {
             let hand_index = hand_id_piece_to_hand_index(id_piece);
             self.hands[hand_index].push(id_piece)
         }
     }
 
-    pub fn remove_hand(&mut self, piece:Piece) -> IdentifiedPiece {
+    pub fn remove_hand(&mut self, piece: Piece) -> IdentifiedPiece {
         let hand_index_obj = HandIndex::from_piece(piece);
         self.hands[hand_index_obj.get_index()].pop().unwrap()
     }
 
-    pub fn peek_hand(&self, piece:Piece) -> Option<IdentifiedPiece> {
+    pub fn peek_hand(&self, piece: Piece) -> Option<IdentifiedPiece> {
         let hand_index_obj = HandIndex::from_piece(piece);
         let stack = &self.hands[hand_index_obj.get_index()];
         if stack.is_empty() {
             None
         } else {
-            Some(stack[stack.len()-1])
+            Some(stack[stack.len() - 1])
         }
     }
 
     /// USI position 読込時に使う。使ってない駒を盤上に置く。
-    pub fn activate_piece(&mut self, piece_opt:Option<Piece>, cell:Cell) {
+    pub fn activate_piece(&mut self, piece_opt: Option<Piece>, cell: Cell) {
         if let Some(piece) = piece_opt {
             let disactivate_piece = piece.to_disactivate();
             let hand_index_obj = HandIndex::from_piece(disactivate_piece);
@@ -346,13 +413,20 @@ impl Position {
 
     /// 盤、駒台（Ａ）と、スカイ升（Ｂ）の間で駒を移動する。
     /// ＡとＢは、両方空っぽか、片方だけ駒があるかの　どちらかとする。両方に駒があるケースはないものとする。
-    /// 
+    ///
     /// 棋譜には記録しない。
-    /// 
+    ///
+    /// トグルと考えてよい。もう一度実行すると、前の状態に戻ります。
+    ///
     /// # Returns
-    /// 
+    ///
     /// Is legal touch, Identified piece.
-    pub fn touch_beautiful_1note(&mut self, rpm_operation_note:&RpmNoteOpe, comm:&Communication, board_size:BoardSize) -> (bool, Option<IdentifiedPiece>) {
+    pub fn touch_beautiful_1note(
+        &mut self,
+        rpm_operation_note: &RpmNoteOpe,
+        comm: &Communication,
+        board_size: BoardSize,
+    ) -> (bool, Option<IdentifiedPiece>) {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
@@ -360,37 +434,56 @@ impl Position {
                     // 盤上。
                     match self.board[address.get_index()] {
                         Some(board_id_piece) => {
-                            // 駒の場所を指定した。
-                            match self.board[SKY_ADDRESS] {
+                            // 盤上の駒と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
+
+                            let tuple = match self.board[SKY_ADDRESS] {
                                 Some(sky_id_piece) => {
-                                    comm.println(&format!("<IL-駒重なり{}>", address.to_log(board_size)));
+                                    comm.println(&format!(
+                                        "<IL-駒重なり{}>",
+                                        address.to_log(board_size)
+                                    ));
+
                                     // 違法。指に既に何か持ってた。
-                                    // 指に持っている駒を返す。
+                                    // 指に持っている駒を優先します。
                                     (false, Some(sky_id_piece))
-                                },
+                                }
                                 None => {
                                     // 合法。指が空いてたので駒をつかむ。
-                                    self.board[SKY_ADDRESS] = Some(board_id_piece);
-                                    self.board[address.get_index()] = None;
+                                    // 盤上の駒の方を優先します。
                                     (true, Some(board_id_piece))
-                                },
-                            }
-                        },
+                                }
+                            };
+
+                            // スワップ。
+                            let temp = self.board[SKY_ADDRESS];
+                            self.board[SKY_ADDRESS] = self.board[address.get_index()];
+                            self.board[address.get_index()] = temp;
+
+                            tuple
+                        }
                         None => {
-                            // 空き升を指定した。
-                            if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
+                            // 盤上の None と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
+                            let tuple = if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
                                 // 駒を指につまんでいた。
                                 // 合法。指につまんでいる駒を置く。
-                                self.board[SKY_ADDRESS] = None;
-                                self.board[address.get_index()] = Some(sky_id_piece);
                                 (true, Some(sky_id_piece))
                             } else {
-                                comm.println(&format!("<IL-ほこり取り{}>", address.to_log(board_size)));
+                                comm.println(&format!(
+                                    "<IL-ほこり取り{}>",
+                                    address.to_log(board_size)
+                                ));
                                 // ほこりを取る。
                                 // 一応、違法。
                                 (false, None)
-                            }
-                        },
+                            };
+
+                            // スワップ。
+                            let temp = self.board[SKY_ADDRESS];
+                            self.board[SKY_ADDRESS] = self.board[address.get_index()];
+                            self.board[address.get_index()] = temp;
+
+                            tuple
+                        }
                     }
                 // 駒台。
                 } else if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
@@ -406,20 +499,23 @@ impl Position {
                         // 合法。掴んだ駒を返す。
                         (true, Some(sky_id_piece))
                     } else {
-                        comm.println(&format!("<IL-駒台ほこり取り{}>", address.to_log(board_size)));
+                        comm.println(&format!(
+                            "<IL-駒台ほこり取り{}>",
+                            address.to_log(board_size)
+                        ));
                         // 違法。駒台のほこりを取った。
                         (false, None)
                     }
                 }
-            },
+            }
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rpm_operation_note.is_phase_change() {
                     // 合法。 phase change.
                     use piece_etc::Phase::*;
                     self.phase = match self.phase {
-                        First => {Second},
-                        Second => {First},
+                        First => Second,
+                        Second => First,
                     };
                     (true, None)
                 } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
@@ -445,11 +541,15 @@ impl Position {
     }
 
     /// 駒の検索。
-    /// 
+    ///
     /// # Returns
-    /// 
+    ///
     /// 識別駒、番地。
-    pub fn find_wild(&self, ph_opt:Option<Phase>, pid:PieceIdentify) -> Option<(IdentifiedPiece, Address)> {
+    pub fn find_wild(
+        &self,
+        ph_opt: Option<Phase>,
+        pid: PieceIdentify,
+    ) -> Option<(IdentifiedPiece, Address)> {
         // 盤上のスキャン。
         for addr in BOARD_START..self.board_size.len() {
             // Id piece.
@@ -472,7 +572,7 @@ impl Position {
     }
 
     /// 持ち駒の１行表示
-    pub fn to_hand_text(&self, phase_opt:Option<Phase>) -> String {
+    pub fn to_hand_text(&self, phase_opt: Option<Phase>) -> String {
         let mut text = String::new();
 
         use piece_etc::Phase::*;
@@ -480,12 +580,8 @@ impl Position {
 
         let array = if let Some(phase) = phase_opt {
             match phase {
-                First => {
-                    [K1, R1, B1, G1, S1, N1, L1, P1]
-                },
-                Second => {
-                    [K2, R2, B2, G2, S2, N2, L2, P2]
-                },
+                First => [K1, R1, B1, G1, S1, N1, L1, P1],
+                Second => [K2, R2, B2, G2, S2, N2, L2, P2],
             }
         } else {
             [K3, R3, B3, G3, S3, N3, L3, P3]
@@ -502,79 +598,146 @@ impl Position {
     }
 
     /// Point of symmetory.
-    pub fn to_text(&self, _comm:&Communication, phase:Phase) -> String {
+    pub fn to_text(&self, _comm: &Communication, phase: Phase) -> String {
         use piece_etc::Phase::*;
         let mut content = String::new();
 
         // First phase hand.
-        Parser::appendln(&mut content, &format!("               {}",
-            self.to_hand_text(Some(Phase::First))));
+        Parser::appendln(
+            &mut content,
+            &format!("               {}", self.to_hand_text(Some(Phase::First))),
+        );
 
         match phase {
             First => {
                 // hand.
-                Parser::appendln(&mut content, &"|         |  +----+----+----+----+----+----+----+----+----+".to_string());
-            },
+                Parser::appendln(
+                    &mut content,
+                    &"|         |  +----+----+----+----+----+----+----+----+----+".to_string(),
+                );
+            }
             Second => {
-                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+".to_string());
-            },
+                Parser::appendln(
+                    &mut content,
+                    &"             +----+----+----+----+----+----+----+----+----+".to_string(),
+                );
+            }
         }
 
         for row in 0..=16 {
             // let rank = row / 2 + 1;
-            let rank = 9 - (row/2);
+            let rank = 9 - (row / 2);
 
             // 先手の手。
             match phase {
                 First => {
                     match row {
-                        0 => {Parser::append(&mut content, &"|         | ".to_string())},
-                        1 => {Parser::append(&mut content, &"+---+ +-+ | ".to_string())},
-                        2 => {Parser::append(&mut content, &"    | | | | ".to_string())},
-                        3 => {Parser::append(&mut content, &"    | | | | ".to_string())},
-                        4 => {Parser::append(&mut content, &"    +-+ +-+ ".to_string())},
-                        5 => {Parser::append(&mut content, &format!("     {}   ", self.get_cell_thing_by_address(Address::from_sky()).to_display()))},
-                        6|7|8|9|10|11|12|13|14|15|16 => {Parser::append(&mut content, &"            ".to_string())},
-                        _ => { panic!("Unexpected row: {0}.", row) },
+                        0 => Parser::append(&mut content, &"|         | ".to_string()),
+                        1 => Parser::append(&mut content, &"+---+ +-+ | ".to_string()),
+                        2 => Parser::append(&mut content, &"    | | | | ".to_string()),
+                        3 => Parser::append(&mut content, &"    | | | | ".to_string()),
+                        4 => Parser::append(&mut content, &"    +-+ +-+ ".to_string()),
+                        5 => Parser::append(
+                            &mut content,
+                            &format!(
+                                "     {}   ",
+                                self.get_cell_thing_by_address(Address::from_sky())
+                                    .to_display()
+                            ),
+                        ),
+                        6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
+                            Parser::append(&mut content, &"            ".to_string())
+                        }
+                        _ => panic!("Unexpected row: {0}.", row),
                     };
-                },
-                Second => {Parser::append(&mut content, &"            ".to_string())},
+                }
+                Second => Parser::append(&mut content, &"            ".to_string()),
             }
 
-            if row%2==0 {
-                Parser::append(&mut content, &format!(
-                    // 全角文字が混ざると、文字数では横幅調整できない。
-                    // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
-                    "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
-                    rank, // Parser::i8_to_rank_char(rank),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(1, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(2, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(3, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(4, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(5, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(6, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(7, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(8, rank), self.board_size)).to_display(),
-                    self.get_cell_thing_by_address(Address::from_cell(Cell::from_file_rank(9, rank), self.board_size)).to_display()));
+            if row % 2 == 0 {
+                Parser::append(
+                    &mut content,
+                    &format!(
+                        // 全角文字が混ざると、文字数では横幅調整できない。
+                        // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
+                        "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
+                        rank, // Parser::i8_to_rank_char(rank),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(1, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(2, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(3, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(4, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(5, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(6, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(7, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(8, rank),
+                            self.board_size
+                        ))
+                        .to_display(),
+                        self.get_cell_thing_by_address(Address::from_cell(
+                            Cell::from_file_rank(9, rank),
+                            self.board_size
+                        ))
+                        .to_display()
+                    ),
+                );
             } else {
-                Parser::append(&mut content, &" +----+----+----+----+----+----+----+----+----+".to_string());
+                Parser::append(
+                    &mut content,
+                    &" +----+----+----+----+----+----+----+----+----+".to_string(),
+                );
             }
 
             // Second player finger.
             match phase {
-                First => {},
+                First => {}
                 Second => {
                     match row {
-                        0|1|2|3|4|5|6|7|8|9|10 => {},
-                        11 => {Parser::append(&mut content, &format!("  {}", self.get_cell_thing_by_address(Address::from_sky()).to_display()))},
-                        12 => {Parser::append(&mut content, &" +-+ +-+".to_string())},
-                        13 => {Parser::append(&mut content, &" | | | |".to_string())},
-                        14 => {Parser::append(&mut content, &" | | | |".to_string())},
-                        15 => {Parser::append(&mut content, &" | +-+ +---+".to_string())},
-                        16 => {Parser::append(&mut content, &" |         |".to_string())},
-                        _ => { panic!("Unexpected row: {0}.", row) },
+                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {}
+                        11 => Parser::append(
+                            &mut content,
+                            &format!(
+                                "  {}",
+                                self.get_cell_thing_by_address(Address::from_sky())
+                                    .to_display()
+                            ),
+                        ),
+                        12 => Parser::append(&mut content, &" +-+ +-+".to_string()),
+                        13 => Parser::append(&mut content, &" | | | |".to_string()),
+                        14 => Parser::append(&mut content, &" | | | |".to_string()),
+                        15 => Parser::append(&mut content, &" | +-+ +---+".to_string()),
+                        16 => Parser::append(&mut content, &" |         |".to_string()),
+                        _ => panic!("Unexpected row: {0}.", row),
                     };
-                },
+                }
             }
 
             Parser::append_ln(&mut content);
@@ -582,19 +745,31 @@ impl Position {
 
         match phase {
             First => {
-                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+".to_string());
-            },
+                Parser::appendln(
+                    &mut content,
+                    &"             +----+----+----+----+----+----+----+----+----+".to_string(),
+                );
+            }
             Second => {
                 // hand.
-                Parser::appendln(&mut content, &"             +----+----+----+----+----+----+----+----+----+ |         |".to_string());
-            },
+                Parser::appendln(
+                    &mut content,
+                    &"             +----+----+----+----+----+----+----+----+----+ |         |"
+                        .to_string(),
+                );
+            }
         }
 
-        Parser::appendln(&mut content, &"              1    2    3    4    5    6    7    8    9".to_string());
+        Parser::appendln(
+            &mut content,
+            &"              1    2    3    4    5    6    7    8    9".to_string(),
+        );
 
         // Second phase hand.
-        Parser::appendln(&mut content, &format!("               {}",
-            self.to_hand_text(Some(Phase::Second))));
+        Parser::appendln(
+            &mut content,
+            &format!("               {}", self.to_hand_text(Some(Phase::Second))),
+        );
 
         content
     }

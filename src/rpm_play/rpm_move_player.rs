@@ -1,7 +1,7 @@
 use address::*;
 use board_size::*;
 use communication::*;
-use human::human_interface::*;
+//use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_cassette_tape::*;
@@ -116,37 +116,29 @@ impl RpmMovePlayer {
     /// # Return
     ///
     /// 合法タッチか否か。
-    pub fn forward_1move_on_tape(
+    pub fn next_1move_on_tape(
         cassette_tape: &mut RpmCassetteTape,
         position: &mut Position,
-        ply: &mut i16,
+        ply: i16,
         is_auto_reverse: bool,
         comm: &Communication,
     ) -> bool {
         let mut is_first = true;
+        let mut is_legal_touch = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
         //print!("Rtape<{}>", rtape);
         while let Some(rnote) = cassette_tape.next_note() {
-            print!("Rta<{}>", cassette_tape);
-            print!("<Fok{} {}>", forwarding_count, rnote);
-            let is_legal_touch = RpmNotePlayer::forward_1note(&rnote, position, ply, comm);
+            comm.println(&format!(
+                "<NXM:{}:{} {}>",
+                cassette_tape, forwarding_count, rnote
+            ));
+            is_legal_touch = RpmNotePlayer::next_1note(&rnote, position, ply, comm);
+            forwarding_count += 1;
 
             if is_auto_reverse && !is_legal_touch {
-                // TODO 非合法タッチなら、以前に動かした分 戻したい。
-                comm.println("Illegal, go back!");
-                HumanInterface::show_position(&comm, *ply, &position);
-
-                for _i in 0..forwarding_count {
-                    print!("<IL...>");
-                    RpmNotePlayer::back_1note(&rnote, position, ply, comm);
-                    HumanInterface::show_position(&comm, *ply, &position);
-                }
-
-                print!("<IL backed{} {}>", forwarding_count, rnote);
-                HumanInterface::show_position(&comm, *ply, &position);
-                return false;
+                break;
             }
 
             if !is_first && rnote.is_phase_change() {
@@ -155,11 +147,23 @@ impl RpmMovePlayer {
                 break;
             }
 
-            // それ以外は繰り返す。
+            // 初回以降は、フェーズ・チェンジ有効。
             is_first = false;
-            forwarding_count += 1;
         }
-        print!("Rtap<{}>", cassette_tape);
+
+        if is_auto_reverse && !is_legal_touch {
+            // 非合法タッチを自動で戻す。
+            comm.println("Illegal, go back forcely!");
+            RpmNotePlayer::back_n_note_forcely(
+                forwarding_count,
+                cassette_tape,
+                position,
+                ply,
+                comm,
+            );
+
+            return false;
+        }
 
         // 1つ以上読んでいれば合法。
         print!("<Fe>");
@@ -174,7 +178,7 @@ impl RpmMovePlayer {
     pub fn back_1move_on_tape(
         cassette_tape: &mut RpmCassetteTape,
         position: &mut Position,
-        ply: &mut i16,
+        ply: i16,
         is_auto_reverse: bool,
         comm: &Communication,
     ) -> bool {
@@ -188,8 +192,8 @@ impl RpmMovePlayer {
             if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..backwarding_count {
-                    print!("Bil");
-                    RpmNotePlayer::forward_1note(&rnote, position, ply, comm);
+                    print!("<BKM>");
+                    RpmNotePlayer::next_1note(&rnote, position, ply, comm);
                 }
 
                 return false;

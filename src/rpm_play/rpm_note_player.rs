@@ -1,9 +1,9 @@
 use communication::*;
+use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::rpm_cassette_tape::*;
 use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_conv::rpm_tape::*;
 use rpm_conv::thread::rpm_note::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use std::*;
@@ -19,6 +19,9 @@ impl RpmNotePlayer {
         position: &mut Position,
         comm: &Communication,
     ) {
+        comm.println("touch_brandnew_note");
+        HumanInterface::show_position(comm, -1, position);
+
         let board_size = position.get_board_size();
         let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
             position.touch_beautiful_1note(&rnote_ope, comm, board_size)
@@ -37,6 +40,9 @@ impl RpmNotePlayer {
         position: &mut Position,
         comm: &Communication,
     ) -> Option<RpmNote> {
+        comm.println("pop_current_1note_on_record");
+        HumanInterface::show_position(comm, -1, position);
+
         if let Some(rpm_note) = recorder.delete_next() {
             let board_size = position.get_board_size();
             let (_is_legal_touch, _piece_identify_opt) =
@@ -48,36 +54,62 @@ impl RpmNotePlayer {
     }
 
     /// 既存の棋譜を前方に移動するだけ。
-    /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。
+    /// 棋譜のカーソルを１つ進め、カーソルが指している要素をタッチする。（非合法タッチでも行います）
     /// 動かせなかったなら、Noneを返す。
     ///
     /// # Return
     ///
     /// 合法タッチか否か。
-    pub fn forward_1note(
+    pub fn next_1note(
         rnote: &RpmNote,
         position: &mut Position,
-        ply: &mut i16,
+        ply: i16,
         comm: &Communication,
     ) -> bool {
         let board_size = position.get_board_size();
+
+        comm.println(&format!("<NXn:{}>", rnote.get_ope().to_log(board_size)));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
+        HumanInterface::show_position(comm, ply, position);
 
+        is_legal_touch
+        /*
         if is_legal_touch {
-            print!("[F{}]", ply);
-            *ply += 1;
             true
         } else {
-            print!("<IL-FN{}>", ply);
+            print!(
+                "<IL-NX:非合法なので、これを実行。{}>",
+                rnote.get_ope().to_log(board_size)
+            );
             // 非合法タッチなら戻す。
             // もう１回タッチすれば戻る。（トグル式なんで）
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
+            HumanInterface::show_position(comm, *ply, position);
             false
+        }
+        */
+    }
+
+    /// 非合法手はない前提で、強制的に巻き戻します。
+    pub fn back_n_note_forcely(
+        repeat: u8,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        for i in 0..repeat {
+            if let Some(rnote) = cassette_tape.back_note() {
+                print!("<IL-Back:{}/{} {}>", i, repeat, rnote);
+                RpmNotePlayer::back_1note(&rnote, position, ply, comm);
+            } else {
+                panic!("<Back forcely fail:{}/{} None>", i, repeat);
+            }
         }
     }
 
-    /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。
+    /// 棋譜のカーソルが指している要素をもう１回タッチし、カーソルは１つ戻す。（非合法タッチでも行います）
     ///
     /// # Return
     ///
@@ -85,22 +117,16 @@ impl RpmNotePlayer {
     pub fn back_1note(
         rnote: &RpmNote,
         position: &mut Position,
-        ply: &mut i16,
+        ply: i16,
         comm: &Communication,
     ) -> bool {
         let board_size = position.get_board_size();
+
+        comm.println(&format!("<BKn:{}>", rnote.get_ope().to_log(board_size)));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
+        HumanInterface::show_position(comm, ply, position);
 
-        if is_legal_touch {
-            print!("[B{}]", ply);
-            *ply -= 1;
-            true
-        } else {
-            // 非合法タッチなら戻す。
-            // もう１回タッチすれば戻る。（トグル式なんで）
-            position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
-            false
-        }
+        is_legal_touch
     }
 }

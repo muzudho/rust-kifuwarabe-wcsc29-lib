@@ -71,7 +71,7 @@ pub fn main() {
     let crecord = CsaRecord::load(&path);
 
     // Play.
-    let mut recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
+    let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.

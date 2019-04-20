@@ -126,7 +126,7 @@ impl RpmNoteOpe {
     }
 
     pub fn is_phase_change(&self) -> bool {
-        if let Some(ply) = self.phase_change {
+        if let Some(_ply) = self.phase_change {
             true
         } else {
             false
@@ -245,15 +245,16 @@ impl RpmNoteOpe {
                     }
 
                     let sub_ch = line[*start..=*start].chars().nth(0).unwrap();
-                    let num: i16 = sub_ch.to_string().parse::<i16>().unwrap();
-                    ply *= 10;
-                    ply += num;
-                    //comm.print(&sub_ch.to_string());
                     *start += 1;
 
                     if sub_ch == ']' {
                         break;
                     }
+
+                    // Ply カウント。
+                    let num: i16 = sub_ch.to_string().parse::<i16>().unwrap();
+                    ply *= 10;
+                    ply += num;
                 }
                 Some(RpmNoteOpe::change_phase(ply))
             }

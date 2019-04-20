@@ -3,9 +3,7 @@ use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape::*;
 use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_conv::rpm_tape::*;
 use rpm_conv::thread::rpm_move::*;
 use rpm_conv::thread::rpm_thread::*;
 use rpm_for_json::rpm_book_file::*;
@@ -132,7 +130,7 @@ impl BestMovePicker {
                                 &position,
                             );
                             comm.println(&format!(
-                                "[{}] My piece: {}'{}'{}.",
+                                "[{}] Found: {}'{}'{}.",
                                 recorder.ply,
                                 position.get_phase().to_log(),
                                 my_idp.to_human_presentable(),
@@ -186,10 +184,10 @@ impl BestMovePicker {
                                                 recorder.to_dump(position.get_board_size())
                                             );
 
-                                            if RpmMovePlayer::forward_1move_on_tape(
+                                            if RpmMovePlayer::next_1move_on_tape(
                                                 &mut recorder.cassette_tape,
                                                 position,
-                                                &mut recorder.ply,
+                                                recorder.ply,
                                                 true,
                                                 &comm,
                                             ) {
@@ -200,7 +198,7 @@ impl BestMovePicker {
                                                 RpmMovePlayer::back_1move_on_tape(
                                                     &mut recorder.cassette_tape,
                                                     position,
-                                                    &mut recorder.ply,
+                                                    recorder.ply,
                                                     false,
                                                     &comm,
                                                 );

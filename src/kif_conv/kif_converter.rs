@@ -31,7 +31,7 @@ impl KifConverter {
         let krecord = KifRecord::load(&input_path);
 
         // Play.
-        let mut recorder = KifPlayer::play_out_and_record(&comm, &mut position, &krecord);
+        let recorder = KifPlayer::play_out_and_record(&comm, &mut position, &krecord);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)

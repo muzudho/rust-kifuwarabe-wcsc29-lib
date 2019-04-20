@@ -1,8 +1,7 @@
 use std::fmt;
 use std::slice::Iter;
 
-#[derive(Debug)]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Phase {
     /// Starting first.
     First,
@@ -82,15 +81,14 @@ impl PieceIdentify {
     pub fn iterator() -> Iter<'static, PieceIdentify> {
         use piece_etc::PieceIdentify::*;
         static PIECE_IDENTIFIES: [PieceIdentify; 40] = [
-            K00, K01, G02, G03, G04, G05, S06, S07, S08, S09,
-            N10, N11, N12, N13, L14, L15, L16, L17, B18, B19,
-            R20, R21, P22, P23, P24, P25, P26, P27, P28, P29,
-            P30, P31, P32, P33, P34, P35, P36, P37, P38, P39,
+            K00, K01, G02, G03, G04, G05, S06, S07, S08, S09, N10, N11, N12, N13, L14, L15, L16,
+            L17, B18, B19, R20, R21, P22, P23, P24, P25, P26, P27, P28, P29, P30, P31, P32, P33,
+            P34, P35, P36, P37, P38, P39,
         ];
-        PIECE_IDENTIFIES.into_iter()
+        PIECE_IDENTIFIES.iter()
     }
 
-    pub fn from_number(number:i8) -> Option<PieceIdentify> {
+    pub fn from_number(number: i8) -> Option<PieceIdentify> {
         use piece_etc::PieceIdentify::*;
         match number {
             0 => Some(K00),
@@ -195,8 +193,8 @@ impl PieceIdentify {
             S06 | S07 | S08 | S09 => S,
             N10 | N11 | N12 | N13 => N,
             L14 | L15 | L16 | L17 => L,
-            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => P,
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34 | P35
+            | P36 | P37 | P38 | P39 => P,
         }
     }
 
@@ -285,16 +283,17 @@ impl PieceIdentify {
             P38 => "P38",
             P39 => "P39",
             */
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
 /// IdentifiedPiece with None.
 pub struct CellThing {
-    id_piece_opt:Option<IdentifiedPiece>,
+    id_piece_opt: Option<IdentifiedPiece>,
 }
 impl CellThing {
-    pub fn create(id_piece_opt_arg:Option<IdentifiedPiece>) -> CellThing {
+    pub fn create(id_piece_opt_arg: Option<IdentifiedPiece>) -> CellThing {
         CellThing {
             id_piece_opt: id_piece_opt_arg,
         }
@@ -314,12 +313,16 @@ impl CellThing {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct IdentifiedPiece {
-    phase:Option<Phase>,
-    promoted:bool,
-    id:PieceIdentify,
+    phase: Option<Phase>,
+    promoted: bool,
+    id: PieceIdentify,
 }
 impl IdentifiedPiece {
-    pub fn from_phase_pro_id(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> IdentifiedPiece {
+    pub fn from_phase_pro_id(
+        phase_opt: Option<Phase>,
+        promoted_flag: bool,
+        piece_id: PieceIdentify,
+    ) -> IdentifiedPiece {
         IdentifiedPiece {
             phase: phase_opt,
             promoted: promoted_flag,
@@ -327,7 +330,11 @@ impl IdentifiedPiece {
         }
     }
 
-    pub fn some(phase_opt:Option<Phase>, promoted_flag:bool, piece_id:PieceIdentify,) -> Option<IdentifiedPiece> {
+    pub fn some(
+        phase_opt: Option<Phase>,
+        promoted_flag: bool,
+        piece_id: PieceIdentify,
+    ) -> Option<IdentifiedPiece> {
         Some(IdentifiedPiece::from_phase_pro_id(
             phase_opt,
             promoted_flag,
@@ -373,8 +380,8 @@ impl IdentifiedPiece {
                 S06 | S07 | S08 | S09 => PS,
                 N10 | N11 | N12 | N13 => PN,
                 L14 | L15 | L16 | L17 => PL,
-                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => PP,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
+                | P35 | P36 | P37 | P38 | P39 => PP,
             }
         } else {
             match self.id {
@@ -385,15 +392,15 @@ impl IdentifiedPiece {
                 S06 | S07 | S08 | S09 => S,
                 N10 | N11 | N12 | N13 => N,
                 L14 | L15 | L16 | L17 => L,
-                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => P,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
+                | P35 | P36 | P37 | P38 | P39 => P,
             }
         }
     }
 
     pub fn to_human_presentable(self) -> String {
-        use piece_etc::PieceIdentify::*;
         use piece_etc::Phase::*;
+        use piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
                 First => {
@@ -439,7 +446,8 @@ impl IdentifiedPiece {
                             P37 => "TO37",
                             P38 => "TO38",
                             P39 => "TO39",
-                        }.to_string()
+                        }
+                        .to_string()
                     } else {
                         match self.get_id() {
                             K00 => "OU00",
@@ -482,9 +490,10 @@ impl IdentifiedPiece {
                             P37 => "FU37",
                             P38 => "FU38",
                             P39 => "FU39",
-                        }.to_string()
+                        }
+                        .to_string()
                     }
-                },
+                }
                 Second => {
                     if self.is_promoted() {
                         match self.get_id() {
@@ -528,12 +537,13 @@ impl IdentifiedPiece {
                             P37 => "と37",
                             P38 => "と38",
                             P39 => "と39",
-                        }.to_string()
+                        }
+                        .to_string()
                     } else {
                         // 成りや、先後を含まない表示。
                         self.get_id().to_human_presentable()
                     }
-                },
+                }
             }
         } else if self.is_promoted() {
             // 使っていない駒として表示するぜ☆（＾～＾）
@@ -586,7 +596,8 @@ impl IdentifiedPiece {
                 P37 => "ﾅﾌ37",
                 P38 => "ﾅﾌ38",
                 P39 => "ﾅﾌ39",
-            }.to_string()
+            }
+            .to_string()
         } else {
             match self.get_id() {
                 // オウ
@@ -637,7 +648,8 @@ impl IdentifiedPiece {
                 P37 => "フ37",
                 P38 => "フ38",
                 P39 => "フ39",
-            }.to_string()
+            }
+            .to_string()
         }
     }
 
@@ -658,8 +670,8 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "+S",
                             N10 | N11 | N12 | N13 => "+N",
                             L14 | L15 | L16 | L17 => "+L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
                         }
                     } else {
                         // 先手の不成駒。
@@ -671,11 +683,11 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "S",
                             N10 | N11 | N12 | N13 => "N",
                             L14 | L15 | L16 | L17 => "L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
                         }
                     }
-                },
+                }
                 Second => {
                     if self.is_promoted() {
                         // 後手の成り駒。
@@ -687,8 +699,8 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "+S",
                             N10 | N11 | N12 | N13 => "+n",
                             L14 | L15 | L16 | L17 => "+l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
                         }
                     } else {
                         // 後手の不成駒。
@@ -700,16 +712,17 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "s",
                             N10 | N11 | N12 | N13 => "n",
                             L14 | L15 | L16 | L17 => "l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
                         }
                     }
-                },
+                }
             }
         } else {
             // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
             panic!("Unexpected physical sign.")
-        }.to_string()
+        }
+        .to_string()
     }
 
     pub fn to_usi_sign(self) -> String {
@@ -728,8 +741,8 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "+S",
                             N10 | N11 | N12 | N13 => "+N",
                             L14 | L15 | L16 | L17 => "+L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
                         }
                     } else {
                         // 先手の不成駒。
@@ -741,11 +754,11 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "S",
                             N10 | N11 | N12 | N13 => "N",
                             L14 | L15 | L16 | L17 => "L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
                         }
                     }
-                },
+                }
                 Second => {
                     if self.is_promoted() {
                         // 後手の成り駒。
@@ -757,8 +770,8 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "+S",
                             N10 | N11 | N12 | N13 => "+n",
                             L14 | L15 | L16 | L17 => "+l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
                         }
                     } else {
                         // 後手の不成駒。
@@ -770,16 +783,17 @@ impl IdentifiedPiece {
                             S06 | S07 | S08 | S09 => "s",
                             N10 | N11 | N12 | N13 => "n",
                             L14 | L15 | L16 | L17 => "l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
+                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
                         }
                     }
-                },
+                }
             }
         } else {
             // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
             panic!("Unexpected usi sign.")
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
@@ -862,100 +876,92 @@ pub enum Piece {
     PP3,
 }
 impl Piece {
-    pub fn from_ph_pid(phase_opt:Option<Phase>, pid:PieceIdentify) -> Self {
+    pub fn from_ph_pid(phase_opt: Option<Phase>, pid: PieceIdentify) -> Self {
         Piece::from_ph_pt(phase_opt, pid.get_piece_type())
     }
 
-    pub fn from_ph_pt(phase_opt:Option<Phase>, piece_type:PieceType) -> Self {
+    pub fn from_ph_pt(phase_opt: Option<Phase>, piece_type: PieceType) -> Self {
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceType::*;
         match phase_opt {
-            Some(phase) => {
-                match phase {
-                    First => {
-                        match piece_type {
-                            K => K1,
-                            PK => PK1,
+            Some(phase) => match phase {
+                First => match piece_type {
+                    K => K1,
+                    PK => PK1,
 
-                            R => R1,
-                            PR => PR1,
+                    R => R1,
+                    PR => PR1,
 
-                            B => B1,
-                            PB => PB1,
+                    B => B1,
+                    PB => PB1,
 
-                            G => G1,
-                            PG => PG1,
+                    G => G1,
+                    PG => PG1,
 
-                            S => S1,
-                            PS => PS1,
+                    S => S1,
+                    PS => PS1,
 
-                            N => N1,
-                            PN => PN1,
+                    N => N1,
+                    PN => PN1,
 
-                            L => L1,
-                            PL => PL1,
+                    L => L1,
+                    PL => PL1,
 
-                            P => P1,
-                            PP => PP1,
-                        }
-                    },
-                    Second => {
-                        match piece_type {
-                            K => K2,
-                            PK => PK2,
+                    P => P1,
+                    PP => PP1,
+                },
+                Second => match piece_type {
+                    K => K2,
+                    PK => PK2,
 
-                            R => R2,
-                            PR => PR2,
+                    R => R2,
+                    PR => PR2,
 
-                            B => B2,
-                            PB => PB2,
+                    B => B2,
+                    PB => PB2,
 
-                            G => G2,
-                            PG => PG2,
+                    G => G2,
+                    PG => PG2,
 
-                            S => S2,
-                            PS => PS2,
+                    S => S2,
+                    PS => PS2,
 
-                            N => N2,
-                            PN => PN2,
+                    N => N2,
+                    PN => PN2,
 
-                            L => L2,
-                            PL => PL2,
+                    L => L2,
+                    PL => PL2,
 
-                            P => P2,
-                            PP => PP2,
-                        }
-                    },
-                }
+                    P => P2,
+                    PP => PP2,
+                },
             },
-            None => {
-                match piece_type {
-                    K => K3,
-                    PK => PK3,
+            None => match piece_type {
+                K => K3,
+                PK => PK3,
 
-                    R => R3,
-                    PR => PR3,
+                R => R3,
+                PR => PR3,
 
-                    B => B3,
-                    PB => PB3,
+                B => B3,
+                PB => PB3,
 
-                    G => G3,
-                    PG => PG3,
+                G => G3,
+                PG => PG3,
 
-                    S => S3,
-                    PS => PS3,
+                S => S3,
+                PS => PS3,
 
-                    N => N3,
-                    PN => PN3,
+                N => N3,
+                PN => PN3,
 
-                    L => L3,
-                    PL => PL3,
+                L => L3,
+                PL => PL3,
 
-                    P => P3,
-                    PP => PP3,
-                }
-            }
+                P => P3,
+                PP => PP3,
+            },
         }
     }
 
@@ -1053,8 +1059,12 @@ impl Piece {
         use piece_etc::Piece::*;
         match self {
             // K
-            K1 => K2, K2 => K1, K3 => K3,
-            PK1 => PK2, PK2 => PK1, PK3 => PK3,
+            K1 => K2,
+            K2 => K1,
+            K3 => K3,
+            PK1 => PK2,
+            PK2 => PK1,
+            PK3 => PK3,
 
             // R
             R1 => R2,
@@ -1111,9 +1121,12 @@ impl Piece {
     pub fn get_phase(self) -> Option<Phase> {
         use piece_etc::Piece::*;
         match self {
-            K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1 | PP1 => Some(Phase::First),
-            K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2 | PP2 => Some(Phase::Second),
-            K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3 | PP3 => None,
+            K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1
+            | PP1 => Some(Phase::First),
+            K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2
+            | PP2 => Some(Phase::Second),
+            K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3
+            | PP3 => None,
         }
     }
 
@@ -1142,7 +1155,7 @@ impl Piece {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-pub enum JsaPieceType{
+pub enum JsaPieceType {
     // King is 玉.
     K = 0,
     // Rook is 飛.
@@ -1174,7 +1187,7 @@ pub enum JsaPieceType{
 }
 /// Perfect piece type.
 #[derive(Clone, Copy, PartialEq)]
-pub enum PieceType{
+pub enum PieceType {
     // King is 玉.
     K = 0,
     // 生
@@ -1216,7 +1229,7 @@ pub enum PieceType{
     PP,
 }
 impl PieceType {
-    pub fn from_piece(piece:Piece) -> PieceType {
+    pub fn from_piece(piece: Piece) -> PieceType {
         use piece_etc::Piece::*;
         use piece_etc::PieceType::*;
         match piece {
@@ -1278,7 +1291,7 @@ impl PieceType {
         }
     }
 
-    pub fn from_jsa_piece_type(jsa_pt:JsaPieceType) -> PieceType {
+    pub fn from_jsa_piece_type(jsa_pt: JsaPieceType) -> PieceType {
         use piece_etc::JsaPieceType;
         use piece_etc::PieceType;
         match jsa_pt {
@@ -1307,7 +1320,7 @@ impl PieceType {
     }
 }
 
-pub fn piece_to_sign(piece_opt:Option<Piece>) -> String {
+pub fn piece_to_sign(piece_opt: Option<Piece>) -> String {
     if let Some(piece) = piece_opt {
         use piece_etc::Piece::*;
         match piece {
@@ -1369,51 +1382,48 @@ pub fn piece_to_sign(piece_opt:Option<Piece>) -> String {
         }
     } else {
         ""
-    }.to_string()
+    }
+    .to_string()
 }
-pub fn hand_id_piece_to_hand_index(id_piece:IdentifiedPiece) -> usize {
+pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
     use piece_etc::Phase::*;
     use piece_etc::PieceIdentify::*;
     if let Some(phase) = id_piece.phase {
         match phase {
-            First => {
-                match id_piece.get_id() {
-                    K00 | K01 => {0},
-                    R20 | R21 => {1},
-                    B18 | B19 => {2},
-                    G02 | G03 | G04 | G05 => {3},
-                    S06 | S07 | S08 | S09 => {4},
-                    N10 | N11 | N12 | N13 => {5},
-                    L14 | L15 | L16 | L17 => {6},
-                    P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                    P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {7},
-                }
+            First => match id_piece.get_id() {
+                K00 | K01 => 0,
+                R20 | R21 => 1,
+                B18 | B19 => 2,
+                G02 | G03 | G04 | G05 => 3,
+                S06 | S07 | S08 | S09 => 4,
+                N10 | N11 | N12 | N13 => 5,
+                L14 | L15 | L16 | L17 => 6,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
+                | P35 | P36 | P37 | P38 | P39 => 7,
             },
-            Second => {
-                match id_piece.get_id() {
-                    K00 | K01 => {8},
-                    R20 | R21 => {9},
-                    B18 | B19 => {10},
-                    G02 | G03 | G04 | G05 => {11},
-                    S06 | S07 | S08 | S09 => {12},
-                    N10 | N11 | N12 | N13 => {13},
-                    L14 | L15 | L16 | L17 => {14},
-                    P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-                    P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {15},
-                }
+            Second => match id_piece.get_id() {
+                K00 | K01 => 8,
+                R20 | R21 => 9,
+                B18 | B19 => 10,
+                G02 | G03 | G04 | G05 => 11,
+                S06 | S07 | S08 | S09 => 12,
+                N10 | N11 | N12 | N13 => 13,
+                L14 | L15 | L16 | L17 => 14,
+                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
+                | P35 | P36 | P37 | P38 | P39 => 15,
             },
         }
     } else {
         match id_piece.get_id() {
-            K00 | K01 => {16},
-            R20 | R21 => {17}, 
-            B18 | B19 => {18},
-            G02 | G03 | G04 | G05 => {19},
-            S06 | S07 | S08 | S09 => {20},
-            N10 | N11 | N12 | N13 => {21},
-            L14 | L15 | L16 | L17 => {22},
-            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 |
-            P30 | P31 | P32 | P33 | P34 | P35 | P36 | P37 | P38 | P39 => {23},
+            K00 | K01 => 16,
+            R20 | R21 => 17,
+            B18 | B19 => 18,
+            G02 | G03 | G04 | G05 => 19,
+            S06 | S07 | S08 | S09 => 20,
+            N10 | N11 | N12 | N13 => 21,
+            L14 | L15 | L16 | L17 => 22,
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34 | P35
+            | P36 | P37 | P38 | P39 => 23,
         }
     }
 }
@@ -1448,9 +1458,9 @@ pub enum HandIndex {
     HndP3,
 }
 impl HandIndex {
-    pub fn from_piece(piece:Piece) -> HandIndex {
-        use piece_etc::Piece::*;
+    pub fn from_piece(piece: Piece) -> HandIndex {
         use piece_etc::HandIndex::*;
+        use piece_etc::Piece::*;
         match piece {
             K1 | PK1 => HndK1,
             K2 | PK2 => HndK2,
@@ -1459,7 +1469,7 @@ impl HandIndex {
             R1 | PR1 => HndR1,
             R2 | PR2 => HndR2,
             R3 | PR3 => HndR3,
-            
+
             B1 | PB1 => HndB1,
             B2 | PB2 => HndB2,
             B3 | PB3 => HndB3,
@@ -1495,10 +1505,8 @@ pub struct PhysicalSign {
     text: String,
 }
 impl PhysicalSign {
-    pub fn default(sign_text:String) -> PhysicalSign {
-        PhysicalSign {
-            text: sign_text
-        }
+    pub fn default(sign_text: String) -> PhysicalSign {
+        PhysicalSign { text: sign_text }
     }
 
     pub fn to_piece(&self) -> Piece {
@@ -1549,7 +1557,7 @@ impl PhysicalSign {
             "N" => N1,
             "n" => N2,
             "ｹ" => N3,
-            "PN"=> PN1,
+            "PN" => PN1,
             "pn" => PN2,
             "ﾅｹ" => PN3,
 
@@ -1568,7 +1576,7 @@ impl PhysicalSign {
             "PP" => PP1,
             "pp" => PP2,
             "ﾅﾌ" => PP3,
-            _ => panic!("Unexpected physical sign: '{}'.", self.text)
+            _ => panic!("Unexpected physical sign: '{}'.", self.text),
         }
     }
 
@@ -1589,12 +1597,12 @@ impl PhysicalSign {
             "PN" | "pn" => PN,
             "PL" | "pl" => PL,
             "PP" | "pp" => PP,
-            _ => panic!("Unexpected sign: '{}'.", self.text)
+            _ => panic!("Unexpected sign: '{}'.", self.text),
         }
     }
 }
 
-pub fn promotion_piece(piece_opt:Option<Piece>) -> Option<Piece> {
+pub fn promotion_piece(piece_opt: Option<Piece>) -> Option<Piece> {
     if let Some(piece) = piece_opt {
         Some(piece.promote())
     } else {
@@ -1602,27 +1610,26 @@ pub fn promotion_piece(piece_opt:Option<Piece>) -> Option<Piece> {
     }
 }
 
-pub fn rotate_piece(piece_opt:Option<Piece>) -> Option<Piece> {
+pub fn rotate_piece(piece_opt: Option<Piece>) -> Option<Piece> {
     if let Some(piece) = piece_opt {
         Some(piece.rotate())
     } else {
         None
     }
 }
-pub fn is_promoted_piece(piece_opt:Option<Piece>) -> bool {
+pub fn is_promoted_piece(piece_opt: Option<Piece>) -> bool {
     if let Some(piece) = piece_opt {
         use piece_etc::Piece::*;
         match piece {
-            PK1 | PR1 | PB1 | PG1 | PS1 | PN1 | PL1 | PP1 |
-            PK2 | PR2 | PB2 | PG2 | PS2 | PN2 | PL2 | PP2 |
-            PK3 | PR3 | PB3 | PG3 | PS3 | PN3 | PL3 | PP3 => true,
+            PK1 | PR1 | PB1 | PG1 | PS1 | PN1 | PL1 | PP1 | PK2 | PR2 | PB2 | PG2 | PS2 | PN2
+            | PL2 | PP2 | PK3 | PR3 | PB3 | PG3 | PS3 | PN3 | PL3 | PP3 => true,
             _ => false,
         }
     } else {
         false
     }
 }
-pub fn is_promoted_piece_type(piece_type_opt:Option<PieceType>) -> bool {
+pub fn is_promoted_piece_type(piece_type_opt: Option<PieceType>) -> bool {
     if let Some(piece_type) = piece_type_opt {
         use piece_etc::PieceType::*;
         match piece_type {
@@ -1634,80 +1641,74 @@ pub fn is_promoted_piece_type(piece_type_opt:Option<PieceType>) -> bool {
     }
 }
 
-pub fn jsa_piece_type_to_perfect(jsa_pt_opt:Option<JsaPieceType>) -> Option<PieceType> {
+pub fn jsa_piece_type_to_perfect(jsa_pt_opt: Option<JsaPieceType>) -> Option<PieceType> {
     match jsa_pt_opt {
-        Some(jsa_pt) => {
-            Some(PieceType::from_jsa_piece_type(jsa_pt))
-        },
-        None => {None},
+        Some(jsa_pt) => Some(PieceType::from_jsa_piece_type(jsa_pt)),
+        None => None,
     }
 }
-pub fn jsa_piece_type_to_sign(piece_type_opt:Option<JsaPieceType>) -> String {
+pub fn jsa_piece_type_to_sign(piece_type_opt: Option<JsaPieceType>) -> String {
     use piece_etc::JsaPieceType::*;
     match piece_type_opt {
-        Some(piece_type) => {
-            match piece_type {
-                K => "K".to_string(),
+        Some(piece_type) => match piece_type {
+            K => "K".to_string(),
 
-                R => "R".to_string(),
-                PR => "+R".to_string(),
+            R => "R".to_string(),
+            PR => "+R".to_string(),
 
-                B => "B".to_string(),
-                PB => "+B".to_string(),
+            B => "B".to_string(),
+            PB => "+B".to_string(),
 
-                G => "G".to_string(),
+            G => "G".to_string(),
 
-                S => "S".to_string(),
-                PS => "+S".to_string(),
+            S => "S".to_string(),
+            PS => "+S".to_string(),
 
-                N => "N".to_string(),
-                PN => "+N".to_string(),
+            N => "N".to_string(),
+            PN => "+N".to_string(),
 
-                L => "L".to_string(),
-                PL => "+L".to_string(),
+            L => "L".to_string(),
+            PL => "+L".to_string(),
 
-                P => "P".to_string(),
-                PP => "+P".to_string(),
-            }
+            P => "P".to_string(),
+            PP => "+P".to_string(),
         },
-        None => {"".to_string()},
+        None => "".to_string(),
     }
 }
-pub fn piece_type_to_sign(pt_opt:Option<PieceType>) -> String {
+pub fn piece_type_to_sign(pt_opt: Option<PieceType>) -> String {
     use piece_etc::PieceType::*;
     match pt_opt {
-        Some(pt) => {
-            match pt {
-                K => "K".to_string(),
-                PK => "K".to_string(),
+        Some(pt) => match pt {
+            K => "K".to_string(),
+            PK => "K".to_string(),
 
-                R => "R".to_string(),
-                PR => "+R".to_string(),
+            R => "R".to_string(),
+            PR => "+R".to_string(),
 
-                B => "B".to_string(),
-                PB => "+B".to_string(),
+            B => "B".to_string(),
+            PB => "+B".to_string(),
 
-                G => "G".to_string(),
-                PG => "G".to_string(),
+            G => "G".to_string(),
+            PG => "G".to_string(),
 
-                S => "S".to_string(),
-                PS => "+S".to_string(),
+            S => "S".to_string(),
+            PS => "+S".to_string(),
 
-                N => "N".to_string(),
-                PN => "+N".to_string(),
+            N => "N".to_string(),
+            PN => "+N".to_string(),
 
-                L => "L".to_string(),
-                PL => "+L".to_string(),
+            L => "L".to_string(),
+            PL => "+L".to_string(),
 
-                P => "P".to_string(),
-                PP => "+P".to_string(),
-            }
+            P => "P".to_string(),
+            PP => "+P".to_string(),
         },
-        None => {"".to_string()},
+        None => "".to_string(),
     }
 }
 
-pub fn parse_sign_to_drop(line:&str, start:&mut usize) -> Option<PieceType> {
+pub fn parse_sign_to_drop(line: &str, start: &mut usize) -> Option<PieceType> {
     use piece_etc::PieceType::*;
 
     if line.len() < *start + 2 {
@@ -1717,14 +1718,16 @@ pub fn parse_sign_to_drop(line:&str, start:&mut usize) -> Option<PieceType> {
     let v: Vec<char> = line.to_string().chars().collect();
     let sign = v[*start];
     let piece_type = match sign {
-        'R' => {R},
-        'B' => {B},
-        'G' => {G},
-        'S' => {S},
-        'N' => {N},
-        'L' => {L},
-        'P' => {P},
-        _ => {return None;},
+        'R' => R,
+        'B' => B,
+        'G' => G,
+        'S' => S,
+        'N' => N,
+        'L' => L,
+        'P' => P,
+        _ => {
+            return None;
+        }
     };
 
     let v: Vec<char> = line.to_string().chars().collect();
@@ -1737,9 +1740,13 @@ pub fn parse_sign_to_drop(line:&str, start:&mut usize) -> Option<PieceType> {
     }
 }
 
-pub fn parse_sign_to_rank(line:&str, start:&mut usize) -> i8 {
+pub fn parse_sign_to_rank(line: &str, start: &mut usize) -> i8 {
     if line.len() < *start + 1 {
-        panic!("Failed: Unexpected file. len: {}, start: {}.", line.len(), start);
+        panic!(
+            "Failed: Unexpected file. len: {}, start: {}.",
+            line.len(),
+            start
+        );
     }
 
     let v: Vec<char> = line.to_string().chars().collect();
@@ -1755,11 +1762,16 @@ pub fn parse_sign_to_rank(line:&str, start:&mut usize) -> i8 {
         'g' => 7,
         'h' => 8,
         'i' => 9,
-        _ => panic!("Failed: Unexpected rank. line `{}` at {}, `{}`.", line, *start-1, sign)
+        _ => panic!(
+            "Failed: Unexpected rank. line `{}` at {}, `{}`.",
+            line,
+            *start - 1,
+            sign
+        ),
     }
 }
 
-pub fn rank_to_sign(sign:i8) -> char {
+pub fn rank_to_sign(sign: i8) -> char {
     match sign {
         1 => 'a',
         2 => 'b',
@@ -1770,11 +1782,11 @@ pub fn rank_to_sign(sign:i8) -> char {
         7 => 'g',
         8 => 'h',
         9 => 'i',
-        _ => panic!("Failed: Unexpected rank number `{}`.", sign)
+        _ => panic!("Failed: Unexpected rank number `{}`.", sign),
     }
 }
 
-pub fn parse_sign_to_file(line:&str, start:&mut usize) -> i8 {
+pub fn parse_sign_to_file(line: &str, start: &mut usize) -> i8 {
     if line.len() < *start as usize + 1 {
         panic!("Failed: Nothing file.");
     }
@@ -1792,11 +1804,16 @@ pub fn parse_sign_to_file(line:&str, start:&mut usize) -> i8 {
         '7' => 7,
         '8' => 8,
         '9' => 9,
-        _ => panic!("Unexpected file: `{}`. line `{}` at {}.", sign, line, *start-1)
+        _ => panic!(
+            "Unexpected file: `{}`. line `{}` at {}.",
+            sign,
+            line,
+            *start - 1
+        ),
     }
 }
 
-pub fn parse_sign_to_promotion(line:&str, start:&mut usize) -> bool {
+pub fn parse_sign_to_promotion(line: &str, start: &mut usize) -> bool {
     if line.len() < *start as usize + 1 {
         return false;
     }
