@@ -1,7 +1,10 @@
 use board_size::*;
 use piece_etc::*;
-use position::*;
+//use position::*;
 use std::fmt;
+
+/// TODO 暫定。
+pub const SKY_ADDRESS: usize = 81;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Cell {
@@ -189,6 +192,10 @@ impl Address {
     /// 駒台
     pub fn is_hand(self) -> bool {
         81 <= self.index && self.index <= 104
+    }
+
+    pub fn is_sky(self) -> bool {
+        SKY_ADDRESS == self.index
     }
 
     pub fn to_physical_sign(self, board_size: BoardSize) -> String {

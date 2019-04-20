@@ -288,14 +288,14 @@ impl PieceIdentify {
     }
 }
 
-/// IdentifiedPiece with None.
-pub struct CellThing {
+/// For cell display.
+pub struct CellDisplay {
     id_piece_opt: Option<IdentifiedPiece>,
 }
-impl CellThing {
-    pub fn create(id_piece_opt_arg: Option<IdentifiedPiece>) -> CellThing {
-        CellThing {
-            id_piece_opt: id_piece_opt_arg,
+impl CellDisplay {
+    pub fn from_idp(idp_opt: Option<IdentifiedPiece>) -> CellDisplay {
+        CellDisplay {
+            id_piece_opt: idp_opt,
         }
     }
 

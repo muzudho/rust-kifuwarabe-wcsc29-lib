@@ -6,17 +6,55 @@ use piece_etc::*;
 use rpm_conv::thread::rpm_note_operation::*;
 use std::*;
 
-pub const SKY_LEN: usize = 1;
-pub const SKY_ADDRESS: usize = 81;
 pub const BOARD_START: usize = 0;
-pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN + SKY_LEN) as usize;
+pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as usize;
 pub const HANDS_LEN: usize = 3 * 8;
+
+/// 指先。
+pub struct Sky {
+    id_piece: IdentifiedPiece,
+    previous_address: Address,
+}
+impl Sky {
+    pub fn from_idp_prev(idp: IdentifiedPiece, prev: Address) -> Self {
+        Sky {
+            id_piece: idp,
+            previous_address: prev,
+        }
+    }
+
+    pub fn set_sky(&mut self, id_piece_opt: IdentifiedPiece, previous_address_opt: Address) {
+        self.id_piece = id_piece_opt;
+        self.previous_address = previous_address_opt;
+    }
+
+    pub fn turn_over(&mut self) {
+        self.id_piece.turn_over();
+    }
+
+    pub fn rotate(&mut self) {
+        self.id_piece.rotate();
+    }
+
+    pub fn get_sky(&self) -> (IdentifiedPiece, Address) {
+        (self.id_piece, self.previous_address)
+    }
+
+    pub fn get_idp(&self) -> IdentifiedPiece {
+        self.id_piece
+    }
+
+    pub fn get_prev(&self) -> Address {
+        self.previous_address
+    }
+}
 
 pub struct Position {
     phase: Phase,
     board_size: BoardSize,
     pub board: [Option<IdentifiedPiece>; DEFAULT_BOARD_SIZE],
     pub hands: [Vec<IdentifiedPiece>; HANDS_LEN],
+    pub sky: Option<Sky>,
 }
 impl Position {
     pub fn default() -> Position {
@@ -52,6 +90,7 @@ impl Position {
                 Vec::new(),
                 Vec::new(),
             ],
+            sky: None,
         };
 
         instance.reset_origin_position();
@@ -321,21 +360,31 @@ impl Position {
         self.board[address]
     }
 
-    pub fn get_cell_thing_by_address(&self, address: Address) -> CellThing {
-        CellThing::create(self.board[address.get_index()])
+    pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
+        if address.is_sky() {
+            CellDisplay::from_idp(self.get_sky_idp())
+        } else {
+            CellDisplay::from_idp(self.board[address.get_index()])
+        }
     }
 
-    pub fn move_finger_to_hand(&mut self) {
-        let id_piece = self.board[SKY_ADDRESS];
-        // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
-        self.add_hand(id_piece);
-        self.board[SKY_ADDRESS] = None;
-    }
-
-    pub fn move_hand_to_finger(&mut self, address: Address) {
+    pub fn move_hand_to_finger(
+        &mut self,
+        address: Address,
+        comm: &Communication,
+        board_size: BoardSize,
+    ) {
         let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
-        let id_piece = self.hands[hand_index_obj.get_index()].pop();
-        self.board[SKY_ADDRESS] = id_piece;
+        if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
+            self.sky = Some(Sky::from_idp_prev(id_piece, address));
+        } else {
+            let msg = format!(
+                "駒台の駒が足りない！{}",
+                address.to_log(board_size)
+            );
+            comm.println(&msg);
+            panic!(msg);
+        }
     }
 
     /// TODO 識別子を追加していいのか？
@@ -411,6 +460,15 @@ impl Position {
         }
     }
 
+    /// 指先に何か持っていれば真。
+    pub fn get_sky_idp(&self) -> Option<IdentifiedPiece> {
+        if let Some(ref sky) = self.sky {
+            Some(sky.get_idp())
+        } else {
+            None
+        }
+    }
+
     /// 盤、駒台（Ａ）と、スカイ升（Ｂ）の間で駒を移動する。
     /// ＡとＢは、両方空っぽか、片方だけ駒があるかの　どちらかとする。両方に駒があるケースはないものとする。
     ///
@@ -436,37 +494,45 @@ impl Position {
                         Some(board_id_piece) => {
                             // 盤上の駒と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
 
-                            let tuple = match self.board[SKY_ADDRESS] {
-                                Some(sky_id_piece) => {
-                                    comm.println(&format!(
-                                        "<IL-駒重なり{}>",
-                                        address.to_log(board_size)
-                                    ));
+                            let tuple = if let Some(ref sky) = self.sky {
+                                comm.println(&format!(
+                                    "<IL-駒重なり{}>",
+                                    address.to_log(board_size)
+                                ));
 
-                                    // 違法。指に既に何か持ってた。
-                                    // 指に持っている駒を優先します。
-                                    (false, Some(sky_id_piece))
-                                }
-                                None => {
-                                    // 合法。指が空いてたので駒をつかむ。
-                                    // 盤上の駒の方を優先します。
-                                    (true, Some(board_id_piece))
-                                }
+                                // 違法。指に既に何か持ってた。
+                                // 指に持っている駒を優先します。
+                                (false, Some(sky.get_idp()))
+                            } else {
+                                // 合法。指が空いてたので駒をつかむ。
+                                // 盤上の駒の方を優先します。
+                                (true, Some(board_id_piece))
                             };
 
                             // スワップ。
-                            let temp = self.board[SKY_ADDRESS];
-                            self.board[SKY_ADDRESS] = self.board[address.get_index()];
-                            self.board[address.get_index()] = temp;
+                            // 盤上の何かを退避。
+                            let tmp_board_idp_opt = self.board[address.get_index()];
+                            // 盤上にスカイの何かを置く。
+                            self.board[address.get_index()] = if let Some(ref sky) = self.sky {
+                                Some(sky.id_piece)
+                            } else {
+                                None
+                            };
+                            // スカイに盤上の何かを置く。
+                            self.sky = if let Some(tmp_board_idp) = tmp_board_idp_opt {
+                                Some(Sky::from_idp_prev(tmp_board_idp, address))
+                            } else {
+                                None
+                            };
 
                             tuple
                         }
                         None => {
                             // 盤上の None と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
-                            let tuple = if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
+                            let tuple = if let Some(ref sky) = self.sky {
                                 // 駒を指につまんでいた。
                                 // 合法。指につまんでいる駒を置く。
-                                (true, Some(sky_id_piece))
+                                (true, Some(sky.get_idp()))
                             } else {
                                 comm.println(&format!(
                                     "<IL-ほこり取り{}>",
@@ -478,32 +544,49 @@ impl Position {
                             };
 
                             // スワップ。
-                            let temp = self.board[SKY_ADDRESS];
-                            self.board[SKY_ADDRESS] = self.board[address.get_index()];
-                            self.board[address.get_index()] = temp;
+                            // 盤上の何かを退避。
+                            let tmp_board_idp_opt = self.board[address.get_index()];
+                            // 盤上にスカイの何かを置く。
+                            self.board[address.get_index()] = if let Some(ref sky) = self.sky {
+                                Some(sky.id_piece)
+                            } else {
+                                None
+                            };
+                            // スカイに盤上の何かを置く。
+                            self.sky = if let Some(tmp_board_idp) = tmp_board_idp_opt {
+                                Some(Sky::from_idp_prev(tmp_board_idp, address))
+                            } else {
+                                None
+                            };
 
                             tuple
                         }
                     }
                 // 駒台。
-                } else if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
-                    // 指に何か持っていた。
-                    // 合法。駒台に置く。
-                    self.move_finger_to_hand();
-                    (true, Some(sky_id_piece))
                 } else {
-                    // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
-                    self.move_hand_to_finger(address);
-                    if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
-                        // 合法。掴んだ駒を返す。
-                        (true, Some(sky_id_piece))
+                    if let Some(sky_idp) = self.get_sky_idp() {
+                        // 指に何か持っていた。
+                        // 合法。駒台に置く。
+                        let id_piece_opt = Some(sky_idp);
+                        // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
+                        self.add_hand(id_piece_opt);
+                        self.sky = None;
+
+                        (true, Some(sky_idp))
                     } else {
-                        comm.println(&format!(
-                            "<IL-駒台ほこり取り{}>",
-                            address.to_log(board_size)
-                        ));
-                        // 違法。駒台のほこりを取った。
-                        (false, None)
+                        // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
+                        self.move_hand_to_finger(address, comm, board_size);
+                        if let Some(ref sky) = self.sky {
+                            // 合法。掴んだ駒を返す。
+                            (true, Some(sky.get_idp()))
+                        } else {
+                            comm.println(&format!(
+                                "<IL-駒台ほこり取り{}>",
+                                address.to_log(board_size)
+                            ));
+                            // 違法。駒台のほこりを取った。
+                            (false, None)
+                        }
                     }
                 }
             }
@@ -517,18 +600,16 @@ impl Position {
                         Second => First,
                     };
                     (true, None)
-                } else if let Some(mut id_piece) = self.board[SKY_ADDRESS] {
+                } else if let Some(ref mut sky) = self.sky {
                     // 指に何か持っている。
                     if rpm_operation_note.sky_turn {
                         // 合法。成りの操作。
-                        id_piece.turn_over();
-                        self.board[SKY_ADDRESS] = Some(id_piece);
+                        sky.turn_over();
                     } else if rpm_operation_note.sky_rotate {
                         // 合法。先後入れ替えの操作。
-                        id_piece.rotate();
-                        self.board[SKY_ADDRESS] = Some(id_piece);
+                        sky.rotate();
                     };
-                    (true, Some(id_piece))
+                    (true, Some(sky.get_idp()))
                 } else {
                     comm.println("<IL-使っていない空間ほこり取り>");
                     // TODO 未定義の操作。投了とか？
@@ -640,7 +721,7 @@ impl Position {
                             &mut content,
                             &format!(
                                 "     {}   ",
-                                self.get_cell_thing_by_address(Address::from_sky())
+                                self.get_cell_display_by_address(Address::from_sky())
                                     .to_display()
                             ),
                         ),
@@ -661,47 +742,47 @@ impl Position {
                         // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
                         "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
                         rank, // Parser::i8_to_rank_char(rank),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(1, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(2, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(3, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(4, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(5, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(6, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(7, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(8, rank),
                             self.board_size
                         ))
                         .to_display(),
-                        self.get_cell_thing_by_address(Address::from_cell(
+                        self.get_cell_display_by_address(Address::from_cell(
                             Cell::from_file_rank(9, rank),
                             self.board_size
                         ))
@@ -725,7 +806,7 @@ impl Position {
                             &mut content,
                             &format!(
                                 "  {}",
-                                self.get_cell_thing_by_address(Address::from_sky())
+                                self.get_cell_display_by_address(Address::from_sky())
                                     .to_display()
                             ),
                         ),
