@@ -311,6 +311,13 @@ impl CellDisplay {
         }
     }
 
+    pub fn from_empty_sky() -> CellDisplay {
+        CellDisplay {
+            id_piece_opt: None,
+            previous_address: None,
+        }
+    }
+
     /// 横幅は半角4文字。
     /// 逆さにできないから、半角カナにしているだけ☆（＾～＾）右側のスペースに18進数の背番号が入る予定☆（＾～＾）
     pub fn to_display(&self) -> String {

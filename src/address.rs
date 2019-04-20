@@ -55,19 +55,6 @@ impl fmt::Display for Address {
     }
 }
 impl Address {
-    /// Human presentable.
-    pub fn to_log(self, board_size: BoardSize) -> String {
-        if self.is_on_board(board_size) {
-            // 盤上。
-            board_size.address_to_cell(self.index).to_string()
-        // それ以外。
-        } else if let Some(piece) = self.get_hand_piece() {
-            format!("Hand: {}", piece.to_sign()).to_string()
-        } else {
-            panic!("Unexpected address: {}.", self.index);
-        }
-    }
-
     pub fn from_raw(raw: usize) -> Self {
         Address { index: raw }
     }
@@ -139,6 +126,19 @@ impl Address {
         };
 
         Address { index: index_num }
+    }
+
+    /// Human presentable.
+    pub fn to_log(self, board_size: BoardSize) -> String {
+        if self.is_on_board(board_size) {
+            // 盤上。
+            board_size.address_to_cell(self.index).to_string()
+        // それ以外。
+        } else if let Some(piece) = self.get_hand_piece() {
+            format!("Hand: {}", piece.to_sign()).to_string()
+        } else {
+            panic!("Unexpected address: {}.", self.index);
+        }
     }
 
     pub fn get_index(self) -> usize {

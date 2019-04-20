@@ -362,7 +362,13 @@ impl Position {
 
     pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
         if address.is_sky() {
-            CellDisplay::from_idp_prev(self.get_sky_idp(), address)
+            // Sky升に表示するもの。
+            if let Some(prev) = self.get_sky_prev() {
+                // 持っている駒を表示。
+                CellDisplay::from_idp_prev(self.get_sky_idp(), prev)
+            } else {
+                CellDisplay::from_empty_sky()
+            }
         } else {
             CellDisplay::from_idp(self.board[address.get_index()])
         }
@@ -460,10 +466,19 @@ impl Position {
         }
     }
 
-    /// 指先に何か持っていれば真。
+    /// 指先の何か。
     pub fn get_sky_idp(&self) -> Option<IdentifiedPiece> {
         if let Some(ref sky) = self.sky {
             Some(sky.get_idp())
+        } else {
+            None
+        }
+    }
+
+    /// 指先の何かが元有った場所。
+    pub fn get_sky_prev(&self) -> Option<Address> {
+        if let Some(ref sky) = self.sky {
+            Some(sky.get_prev())
         } else {
             None
         }
@@ -721,7 +736,7 @@ impl Position {
                         5 => Parser::append(
                             &mut content,
                             &format!(
-                                "     {}",
+                                "     {} ",
                                 self.get_cell_display_by_address(Address::from_sky())
                                     .to_sky_display(board_size)
                             ),
@@ -828,14 +843,14 @@ impl Position {
             First => {
                 Parser::appendln(
                     &mut content,
-                    &"             +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"              +----+----+----+----+----+----+----+----+----+".to_string(),
                 );
             }
             Second => {
                 // hand.
                 Parser::appendln(
                     &mut content,
-                    &"             +----+----+----+----+----+----+----+----+----+ |         |"
+                    &"              +----+----+----+----+----+----+----+----+----+ |         |"
                         .to_string(),
                 );
             }
@@ -843,13 +858,13 @@ impl Position {
 
         Parser::appendln(
             &mut content,
-            &"              1    2    3    4    5    6    7    8    9".to_string(),
+            &"               1    2    3    4    5    6    7    8    9".to_string(),
         );
 
         // Second phase hand.
         Parser::appendln(
             &mut content,
-            &format!("               {}", self.to_hand_text(Some(Phase::Second))),
+            &format!("                {}", self.to_hand_text(Some(Phase::Second))),
         );
 
         content
