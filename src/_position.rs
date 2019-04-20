@@ -77,7 +77,7 @@ impl Position {
     pub fn add(&mut self, address:Address, piece:Piece) {
         if address.is_on_board(self.board_size) {
             match self.board[address.get_index()] {
-                Some(piece2) => panic!("Piece already exists '{}'.", piece_to_sign(Some(piece2))),
+                Some(piece2) => panic!("Piece already exists '{}'.", piece2.to_sign()),
                 None => {
                     self.board[address.get_index()] = Some(piece);
                 },
@@ -115,7 +115,7 @@ impl Position {
             N3 => {self.hands[21] = num},
             L3 => {self.hands[22] = num},
             P3 => {self.hands[23] = num},
-            _ => panic!("Unexpected hand '{}'.", piece_to_sign(Some(piece))),
+            _ => panic!("Unexpected hand '{}'.", piece.to_sign()),
         }
     }
 

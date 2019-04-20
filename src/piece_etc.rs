@@ -1,3 +1,5 @@
+use address::*;
+use board_size::*;
 use std::fmt;
 use std::slice::Iter;
 
@@ -291,11 +293,21 @@ impl PieceIdentify {
 /// For cell display.
 pub struct CellDisplay {
     id_piece_opt: Option<IdentifiedPiece>,
+    // Sky用。
+    previous_address: Option<Address>,
 }
 impl CellDisplay {
     pub fn from_idp(idp_opt: Option<IdentifiedPiece>) -> CellDisplay {
         CellDisplay {
             id_piece_opt: idp_opt,
+            previous_address: None,
+        }
+    }
+
+    pub fn from_idp_prev(idp_opt: Option<IdentifiedPiece>, prev: Address) -> CellDisplay {
+        CellDisplay {
+            id_piece_opt: idp_opt,
+            previous_address: Some(prev),
         }
     }
 
@@ -307,6 +319,20 @@ impl CellDisplay {
         } else {
             // 空セル☆（＾～＾）
             "    ".to_string()
+        }
+    }
+
+    /// 3桁追加して 7桁に揃える。
+    pub fn to_sky_display(&self, board_size: BoardSize) -> String {
+        if let Some(prev) = self.previous_address {
+            // 駒のIDの方は桁数指定すると、ずれるからしてない。
+            format!(
+                "{}:{:>2}",
+                self.to_display(),
+                prev.to_physical_sign(board_size)
+            )
+        } else {
+            format!("{}   ", self.to_display())
         }
     }
 }
@@ -1216,6 +1242,14 @@ impl Piece {
     }
 }
 
+pub fn piece_to_sign(piece_opt: Option<Piece>) -> String {
+    if let Some(piece) = piece_opt {
+        piece.to_sign()
+    } else {
+        "".to_string()
+    }
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum JsaPieceType {
     // King is 玉.
@@ -1382,71 +1416,6 @@ impl PieceType {
     }
 }
 
-pub fn piece_to_sign(piece_opt: Option<Piece>) -> String {
-    if let Some(piece) = piece_opt {
-        use piece_etc::Piece::*;
-        match piece {
-            K1 => "K",
-            K2 => "k",
-            K3 => "K",
-            PK1 => "+K",
-            PK2 => "+k",
-            PK3 => "+K",
-
-            R1 => "R",
-            R2 => "r",
-            R3 => "R",
-            PR1 => "+R",
-            PR2 => "+r",
-            PR3 => "+R",
-
-            B1 => "B",
-            B2 => "b",
-            B3 => "B",
-            PB1 => "+B",
-            PB2 => "+b",
-            PB3 => "+B",
-
-            G1 => "G",
-            G2 => "g",
-            G3 => "G",
-            PG1 => "+G",
-            PG2 => "+g",
-            PG3 => "+G",
-
-            S1 => "S",
-            S2 => "s",
-            S3 => "S",
-            PS1 => "+S",
-            PS2 => "+s",
-            PS3 => "+S",
-
-            N1 => "N",
-            N2 => "n",
-            N3 => "N",
-            PN1 => "+N",
-            PN2 => "+n",
-            PN3 => "+N",
-
-            L1 => "L",
-            L2 => "l",
-            L3 => "L",
-            PL1 => "+L",
-            PL2 => "+l",
-            PL3 => "+L",
-
-            P1 => "P",
-            P2 => "p",
-            P3 => "P",
-            PP1 => "+P",
-            PP2 => "+p",
-            PP3 => "+P",
-        }
-    } else {
-        ""
-    }
-    .to_string()
-}
 pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
     use piece_etc::Phase::*;
     use piece_etc::PieceIdentify::*;

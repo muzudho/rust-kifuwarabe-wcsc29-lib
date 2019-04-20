@@ -10,7 +10,7 @@ impl HumanInterface {
         // 何手目か。
         comm.println(&format!("[{}]", ply));
         // 盤面。
-        comm.println(&position.to_text(comm, position.get_phase()));
+        comm.println(&position.to_text(comm, position.get_phase(), position.get_board_size()));
     }
 
     /// 局面と棋譜の表示。

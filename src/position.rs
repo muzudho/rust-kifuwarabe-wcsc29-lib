@@ -362,7 +362,7 @@ impl Position {
 
     pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
         if address.is_sky() {
-            CellDisplay::from_idp(self.get_sky_idp())
+            CellDisplay::from_idp_prev(self.get_sky_idp(), address)
         } else {
             CellDisplay::from_idp(self.board[address.get_index()])
         }
@@ -678,28 +678,28 @@ impl Position {
     }
 
     /// Point of symmetory.
-    pub fn to_text(&self, _comm: &Communication, phase: Phase) -> String {
+    pub fn to_text(&self, _comm: &Communication, phase: Phase, board_size: BoardSize) -> String {
         use piece_etc::Phase::*;
         let mut content = String::new();
 
-        // First phase hand.
+        // First phase hand-pieces.
         Parser::appendln(
             &mut content,
-            &format!("               {}", self.to_hand_text(Some(Phase::First))),
+            &format!("                {}", self.to_hand_text(Some(Phase::First))),
         );
 
         match phase {
             First => {
-                // hand.
+                // hand-graphic.
                 Parser::appendln(
                     &mut content,
-                    &"|         |  +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"|         |   +----+----+----+----+----+----+----+----+----+".to_string(),
                 );
             }
             Second => {
                 Parser::appendln(
                     &mut content,
-                    &"             +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"              +----+----+----+----+----+----+----+----+----+".to_string(),
                 );
             }
         }
@@ -712,26 +712,27 @@ impl Position {
             match phase {
                 First => {
                     match row {
-                        0 => Parser::append(&mut content, &"|         | ".to_string()),
-                        1 => Parser::append(&mut content, &"+---+ +-+ | ".to_string()),
-                        2 => Parser::append(&mut content, &"    | | | | ".to_string()),
-                        3 => Parser::append(&mut content, &"    | | | | ".to_string()),
-                        4 => Parser::append(&mut content, &"    +-+ +-+ ".to_string()),
+                        0 => Parser::append(&mut content, &"|         |  ".to_string()),
+                        1 => Parser::append(&mut content, &"+---+ +-+ |  ".to_string()),
+                        2 => Parser::append(&mut content, &"    | | | |  ".to_string()),
+                        3 => Parser::append(&mut content, &"    | | | |  ".to_string()),
+                        4 => Parser::append(&mut content, &"    +-+ +-+  ".to_string()),
+                        // 全角数字がずれるので、桁数指定はしない。7桁固定。
                         5 => Parser::append(
                             &mut content,
                             &format!(
-                                "     {}   ",
+                                "     {}",
                                 self.get_cell_display_by_address(Address::from_sky())
-                                    .to_display()
+                                    .to_sky_display(board_size)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
-                            Parser::append(&mut content, &"            ".to_string())
+                            Parser::append(&mut content, &"             ".to_string())
                         }
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
-                Second => Parser::append(&mut content, &"            ".to_string()),
+                Second => Parser::append(&mut content, &"             ".to_string()),
             }
 
             if row % 2 == 0 {
@@ -807,7 +808,7 @@ impl Position {
                             &format!(
                                 "  {}",
                                 self.get_cell_display_by_address(Address::from_sky())
-                                    .to_display()
+                                    .to_sky_display(board_size)
                             ),
                         ),
                         12 => Parser::append(&mut content, &" +-+ +-+".to_string()),

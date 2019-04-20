@@ -198,20 +198,25 @@ impl Address {
         SKY_ADDRESS == self.index
     }
 
+    /// 基本2桁、Sky 3桁。
     pub fn to_physical_sign(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             let cell = board_size.address_to_cell(self.index);
             cell.to_scalar().to_string()
-        } else if self.is_hand() {
-            // 持ち駒
-            format!(
-                "0{}", // "{}*"
-                piece_to_sign(self.get_hand_piece())
-            )
-        } else if self.index == 105 {
+        } else if self.is_sky() {
             "Sky".to_string()
+        } else if self.is_hand() {
+            if let Some(piece) = self.get_hand_piece() {
+                // 持ち駒
+                format!(
+                    "0{}", // "{}*"
+                    piece.to_sign()
+                )
+            } else {
+                panic!("Unexpected index print(10): {0}.", self.index);
+            }
         } else {
-            panic!("Unexpected index print: {0}.", self.index);
+            panic!("Unexpected index print(20): {0}.", self.index);
         }
     }
 }
