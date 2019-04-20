@@ -117,6 +117,7 @@ impl KifPlayer {
             let rnote_opes = KifPlayer::convert_move(comm, kmove, position, ply);
 
             for rnote_ope in rnote_opes {
+                comm.println("kif_player.rs: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
 

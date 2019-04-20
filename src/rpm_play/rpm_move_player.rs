@@ -84,6 +84,7 @@ impl RpmMovePlayer {
         ];
 
         for element in array.iter() {
+            comm.println("rpm_move_player.rs:record_ohashi_starting: touch_brandnew_note");
             RpmNotePlayer::touch_brandnew_note(recorder, &element.0, pos, comm);
             RpmNotePlayer::touch_brandnew_note(recorder, &element.1, pos, comm);
             RpmNotePlayer::touch_brandnew_note(recorder, &element.2, pos, comm);
@@ -111,7 +112,7 @@ impl RpmMovePlayer {
         }
     }
 
-    /// 1手進める。
+    /// 1手進める。（非合法タッチは自動で戻します）
     ///
     /// # Return
     ///

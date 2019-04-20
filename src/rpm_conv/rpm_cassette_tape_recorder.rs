@@ -152,6 +152,7 @@ impl RpmCassetteTapeRecorder {
                 RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rnote_ope) = rnote_ope_opt {
+                comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(self, &rnote_ope, position, comm);
 
                 let ply = if let Some(ply) = rnote_ope.get_phase_change() {

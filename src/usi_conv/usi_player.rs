@@ -109,6 +109,7 @@ impl UsiPlayer {
 
             for rnote_ope in rnote_opes {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
+                comm.println("usi_player.rs:play_out_and_record: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
 

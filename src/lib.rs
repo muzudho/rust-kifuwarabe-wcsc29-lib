@@ -230,6 +230,7 @@ pub fn main_loop() {
             let best_rnote_opes =
                 UsiPlayer::convert_move(best_logical_move, &position, recorder.ply);
             for rnote_ope in best_rnote_opes {
+                comm.println("lib.rs:go: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, &mut position, &comm);
             }
         } else if line.starts_with("gameover") {
@@ -280,7 +281,7 @@ pub fn main_loop() {
                 HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
             }
         } else if line == "nn" {
-            // Forward 1move.
+            // Forward 1move. （非合法タッチは自動で戻します）
             RpmMovePlayer::next_1move_on_tape(
                 &mut recorder.cassette_tape,
                 &mut position,

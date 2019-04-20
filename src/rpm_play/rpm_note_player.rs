@@ -19,9 +19,6 @@ impl RpmNotePlayer {
         position: &mut Position,
         comm: &Communication,
     ) {
-        comm.println("touch_brandnew_note");
-        HumanInterface::show_position(comm, -1, position);
-
         let board_size = position.get_board_size();
         let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
             position.touch_beautiful_1note(&rnote_ope, comm, board_size)
@@ -31,6 +28,8 @@ impl RpmNotePlayer {
             None
         };
 
+        comm.println("End#touch_brandnew_note");
+        HumanInterface::show_position(comm, recorder.ply, position);
         recorder.record_next_note(RpmNote::from_id_ope(pid_opt, *rnote_ope));
     }
 
@@ -74,21 +73,6 @@ impl RpmNotePlayer {
         HumanInterface::show_position(comm, ply, position);
 
         is_legal_touch
-        /*
-        if is_legal_touch {
-            true
-        } else {
-            print!(
-                "<IL-NX:非合法なので、これを実行。{}>",
-                rnote.get_ope().to_log(board_size)
-            );
-            // 非合法タッチなら戻す。
-            // もう１回タッチすれば戻る。（トグル式なんで）
-            position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
-            HumanInterface::show_position(comm, *ply, position);
-            false
-        }
-        */
     }
 
     /// 非合法手はない前提で、強制的に巻き戻します。

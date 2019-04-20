@@ -492,8 +492,7 @@ impl Position {
                     self.move_finger_to_hand();
                     (true, Some(sky_id_piece))
                 } else {
-                    // 指には何も持ってない。
-                    // 駒台の駒をつかむ。
+                    // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
                     self.move_hand_to_finger(address);
                     if let Some(sky_id_piece) = self.board[SKY_ADDRESS] {
                         // 合法。掴んだ駒を返す。

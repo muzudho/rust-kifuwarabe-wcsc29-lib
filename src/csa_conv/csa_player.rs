@@ -116,6 +116,7 @@ impl CsaPlayer {
             let rnote_opes = CsaPlayer::convert_move(comm, cmove, position, ply);
 
             for rnote_ope in rnote_opes {
+                comm.println("csa_player.rs: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
             }
 

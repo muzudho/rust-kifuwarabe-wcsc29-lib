@@ -149,11 +149,11 @@ impl BestMovePicker {
                                 ) {
                                     //comm.println("Scanning.");
                                     // どの駒が動いた１手なのか、またその番地。
-                                    let (ftp_id_opt, ftp_address) =
+                                    let (ftp_id, ftp_address) =
                                         rmove.to_first_touch_piece_id(position.get_board_size());
 
                                     // 背番号と、アドレスの一致。
-                                    if my_piece_id.get_number() == ftp_id_opt.get_number()
+                                    if my_piece_id.get_number() == ftp_id.get_number()
                                         && ftp_address.get_index()
                                             == my_addr_obj.get_index() as usize
                                     {
@@ -184,6 +184,7 @@ impl BestMovePicker {
                                                 recorder.to_dump(position.get_board_size())
                                             );
 
+                                            // 1手進めます。（非合法タッチは自動で戻します）
                                             if RpmMovePlayer::next_1move_on_tape(
                                                 &mut recorder.cassette_tape,
                                                 position,
@@ -195,6 +196,7 @@ impl BestMovePicker {
                                                 comm.println(&format!("Rmove: {}.", &rmove));
 
                                                 // 局面を動かしてしまったので戻す。
+                                                comm.println("Legal, go back!");
                                                 RpmMovePlayer::back_1move_on_tape(
                                                     &mut recorder.cassette_tape,
                                                     position,
@@ -202,8 +204,6 @@ impl BestMovePicker {
                                                     false,
                                                     &comm,
                                                 );
-
-                                                comm.println("Legal, go back!");
                                                 HumanInterface::bo(
                                                     &comm,
                                                     &recorder.cassette_tape,
@@ -211,13 +211,11 @@ impl BestMovePicker {
                                                     &position,
                                                 );
                                             } else {
-                                                // 非合法タッチ。（ムーブはキャンセルされる）
+                                                // 非合法タッチ。（自動で戻されています）
                                                 comm.println(&format!(
-                                                    "Illegal rmove: {}.",
+                                                    "Canceled: {}.",
                                                     rmove.to_log(position.get_board_size())
                                                 ));
-
-                                                comm.println("Are you cancel?");
                                                 HumanInterface::bo(
                                                     &comm,
                                                     &recorder.cassette_tape,
@@ -227,6 +225,19 @@ impl BestMovePicker {
                                                 continue 'track_scan;
                                             }
                                         }
+
+                                        // TODO とりあえず抜けて次の駒へ。
+                                        comm.println(&format!(
+                                            "Hit and break! ({}) {}",
+                                            ftp_id.to_human_presentable(),
+                                            &rmove.to_log(position.get_board_size())
+                                        ));
+                                        HumanInterface::bo(
+                                            &comm,
+                                            &recorder.cassette_tape,
+                                            recorder.ply,
+                                            &position,
+                                        );
 
                                         let mut thread = RpmThread::new();
                                         thread.push_move(rmove);
@@ -238,8 +249,6 @@ impl BestMovePicker {
                                         //comm.println("Change!");
                                         //}
 
-                                        // TODO とりあえず抜ける。
-                                        comm.println("Hit and break!");
                                         break 'piece_loop;
                                     } else {
                                         // 一致しなかったら何もしない。

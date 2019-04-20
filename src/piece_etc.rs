@@ -1152,6 +1152,68 @@ impl Piece {
             PP1 | PP2 | PP3 => PP,
         }
     }
+
+    pub fn to_sign(self) -> String {
+        use piece_etc::Piece::*;
+        match self {
+            K1 => "K",
+            K2 => "k",
+            K3 => "K",
+            PK1 => "+K",
+            PK2 => "+k",
+            PK3 => "+K",
+
+            R1 => "R",
+            R2 => "r",
+            R3 => "R",
+            PR1 => "+R",
+            PR2 => "+r",
+            PR3 => "+R",
+
+            B1 => "B",
+            B2 => "b",
+            B3 => "B",
+            PB1 => "+B",
+            PB2 => "+b",
+            PB3 => "+B",
+
+            G1 => "G",
+            G2 => "g",
+            G3 => "G",
+            PG1 => "+G",
+            PG2 => "+g",
+            PG3 => "+G",
+
+            S1 => "S",
+            S2 => "s",
+            S3 => "S",
+            PS1 => "+S",
+            PS2 => "+s",
+            PS3 => "+S",
+
+            N1 => "N",
+            N2 => "n",
+            N3 => "N",
+            PN1 => "+N",
+            PN2 => "+n",
+            PN3 => "+N",
+
+            L1 => "L",
+            L2 => "l",
+            L3 => "L",
+            PL1 => "+L",
+            PL2 => "+l",
+            PL3 => "+L",
+
+            P1 => "P",
+            P2 => "p",
+            P3 => "P",
+            PP1 => "+P",
+            PP2 => "+p",
+            PP3 => "+P",
+        }
+        .to_string()
+    }
 }
 
 #[derive(Clone, Copy, PartialEq)]
