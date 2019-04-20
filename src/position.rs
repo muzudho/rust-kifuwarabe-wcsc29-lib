@@ -352,7 +352,7 @@ impl Position {
     /// # Returns
     /// 
     /// Is legal touch, Identified piece.
-    pub fn touch_beautiful_1note(&mut self, _comm:&Communication, rpm_operation_note:&RpmNoteOpe) -> (bool, Option<IdentifiedPiece>) {
+    pub fn touch_beautiful_1note(&mut self, rpm_operation_note:&RpmNoteOpe, comm:&Communication, board_size:BoardSize) -> (bool, Option<IdentifiedPiece>) {
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
@@ -363,6 +363,7 @@ impl Position {
                             // 駒の場所を指定した。
                             match self.board[SKY_ADDRESS] {
                                 Some(sky_id_piece) => {
+                                    comm.println(&format!("<IL-駒重なり{}>", address.to_log(board_size)));
                                     // 違法。指に既に何か持ってた。
                                     // 指に持っている駒を返す。
                                     (false, Some(sky_id_piece))
@@ -384,6 +385,7 @@ impl Position {
                                 self.board[address.get_index()] = Some(sky_id_piece);
                                 (true, Some(sky_id_piece))
                             } else {
+                                comm.println(&format!("<IL-ほこり取り{}>", address.to_log(board_size)));
                                 // ほこりを取る。
                                 // 一応、違法。
                                 (false, None)
@@ -404,6 +406,7 @@ impl Position {
                         // 合法。掴んだ駒を返す。
                         (true, Some(sky_id_piece))
                     } else {
+                        comm.println(&format!("<IL-駒台ほこり取り{}>", address.to_log(board_size)));
                         // 違法。駒台のほこりを取った。
                         (false, None)
                     }
@@ -432,6 +435,7 @@ impl Position {
                     };
                     (true, Some(id_piece))
                 } else {
+                    comm.println("<IL-使っていない空間ほこり取り>");
                     // TODO 未定義の操作。投了とか？
                     // 一応、違法。
                     (false, None)

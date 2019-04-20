@@ -117,7 +117,7 @@ impl CsaPlayer {
                 ply);
 
             for rpm_note in p_moves {
-                RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(&mut rrecord.body.rpm_tape, &rpm_note, position, comm);
             }
 
             ply += 1;

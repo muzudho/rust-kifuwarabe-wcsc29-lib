@@ -105,7 +105,7 @@ impl UsiConverter {
 
             for rpm_note in rpm_move {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                RpmNotePlayer::touch_brandnew_note(comm, &mut rpm_record.body.rpm_tape, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(&mut rpm_record.body.rpm_tape, &rpm_note, position, comm);
             }
         }
     }

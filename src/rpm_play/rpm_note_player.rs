@@ -13,8 +13,9 @@ pub struct RpmNotePlayer {
 impl RpmNotePlayer {
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_brandnew_note(comm:&Communication, rtape:&mut RpmTape, rpm_note_ope:&RpmNoteOpe, position:&mut Position) {
-        let pid_opt = if let (_is_legal_touch, Some(piece_identify)) = position.touch_beautiful_1note(comm, &rpm_note_ope) {
+    pub fn touch_brandnew_note(rtape:&mut RpmTape, rpm_note_ope:&RpmNoteOpe, position:&mut Position, comm:&Communication) {
+        let board_size = position.get_board_size();
+        let pid_opt = if let (_is_legal_touch, Some(piece_identify)) = position.touch_beautiful_1note(&rpm_note_ope, comm, board_size) {
             PieceIdentify::from_number(piece_identify.get_id().get_number())
         } else {
             None
@@ -24,9 +25,10 @@ impl RpmNotePlayer {
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
-    pub fn pop_current_1note_on_record(comm:&Communication, rpm_record:&mut RpmRecord, position:&mut Position) -> Option<RpmNote> {
+    pub fn pop_current_1note_on_record(rpm_record:&mut RpmRecord, position:&mut Position, comm:&Communication) -> Option<RpmNote> {
         if let Some(rpm_note) = rpm_record.body.rpm_tape.delete_next(&mut rpm_record.body.ply) {
-            let (_is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rpm_note.get_ope());
+            let board_size = position.get_board_size();
+            let (_is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(&rpm_note.get_ope(), comm, board_size);
             Some(rpm_note)
         } else {
             None
@@ -40,17 +42,19 @@ impl RpmNotePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn forward_1note(comm:&Communication, rnote:&RpmNote, position:&mut Position, ply:&mut i16) -> bool {
-        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
+    pub fn forward_1note(rnote:&RpmNote, position:&mut Position, ply:&mut i16, comm:&Communication) -> bool {
+        let board_size = position.get_board_size();
+        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
 
         if is_legal_touch {
             print!("[F{}]", ply);
             *ply += 1;
             true
         } else {
+            print!("<IL-FN{}>", ply);
             // 非合法タッチなら戻す。
             // もう１回タッチすれば戻る。（トグル式なんで）
-            position.touch_beautiful_1note(comm, &rnote.get_ope());
+            position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
             false
         }
     }
@@ -60,8 +64,9 @@ impl RpmNotePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn back_1note(comm:&Communication, rnote:&RpmNote, position:&mut Position, ply:&mut i16) -> bool {
-        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(comm, &rnote.get_ope());
+    pub fn back_1note(rnote:&RpmNote, position:&mut Position, ply:&mut i16, comm:&Communication) -> bool {
+        let board_size = position.get_board_size();
+        let (is_legal_touch, _piece_identify_opt) = position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
 
         if is_legal_touch {
             print!("[B{}]", ply);
@@ -70,7 +75,7 @@ impl RpmNotePlayer {
         } else {
             // 非合法タッチなら戻す。
             // もう１回タッチすれば戻る。（トグル式なんで）
-            position.touch_beautiful_1note(comm, &rnote.get_ope());
+            position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
             false
         }
     }

@@ -52,6 +52,11 @@ impl fmt::Display for Address {
     }
 }
 impl Address {
+    /// Human presentable.
+    pub fn to_log(self, board_size:BoardSize) -> String {
+        board_size.address_to_cell(self.index).to_string()
+    }
+
     pub fn from_raw(raw:usize) -> Self {
         Address {
             index: raw,

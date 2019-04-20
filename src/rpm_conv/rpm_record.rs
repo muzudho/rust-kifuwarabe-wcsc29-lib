@@ -164,7 +164,7 @@ impl RpmRecord {
             let rpm_ope_1note_opt = RpmNoteOpe::parse_1note(&comm, &line, &mut start, position.get_board_size());
 
             if let Some(rpm_note) = rpm_ope_1note_opt {
-                RpmNotePlayer::touch_brandnew_note(comm, &mut rpm_record.body.rpm_tape, &rpm_note, position);
+                RpmNotePlayer::touch_brandnew_note(&mut rpm_record.body.rpm_tape, &rpm_note, position, comm);
                 HumanInterface::bo(comm, &rpm_record, &position);
             }
         }

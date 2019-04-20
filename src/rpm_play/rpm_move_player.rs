@@ -1,4 +1,5 @@
 use address::*;
+use human::human_interface::*;
 use board_size::*;
 use communication::*;
 use piece_etc::*;
@@ -74,17 +75,17 @@ impl RpmMovePlayer {
         ];
 
         for element in array.iter() {
-            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.0, pos);
-            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.1, pos);
-            RpmNotePlayer::touch_brandnew_note(comm, &mut rrecord.body.rpm_tape, &element.2, pos);
+            RpmNotePlayer::touch_brandnew_note(&mut rrecord.body.rpm_tape, &element.0, pos, comm);
+            RpmNotePlayer::touch_brandnew_note(&mut rrecord.body.rpm_tape, &element.1, pos, comm);
+            RpmNotePlayer::touch_brandnew_note(&mut rrecord.body.rpm_tape, &element.2, pos, comm);
         }
     }
 
     /// 1手削除する。
-    pub fn pop_current_1move_on_record(comm:&Communication, rrecord:&mut RpmRecord, position:&mut Position) {
+    pub fn pop_current_1move_on_record(rrecord:&mut RpmRecord, position:&mut Position, comm:&Communication) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(rpm_note) = RpmNotePlayer::pop_current_1note_on_record(comm, rrecord, position) {
+        while let Some(rpm_note) = RpmNotePlayer::pop_current_1note_on_record(rrecord, position, comm) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
@@ -100,7 +101,7 @@ impl RpmMovePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn forward_1move_on_tape(comm:&Communication, rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool) -> bool {
+    pub fn forward_1move_on_tape(rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool, comm:&Communication) -> bool {
         let mut is_first = true;
         let mut forwarding_count = 0;
 
@@ -109,16 +110,21 @@ impl RpmMovePlayer {
         while let Some(rnote) = rtape.next_note() {
             print!("Rta<{}>", rtape);
             print!("<Fok{} {}>", forwarding_count, rnote);
-            let is_legal_touch = RpmNotePlayer::forward_1note(comm, &rnote, position, ply);
+            let is_legal_touch = RpmNotePlayer::forward_1note(&rnote, position, ply, comm);
 
             if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
+                comm.println("Illegal, go back!");
+                HumanInterface::show_position(&comm, *ply, &position);
+
                 for _i in 0..forwarding_count {
-                    print!("Fil");
-                    RpmNotePlayer::back_1note(comm, &rnote, position, ply);
+                    print!("<IL...>");
+                    RpmNotePlayer::back_1note(&rnote, position, ply, comm);
+                    HumanInterface::show_position(&comm, *ply, &position);
                 }
 
-                print!("<FilE{} {}>", forwarding_count, rnote);
+                print!("<IL backed{} {}>", forwarding_count, rnote);
+                HumanInterface::show_position(&comm, *ply, &position);
                 return false;
             }
 
@@ -144,19 +150,19 @@ impl RpmMovePlayer {
     /// # Return
     /// 
     /// 合法タッチか否か。
-    pub fn back_1move_on_tape(comm:&Communication, rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool) -> bool {
+    pub fn back_1move_on_tape(rtape:&mut RpmTape, position:&mut Position, ply:&mut i16, is_auto_reverse:bool, comm:&Communication) -> bool {
         let mut backwarding_count = 0;
 
         // 開始前に達したら終了。
         while let Some(rnote) = rtape.back_note() {
             print!("<Bok{} {}>", backwarding_count, rnote);
-            let is_legal_touch = RpmNotePlayer::back_1note(comm, &rnote, position, ply);
+            let is_legal_touch = RpmNotePlayer::back_1note(&rnote, position, ply, comm);
 
             if is_auto_reverse && !is_legal_touch {
                 // TODO 非合法タッチなら、以前に動かした分 戻したい。
                 for _i in 0..backwarding_count {
                     print!("Bil");
-                    RpmNotePlayer::forward_1note(comm, &rnote, position, ply);
+                    RpmNotePlayer::forward_1note(&rnote, position, ply, comm);
                 }
 
                 return false;

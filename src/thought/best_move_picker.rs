@@ -1,6 +1,6 @@
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
-//use human::human_interface::*;
+use human::human_interface::*;
 use piece_etc::*;
 use position::*;
 use rpm_conv::thread::rpm_move::*;
@@ -113,6 +113,8 @@ impl BestMovePicker {
 
                         // 現局面の盤上の自駒の番地。
                         if let Some((my_idp, my_addr_obj)) = position.find_wild(Some(position.get_phase()), *my_piece_id) {
+                            // Board.
+                            HumanInterface::bo(&comm, &rrecord, &position);
                             comm.println(&format!("[{}] My piece: {}'{}'{}.", rrecord.body.ply, position.get_phase().to_log(), my_idp.to_human_presentable(), my_addr_obj.to_physical_sign(position.get_board_size())));
 
                             // ノートをスキャン。
@@ -147,15 +149,21 @@ impl BestMovePicker {
                                             rtape.go_to_origin();
                                             println!("BMP: Rtape(3): {}.", rtape);
 
-                                            if RpmMovePlayer::forward_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, true) {
+                                            if RpmMovePlayer::forward_1move_on_tape(&mut rtape, position, &mut rrecord.body.ply, true, &comm) {
                                                 // 合法タッチ。
                                                 comm.println(&format!("Rmove: {}.", &rmove));
 
                                                 // 局面を動かしてしまったので戻す。
-                                                RpmMovePlayer::back_1move_on_tape(&comm, &mut rtape, position, &mut rrecord.body.ply, false);
+                                                RpmMovePlayer::back_1move_on_tape(&mut rtape, position, &mut rrecord.body.ply, false, &comm);
+
+                                                comm.println("Legal, go back!");
+                                                HumanInterface::bo(&comm, &rrecord, &position);
                                             } else {
                                                 // 非合法タッチ。（ムーブはキャンセルされる）
                                                 comm.println(&format!("Illegal rmove: {}.", rmove.to_log(position.get_board_size())));
+
+                                                comm.println("Are you cancel?");
+                                                HumanInterface::bo(&comm, &rrecord, &position);
                                                 continue 'track_scan;
                                             }
                                         }

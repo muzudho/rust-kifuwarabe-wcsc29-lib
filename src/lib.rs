@@ -137,26 +137,26 @@ pub fn main_loop() {
         } else if line == "b" {
             // Back 1mark.
             if let Some(rnote) = rrecord.body.rpm_tape.back_note() {
-                RpmNotePlayer::back_1note(&comm, &rnote, &mut position, &mut rrecord.body.ply);
+                RpmNotePlayer::back_1note(&rnote, &mut position, &mut rrecord.body.ply, &comm);
                 HumanInterface::bo(&comm, &rrecord, &position);
             }
 
         } else if line == "bb" {
             // Back 1ply.
-            RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+            RpmMovePlayer::back_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbb" {
             // Back 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+                RpmMovePlayer::back_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "bbbb" {
             // Back 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::back_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+                RpmMovePlayer::back_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -170,25 +170,25 @@ pub fn main_loop() {
 
         } else if line == "d" {
             // Delete 1mark.
-            RpmNotePlayer::pop_current_1note_on_record(&comm, &mut rrecord, &mut position);
+            RpmNotePlayer::pop_current_1note_on_record(&mut rrecord, &mut position, &comm);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "dd" {
             // Delete 1ply.
-            RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
+            RpmMovePlayer::pop_current_1move_on_record(&mut rrecord, &mut position, &comm);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::pop_current_1move_on_record(&mut rrecord, &mut position, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                RpmMovePlayer::pop_current_1move_on_record(&comm, &mut rrecord, &mut position);
+                RpmMovePlayer::pop_current_1move_on_record(&mut rrecord, &mut position, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -199,26 +199,26 @@ pub fn main_loop() {
         } else if line == "f" {
             // Forward 1note.
             if let Some(rnote) = rrecord.body.rpm_tape.next_note() {
-                RpmNotePlayer::forward_1note(&comm, &rnote, &mut position, &mut rrecord.body.ply);
+                RpmNotePlayer::forward_1note(&rnote, &mut position, &mut rrecord.body.ply, &comm);
                 HumanInterface::bo(&comm, &rrecord, &position);
             }
 
         } else if line == "ff" {
             // Forward 1move.
-            RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+            RpmMovePlayer::forward_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "fff" {
             // Forward 10move.
             for _i in 0..10 {
-                RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+                RpmMovePlayer::forward_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
         } else if line == "ffff" {
             // Forward 400move.
             for _i in 0..400 {
-                RpmMovePlayer::forward_1move_on_tape(&comm, &mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true);
+                RpmMovePlayer::forward_1move_on_tape(&mut rrecord.body.rpm_tape, &mut position, &mut rrecord.body.ply, true, &comm);
             }
             HumanInterface::bo(&comm, &rrecord, &position);
 
@@ -238,7 +238,7 @@ pub fn main_loop() {
                 best_logical_move,
                 &position);
             for rpm_operation_note in best_rpm_operation_move {
-                RpmNotePlayer::touch_brandnew_note(&comm, &mut rrecord.body.rpm_tape, &rpm_operation_note, &mut position);
+                RpmNotePlayer::touch_brandnew_note(&mut rrecord.body.rpm_tape, &rpm_operation_note, &mut position, &comm);
             }
 
         } else if line.starts_with("gameover") {
