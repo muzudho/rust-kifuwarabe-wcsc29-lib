@@ -85,10 +85,28 @@ impl RpmNotePlayer {
     ) {
         for i in 0..repeat {
             if let Some(rnote) = cassette_tape.back_note() {
-                print!("<IL-Back:{}/{} {}>", i, repeat, rnote);
+                comm.println(&format!("<Back-force:{}/{} {}>", i, repeat, rnote));
                 RpmNotePlayer::back_1note(&rnote, position, ply, comm);
             } else {
                 panic!("<Back forcely fail:{}/{} None>", i, repeat);
+            }
+        }
+    }
+
+    /// 非合法手はない前提で、強制的に巻き進めます。
+    pub fn next_n_note_forcely(
+        repeat: u8,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        for i in 0..repeat {
+            if let Some(rnote) = cassette_tape.next_note() {
+                comm.println(&format!("<Next-force:{}/{} {}>", i, repeat, rnote));
+                RpmNotePlayer::back_1note(&rnote, position, ply, comm);
+            } else {
+                panic!("<Next forcely fail:{}/{} None>", i, repeat);
             }
         }
     }

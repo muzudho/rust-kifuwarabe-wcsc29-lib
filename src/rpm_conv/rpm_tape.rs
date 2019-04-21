@@ -57,38 +57,38 @@ impl RpmTape {
     }
 
     /// Human presentable large log.
-    pub fn to_dump(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         let mut dump = "".to_string();
 
         {
-            dump = format!("{}, Negative Len: {}, ", dump, self.negative_notes.len());
+            dump = format!("-Len[{}]", self.negative_notes.len());
         }
         for note in &self.negative_notes {
             dump = format!(
                 "{} ({}'{}')",
                 dump,
                 if let Some(pid) = note.get_id() {
-                    pid.get_number().to_string()
+                    pid.to_human_presentable()
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_sign(board_size),
+                note.get_ope().to_log(board_size),
             );
         }
 
         {
-            dump = format!("{}, Positive Len: {}, ", dump, self.positive_notes.len());
+            dump = format!("{} +Len[{}]", dump, self.positive_notes.len());
         }
         for note in &self.positive_notes {
             dump = format!(
                 "{} ({}'{}')",
                 dump,
                 if let Some(pid) = note.get_id() {
-                    pid.get_number().to_string()
+                    pid.to_human_presentable()
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_sign(board_size),
+                note.get_ope().to_log(board_size),
             );
         }
 

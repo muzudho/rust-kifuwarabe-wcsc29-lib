@@ -169,19 +169,25 @@ impl BestMovePicker {
                                             let mut recorder = RpmCassetteTapeRecorder::default();
                                             println!(
                                                 "BMP: Rtape(1): {}.",
-                                                recorder.to_dump(position.get_board_size())
+                                                recorder.to_human_presentable(
+                                                    position.get_board_size()
+                                                )
                                             );
 
                                             recorder.record_next_move(&rmove);
                                             println!(
                                                 "BMP: Rtape(2): {}.",
-                                                recorder.to_dump(position.get_board_size())
+                                                recorder.to_human_presentable(
+                                                    position.get_board_size()
+                                                )
                                             );
 
                                             recorder.reset_caret();
                                             println!(
                                                 "BMP: Rtape(3): {}.",
-                                                recorder.to_dump(position.get_board_size())
+                                                recorder.to_human_presentable(
+                                                    position.get_board_size()
+                                                )
                                             );
 
                                             // 1手進めます。（非合法タッチは自動で戻します）

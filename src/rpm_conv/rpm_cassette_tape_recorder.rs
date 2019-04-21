@@ -135,8 +135,8 @@ impl RpmCassetteTapeRecorder {
     }
 
     /// Human presentable large log.
-    pub fn to_dump(&self, board_size: BoardSize) -> String {
-        self.cassette_tape.to_dump(board_size)
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        self.cassette_tape.to_human_presentable(board_size)
     }
 
     /// 棋譜読取。

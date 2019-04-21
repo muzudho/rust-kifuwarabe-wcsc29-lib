@@ -48,12 +48,6 @@ impl RpmCassetteTape {
         }
     }
 
-    /*
-    pub fn clear(&mut self) {
-        self.reset_caret();
-        self.label.clear();
-    }
-     */
     pub fn reset_caret(&mut self) {
         self.caret = 0;
     }
@@ -87,10 +81,8 @@ impl RpmCassetteTape {
             // 最後尾かどうか判断。
             if self.is_positive_peak() {
                 // 最後尾に達していれば、終端を示す。
-                print!("GafE<{}>", self);
                 None
             } else {
-                print!("Gaf<{}>", self);
                 let note = self.tape.get_note_by_caret(self.caret);
                 self.caret += 1;
                 Some(note)
@@ -107,7 +99,7 @@ impl RpmCassetteTape {
         if self.caret > 0 {
             // 1を引いても羽先が0以上なら、正のテープ。
             self.caret -= 1;
-            println!("caret: {}, +len: {}.", self.caret, self.tape.len_positive());
+            //println!("caret: {}, +len: {}.", self.caret, self.tape.len_positive());
             let note = self.tape.get_note_by_caret(self.caret);
             Some(note)
 
@@ -118,15 +110,15 @@ impl RpmCassetteTape {
         } else {
             self.caret -= 1;
             // TODO 長さが 0 なのに、 [0]アクセスすることがある。
-            println!("caret: {}, -len: {}.", self.caret, self.tape.len_negative());
+            //println!("caret: {}, -len: {}.", self.caret, self.tape.len_negative());
             let note = self.tape.get_note_by_caret(self.caret);
             Some(note)
         }
     }
 
     /// Human presentable large log.
-    pub fn to_dump(&self, board_size: BoardSize) -> String {
-        self.tape.to_dump(board_size)
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        self.tape.to_human_presentable(board_size)
     }
 
     /// コマンドライン入力形式。
