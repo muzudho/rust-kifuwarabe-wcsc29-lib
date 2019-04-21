@@ -40,89 +40,60 @@ impl RpmCassetteTapeRecorder {
         self.cassette_tape.reset_caret();
     }
 
-    pub fn record_next_note(&mut self, note: RpmNote) {
-        if self.cassette_tape.caret >= -1 {
-            // 1を足したら根元が0以上の場合、正のテープ。
-            // 最後尾かどうか判断。
-            if self.cassette_tape.is_positive_peak() {
-                // 最後尾に達していれば、追加。
+    /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
+    pub fn record_note(&mut self, note: RpmNote) {
+        let (is_positive, index) = self.cassette_tape.caret.to_index();
+
+        if is_positive {
+            // 正のテープ。
+            // 最先端かどうか判断。
+            if self.cassette_tape.is_positive_peak() && !self.cassette_tape.caret.is_back() {
+                // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 self.cassette_tape.tape.positive_notes.push(note);
-                self.cassette_tape.caret += 1;
+                self.cassette_tape.caret.get_and_go();
             } else {
-                // 最後尾でなければ、上書き。
-                self.cassette_tape.tape.positive_notes[self.cassette_tape.caret as usize] = note;
-                self.cassette_tape.caret += 1;
+                // 先端でなければ、上書き。
+                self.cassette_tape.tape.positive_notes[index] = note;
+                self.cassette_tape.caret.get_and_go();
 
                 // 仮のおわり を更新。
-                self.cassette_tape
-                    .tape
-                    .positive_notes
-                    .truncate(self.cassette_tape.caret as usize);
+                let (_is_positive, index) = self.cassette_tape.caret.to_index();
+                self.cassette_tape.tape.positive_notes.truncate(index);
             }
         } else {
-            // 負のテープの場合、この処理は失敗。
-            panic!("Record next fail in negative tape.");
-        }
-    }
+            // 負のテープ。
+            // 最先端かどうか判断。
+            if self.cassette_tape.is_negative_peak() && self.cassette_tape.caret.is_back() {
+                // 負の絶対値が大きい方の新しい要素を追加しようとしている。
+                self.cassette_tape.tape.negative_notes.push(note);
+                self.cassette_tape.caret.get_and_go();
+            } else {
+                // 先端でなければ、上書き。
+                self.cassette_tape.tape.negative_notes[index] = note;
+                self.cassette_tape.caret.get_and_go();
 
-    pub fn record_back_note(&mut self, note: RpmNote) {
-        if self.cassette_tape.caret > 0 {
-            // 1を引いても羽先が0以上なら、正のテープ。
-            // 正のテープの場合、この処理は失敗。
-            panic!("Record back fail in positive tape.");
-        }
-
-        // 置換／上書き。新しいテープを作成。
-        self.cassette_tape.tape = self
-            .cassette_tape
-            .tape
-            .overwrite_note(self.cassette_tape.caret, note);
-        self.cassette_tape.caret -= 1;
-    }
-    pub fn record_next_move(&mut self, rmove: &RpmMove) {
-        for note in rmove.notes.iter() {
-            self.record_next_note(*note);
-            if let Some(recorded_ply) = note.get_ope().get_phase_change() {
-                self.ply = recorded_ply;
+                // 仮のおわり を更新。
+                let (_is_positive, index) = self.cassette_tape.caret.to_index();
+                self.cassette_tape.tape.negative_notes.truncate(index);
             }
         }
     }
-    pub fn record_back_move(&mut self, rmove: &RpmMove) {
+
+    pub fn record_move(&mut self, rmove: &RpmMove) {
         for note in rmove.notes.iter() {
-            self.record_back_note(*note);
+            self.record_note(*note);
             if let Some(recorded_ply) = note.get_ope().get_phase_change() {
                 self.ply = recorded_ply;
             }
         }
     }
 
-    pub fn delete_back(&mut self) -> Option<RpmNote> {
+    pub fn delete(&mut self) -> Option<RpmNote> {
         let (new_tape, removed_note_opt) = self
             .cassette_tape
             .tape
-            .delete_back_note(self.cassette_tape.caret);
+            .new_truncated_tape(&self.cassette_tape.caret);
         self.cassette_tape.tape = new_tape;
-
-        self.cassette_tape.caret -= 1;
-
-        if let Some(removed_note) = removed_note_opt {
-            if let Some(recorded_ply) = removed_note.get_ope().get_phase_change() {
-                self.ply = recorded_ply;
-            }
-
-            Some(removed_note)
-        } else {
-            None
-        }
-    }
-    pub fn delete_next(&mut self) -> Option<RpmNote> {
-        let (new_tape, removed_note_opt) = self
-            .cassette_tape
-            .tape
-            .delete_next_note(self.cassette_tape.caret);
-        self.cassette_tape.tape = new_tape;
-
-        self.cassette_tape.caret -= 1;
 
         if let Some(removed_note) = removed_note_opt {
             if let Some(recorded_ply) = removed_note.get_ope().get_phase_change() {

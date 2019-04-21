@@ -86,7 +86,7 @@ impl RpmNote {
         }
 
         // カウントアップ。
-        let first_used_caret = note_caret.get_and_move();
+        let first_used_caret = note_caret.get_and_go();
 
         let mut token_caret = Caret::new_next_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =

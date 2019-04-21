@@ -187,13 +187,13 @@ impl RpmNoteOpe {
         caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, Option<RpmNoteOpe>) {
-        let mut n0 = caret.get_and_move() as usize;
+        let mut n0 = caret.get_and_go() as usize;
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
             ' ' => (n0 as i16, None),
             '0' => {
                 // 駒台。
-                let mut n1 = caret.get_and_move() as usize;
+                let mut n1 = caret.get_and_go() as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 if 2 < line.len() {
@@ -202,7 +202,7 @@ impl RpmNoteOpe {
                             // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
                             // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
-                            n1 = caret.get_and_move() as usize;
+                            n1 = caret.get_and_go() as usize;
                             ch1 = line[n1..=n1].chars().nth(0).unwrap();
                         }
                         _ => {}
@@ -220,7 +220,7 @@ impl RpmNoteOpe {
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
-                let mut n1 = caret.get_and_move() as usize;
+                let mut n1 = caret.get_and_go() as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 //comm.print(&format!("{}{}", ch1, ch2));
@@ -255,7 +255,7 @@ impl RpmNoteOpe {
                         break;
                     }
 
-                    n0 = caret.get_and_move() as usize;
+                    n0 = caret.get_and_go() as usize;
                     ch0 = line[n0..=n0].chars().nth(0).unwrap();
 
                     if ch0 == ']' {

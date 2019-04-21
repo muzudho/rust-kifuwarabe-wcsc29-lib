@@ -1,4 +1,5 @@
 use board_size::*;
+use common::caret::*;
 use rpm_conv::thread::rpm_note::*;
 use std::*;
 
@@ -42,17 +43,6 @@ impl RpmTape {
         RpmTape {
             positive_notes: positive_v,
             negative_notes: negative_v,
-        }
-    }
-
-    /// # Returns
-    ///
-    /// (is_positive, index)
-    pub fn caret_to_index(caret: i16) -> (bool, usize) {
-        if caret > -1 {
-            (true, caret as usize)
-        } else {
-            (false, -caret as usize)
         }
     }
 
@@ -101,27 +91,43 @@ impl RpmTape {
     pub fn len_negative(&self) -> u16 {
         self.negative_notes.len() as u16
     }
-    /*
-    /// 原点は必ず含む or 何もない。
-    pub fn get_end(&self) -> i16 {
-        self.len_positive()
-    }
-    */
 
-    /*
-    pub fn clear(&mut self) {
-        self.positive_notes.clear();
-        self.negative_notes.clear();
-    }
-     */
+    /// 正負の両端の先端要素を超えたら、Noneを返します。
+    pub fn get_note_and_go(&self, note_caret: &mut Caret) -> Option<RpmNote> {
+        let (is_positive, index) = note_caret.to_index();
+        note_caret.get_and_go();
 
-    /// 範囲外を指定しないでください。
-    pub fn get_note_by_caret(&self, caret: i16) -> RpmNote {
-        let (is_positive, index) = RpmTape::caret_to_index(caret);
         if is_positive {
-            self.positive_notes[index as usize]
+            if index < self.positive_notes.len() {
+                Some(self.positive_notes[index as usize])
+            } else {
+                None
+            }
         } else {
-            self.negative_notes[index as usize]
+            if index < self.positive_notes.len() {
+                Some(self.negative_notes[index as usize])
+            } else {
+                None
+            }
+        }
+    }
+    /// 正負の両端の先端要素を超えたら、Noneを返します。
+    pub fn cancel_and_get_note(&self, note_caret: &mut Caret) -> Option<RpmNote> {
+        note_caret.cancel_and_get();
+        let (is_positive, index) = note_caret.to_index();
+
+        if is_positive {
+            if index < self.positive_notes.len() {
+                Some(self.positive_notes[index as usize])
+            } else {
+                None
+            }
+        } else {
+            if index < self.positive_notes.len() {
+                Some(self.negative_notes[index as usize])
+            } else {
+                None
+            }
         }
     }
 
@@ -156,8 +162,8 @@ impl RpmTape {
     }
 
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn overwrite_note(&self, caret: i16, note: RpmNote) -> RpmTape {
-        let (is_positive, index) = RpmTape::caret_to_index(caret);
+    pub fn overwrite_note(&self, note_caret: Caret, note: RpmNote) -> RpmTape {
+        let (is_positive, index) = note_caret.to_index();
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -189,92 +195,51 @@ impl RpmTape {
         RpmTape::from_vector(posi_v, nega_v)
     }
 
-    /// 正の大きな先端から、原点に向かって削除するぜ☆（＾～＾）
+    /// 削除はこれ。
+    /// キャレットから見て、絶対値の大きな方を切り落とした結果を作るぜ☆（＾～＾）
+    /// キャレットは使うが、動かさない☆（＾～＾）
     ///
-    /// 先端への　削除　も、中ほどからの　切り落とし　もこれで。
-    /// 空テープなど、削除できない場合は None を返す。
-    ///
-    /// # Returns
-    ///
-    /// (RpmTape, Removed note)
-    pub fn delete_back_note(&self, caret: i16) -> (RpmTape, Option<RpmNote>) {
-        let (is_positive, index) = RpmTape::caret_to_index(caret);
-
-        let mut posi_v = Vec::new();
-        let mut nega_v = Vec::new();
-
-        let removed_note_opt = if is_positive {
-            // 正のテープ。
-            // こりゃカンタンだ☆（＾～＾）
-            // 負の部分はそのまま残す☆（＾～＾）
-            nega_v.extend_from_slice(&self.negative_notes[..]);
-            // 正の大きな部分は、切り落とし☆（＾～＾）
-            posi_v.extend_from_slice(&self.slice(0, index as i16));
-
-            if index < self.positive_notes.len() {
-                Some(self.positive_notes[index])
-            } else {
-                None
-            }
-        } else {
-            panic!("原点を含まない 負のテープ は存在しないぜ☆（＾～＾）");
-            /*
-            // 原点を含まない 負のテープ は存在しないので、全部消すぜ☆（＾～＾）
-            if index < self.negative_notes.len() {
-                Some(self.negative_notes[index])
-            } else {
-                None
-            }
-            */
-        };
-
-        (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
-    }
-
-    /// 負の大きな先端から、原点に向かって削除するぜ☆（＾～＾）
-    ///
-    /// 先端への　削除　も、中ほどからの　切り落とし　もこれで。
-    /// 空テープなど、削除できない場合は None を返す。
+    /// 切り落とした側の、こちらに一番近い要素を返すぜ☆（＾～＾）
+    /// そんな要素がなければ None を返す。
     ///
     /// # Returns
     ///
     /// (RpmTape, Removed note)
-    pub fn delete_next_note(&self, caret: i16) -> (RpmTape, Option<RpmNote>) {
-        let (is_positive, index) = RpmTape::caret_to_index(caret);
-
+    pub fn new_truncated_tape(&self, note_caret: &Caret) -> (RpmTape, Option<RpmNote>) {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        let removed_note_opt = if is_positive {
-            panic!("原点を含まない 正のテープ は存在しないぜ☆（＾～＾）");
-        /*
-        // 原点を含まない 正のテープ は存在しないので、全部消すぜ☆（＾～＾）
-        if index < self.positive_notes.len() {
-            Some(self.positive_notes[index])
+        let (is_positive, index) = note_caret.to_index();
+
+        if index == 0 {
+            (RpmTape::from_vector(posi_v, nega_v), None)
         } else {
-            None
+            let removed_note_opt = if is_positive {
+                // 正のテープ側で切り落とし。
+                // 負の部分はそのまま残して、正の絶対値の大きな方を切り落とす☆（＾～＾）
+                nega_v.extend_from_slice(&self.negative_notes[..]);
+                posi_v.extend_from_slice(&self.slice(0, index as i16));
+
+                if index < self.positive_notes.len() {
+                    Some(self.positive_notes[index])
+                } else {
+                    None
+                }
+            } else {
+                // 負のテープ側で切り落とし。
+                // 正の部分はそのまま残して、負の絶対値の大きな方を切り落とす☆（＾～＾）
+                posi_v.extend_from_slice(&self.positive_notes[..]);
+                nega_v.extend_from_slice(&self.slice(0, index as i16));
+
+                if index < self.negative_notes.len() {
+                    Some(self.negative_notes[index])
+                } else {
+                    None
+                }
+            };
+
+            (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
         }
-        */
-        } else {
-            // 負のテープだけ。
-            // 例えば 負のテープに
-            // [-1, -2, -3, -4, -5]
-            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
-
-            // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, index as i16));
-            // 負の大きな部分は、切り落とし☆（＾～＾）
-            // 正の部分はそのまま残す☆（＾～＾）
-            posi_v.extend_from_slice(&self.positive_notes[..]);
-
-            if index < self.negative_notes.len() {
-                Some(self.negative_notes[index])
-            } else {
-                None
-            }
-        };
-
-        (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
     }
 
     /// 連結。

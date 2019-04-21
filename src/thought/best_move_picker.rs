@@ -139,17 +139,18 @@ impl BestMovePicker {
                                 my_addr_obj.to_physical_sign(position.get_board_size())
                             ));
 
-                            // ノートをスキャン。次方向と、前方向がある。
-                            let mut next_note_caret = Caret::new_next_caret();
+                            // ノートをスキャン。
+                            // TODO 次方向と、前方向がある。
+                            let mut note_caret = Caret::new_next_caret();
                             'track_scan: loop {
-                                let is_break_piace_loop = self.next_pattern_match(
+                                let is_break_piace_loop = self.go_pattern_match(
                                     &comm,
                                     recorder,
                                     position,
                                     &record_for_json,
                                     *my_piece_id,
                                     my_addr_obj,
-                                    &mut next_note_caret,
+                                    &mut note_caret,
                                 );
 
                                 if is_break_piace_loop {
@@ -216,7 +217,7 @@ impl BestMovePicker {
     /// # Returns
     ///
     /// (is_break_piece_loop)
-    pub fn next_pattern_match(
+    pub fn go_pattern_match(
         &mut self,
         comm: &Communication,
         recorder: &mut RpmCassetteTapeRecorder,
@@ -224,19 +225,19 @@ impl BestMovePicker {
         record_for_json: &RpmRecordForJson,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
-        next_note_caret: &mut Caret,
+        note_caret: &mut Caret,
     ) -> bool {
         /*
         comm.println(&format!(
             "#>{} note.",
-            next_note_caret.to_human_presentable()
+            note_caret.to_human_presentable()
         ));
         */
         // とりあえず 1手分をパースします。
-        if let Some(rmove) = RpmMove::parse_next_1move(
+        if let Some(rmove) = RpmMove::parse_1move(
             comm,
             &record_for_json,
-            next_note_caret,
+            note_caret,
             position.get_board_size(),
         ) {
             // どの駒が動いた１手なのか、またその番地。
@@ -246,7 +247,7 @@ impl BestMovePicker {
 
             comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
-                next_note_caret.to_human_presentable(),
+                note_caret.to_human_presentable(),
                 rmove.to_human_presentable(position.get_board_size()),
                 subject_pid.to_human_presentable(),
                 subject_address.to_human_presentable(position.get_board_size()),
@@ -325,7 +326,7 @@ impl BestMovePicker {
                     recorder.to_human_presentable(position.get_board_size())
                 );
 
-                recorder.record_next_move(&rmove);
+                recorder.record_move(&rmove);
                 println!(
                     "BMP: Rtape(2): {}.",
                     recorder.to_human_presentable(position.get_board_size())
@@ -338,7 +339,7 @@ impl BestMovePicker {
                 );
 
                 // 1手進めます。（非合法タッチは自動で戻します）
-                if RpmMovePlayer::next_1move_on_tape(
+                if RpmMovePlayer::get_1move_on_tape_and_move(
                     &mut recorder.cassette_tape,
                     position,
                     recorder.ply,
@@ -350,7 +351,7 @@ impl BestMovePicker {
 
                     // 局面を動かしてしまったので戻す。
                     comm.println("Legal, go back!");
-                    RpmMovePlayer::back_1move_on_tape(
+                    RpmMovePlayer::cancel_and_get_1move_on_tape(
                         &mut recorder.cassette_tape,
                         position,
                         recorder.ply,

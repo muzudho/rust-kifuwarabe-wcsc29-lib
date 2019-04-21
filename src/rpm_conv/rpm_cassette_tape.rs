@@ -1,4 +1,5 @@
 use board_size::*;
+use common::caret::*;
 use rpm_conv::rpm_tape::*;
 use rpm_conv::thread::rpm_note::*;
 use std::*;
@@ -24,19 +25,24 @@ impl RpmCassetteTapeLabel {
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1753122
 pub struct RpmCassetteTape {
-    pub caret: i16,
+    pub caret: Caret,
     pub label: RpmCassetteTapeLabel,
     pub tape: RpmTape,
 }
 impl fmt::Display for RpmCassetteTape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Caret: {}, {}", self.caret, self.tape)
+        write!(
+            f,
+            "Caret: {} {}",
+            self.caret.to_human_presentable(),
+            self.tape
+        )
     }
 }
 impl RpmCassetteTape {
     pub fn default() -> Self {
         RpmCassetteTape {
-            caret: 0,
+            caret: Caret::new_next_caret(),
             label: RpmCassetteTapeLabel {
                 date: "".to_string(),
                 event: "".to_string(),
@@ -49,7 +55,7 @@ impl RpmCassetteTape {
     }
 
     pub fn reset_caret(&mut self) {
-        self.caret = 0;
+        self.caret.reset();
     }
 
     pub fn get_positive_peak_caret(&self) -> i16 {
@@ -60,10 +66,10 @@ impl RpmCassetteTape {
     }
 
     pub fn is_positive_peak(&self) -> bool {
-        self.caret == self.get_positive_peak_caret()
+        self.caret.equals(self.get_positive_peak_caret())
     }
     pub fn is_negative_peak(&self) -> bool {
-        self.caret == self.get_negative_peak_caret()
+        self.caret.equals(self.get_negative_peak_caret())
     }
 
     /// 連結。
@@ -74,46 +80,13 @@ impl RpmCassetteTape {
         self.tape.append_back_tape(&mut cassette_tape_to_empty.tape);
     }
 
-    /// 現在の要素を返してから、カーソルを進めます。
-    pub fn next_note(&mut self) -> Option<RpmNote> {
-        if self.caret >= -1 {
-            // 1を足したら根元が0以上の場合、正のテープ。
-            // 最後尾かどうか判断。
-            if self.is_positive_peak() {
-                // 最後尾に達していれば、終端を示す。
-                None
-            } else {
-                let note = self.tape.get_note_by_caret(self.caret);
-                self.caret += 1;
-                Some(note)
-            }
-        } else {
-            // 負のテープの場合。
-            let note = self.tape.get_note_by_caret(self.caret);
-            self.caret += 1;
-            Some(note)
-        }
+    /// 現在の要素を返してから、キャレットを動かします。
+    pub fn get_note_and_go(&mut self) -> Option<RpmNote> {
+        self.tape.get_note_and_go(&mut self.caret)
     }
-    /// カーソルを戻してから、現在の要素を返します。
-    pub fn back_note(&mut self) -> Option<RpmNote> {
-        if self.caret > 0 {
-            // 1を引いても羽先が0以上なら、正のテープ。
-            self.caret -= 1;
-            //println!("caret: {}, +len: {}.", self.caret, self.tape.len_positive());
-            let note = self.tape.get_note_by_caret(self.caret);
-            Some(note)
-
-        // 負のテープの最後尾の場合。
-        } else if -self.caret - 1 <= self.get_negative_peak_caret() {
-            // 1を引いて先端に達していれば、終端を示す。
-            None
-        } else {
-            self.caret -= 1;
-            // TODO 長さが 0 なのに、 [0]アクセスすることがある。
-            //println!("caret: {}, -len: {}.", self.caret, self.tape.len_negative());
-            let note = self.tape.get_note_by_caret(self.caret);
-            Some(note)
-        }
+    /// キャレットを動かしてから、現在の要素を返します。
+    pub fn cancel_and_get_note(&mut self) -> Option<RpmNote> {
+        self.tape.cancel_and_get_note(&mut self.caret)
     }
 
     /// Human presentable large log.

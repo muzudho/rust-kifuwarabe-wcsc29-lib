@@ -46,7 +46,7 @@ impl RpmMove {
     }
 
     /// 次の1手分解析。
-    pub fn parse_next_1move(
+    pub fn parse_1move(
         comm: &Communication,
         record_for_json: &RpmRecordForJson,
         note_caret: &mut Caret,

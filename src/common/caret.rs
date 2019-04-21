@@ -17,6 +17,22 @@ impl Caret {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.number = 0;
+    }
+
+    pub fn turn_to_negative(&mut self) {
+        if !self.is_back() {
+            self.back = true;
+        }
+    }
+
+    pub fn turn_to_positive(&mut self) {
+        if self.is_back() {
+            self.back = false;
+        }
+    }
+
     pub fn to_human_presentable(&self) -> String {
         if self.is_back() {
             format!("[<--{}]", self.number).to_string()
@@ -29,13 +45,17 @@ impl Caret {
         self.back
     }
 
+    /// 等しい。
+    pub fn equals(&self, target: i16) -> bool {
+        self.number == target
+    }
     /// target 以上。
     pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
         target <= self.number
     }
 
-    /// 向きの通りに移動します。
-    pub fn get_and_move(&mut self) -> i16 {
+    /// 要素を返してから、向きの通りに移動します。
+    pub fn get_and_go(&mut self) -> i16 {
         let old = self.number;
 
         if self.back {
@@ -56,5 +76,19 @@ impl Caret {
         }
 
         self.number
+    }
+
+    /// 配列のインデックスに変換します。
+    /// 負の方向は 数を 0 側に 1 つ寄せます。
+    ///
+    /// # Returns
+    ///
+    /// (is_positive, index)
+    pub fn to_index(&self) -> (bool, usize) {
+        if self.number < 0 {
+            (false, (-self.number - 1) as usize)
+        } else {
+            (true, self.number as usize)
+        }
     }
 }
