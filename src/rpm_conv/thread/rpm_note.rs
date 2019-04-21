@@ -32,7 +32,7 @@ impl fmt::Display for RpmNote {
     }
 }
 impl RpmNote {
-    /// Human presentable.
+    /// For log.
     pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         format!(
             "'{}'{}",
@@ -64,38 +64,47 @@ impl RpmNote {
     }
 
     /// 次のノート１つ読取。操作と、駒番号を解析。レコードの終端なら None を返す。
-    pub fn parse_next_1note(
+    ///
+    /// # Returns
+    ///
+    /// (first_used_caret, last_used_caret, note_opt)
+    pub fn parse_1note(
         comm: &Communication,
         record_for_json: &RpmRecordForJson,
-        caret: &mut usize,
+        note_caret: &mut Caret,
         board_size: BoardSize,
-    ) -> Option<RpmNote> {
+    ) -> (i16, i16, Option<RpmNote>) {
         let size = record_for_json.body.operation.len();
 
-        if size <= *caret {
+        if note_caret.is_greater_than_or_equal_to(size as i16) {
             // 範囲外はエラーで落とす。
             panic!(
                 "Out of bounds exception: size: {}, caret: {}.",
-                size, *caret
+                size,
+                note_caret.to_human_presentable()
             );
         }
 
-        let mut token_caret = Caret::new();
-        let note_ope = if let Some(note_ope) = RpmNoteOpe::parse_next_1note(
-            &comm,
-            &record_for_json.body.operation[*caret],
-            &mut token_caret,
-            board_size,
-        ) {
-            note_ope
+        // カウントアップ。
+        let first_used_caret = note_caret.get_and_move();
+
+        let mut token_caret = Caret::new_next_caret();
+        let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
+            RpmNoteOpe::parse_1note(
+                &comm,
+                &record_for_json.body.operation[first_used_caret as usize],
+                &mut token_caret,
+                board_size,
+            ) {
+            (sub_last_used_caret, note_ope)
         } else {
             panic!(
                 "Unexpected operation note token. {}",
-                record_for_json.body.operation[*caret]
+                record_for_json.body.operation[first_used_caret as usize]
             )
         };
 
-        let pnum = record_for_json.body.piece_number[*caret];
+        let pnum = record_for_json.body.piece_number[first_used_caret as usize];
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None
@@ -103,8 +112,10 @@ impl RpmNote {
             PieceIdentify::from_number(pnum)
         };
 
-        // カウントアップ。
-        *caret += 1;
-        Some(RpmNote::from_id_ope(pid_opt, note_ope))
+        (
+            first_used_caret,
+            last_used_caret,
+            Some(RpmNote::from_id_ope(pid_opt, note_ope)),
+        )
     }
 }

@@ -1,4 +1,5 @@
 use address::Address;
+use common::caret::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
@@ -139,7 +140,7 @@ impl BestMovePicker {
                             ));
 
                             // ノートをスキャン。次方向と、前方向がある。
-                            let mut next_note_idx = 0;
+                            let mut next_note_caret = Caret::new_next_caret();
                             'track_scan: loop {
                                 let is_break_piace_loop = self.next_pattern_match(
                                     &comm,
@@ -148,7 +149,7 @@ impl BestMovePicker {
                                     &record_for_json,
                                     *my_piece_id,
                                     my_addr_obj,
-                                    &mut next_note_idx,
+                                    &mut next_note_caret,
                                 );
 
                                 if is_break_piace_loop {
@@ -223,14 +224,19 @@ impl BestMovePicker {
         record_for_json: &RpmRecordForJson,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
-        next_note_idx: &mut usize,
+        next_note_caret: &mut Caret,
     ) -> bool {
-        comm.println(&format!("#>[{}] note.", next_note_idx));
+        /*
+        comm.println(&format!(
+            "#>{} note.",
+            next_note_caret.to_human_presentable()
+        ));
+        */
         // とりあえず 1手分をパースします。
         if let Some(rmove) = RpmMove::parse_next_1move(
             comm,
             &record_for_json,
-            next_note_idx,
+            next_note_caret,
             position.get_board_size(),
         ) {
             // どの駒が動いた１手なのか、またその番地。
@@ -239,8 +245,8 @@ impl BestMovePicker {
                 rmove.to_first_touch_piece_id(position.get_board_size());
 
             comm.println(&format!(
-                "#[{}]Rmove:{}. subject('{}'{}){}",
-                next_note_idx,
+                "#{}Rmove:{}. subject('{}'{}){}",
+                next_note_caret.to_human_presentable(),
                 rmove.to_human_presentable(position.get_board_size()),
                 subject_pid.to_human_presentable(),
                 subject_address.to_human_presentable(position.get_board_size()),

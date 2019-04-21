@@ -3,14 +3,29 @@ pub struct Caret {
     number: i16,
 }
 impl Caret {
-    pub fn new() -> Self {
+    pub fn new_next_caret() -> Self {
         Caret {
             back: false,
             number: 0,
         }
     }
 
-    pub fn is_back(self) -> bool {
+    pub fn new_back_caret(last_number: i16) -> Self {
+        Caret {
+            back: true,
+            number: last_number,
+        }
+    }
+
+    pub fn to_human_presentable(&self) -> String {
+        if self.is_back() {
+            format!("[<--{}]", self.number).to_string()
+        } else {
+            format!("[{}-->]", self.number).to_string()
+        }
+    }
+
+    pub fn is_back(&self) -> bool {
         self.back
     }
 

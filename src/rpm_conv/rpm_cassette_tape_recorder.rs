@@ -142,17 +142,17 @@ impl RpmCassetteTapeRecorder {
 
     /// 棋譜読取。
     pub fn read_tape(&mut self, comm: &Communication, line: &str, position: &mut Position) {
-        let mut caret = Caret::new();
+        let mut caret = Caret::new_next_caret();
 
         loop {
             if caret.is_greater_than_or_equal_to(line.len() as i16) {
                 return;
             }
 
-            let rnote_ope_opt =
-                RpmNoteOpe::parse_next_1note(&comm, &line, &mut caret, position.get_board_size());
+            let tuple =
+                RpmNoteOpe::parse_1note(&comm, &line, &mut caret, position.get_board_size());
 
-            if let Some(rnote_ope) = rnote_ope_opt {
+            if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");
                 RpmNotePlayer::touch_brandnew_note(self, &rnote_ope, position, comm);
 

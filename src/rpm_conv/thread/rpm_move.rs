@@ -5,6 +5,7 @@
 ///
 use address::*;
 use board_size::*;
+use common::caret::*;
 use communication::*;
 use piece_etc::*;
 use rpm_conv::thread::rpm_note::*;
@@ -48,17 +49,15 @@ impl RpmMove {
     pub fn parse_next_1move(
         comm: &Communication,
         record_for_json: &RpmRecordForJson,
-        note_caret: &mut usize,
+        note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> Option<RpmMove> {
-        let mut rmove = RpmMove {
-            notes: Vec::new(),
-            start: *note_caret,
-            end: *note_caret,
-        };
+        let mut notes_buffer = Vec::new();
+        let mut first_used_caret = 0;
+        let mut last_used_caret = 0;
 
-        let size = record_for_json.body.operation.len();
-        if size == 1 {
+        let note_size = record_for_json.body.operation.len();
+        if note_size == 1 {
             panic!(
                 "操作トラックが 1ノート ということは無いはず。 {:?}",
                 record_for_json.body.operation
@@ -70,7 +69,7 @@ impl RpmMove {
 
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
-            if size <= *note_caret {
+            if note_caret.is_greater_than_or_equal_to(note_size as i16) {
                 // トラックの終わり。
                 //comm.print("Break: End of track.");
                 break 'j_loop;
@@ -78,41 +77,43 @@ impl RpmMove {
 
             //comm.print(&format!("Scanning: note_caret: {}.", note_caret));
 
-            let note_opt = RpmNote::parse_next_1note(comm, record_for_json, note_caret, board_size);
+            if let (sub_first_used_caret, sub_last_used_caret, Some(note)) =
+                RpmNote::parse_1note(comm, record_for_json, note_caret, board_size)
+            {
+                if note.is_phase_change() {
+                    if is_first {
 
-            match note_opt {
-                Some(note) => {
-                    if note.is_phase_change() {
-                        if is_first {
-
-                        } else {
-                            //comm.print("Break: Phase change.");
-                            break 'j_loop;
-                        }
+                    } else {
+                        //comm.print("Break: Phase change.");
+                        break 'j_loop;
                     }
+                }
 
-                    //comm.print(&format!("Push: {:?}.", note));
-                    rmove.notes.push(note);
-                }
-                None => {
-                    //comm.print("Break: None.");
-                    break 'j_loop;
-                }
-            }
+                //comm.print(&format!("Push: {:?}.", note));
+                notes_buffer.push(note);
+                first_used_caret = sub_first_used_caret;
+                last_used_caret = sub_last_used_caret;
+            } else {
+                //comm.print("Break: None.");
+                break 'j_loop;
+            };
 
             is_first = false;
         }
 
-        if rmove.is_empty() {
+        if notes_buffer.is_empty() {
             None
-        } else if rmove.len() == 1 {
+        } else if notes_buffer.len() == 1 {
             panic!(
                 "指し手が 1ノート ということは無いはず。 {:?}",
                 record_for_json.body.operation
             )
         } else {
-            rmove.end = *note_caret;
-            Some(rmove)
+            Some(RpmMove {
+                notes: notes_buffer,
+                start: first_used_caret as usize,
+                end: last_used_caret as usize,
+            })
         }
     }
 

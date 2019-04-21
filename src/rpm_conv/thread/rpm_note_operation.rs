@@ -177,16 +177,20 @@ impl RpmNoteOpe {
     /// # Arguments
     ///
     /// * `caret` - Token caret.
-    pub fn parse_next_1note(
+    ///
+    /// # Returns
+    ///
+    /// (last_used_caret, note_ope_opt)
+    pub fn parse_1note(
         _comm: &Communication,
         line: &str,
         caret: &mut Caret,
         board_size: BoardSize,
-    ) -> Option<RpmNoteOpe> {
+    ) -> (i16, Option<RpmNoteOpe>) {
         let mut n0 = caret.get_and_move() as usize;
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
-            ' ' => None,
+            ' ' => (n0 as i16, None),
             '0' => {
                 // 駒台。
                 let mut n1 = caret.get_and_move() as usize;
@@ -212,7 +216,7 @@ impl RpmNoteOpe {
                 let address =
                     Address::from_hand_ph_pt(piece.get_phase(), PieceType::from_piece(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
-                Some(RpmNoteOpe::from_address(address))
+                (n1 as i16, Some(RpmNoteOpe::from_address(address)))
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
@@ -227,21 +231,21 @@ impl RpmNoteOpe {
                     ),
                     board_size,
                 );
-                Some(RpmNoteOpe::from_address(address))
+                (n1 as i16, Some(RpmNoteOpe::from_address(address)))
             }
             '+' => {
                 // 成り。
                 //comm.print(&ch1.to_string());
-                Some(RpmNoteOpe::turn_over())
+                (n0 as i16, Some(RpmNoteOpe::turn_over()))
             }
             '-' => {
                 // １８０°回転。
                 //comm.print(&ch1.to_string());
-                Some(RpmNoteOpe::rotate())
+                (n0 as i16, Some(RpmNoteOpe::rotate()))
             }
             '|' => {
                 // フェーズ交代。Ply は分からない。
-                Some(RpmNoteOpe::change_phase(-1))
+                (n0 as i16, Some(RpmNoteOpe::change_phase(-1)))
             }
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
@@ -263,7 +267,7 @@ impl RpmNoteOpe {
                     ply *= 10;
                     ply += num;
                 }
-                Some(RpmNoteOpe::change_phase(ply))
+                (n0 as i16, Some(RpmNoteOpe::change_phase(ply)))
             }
             _ => {
                 let last = line.len();
