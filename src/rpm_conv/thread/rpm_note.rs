@@ -1,8 +1,8 @@
 ///
 /// Rpm棋譜のノート。
-/// 
+///
 /// 局面から独立しています。
-/// 
+///
 use board_size::*;
 use communication::*;
 use piece_etc::*;
@@ -19,12 +19,12 @@ pub struct RpmNote {
 }
 impl fmt::Display for RpmNote {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "'{}'{}",
+        write!(
+            f,
+            "'{}'{}",
             match self.identify {
-                Some(pid) => {
-                    pid.to_human_presentable()
-                },
-                None => { "--".to_string() },
+                Some(pid) => pid.to_human_presentable(),
+                None => "--".to_string(),
             },
             self.operation
         )
@@ -32,19 +32,18 @@ impl fmt::Display for RpmNote {
 }
 impl RpmNote {
     /// Human presentable.
-    pub fn to_log(&self, board_size:BoardSize) -> String {
-        format!("'{}'{}",
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        format!(
+            "'{}'{}",
             match self.identify {
-                Some(pid) => {
-                    pid.to_human_presentable()
-                },
-                None => { "--".to_string() },
+                Some(pid) => pid.to_human_presentable(),
+                None => "--".to_string(),
             },
-            self.operation.to_log(board_size)
+            self.operation.to_human_presentable(board_size)
         )
     }
 
-    pub fn from_id_ope(pid:Option<PieceIdentify>, operation_note: RpmNoteOpe) -> RpmNote {
+    pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: RpmNoteOpe) -> RpmNote {
         RpmNote {
             identify: pid,
             operation: operation_note,
@@ -64,12 +63,20 @@ impl RpmNote {
     }
 
     /// 操作と、駒番号を解析。レコードの終端なら None を返す。
-    pub fn parse_1note(comm:&Communication, record_for_json:&RpmRecordForJson, note_start:&mut usize, board_size:BoardSize) -> Option<RpmNote> {
+    pub fn parse_1note(
+        comm: &Communication,
+        record_for_json: &RpmRecordForJson,
+        note_start: &mut usize,
+        board_size: BoardSize,
+    ) -> Option<RpmNote> {
         let size = record_for_json.body.operation.len();
 
         if size <= *note_start {
             // 範囲外はエラーで落とす。
-            panic!("Out of bounds exception: size: {}, note_start: {}.", size, *note_start);
+            panic!(
+                "Out of bounds exception: size: {}, note_start: {}.",
+                size, *note_start
+            );
         }
 
         let mut token_start = 0;
@@ -77,10 +84,14 @@ impl RpmNote {
             &comm,
             &record_for_json.body.operation[*note_start],
             &mut token_start,
-            board_size) {
+            board_size,
+        ) {
             note_ope
         } else {
-            panic!("Unexpected operation note token. {}", record_for_json.body.operation[*note_start])
+            panic!(
+                "Unexpected operation note token. {}",
+                record_for_json.body.operation[*note_start]
+            )
         };
 
         let pnum = record_for_json.body.piece_number[*note_start];

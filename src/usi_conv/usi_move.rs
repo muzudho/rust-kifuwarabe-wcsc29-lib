@@ -1,28 +1,39 @@
 use address::*;
 use board_size::*;
-use std::*;
 use piece_etc::*;
+use std::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {
-    pub source:Option<Cell>,
-    pub destination:Option<Cell>,
-    pub promotion:bool,
-    drop:Option<PieceType>,
+    pub source: Option<Cell>,
+    pub destination: Option<Cell>,
+    pub promotion: bool,
+    drop: Option<PieceType>,
     resign: bool,
 }
 impl UsiMove {
     /// 盤上の駒を動かすとき。
-    pub fn create_walk(
-        src:Cell,
-        dst:Cell,
-        pro:bool,
-        board_size:BoardSize) -> UsiMove {
-
-        debug_assert!(0<src.get_file() && src.get_file() <=board_size.get_file_len(), "Src file: {}.", src.to_scalar().to_string());
-        debug_assert!(0<src.get_rank() && src.get_rank() <=board_size.get_rank_len(), "Src rank: {}.", src.to_scalar().to_string());
-        debug_assert!(0<dst.get_file() && dst.get_file() <=board_size.get_file_len(), "Dst file: {}.", dst.to_scalar().to_string());
-        debug_assert!(0<dst.get_rank() && dst.get_rank() <=board_size.get_rank_len(), "Dst rank: {}.", dst.to_scalar().to_string());
+    pub fn create_walk(src: Cell, dst: Cell, pro: bool, board_size: BoardSize) -> UsiMove {
+        debug_assert!(
+            0 < src.get_file() && src.get_file() <= board_size.get_file_len(),
+            "Src file: {}.",
+            src.to_scalar().to_string()
+        );
+        debug_assert!(
+            0 < src.get_rank() && src.get_rank() <= board_size.get_rank_len(),
+            "Src rank: {}.",
+            src.to_scalar().to_string()
+        );
+        debug_assert!(
+            0 < dst.get_file() && dst.get_file() <= board_size.get_file_len(),
+            "Dst file: {}.",
+            dst.to_scalar().to_string()
+        );
+        debug_assert!(
+            0 < dst.get_rank() && dst.get_rank() <= board_size.get_rank_len(),
+            "Dst rank: {}.",
+            dst.to_scalar().to_string()
+        );
 
         UsiMove {
             source: Some(src),
@@ -34,13 +45,17 @@ impl UsiMove {
     }
 
     /// 打つとき。
-    pub fn create_drop(
-        dst:Cell,
-        dro:PieceType,
-        board_size:BoardSize) -> UsiMove {
-
-        debug_assert!(0<dst.get_file() && dst.get_file() <=board_size.get_file_len(), "Dst file: {}.", dst.to_scalar().to_string());
-        debug_assert!(0<dst.get_rank() && dst.get_rank() <=board_size.get_rank_len(), "Dst rank: {}.", dst.to_scalar().to_string());
+    pub fn create_drop(dst: Cell, dro: PieceType, board_size: BoardSize) -> UsiMove {
+        debug_assert!(
+            0 < dst.get_file() && dst.get_file() <= board_size.get_file_len(),
+            "Dst file: {}.",
+            dst.to_scalar().to_string()
+        );
+        debug_assert!(
+            0 < dst.get_rank() && dst.get_rank() <= board_size.get_rank_len(),
+            "Dst rank: {}.",
+            dst.to_scalar().to_string()
+        );
 
         UsiMove {
             source: None,
@@ -69,7 +84,7 @@ impl UsiMove {
         self.drop
     }
 
-    pub fn set_resign(&mut self, yes:bool) {
+    pub fn set_resign(&mut self, yes: bool) {
         self.resign = yes
     }
 
@@ -85,13 +100,21 @@ impl UsiMove {
 
         let mut sign = String::new();
 
-        if self.drop != None {
-            sign.push_str(&format!("{}*", piece_type_to_sign(self.drop)));
+        if let Some(drop) = self.drop {
+            sign.push_str(&format!("{}*", drop.to_sign()));
         } else {
-            sign.push_str(&format!("{}{}", self.source.unwrap().get_file(), rank_to_sign(self.source.unwrap().get_rank())));
+            sign.push_str(&format!(
+                "{}{}",
+                self.source.unwrap().get_file(),
+                rank_to_sign(self.source.unwrap().get_rank())
+            ));
         }
 
-        sign.push_str(&format!("{}{}", self.destination.unwrap().get_file(), rank_to_sign(self.destination.unwrap().get_rank())));
+        sign.push_str(&format!(
+            "{}{}",
+            self.destination.unwrap().get_file(),
+            rank_to_sign(self.destination.unwrap().get_rank())
+        ));
 
         if self.promotion {
             sign.push_str("+");

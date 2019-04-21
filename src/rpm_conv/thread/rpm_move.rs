@@ -34,11 +34,11 @@ impl fmt::Display for RpmMove {
 }
 impl RpmMove {
     /// Human presentable.
-    pub fn to_log(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         let mut text = String::new();
 
         for note in &self.notes {
-            text = format!("{} {}", text, note.to_log(board_size))
+            text = format!("{} {}", text, note.to_human_presentable(board_size))
         }
 
         format!("({}:{}){}", self.start, self.end, text)
@@ -125,11 +125,29 @@ impl RpmMove {
     }
 
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
-    pub fn to_first_touch_piece_id(&self, board_size: BoardSize) -> (PieceIdentify, Address) {
+    ///
+    /// # Returns
+    ///
+    /// (どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
+    pub fn to_first_touch_piece_id(
+        &self,
+        board_size: BoardSize,
+    ) -> (
+        PieceIdentify,
+        Address,
+        Option<PieceIdentify>,
+        Option<Address>,
+    ) {
         // とりあえず USI move に変換するついでに、欲しい情報を得る。
-        let (_umove, first_touch_pid, first_touch_addr) = self.to_usi_move(board_size);
+        let (_umove, subject_pid, subject_addr, object_pid_opt, object_address_opt) =
+            self.to_usi_move(board_size);
 
-        (first_touch_pid, first_touch_addr)
+        (
+            subject_pid,
+            subject_addr,
+            object_pid_opt,
+            object_address_opt,
+        )
     }
 
     /// 一手。フェーズ・チェンジ・ノートや「ほこり取り」は含まない。
@@ -138,14 +156,24 @@ impl RpmMove {
     ///
     /// # Returns
     ///
-    /// Usi move,
-    /// どの駒を動かした一手か,
-    /// どこの駒を動かした一手か,
-    pub fn to_usi_move(&self, board_size: BoardSize) -> (UsiMove, PieceIdentify, Address) {
-        //let mut touched_source = false;
-
-        let mut first_touch_idp_opt;
-        let mut first_touch_address_opt;
+    /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
+    pub fn to_usi_move(
+        &self,
+        board_size: BoardSize,
+    ) -> (
+        UsiMove,
+        PieceIdentify,
+        Address,
+        Option<PieceIdentify>,
+        Option<Address>,
+    ) {
+        // 動作の主体。
+        let mut subject_pid_opt;
+        let mut subject_address_opt;
+        // 動作に巻き込まれる方。
+        let mut object_pid_opt = None;
+        let mut object_address_opt = None;
+        // 基本情報。
         let mut src_opt = None;
         let mut dst_opt = None;
         let mut promotion = false;
@@ -159,7 +187,7 @@ impl RpmMove {
                 "Unexpected 1st note of move(10): 超え。 {}/{}, {}",
                 i,
                 self.notes.len(),
-                self.to_log(board_size)
+                self.to_human_presentable(board_size)
             );
         };
 
@@ -167,8 +195,8 @@ impl RpmMove {
         if let Some(address) = note.get_ope().address {
             if let Some(piece) = address.get_hand_piece() {
                 // 駒台なら必ず自駒のドロップ。
-                first_touch_idp_opt = note.get_id();
-                first_touch_address_opt = Some(address);
+                subject_pid_opt = note.get_id();
+                subject_address_opt = Some(address);
                 drop_opt = Some(PieceType::from_piece(piece));
 
                 // 次は置くだけ。
@@ -180,7 +208,7 @@ impl RpmMove {
                         "Unexpected 1st note of move(20): 超え。 {}/{}, {}",
                         i,
                         self.notes.len(),
-                        self.to_log(board_size)
+                        self.to_human_presentable(board_size)
                     );
                 }
 
@@ -189,7 +217,7 @@ impl RpmMove {
                 } else {
                     panic!(
                         "Unexpected 1st note of move(30): {}.",
-                        note.to_log(board_size)
+                        note.to_human_presentable(board_size)
                     );
                 }
 
@@ -198,8 +226,8 @@ impl RpmMove {
             // 盤上
             } else {
                 // これが盤上の自駒か、相手の駒かは、まだ分からない。仮に入れておく。
-                first_touch_idp_opt = note.get_id();
-                first_touch_address_opt = Some(address);
+                subject_pid_opt = note.get_id();
+                subject_address_opt = Some(address);
                 src_opt = Some(board_size.address_to_cell(address.get_index()));
 
                 // 次。
@@ -219,15 +247,17 @@ impl RpmMove {
                             "Unexpected 1st note of move(50): 超え。 {}/{}, {}",
                             i,
                             self.notes.len(),
-                            self.to_log(board_size)
+                            self.to_human_presentable(board_size)
                         );
                     }
                 }
 
                 if note.get_ope().sky_rotate {
                     // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
-                    first_touch_idp_opt = None;
-                    first_touch_address_opt = None;
+                    object_pid_opt = subject_pid_opt;
+                    object_address_opt = subject_address_opt;
+                    subject_pid_opt = None;
+                    subject_address_opt = None;
                     src_opt = None;
                     promotion = false;
 
@@ -240,7 +270,7 @@ impl RpmMove {
                             "Unexpected 1st note of move(40): 超え。 {}/{}, {}",
                             i,
                             self.notes.len(),
-                            self.to_log(board_size)
+                            self.to_human_presentable(board_size)
                         );
                     }
 
@@ -255,13 +285,13 @@ impl RpmMove {
                                 "Unexpected 1st note of move(60): 超え。 {}/{}, {}",
                                 i,
                                 self.notes.len(),
-                                self.to_log(board_size)
+                                self.to_human_presentable(board_size)
                             );
                         }
 
                         if let Some(address) = note.get_ope().address {
-                            first_touch_idp_opt = note.get_id();
-                            first_touch_address_opt = Some(address);
+                            subject_pid_opt = note.get_id();
+                            subject_address_opt = Some(address);
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
                             // 次。
                             i += 1;
@@ -272,14 +302,14 @@ impl RpmMove {
                                     "Unexpected 1st note of move(80): 超え。 {}/{}, {}",
                                     i,
                                     self.notes.len(),
-                                    self.to_log(board_size)
+                                    self.to_human_presentable(board_size)
                                 );
                             }
                         }
                     } else {
                         panic!(
                             "Unexpected 1st note of move(70): {}.",
-                            note.to_log(board_size)
+                            note.to_human_presentable(board_size)
                         );
                     }
                 } else {
@@ -299,7 +329,7 @@ impl RpmMove {
                             "Unexpected 1st note of move(90): 超え。 {}/{}, {}",
                             i,
                             self.notes.len(),
-                            self.to_log(board_size)
+                            self.to_human_presentable(board_size)
                         );
                     }
                 }
@@ -314,7 +344,7 @@ impl RpmMove {
         } else {
             panic!(
                 "Unexpected 1st note of move(100): {}.",
-                note.to_log(board_size)
+                note.to_human_presentable(board_size)
             );
         }
 
@@ -323,41 +353,9 @@ impl RpmMove {
                 "Unexpected 1st note of move(110): 余り。 {}/{}, {}",
                 i,
                 self.notes.len(),
-                self.to_log(board_size)
+                self.to_human_presentable(board_size)
             );
         }
-
-        /*
-        for note in &self.notes {
-            // 数が入っているとき。
-            if let Some(address) = note.get_ope().address {
-                if let Some(piece) = address.get_hand_piece() {
-                    // 駒台を操作してるので　取った駒か、打った駒。
-                    if !touched_source {
-                        ftp_id_opt = note.get_id();
-                        ftp_addr = Some(address);
-                        touched_source = true;
-                    }
-                    drop_opt = Some(PieceType::from_piece(piece));
-
-                // 盤上
-                } else if !touched_source {
-                    // 先に駒台を触るので、盤上の駒を触ったら、上書きして盤上の駒を優先します。
-                    ftp_id_opt = note.get_id();
-                    ftp_addr = Some(address);
-                    src_opt = Some(board_size.address_to_cell(address.get_index()));
-                    touched_source = true;
-                } else {
-                    dst_opt = Some(board_size.address_to_cell(address.get_index()));
-                }
-            } else if note.get_ope().sky_turn {
-                // +
-                promotion = true;
-            } else if note.get_ope().sky_rotate {
-                // -
-            }
-        }
-        */
 
         let umove = if let Some(drop) = drop_opt {
             UsiMove::create_drop(dst_opt.unwrap(), drop, board_size)
@@ -371,9 +369,15 @@ impl RpmMove {
             )
         };
 
-        // USIの指し手が作れれば、 first touch が分からないことはないはず。
-        if let Some(ftp_id) = first_touch_idp_opt {
-            (umove, ftp_id, first_touch_address_opt.unwrap())
+        // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
+        if let Some(subject_idp) = subject_pid_opt {
+            (
+                umove,
+                subject_idp,
+                subject_address_opt.unwrap(),
+                object_pid_opt,
+                object_address_opt,
+            )
         } else {
             panic!("Unexpected rpm move. id fail.")
         }

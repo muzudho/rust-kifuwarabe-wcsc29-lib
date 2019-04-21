@@ -67,7 +67,10 @@ impl RpmNotePlayer {
     ) -> bool {
         let board_size = position.get_board_size();
 
-        comm.println(&format!("<NXn:{}>", rnote.get_ope().to_log(board_size)));
+        comm.println(&format!(
+            "<NXn:{}>",
+            rnote.get_ope().to_human_presentable(board_size)
+        ));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
         HumanInterface::show_position(comm, ply, position);
@@ -124,7 +127,10 @@ impl RpmNotePlayer {
     ) -> bool {
         let board_size = position.get_board_size();
 
-        comm.println(&format!("<BKn:{}>", rnote.get_ope().to_log(board_size)));
+        comm.println(&format!(
+            "<BKn:{}>",
+            rnote.get_ope().to_human_presentable(board_size)
+        ));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
         HumanInterface::show_position(comm, ply, position);

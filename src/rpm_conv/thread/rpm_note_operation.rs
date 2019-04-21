@@ -111,11 +111,22 @@ impl RpmNoteOpe {
     }
 
     /// Human presentable.
-    pub fn to_log(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         match self.address {
             Some(address) => {
                 // 人に読みやすいセル表記にします。
-                board_size.address_to_cell(address.get_index()).to_string()
+                if address.is_sky() {
+                    "SK".to_string()
+                } else if address.is_on_board(board_size) {
+                    board_size.address_to_cell(address.get_index()).to_string()
+                } else if address.is_hand() {
+                    address.get_hand_piece().unwrap().to_human_presentable()
+                } else {
+                    panic!(
+                        "Unexpected address: {}.",
+                        address.to_human_presentable(board_size)
+                    )
+                }
             }
             None => {
                 if self.sky_turn {

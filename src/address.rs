@@ -89,10 +89,7 @@ impl Address {
                     N | PN => 87,
                     L | PL => 88,
                     P | PP => 89,
-                    _ => panic!(
-                        "Unexpected hand piece_type {}.",
-                        piece_type_to_sign(Some(pt))
-                    ),
+                    _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
                 },
                 Second => match pt {
                     K => 90,
@@ -103,10 +100,7 @@ impl Address {
                     N | PN => 95,
                     L | PL => 96,
                     P | PP => 97,
-                    _ => panic!(
-                        "Unexpected hand piece_type {}.",
-                        piece_type_to_sign(Some(pt))
-                    ),
+                    _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
                 },
             },
             None => match pt {
@@ -118,10 +112,7 @@ impl Address {
                 N => 103,
                 L => 104,
                 P => 105,
-                _ => panic!(
-                    "Unexpected hand piece_type {}.",
-                    piece_type_to_sign(Some(pt))
-                ),
+                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
             },
         };
 
@@ -129,7 +120,7 @@ impl Address {
     }
 
     /// Human presentable.
-    pub fn to_log(self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             // 盤上。
             board_size.address_to_cell(self.index).to_string()
@@ -138,6 +129,30 @@ impl Address {
             format!("Hand: {}", piece.to_sign()).to_string()
         } else {
             panic!("Unexpected address: {}.", self.index);
+        }
+    }
+
+    /// 盤上。
+    pub fn is_on_board(self, board_size: BoardSize) -> bool {
+        self.index < board_size.len()
+    }
+
+    /// 駒台
+    pub fn is_hand(self) -> bool {
+        // TODO マジックナンバーを解消したい。
+        82 <= self.index && self.index <= 105
+    }
+
+    pub fn is_sky(self) -> bool {
+        SKY_ADDRESS == self.index
+    }
+
+    /// 盤上であれば、セル番地へ変換。それ以外は None。
+    pub fn to_cell(self, board_size: BoardSize) -> Option<Cell> {
+        if self.is_on_board(board_size) {
+            Some(board_size.address_to_cell(self.index))
+        } else {
+            None
         }
     }
 
@@ -151,6 +166,7 @@ impl Address {
 
     pub fn get_hand_piece(self) -> Option<Piece> {
         // 持ち駒
+        // TODO マジックナンバーを解消したい。
         use piece_etc::Piece::*;
         match self.index {
             82 => Some(K1),
@@ -182,20 +198,6 @@ impl Address {
                 // panic!("Unexpected index print: {0}.", self.index);
             }
         }
-    }
-
-    /// 盤上。
-    pub fn is_on_board(self, board_size: BoardSize) -> bool {
-        self.index < board_size.len()
-    }
-
-    /// 駒台
-    pub fn is_hand(self) -> bool {
-        81 <= self.index && self.index <= 104
-    }
-
-    pub fn is_sky(self) -> bool {
-        SKY_ADDRESS == self.index
     }
 
     /// 基本2桁、Sky 3桁。

@@ -1,5 +1,6 @@
 use address::*;
 use board_size::*;
+use position::*;
 use std::fmt;
 use std::slice::Iter;
 
@@ -15,17 +16,19 @@ impl Phase {
     pub fn to_log(self) -> String {
         use piece_etc::Phase::*;
         match self {
-            First => "▼".to_string(),
-            Second => "△".to_string(),
+            First => "▼",
+            Second => "△",
         }
+        .to_string()
     }
 
     pub fn to_sign(self) -> String {
         use piece_etc::Phase::*;
         match self {
-            First => "b".to_string(),
-            Second => "w".to_string(),
+            First => "b",
+            Second => "w",
         }
+        .to_string()
     }
 }
 
@@ -395,6 +398,15 @@ impl IdentifiedPiece {
 
     pub fn is_promoted(self) -> bool {
         self.promoted
+    }
+
+    // 相手の駒なら真。
+    pub fn is_opponent(self, position: &Position) -> Option<bool> {
+        if let Some(ph) = self.get_phase() {
+            Some(ph != position.get_phase())
+        } else {
+            None
+        }
     }
 
     pub fn get_id(self) -> PieceIdentify {
@@ -1186,6 +1198,70 @@ impl Piece {
         }
     }
 
+    // Human presentable.
+    pub fn to_human_presentable(self) -> String {
+        use piece_etc::Piece::*;
+        match self {
+            K1 => "▼玉",
+            K2 => "△玉",
+            K3 => "□玉",
+            PK1 => "▼生",
+            PK2 => "△生",
+            PK3 => "□生",
+
+            R1 => "▼飛",
+            R2 => "△飛",
+            R3 => "□飛",
+            PR1 => "▼竜",
+            PR2 => "△竜",
+            PR3 => "□竜",
+
+            B1 => "▼角",
+            B2 => "△角",
+            B3 => "□角",
+            PB1 => "▼馬",
+            PB2 => "△馬",
+            PB3 => "□馬",
+
+            G1 => "▼金",
+            G2 => "△金",
+            G3 => "□金",
+            PG1 => "▼今",
+            PG2 => "△今",
+            PG3 => "□今",
+
+            S1 => "▼銀",
+            S2 => "△銀",
+            S3 => "□銀",
+            PS1 => "▼全",
+            PS2 => "△全",
+            PS3 => "□全",
+
+            N1 => "▼桂",
+            N2 => "△桂",
+            N3 => "□桂",
+            PN1 => "▼圭",
+            PN2 => "△圭",
+            PN3 => "□圭",
+
+            L1 => "▼香",
+            L2 => "△香",
+            L3 => "□香",
+            PL1 => "▼杏",
+            PL2 => "△杏",
+            PL3 => "□杏",
+
+            P1 => "▼歩",
+            P2 => "△歩",
+            P3 => "□歩",
+            PP1 => "▼と",
+            PP2 => "△と",
+            PP3 => "□と",
+        }
+        .to_string()
+    }
+
+    // Computer readable.
     pub fn to_sign(self) -> String {
         use piece_etc::Piece::*;
         match self {
@@ -1249,6 +1325,7 @@ impl Piece {
     }
 }
 
+/*
 pub fn piece_to_sign(piece_opt: Option<Piece>) -> String {
     if let Some(piece) = piece_opt {
         piece.to_sign()
@@ -1256,6 +1333,7 @@ pub fn piece_to_sign(piece_opt: Option<Piece>) -> String {
         "".to_string()
     }
 }
+*/
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum JsaPieceType {
@@ -1420,6 +1498,36 @@ impl PieceType {
             JsaPieceType::P => PieceType::P,
             JsaPieceType::PP => PieceType::PP,
         }
+    }
+
+    pub fn to_sign(&self) -> String {
+        use piece_etc::PieceType::*;
+        match self {
+            K => "K",
+            PK => "K",
+
+            R => "R",
+            PR => "+R",
+
+            B => "B",
+            PB => "+B",
+
+            G => "G",
+            PG => "G",
+
+            S => "S",
+            PS => "+S",
+
+            N => "N",
+            PN => "+N",
+
+            L => "L",
+            PL => "+L",
+
+            P => "P",
+            PP => "+P",
+        }
+        .to_string()
     }
 }
 
@@ -1640,6 +1748,7 @@ impl PhysicalSign {
     }
 }
 
+/*
 pub fn promotion_piece(piece_opt: Option<Piece>) -> Option<Piece> {
     if let Some(piece) = piece_opt {
         Some(piece.promote())
@@ -1655,6 +1764,7 @@ pub fn rotate_piece(piece_opt: Option<Piece>) -> Option<Piece> {
         None
     }
 }
+*/
 pub fn is_promoted_piece(piece_opt: Option<Piece>) -> bool {
     if let Some(piece) = piece_opt {
         use piece_etc::Piece::*;
@@ -1689,61 +1799,31 @@ pub fn jsa_piece_type_to_sign(piece_type_opt: Option<JsaPieceType>) -> String {
     use piece_etc::JsaPieceType::*;
     match piece_type_opt {
         Some(piece_type) => match piece_type {
-            K => "K".to_string(),
+            K => "K",
 
-            R => "R".to_string(),
-            PR => "+R".to_string(),
+            R => "R",
+            PR => "+R",
 
-            B => "B".to_string(),
-            PB => "+B".to_string(),
+            B => "B",
+            PB => "+B",
 
-            G => "G".to_string(),
+            G => "G",
 
-            S => "S".to_string(),
-            PS => "+S".to_string(),
+            S => "S",
+            PS => "+S",
 
-            N => "N".to_string(),
-            PN => "+N".to_string(),
+            N => "N",
+            PN => "+N",
 
-            L => "L".to_string(),
-            PL => "+L".to_string(),
+            L => "L",
+            PL => "+L",
 
-            P => "P".to_string(),
-            PP => "+P".to_string(),
+            P => "P",
+            PP => "+P",
         },
-        None => "".to_string(),
+        None => "",
     }
-}
-pub fn piece_type_to_sign(pt_opt: Option<PieceType>) -> String {
-    use piece_etc::PieceType::*;
-    match pt_opt {
-        Some(pt) => match pt {
-            K => "K".to_string(),
-            PK => "K".to_string(),
-
-            R => "R".to_string(),
-            PR => "+R".to_string(),
-
-            B => "B".to_string(),
-            PB => "+B".to_string(),
-
-            G => "G".to_string(),
-            PG => "G".to_string(),
-
-            S => "S".to_string(),
-            PS => "+S".to_string(),
-
-            N => "N".to_string(),
-            PN => "+N".to_string(),
-
-            L => "L".to_string(),
-            PL => "+L".to_string(),
-
-            P => "P".to_string(),
-            PP => "+P".to_string(),
-        },
-        None => "".to_string(),
-    }
+    .to_string()
 }
 
 pub fn parse_sign_to_drop(line: &str, start: &mut usize) -> Option<PieceType> {

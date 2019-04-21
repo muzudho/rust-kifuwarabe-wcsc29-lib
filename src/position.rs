@@ -386,7 +386,7 @@ impl Position {
         } else {
             let msg = format!(
                 "駒台の駒が足りない！{}",
-                address.to_log(board_size)
+                address.to_human_presentable(board_size)
             );
             comm.println(&msg);
             panic!(msg);
@@ -512,7 +512,7 @@ impl Position {
                             let tuple = if let Some(ref sky) = self.sky {
                                 comm.println(&format!(
                                     "<IL-駒重なり{}>",
-                                    address.to_log(board_size)
+                                    address.to_human_presentable(board_size)
                                 ));
 
                                 // 違法。指に既に何か持ってた。
@@ -551,7 +551,7 @@ impl Position {
                             } else {
                                 comm.println(&format!(
                                     "<IL-ほこり取り{}>",
-                                    address.to_log(board_size)
+                                    address.to_human_presentable(board_size)
                                 ));
                                 // ほこりを取る。
                                 // 一応、違法。
@@ -597,7 +597,7 @@ impl Position {
                         } else {
                             comm.println(&format!(
                                 "<IL-駒台ほこり取り{}>",
-                                address.to_log(board_size)
+                                address.to_human_presentable(board_size)
                             ));
                             // 違法。駒台のほこりを取った。
                             (false, None)
