@@ -130,7 +130,7 @@ impl BestMovePicker {
                                 &position,
                             );
                             comm.println(&format!(
-                                "[{}] Found: {}'{}'{}.",
+                                "[{}] Find: {}'{}'{}.",
                                 recorder.ply,
                                 position.get_phase().to_log(),
                                 my_idp.to_human_presentable(),
@@ -184,8 +184,12 @@ impl BestMovePicker {
                                             != my_addr_obj.get_index() as usize
                                     {
                                         // No match. 背番号と、アドレスが不一致なら何もしない。
-                                        //comm.println(&format!("[{:>3}] --- {:>3} // -", note_idx, subject_pid.get_number()));
-                                        break 'piece_loop;
+                                        /*
+                                        comm.println(
+                                            "#No-match. 背番号と、アドレスが不一致なら、何もせずループを続行。",
+                                        );
+                                        */
+                                        continue 'track_scan;
                                     }
 
                                     // TODO 番地を指定して、そこにある駒が　相手の駒か判定。合法手だけを残す。
@@ -198,13 +202,15 @@ impl BestMovePicker {
                                                 {
                                                     // 相手の駒を取った合法手。
                                                 } else {
+                                                    /*
                                                     comm.println(&format!(
-                                                        "#IL-味方の駒を取った。{}",
+                                                        "#IL-味方の駒を取ってしまうなら、何もせずループを続行。{}",
                                                         rmove.to_human_presentable(
                                                             position.get_board_size()
                                                         )
                                                     ));
-                                                    break 'piece_loop;
+                                                     */
+                                                    continue 'track_scan;
                                                 }
                                             } else {
                                                 // プログラムの不具合。

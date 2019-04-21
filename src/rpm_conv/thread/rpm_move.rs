@@ -170,13 +170,14 @@ impl RpmMove {
         // 動作の主体。
         let mut subject_pid_opt;
         let mut subject_address_opt;
+        let mut subject_promotion = false;
         // 動作に巻き込まれる方。
         let mut object_pid_opt = None;
         let mut object_address_opt = None;
+        let mut _object_promotion = false;
         // 基本情報。
         let mut src_opt = None;
         let mut dst_opt = None;
-        let mut promotion = false;
         let mut drop_opt = None;
 
         let mut i = 0;
@@ -232,11 +233,20 @@ impl RpmMove {
 
                 // 次。
                 i += 1;
-                note = self.notes[i];
+                if i < self.notes.len() {
+                    note = self.notes[i];
+                } else {
+                    panic!(
+                        "Unexpected 1st note of move(40): 超え。 {}/{}, {}",
+                        i,
+                        self.notes.len(),
+                        self.to_human_presentable(board_size)
+                    );
+                }
 
                 if note.get_ope().sky_turn {
                     // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
-                    promotion = true;
+                    subject_promotion = true;
 
                     // 次。
                     i += 1;
@@ -256,10 +266,11 @@ impl RpmMove {
                     // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
                     object_pid_opt = subject_pid_opt;
                     object_address_opt = subject_address_opt;
+                    _object_promotion = subject_promotion;
                     subject_pid_opt = None;
                     subject_address_opt = None;
                     src_opt = None;
-                    promotion = false;
+                    subject_promotion = false;
 
                     // 次。
                     i += 1;
@@ -267,7 +278,7 @@ impl RpmMove {
                         note = self.notes[i];
                     } else {
                         panic!(
-                            "Unexpected 1st note of move(40): 超え。 {}/{}, {}",
+                            "Unexpected 1st note of move(55): 超え。 {}/{}, {}",
                             i,
                             self.notes.len(),
                             self.to_human_presentable(board_size)
@@ -318,7 +329,7 @@ impl RpmMove {
 
                 if note.get_ope().sky_turn {
                     // +。盤上の自駒が成った。
-                    promotion = true;
+                    subject_promotion = true;
 
                     // 次。
                     i += 1;
@@ -360,7 +371,7 @@ impl RpmMove {
         let umove = if let Some(drop) = drop_opt {
             UsiMove::create_drop(dst_opt.unwrap(), drop, board_size)
         } else if let Some(dst) = dst_opt {
-            UsiMove::create_walk(src_opt.unwrap(), dst, promotion, board_size)
+            UsiMove::create_walk(src_opt.unwrap(), dst, subject_promotion, board_size)
         } else {
             panic!(
                 "Unexpected dst. move.len: '{}' > 1, move: '{}'.",
