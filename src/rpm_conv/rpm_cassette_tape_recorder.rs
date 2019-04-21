@@ -41,7 +41,7 @@ impl RpmCassetteTapeRecorder {
     }
 
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
-    pub fn record_note(&mut self, note: RpmNote) {
+    pub fn record_note(&mut self, note: RpmNote, comm: &Communication) {
         let (is_positive, index) = self.cassette_tape.caret.to_index();
 
         if is_positive {
@@ -50,11 +50,13 @@ impl RpmCassetteTapeRecorder {
             if self.cassette_tape.is_positive_peak() && !self.cassette_tape.caret.is_back() {
                 // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 self.cassette_tape.tape.positive_notes.push(note);
-                self.cassette_tape.caret.get_and_go();
+                self.cassette_tape.caret.get_and_go(comm, "record_note+new");
             } else {
                 // 先端でなければ、上書き。
                 self.cassette_tape.tape.positive_notes[index] = note;
-                self.cassette_tape.caret.get_and_go();
+                self.cassette_tape
+                    .caret
+                    .get_and_go(comm, "record_note+exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) = self.cassette_tape.caret.to_index();
@@ -66,11 +68,13 @@ impl RpmCassetteTapeRecorder {
             if self.cassette_tape.is_negative_peak() && self.cassette_tape.caret.is_back() {
                 // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                 self.cassette_tape.tape.negative_notes.push(note);
-                self.cassette_tape.caret.get_and_go();
+                self.cassette_tape.caret.get_and_go(comm, "record_note-new");
             } else {
                 // 先端でなければ、上書き。
                 self.cassette_tape.tape.negative_notes[index] = note;
-                self.cassette_tape.caret.get_and_go();
+                self.cassette_tape
+                    .caret
+                    .get_and_go(comm, "record_note-exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) = self.cassette_tape.caret.to_index();
@@ -79,9 +83,9 @@ impl RpmCassetteTapeRecorder {
         }
     }
 
-    pub fn record_move(&mut self, rmove: &RpmMove) {
+    pub fn record_move(&mut self, rmove: &RpmMove, comm: &Communication) {
         for note in rmove.notes.iter() {
-            self.record_note(*note);
+            self.record_note(*note, comm);
             if let Some(recorded_ply) = note.get_ope().get_phase_change() {
                 self.ply = recorded_ply;
             }
@@ -121,7 +125,7 @@ impl RpmCassetteTapeRecorder {
             }
 
             let tuple =
-                RpmNoteOpe::parse_1note(&comm, &line, &mut caret, position.get_board_size());
+                RpmNoteOpe::parse_1note(&line, &mut caret, position.get_board_size(), &comm);
 
             if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");

@@ -30,7 +30,7 @@ impl RpmNotePlayer {
 
         comm.println("End#touch_brandnew_note");
         HumanInterface::show_position(comm, recorder.ply, position);
-        recorder.record_note(RpmNote::from_id_ope(pid_opt, *rnote_ope));
+        recorder.record_note(RpmNote::from_id_ope(pid_opt, *rnote_ope), comm);
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
@@ -52,24 +52,6 @@ impl RpmNotePlayer {
         }
     }
 
-    /// 非合法手はない前提で、強制的に巻き戻します。
-    pub fn cancel_and_get_n_note_forcely(
-        repeat: u8,
-        cassette_tape: &mut RpmCassetteTape,
-        position: &mut Position,
-        ply: i16,
-        comm: &Communication,
-    ) {
-        for i in 0..repeat {
-            if let Some(rnote) = cassette_tape.cancel_and_get_note() {
-                comm.println(&format!("<Cancel-force:{}/{} {}>", i, repeat, rnote));
-                RpmNotePlayer::go_1note(&rnote, position, ply, comm);
-            } else {
-                panic!("<Cancel forcely fail:{}/{} None>", i, repeat);
-            }
-        }
-    }
-
     /// 非合法手はない前提で、強制的に巻き進めます。
     pub fn get_n_note_and_go_forcely(
         repeat: u8,
@@ -79,7 +61,7 @@ impl RpmNotePlayer {
         comm: &Communication,
     ) {
         for i in 0..repeat {
-            if let Some(rnote) = cassette_tape.get_note_and_go() {
+            if let Some(rnote) = cassette_tape.get_note_and_go(comm) {
                 comm.println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
                 RpmNotePlayer::go_1note(&rnote, position, ply, comm);
             } else {
@@ -105,7 +87,7 @@ impl RpmNotePlayer {
 
         comm.println(&format!(
             "<NXn:{}>",
-            rnote.get_ope().to_human_presentable(board_size)
+            rnote.to_human_presentable(board_size) //rnote.get_ope().to_human_presentable(board_size)
         ));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);

@@ -1,5 +1,6 @@
 use board_size::*;
 use common::caret::*;
+use communication::*;
 use rpm_conv::rpm_tape::*;
 use rpm_conv::thread::rpm_note::*;
 use std::*;
@@ -81,17 +82,18 @@ impl RpmCassetteTape {
     }
 
     /// 現在の要素を返してから、キャレットを動かします。
-    pub fn get_note_and_go(&mut self) -> Option<RpmNote> {
-        self.tape.get_note_and_go(&mut self.caret)
-    }
-    /// キャレットを動かしてから、現在の要素を返します。
-    pub fn cancel_and_get_note(&mut self) -> Option<RpmNote> {
-        self.tape.cancel_and_get_note(&mut self.caret)
+    pub fn get_note_and_go(&mut self, comm: &Communication) -> Option<RpmNote> {
+        self.tape.get_note_and_go(&mut self.caret, comm)
     }
 
     /// Human presentable large log.
     pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
-        self.tape.to_human_presentable(board_size)
+        format!(
+            "{} {}",
+            self.caret.to_human_presentable(),
+            self.tape.to_human_presentable(board_size)
+        )
+        .to_string()
     }
 
     /// コマンドライン入力形式。

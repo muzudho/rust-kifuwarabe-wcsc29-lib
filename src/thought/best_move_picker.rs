@@ -321,20 +321,10 @@ impl BestMovePicker {
             {
                 // 新規に テープを作る。
                 let mut recorder = RpmCassetteTapeRecorder::default();
-                println!(
-                    "BMP: Rtape(1): {}.",
-                    recorder.to_human_presentable(position.get_board_size())
-                );
-
-                recorder.record_move(&rmove);
-                println!(
-                    "BMP: Rtape(2): {}.",
-                    recorder.to_human_presentable(position.get_board_size())
-                );
-
+                recorder.record_move(&rmove, comm);
                 recorder.reset_caret();
                 println!(
-                    "BMP: Rtape(3): {}.",
+                    "BMP: This move rtape: {}.",
                     recorder.to_human_presentable(position.get_board_size())
                 );
 
@@ -347,17 +337,21 @@ impl BestMovePicker {
                     &comm,
                 ) {
                     // 合法タッチ。
-                    comm.println(&format!("Rmove: {}.", &rmove));
-
                     // 局面を動かしてしまったので戻す。
-                    comm.println("Legal, go back!");
-                    RpmMovePlayer::cancel_and_get_1move_on_tape(
+                    recorder.cassette_tape.caret.turn_to_opponent();
+                    comm.println(&format!(
+                        "Legal, go back! {} {}",
+                        &rmove,
+                        recorder.to_human_presentable(position.get_board_size()),
+                    ));
+                    RpmMovePlayer::get_1move_on_tape_and_move(
                         &mut recorder.cassette_tape,
                         position,
                         recorder.ply,
                         false,
                         &comm,
                     );
+                    recorder.cassette_tape.caret.turn_to_opponent();
                     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
                 } else {
                     // 非合法タッチ。（自動で戻されています）

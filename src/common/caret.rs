@@ -1,3 +1,5 @@
+use communication::*;
+
 pub struct Caret {
     back: bool,
     number: i16,
@@ -33,6 +35,10 @@ impl Caret {
         }
     }
 
+    pub fn turn_to_opponent(&mut self) {
+        self.back = !self.back;
+    }
+
     pub fn to_human_presentable(&self) -> String {
         if self.is_back() {
             format!("[<--{}]", self.number).to_string()
@@ -55,7 +61,7 @@ impl Caret {
     }
 
     /// 要素を返してから、向きの通りに移動します。
-    pub fn get_and_go(&mut self) -> i16 {
+    pub fn get_and_go(&mut self, comm: &Communication, hint: &str) -> i16 {
         let old = self.number;
 
         if self.back {
@@ -63,19 +69,14 @@ impl Caret {
         } else {
             self.number += 1;
         }
+        comm.println(&format!(
+            "<Old{},New{}:{}>",
+            old,
+            &self.to_human_presentable(),
+            hint
+        ));
 
         old
-    }
-
-    /// 逆向きに移動します。
-    pub fn cancel_and_get(&mut self) -> i16 {
-        if self.back {
-            self.number += 1;
-        } else {
-            self.number -= 1;
-        }
-
-        self.number
     }
 
     /// 配列のインデックスに変換します。

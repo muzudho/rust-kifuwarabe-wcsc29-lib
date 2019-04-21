@@ -1,5 +1,6 @@
 use board_size::*;
 use common::caret::*;
+use communication::*;
 use rpm_conv::thread::rpm_note::*;
 use std::*;
 
@@ -92,38 +93,20 @@ impl RpmTape {
         self.negative_notes.len() as u16
     }
 
-    /// 正負の両端の先端要素を超えたら、Noneを返します。
-    pub fn get_note_and_go(&self, note_caret: &mut Caret) -> Option<RpmNote> {
+    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    pub fn get_note_and_go(&self, note_caret: &mut Caret, comm: &Communication) -> Option<RpmNote> {
         let (is_positive, index) = note_caret.to_index();
-        note_caret.get_and_go();
 
         if is_positive {
             if index < self.positive_notes.len() {
+                note_caret.get_and_go(comm, "tape+get_note_and_go");
                 Some(self.positive_notes[index as usize])
             } else {
                 None
             }
         } else {
             if index < self.positive_notes.len() {
-                Some(self.negative_notes[index as usize])
-            } else {
-                None
-            }
-        }
-    }
-    /// 正負の両端の先端要素を超えたら、Noneを返します。
-    pub fn cancel_and_get_note(&self, note_caret: &mut Caret) -> Option<RpmNote> {
-        note_caret.cancel_and_get();
-        let (is_positive, index) = note_caret.to_index();
-
-        if is_positive {
-            if index < self.positive_notes.len() {
-                Some(self.positive_notes[index as usize])
-            } else {
-                None
-            }
-        } else {
-            if index < self.positive_notes.len() {
+                note_caret.get_and_go(comm, "tape-get_note_and_go");
                 Some(self.negative_notes[index as usize])
             } else {
                 None

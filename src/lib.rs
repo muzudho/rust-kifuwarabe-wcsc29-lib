@@ -142,7 +142,7 @@ pub fn main_loop() {
         } else if line == "b" {
             // Back 1mark.
             recorder.cassette_tape.caret.turn_to_negative();
-            if let Some(rnote) = recorder.cassette_tape.get_note_and_go() {
+            if let Some(rnote) = recorder.cassette_tape.get_note_and_go(&comm) {
                 RpmNotePlayer::go_1note(&rnote, &mut position, recorder.ply, &comm);
                 HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
             }
@@ -283,7 +283,7 @@ pub fn main_loop() {
         } else if line == "n" {
             // Forward 1note.
             recorder.cassette_tape.caret.turn_to_positive();
-            if let Some(rnote) = recorder.cassette_tape.get_note_and_go() {
+            if let Some(rnote) = recorder.cassette_tape.get_note_and_go(&comm) {
                 RpmNotePlayer::go_1note(&rnote, &mut position, recorder.ply, &comm);
                 HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
             }

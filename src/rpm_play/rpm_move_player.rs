@@ -126,12 +126,17 @@ impl RpmMovePlayer {
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
         comm.println(&format!(
-            "<NXm:{}>",
+            "<NXm1:{}>",
             cassette_tape.to_human_presentable(position.get_board_size())
         ));
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = cassette_tape.get_note_and_go() {
+        while let Some(rnote) = cassette_tape.get_note_and_go(comm) {
+            comm.println(&format!(
+                "<NXm2:{}:{}>",
+                cassette_tape.to_human_presentable(position.get_board_size()),
+                rnote.to_human_presentable(position.get_board_size())
+            ));
             is_legal_touch = RpmNotePlayer::go_1note(&rnote, position, ply, comm);
             forwarding_count += 1;
 
@@ -148,71 +153,21 @@ impl RpmMovePlayer {
 
         if is_auto_reverse && !is_legal_touch {
             // 非合法タッチを自動で戻す。
-            comm.println("Illegal, cancel forcely!");
-            RpmNotePlayer::cancel_and_get_n_note_forcely(
+            comm.println("Illegal, go back forcely!");
+            cassette_tape.caret.turn_to_opponent();
+            RpmNotePlayer::get_n_note_and_go_forcely(
                 forwarding_count,
                 cassette_tape,
                 position,
                 ply,
                 comm,
             );
+            cassette_tape.caret.turn_to_opponent();
 
             return false;
         }
 
         // 1つ以上読んでいれば合法。
         forwarding_count > 0
-    }
-
-    /// 1手戻す。
-    ///
-    /// # Return
-    ///
-    /// 合法タッチか否か。
-    pub fn cancel_and_get_1move_on_tape(
-        cassette_tape: &mut RpmCassetteTape,
-        position: &mut Position,
-        ply: i16,
-        is_auto_reverse: bool,
-        comm: &Communication,
-    ) -> bool {
-        comm.println(&format!(
-            "<BKM:{}>",
-            cassette_tape.to_human_presentable(position.get_board_size())
-        ));
-        let mut is_legal_touch = true;
-        let mut backwarding_count = 0;
-
-        // 開始前に達したら終了。
-        while let Some(rnote) = cassette_tape.cancel_and_get_note() {
-            is_legal_touch = RpmNotePlayer::go_1note(&rnote, position, ply, comm);
-            backwarding_count += 1;
-
-            if is_auto_reverse && !is_legal_touch {
-                break;
-            }
-
-            if backwarding_count != 1 && rnote.is_phase_change() {
-                // フェーズ切り替えしたら終了。（ただし、初回除く）
-                break;
-            }
-        }
-
-        if is_auto_reverse && !is_legal_touch {
-            // TODO 非合法タッチなら、以前に動かした分 戻したい。
-            comm.println("Illegal, go forcely!");
-            RpmNotePlayer::get_n_note_and_go_forcely(
-                backwarding_count,
-                cassette_tape,
-                position,
-                ply,
-                comm,
-            );
-
-            return false;
-        }
-
-        // 1つ以上読んでいれば合法。
-        backwarding_count > 0
     }
 }
