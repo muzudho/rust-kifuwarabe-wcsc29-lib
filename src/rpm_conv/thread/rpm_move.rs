@@ -44,17 +44,17 @@ impl RpmMove {
         format!("({}:{}){}", self.start, self.end, text)
     }
 
-    /// 1手分解析。
-    pub fn parse_1move(
+    /// 次の1手分解析。
+    pub fn parse_next_1move(
         comm: &Communication,
         record_for_json: &RpmRecordForJson,
-        note_start: &mut usize,
+        note_caret: &mut usize,
         board_size: BoardSize,
     ) -> Option<RpmMove> {
         let mut rmove = RpmMove {
             notes: Vec::new(),
-            start: *note_start,
-            end: *note_start,
+            start: *note_caret,
+            end: *note_caret,
         };
 
         let size = record_for_json.body.operation.len();
@@ -65,20 +65,20 @@ impl RpmMove {
             )
         }
 
-        //comm.print(&format!("Parse 1move: note_start: {}, size: {}.", *note_start, size));
+        //comm.print(&format!("Parse 1move: note_caret: {}, size: {}.", *note_caret, size));
         let mut is_first = true;
 
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
-            if size <= *note_start {
+            if size <= *note_caret {
                 // トラックの終わり。
                 //comm.print("Break: End of track.");
                 break 'j_loop;
             }
 
-            //comm.print(&format!("Scanning: note_start: {}.", note_start));
+            //comm.print(&format!("Scanning: note_caret: {}.", note_caret));
 
-            let note_opt = RpmNote::parse_1note(comm, record_for_json, note_start, board_size);
+            let note_opt = RpmNote::parse_next_1note(comm, record_for_json, note_caret, board_size);
 
             match note_opt {
                 Some(note) => {
@@ -111,7 +111,7 @@ impl RpmMove {
                 record_for_json.body.operation
             )
         } else {
-            rmove.end = *note_start;
+            rmove.end = *note_caret;
             Some(rmove)
         }
     }

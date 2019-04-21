@@ -3,11 +3,12 @@
 ///
 /// 局面から独立しています。
 ///
-use address::*;
-use board_size::*;
-use communication::*;
-use parser::*;
-use piece_etc::*;
+use address::{Address, Cell};
+use board_size::BoardSize;
+use common::caret::*;
+use communication::Communication;
+use parser::Parser;
+use piece_etc::{PhysicalSign, PieceType};
 use std::fmt;
 
 /// Vector に入れるときコピーする。
@@ -171,42 +172,41 @@ impl RpmNoteOpe {
         }
     }
 
-    /// ノート１つ読取☆（＾～＾）
-    pub fn parse_1note(
+    /// 次のノート１つ読取☆（＾～＾）
+    ///
+    /// # Arguments
+    ///
+    /// * `caret` - Token caret.
+    pub fn parse_next_1note(
         _comm: &Communication,
         line: &str,
-        start: &mut usize,
+        caret: &mut Caret,
         board_size: BoardSize,
     ) -> Option<RpmNoteOpe> {
-        let ch1 = line[*start..=*start].chars().nth(0).unwrap();
-        match ch1 {
-            ' ' => {
-                //comm.print(&ch1.to_string());
-                *start += 1;
-                None
-            }
+        let mut n0 = caret.get_and_move() as usize;
+        let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
+        match ch0 {
+            ' ' => None,
             '0' => {
                 // 駒台。
-                *start += 1;
+                let mut n1 = caret.get_and_move() as usize;
+                let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
-                let ch2 = line[*start..=*start].chars().nth(0).unwrap();
-                *start += 1;
+                if 2 < line.len() {
+                    match ch1 {
+                        'P' | 'p' | 'ﾅ' => {
+                            // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
+                            // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
-                //let text15;
-                match ch2 {
-                    'P' | 'p' | 'ﾅ' => {
-                        // 成り駒は、不成駒と同じところに置くので、成りのマークは読み飛ばす。
-                        //text15 = line[*start..=*start].chars().nth(0).unwrap().to_string();
-                        *start += 1;
-                    }
-                    _ => {
-                        // Ignored.
-                        //text15 = "".to_string();
-                    }
-                };
+                            n1 = caret.get_and_move() as usize;
+                            ch1 = line[n1..=n1].chars().nth(0).unwrap();
+                        }
+                        _ => {}
+                    };
+                }
 
                 // 駒の種類、フェーズ。
-                let piece = PhysicalSign::default(ch2.to_string()).to_piece();
+                let piece = PhysicalSign::default(ch1.to_string()).to_piece();
 
                 //comm.print(&format!("{}{}{}", ch1, text15, ch2));
                 let address =
@@ -216,14 +216,14 @@ impl RpmNoteOpe {
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
-                *start += 1;
-                let ch2 = line[*start..=*start].chars().nth(0).unwrap();
-                *start += 1;
+                let mut n1 = caret.get_and_move() as usize;
+                let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
+
                 //comm.print(&format!("{}{}", ch1, ch2));
                 let address = Address::from_cell(
                     Cell::from_file_rank(
-                        Parser::file_char_to_i8(ch1),
-                        Parser::rank_char_to_i8(ch2),
+                        Parser::file_char_to_i8(ch0),
+                        Parser::rank_char_to_i8(ch1),
                     ),
                     board_size,
                 );
@@ -232,38 +232,34 @@ impl RpmNoteOpe {
             '+' => {
                 // 成り。
                 //comm.print(&ch1.to_string());
-                *start += 1;
                 Some(RpmNoteOpe::turn_over())
             }
             '-' => {
                 // １８０°回転。
                 //comm.print(&ch1.to_string());
-                *start += 1;
                 Some(RpmNoteOpe::rotate())
             }
             '|' => {
                 // フェーズ交代。Ply は分からない。
-                *start += 1;
                 Some(RpmNoteOpe::change_phase(-1))
             }
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
-                *start += 1;
                 let mut ply = 0;
                 loop {
-                    if line.len() <= *start {
+                    if line.len() <= n0 {
                         break;
                     }
 
-                    let sub_ch = line[*start..=*start].chars().nth(0).unwrap();
-                    *start += 1;
+                    n0 = caret.get_and_move() as usize;
+                    ch0 = line[n0..=n0].chars().nth(0).unwrap();
 
-                    if sub_ch == ']' {
+                    if ch0 == ']' {
                         break;
                     }
 
                     // Ply カウント。
-                    let num: i16 = sub_ch.to_string().parse::<i16>().unwrap();
+                    let num: i16 = ch0.to_string().parse::<i16>().unwrap();
                     ply *= 10;
                     ply += num;
                 }
@@ -271,7 +267,7 @@ impl RpmNoteOpe {
             }
             _ => {
                 let last = line.len();
-                panic!("Unexpected line '{}'.", &line[*start..last]);
+                panic!("Unexpected line '{}'.", &line[n0..last]);
             }
         }
     }

@@ -38,6 +38,7 @@ use std::path::Path;
 
 pub mod address;
 pub mod board_size;
+pub mod common;
 pub mod communication;
 pub mod conf;
 pub mod csa_conv;

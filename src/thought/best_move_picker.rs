@@ -1,3 +1,4 @@
+use address::Address;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
@@ -137,203 +138,21 @@ impl BestMovePicker {
                                 my_addr_obj.to_physical_sign(position.get_board_size())
                             ));
 
-                            // ノートをスキャン。
-                            let mut note_idx = 0;
+                            // ノートをスキャン。次方向と、前方向がある。
+                            let mut next_note_idx = 0;
                             'track_scan: loop {
-                                comm.println(&format!("#[{}] note.", note_idx));
-                                // とりあえず 1手分をパースします。
-                                if let Some(rmove) = RpmMove::parse_1move(
-                                    comm,
+                                let is_break_piace_loop = self.next_pattern_match(
+                                    &comm,
+                                    recorder,
+                                    position,
                                     &record_for_json,
-                                    &mut note_idx,
-                                    position.get_board_size(),
-                                ) {
-                                    // どの駒が動いた１手なのか、またその番地。
-                                    // 取った駒があるのなら、それも欲しい。
-                                    let (
-                                        subject_pid,
-                                        subject_address,
-                                        opject_pid_opt,
-                                        object_address_opt,
-                                    ) = rmove.to_first_touch_piece_id(position.get_board_size());
+                                    *my_piece_id,
+                                    my_addr_obj,
+                                    &mut next_note_idx,
+                                );
 
-                                    comm.println(&format!(
-                                        "#[{}]Rmove:{}. subject('{}'{}){}",
-                                        note_idx,
-                                        rmove.to_human_presentable(position.get_board_size()),
-                                        subject_pid.to_human_presentable(),
-                                        subject_address
-                                            .to_human_presentable(position.get_board_size()),
-                                        if let Some(object_pid) = opject_pid_opt {
-                                            format!(
-                                                " object('{}'{})",
-                                                object_pid.to_human_presentable(),
-                                                object_address_opt.unwrap().to_human_presentable(
-                                                    position.get_board_size()
-                                                )
-                                            )
-                                            .to_string()
-                                        } else {
-                                            "".to_string()
-                                        }
-                                    ));
-
-                                    // パターンマッチから外れたら抜けていく。
-                                    if my_piece_id.get_number() != subject_pid.get_number()
-                                        || subject_address.get_index()
-                                            != my_addr_obj.get_index() as usize
-                                    {
-                                        // No match. 背番号と、アドレスが不一致なら何もしない。
-                                        /*
-                                        comm.println(
-                                            "#No-match. 背番号と、アドレスが不一致なら、何もせずループを続行。",
-                                        );
-                                        */
-                                        continue 'track_scan;
-                                    }
-
-                                    // TODO 番地を指定して、そこにある駒が　相手の駒か判定。合法手だけを残す。
-                                    if let Some(addr) = object_address_opt {
-                                        if let Some(cell) = addr.to_cell(position.get_board_size())
-                                        {
-                                            if let Some(idp) = position.get_id_piece(cell) {
-                                                if let Some(_is_opponent) =
-                                                    idp.is_opponent(position)
-                                                {
-                                                    // 相手の駒を取った合法手。
-                                                } else {
-                                                    /*
-                                                    comm.println(&format!(
-                                                        "#IL-味方の駒を取ってしまうなら、何もせずループを続行。{}",
-                                                        rmove.to_human_presentable(
-                                                            position.get_board_size()
-                                                        )
-                                                    ));
-                                                     */
-                                                    continue 'track_scan;
-                                                }
-                                            } else {
-                                                // プログラムの不具合。
-                                                panic!(
-                                                    "#IL-盤上以外の駒を取った(2)。{}",
-                                                    rmove.to_human_presentable(
-                                                        position.get_board_size()
-                                                    )
-                                                );
-                                            }
-                                        } else {
-                                            // プログラムの不具合。
-                                            panic!(
-                                                "#IL-盤上以外の駒を取った(1)。{}",
-                                                rmove.to_human_presentable(
-                                                    position.get_board_size()
-                                                )
-                                            );
-                                        }
-                                    } else {
-                                        // 駒を取らなかった合法手。
-                                    };
-
-                                    // パターンがマッチした。
-                                    //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
-
-                                    // TODO 現局面で この手を指せるか試してみる。
-                                    // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
-                                    {
-                                        // 新規に テープを作る。
-                                        let mut recorder = RpmCassetteTapeRecorder::default();
-                                        println!(
-                                            "BMP: Rtape(1): {}.",
-                                            recorder
-                                                .to_human_presentable(position.get_board_size())
-                                        );
-
-                                        recorder.record_next_move(&rmove);
-                                        println!(
-                                            "BMP: Rtape(2): {}.",
-                                            recorder
-                                                .to_human_presentable(position.get_board_size())
-                                        );
-
-                                        recorder.reset_caret();
-                                        println!(
-                                            "BMP: Rtape(3): {}.",
-                                            recorder
-                                                .to_human_presentable(position.get_board_size())
-                                        );
-
-                                        // 1手進めます。（非合法タッチは自動で戻します）
-                                        if RpmMovePlayer::next_1move_on_tape(
-                                            &mut recorder.cassette_tape,
-                                            position,
-                                            recorder.ply,
-                                            true,
-                                            &comm,
-                                        ) {
-                                            // 合法タッチ。
-                                            comm.println(&format!("Rmove: {}.", &rmove));
-
-                                            // 局面を動かしてしまったので戻す。
-                                            comm.println("Legal, go back!");
-                                            RpmMovePlayer::back_1move_on_tape(
-                                                &mut recorder.cassette_tape,
-                                                position,
-                                                recorder.ply,
-                                                false,
-                                                &comm,
-                                            );
-                                            HumanInterface::bo(
-                                                &comm,
-                                                &recorder.cassette_tape,
-                                                recorder.ply,
-                                                &position,
-                                            );
-                                        } else {
-                                            // 非合法タッチ。（自動で戻されています）
-                                            comm.println(&format!(
-                                                "Canceled: {}.",
-                                                rmove.to_human_presentable(
-                                                    position.get_board_size()
-                                                )
-                                            ));
-                                            HumanInterface::bo(
-                                                &comm,
-                                                &recorder.cassette_tape,
-                                                recorder.ply,
-                                                &position,
-                                            );
-                                            continue 'track_scan;
-                                        }
-                                    }
-
-                                    // TODO とりあえず抜けて次の駒へ。
-                                    comm.println(&format!(
-                                        "Hit and break! ({}) {}",
-                                        subject_pid.to_human_presentable(),
-                                        &rmove.to_human_presentable(position.get_board_size())
-                                    ));
-                                    HumanInterface::bo(
-                                        &comm,
-                                        &recorder.cassette_tape,
-                                        recorder.ply,
-                                        &position,
-                                    );
-
-                                    let mut thread = RpmThread::new();
-                                    thread.push_move(rmove);
-
-                                    //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
-                                    // 最後に見つかったものに、差し替え。
-                                    self.thread_by_piece_id
-                                        .insert(my_piece_id.get_number(), thread);
-                                    //comm.println("Change!");
-                                    //}
-
+                                if is_break_piace_loop {
                                     break 'piece_loop;
-                                } else {
-                                    // トラックの終わり。
-                                    comm.println("Break: End of track.");
-                                    break 'track_scan;
                                 }
                             }
                         }
@@ -387,6 +206,186 @@ impl BestMovePicker {
             umove
         } else {
             UsiMove::create_resign()
+        }
+    }
+
+    /// 次方向へのパターン・マッチ。
+    /// 正常終了すると、トラックの検索を続行します。
+    ///
+    /// # Returns
+    ///
+    /// (is_break_piece_loop)
+    pub fn next_pattern_match(
+        &mut self,
+        comm: &Communication,
+        recorder: &mut RpmCassetteTapeRecorder,
+        position: &mut Position,
+        record_for_json: &RpmRecordForJson,
+        my_piece_id: PieceIdentify,
+        my_addr_obj: Address,
+        next_note_idx: &mut usize,
+    ) -> bool {
+        comm.println(&format!("#>[{}] note.", next_note_idx));
+        // とりあえず 1手分をパースします。
+        if let Some(rmove) = RpmMove::parse_next_1move(
+            comm,
+            &record_for_json,
+            next_note_idx,
+            position.get_board_size(),
+        ) {
+            // どの駒が動いた１手なのか、またその番地。
+            // 取った駒があるのなら、それも欲しい。
+            let (subject_pid, subject_address, opject_pid_opt, object_address_opt) =
+                rmove.to_first_touch_piece_id(position.get_board_size());
+
+            comm.println(&format!(
+                "#[{}]Rmove:{}. subject('{}'{}){}",
+                next_note_idx,
+                rmove.to_human_presentable(position.get_board_size()),
+                subject_pid.to_human_presentable(),
+                subject_address.to_human_presentable(position.get_board_size()),
+                if let Some(object_pid) = opject_pid_opt {
+                    format!(
+                        " object('{}'{})",
+                        object_pid.to_human_presentable(),
+                        object_address_opt
+                            .unwrap()
+                            .to_human_presentable(position.get_board_size())
+                    )
+                    .to_string()
+                } else {
+                    "".to_string()
+                }
+            ));
+
+            // パターンマッチから外れたら抜けていく。
+            if my_piece_id.get_number() != subject_pid.get_number()
+                || subject_address.get_index() != my_addr_obj.get_index() as usize
+            {
+                // No match. 背番号と、アドレスが不一致なら何もしない。
+                /*
+                comm.println(
+                    "#No-match. 背番号と、アドレスが不一致なら、何もせずループを続行。",
+                );
+                */
+                return false; // continue 'track_scan;
+            }
+
+            // TODO 番地を指定して、そこにある駒が　相手の駒か判定。合法手だけを残す。
+            if let Some(addr) = object_address_opt {
+                if let Some(cell) = addr.to_cell(position.get_board_size()) {
+                    if let Some(idp) = position.get_id_piece(cell) {
+                        if let Some(_is_opponent) = idp.is_opponent(position) {
+                            // 相手の駒を取った合法手。
+                        } else {
+                            /*
+                            comm.println(&format!(
+                                "#IL-味方の駒を取ってしまうなら、何もせずループを続行。{}",
+                                rmove.to_human_presentable(
+                                    position.get_board_size()
+                                )
+                            ));
+                             */
+                            return false; // continue 'track_scan;
+                        }
+                    } else {
+                        // プログラムの不具合。
+                        panic!(
+                            "#IL-盤上以外の駒を取った(2)。{}",
+                            rmove.to_human_presentable(position.get_board_size())
+                        );
+                    }
+                } else {
+                    // プログラムの不具合。
+                    panic!(
+                        "#IL-盤上以外の駒を取った(1)。{}",
+                        rmove.to_human_presentable(position.get_board_size())
+                    );
+                }
+            } else {
+                // 駒を取らなかった合法手。
+            };
+
+            // パターンがマッチした。
+            //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
+
+            // TODO 現局面で この手を指せるか試してみる。
+            // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
+            {
+                // 新規に テープを作る。
+                let mut recorder = RpmCassetteTapeRecorder::default();
+                println!(
+                    "BMP: Rtape(1): {}.",
+                    recorder.to_human_presentable(position.get_board_size())
+                );
+
+                recorder.record_next_move(&rmove);
+                println!(
+                    "BMP: Rtape(2): {}.",
+                    recorder.to_human_presentable(position.get_board_size())
+                );
+
+                recorder.reset_caret();
+                println!(
+                    "BMP: Rtape(3): {}.",
+                    recorder.to_human_presentable(position.get_board_size())
+                );
+
+                // 1手進めます。（非合法タッチは自動で戻します）
+                if RpmMovePlayer::next_1move_on_tape(
+                    &mut recorder.cassette_tape,
+                    position,
+                    recorder.ply,
+                    true,
+                    &comm,
+                ) {
+                    // 合法タッチ。
+                    comm.println(&format!("Rmove: {}.", &rmove));
+
+                    // 局面を動かしてしまったので戻す。
+                    comm.println("Legal, go back!");
+                    RpmMovePlayer::back_1move_on_tape(
+                        &mut recorder.cassette_tape,
+                        position,
+                        recorder.ply,
+                        false,
+                        &comm,
+                    );
+                    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+                } else {
+                    // 非合法タッチ。（自動で戻されています）
+                    comm.println(&format!(
+                        "Canceled: {}.",
+                        rmove.to_human_presentable(position.get_board_size())
+                    ));
+                    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+                    return false; // continue 'track_scan;
+                }
+            }
+
+            // TODO とりあえず抜けて次の駒へ。
+            comm.println(&format!(
+                "Hit and break! ({}) {}",
+                subject_pid.to_human_presentable(),
+                &rmove.to_human_presentable(position.get_board_size())
+            ));
+            HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+
+            let mut thread = RpmThread::new();
+            thread.push_move(rmove);
+
+            //if self.thread_by_piece_id[&my_piece_id.get_number()].max_ply < thread.max_ply {
+            // 最後に見つかったものに、差し替え。
+            self.thread_by_piece_id
+                .insert(my_piece_id.get_number(), thread);
+            //comm.println("Change!");
+            //}
+
+            true // break 'piece_loop;
+        } else {
+            // トラックの終わり。
+            comm.println("Break: End of track.");
+            true // continue 'track_scan; // break 'piece_loop;
         }
     }
 }
