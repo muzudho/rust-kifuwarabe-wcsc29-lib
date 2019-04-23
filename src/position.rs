@@ -1,9 +1,9 @@
 use address::*;
 use board_size::*;
 use communication::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use parser::*;
 use piece_etc::*;
-use rpm_conv::thread::rpm_note_operation::*;
 use std::*;
 
 pub const BOARD_START: usize = 0;

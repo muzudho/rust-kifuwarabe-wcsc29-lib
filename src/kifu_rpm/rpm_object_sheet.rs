@@ -1,6 +1,6 @@
 use board_size::*;
 use communication::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;

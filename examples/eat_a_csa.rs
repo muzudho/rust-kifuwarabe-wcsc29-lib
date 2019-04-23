@@ -9,11 +9,11 @@ use std::path::Path;
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
 use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_player::*;
-use kifuwarabe_wcsc29_lib::csa_conv::csa_record::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
+use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
+use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::rpm_object_sheet::*;
 use kifuwarabe_wcsc29_lib::position::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_object_sheet::*;
 
 #[derive(Debug)]
 struct Args {
@@ -52,10 +52,10 @@ pub fn main() {
     let rpm_object_sheet_path;
     {
         let mut rng = rand::thread_rng();
-        let rand1: i64 = rng.gen();
-        let rand2: i64 = rng.gen();
-        let rand3: i64 = rng.gen();
-        let rand4: i64 = rng.gen();
+        let rand1: u64 = rng.gen();
+        let rand2: u64 = rng.gen();
+        let rand3: u64 = rng.gen();
+        let rand4: u64 = rng.gen();
         rpm_object_sheet_path = Path::new(&kw29_config.learning)
             .join(format!(
                 "{}-{}-{}-{}-learning.rpmove",
@@ -70,7 +70,7 @@ pub fn main() {
     let mut position = Position::default();
     let crecord = CsaRecord::load(&path);
 
-    // Play.
+    // Play out.
     let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 

@@ -1,6 +1,6 @@
 use communication::*;
+use kifu_rpm::rpm_cassette_tape::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape::*;
 use std::*;
 
 pub struct HumanInterface {}

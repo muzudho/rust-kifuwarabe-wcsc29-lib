@@ -1,17 +1,16 @@
-extern crate kifuwarabe_wcsc29_lib;
 extern crate getopts;
+extern crate kifuwarabe_wcsc29_lib;
 extern crate regex;
 
-use std::env;
 use getopts::Options;
+use std::env;
 
 use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::kif_conv::kif_converter::*;
-
+use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
 
 #[derive(Debug)]
 struct Args {
-  path: Option<String>,
+    path: Option<String>,
 }
 
 fn parse_args() -> Args {
@@ -20,7 +19,8 @@ fn parse_args() -> Args {
     let mut opts = Options::new();
     opts.optopt("p", "path", "set input csa file name.", "NAME");
 
-    let matches = opts.parse(&args[1..])
+    let matches = opts
+        .parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
 
     Args {
@@ -28,8 +28,7 @@ fn parse_args() -> Args {
     }
 }
 
-pub fn main()
-{
+pub fn main() {
     // Command line arguments.
     let args = parse_args();
 

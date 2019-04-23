@@ -1,13 +1,13 @@
 use address::*;
 use communication::*;
-use kif_conv::kif_move::*;
-use kif_conv::kif_record::*;
+use kifu_kif::kif_move::*;
+use kifu_kif::kif_record::*;
+use kifu_rpm::play::rpm_move_player::*;
+use kifu_rpm::play::rpm_note_player::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_conv::thread::rpm_note_operation::*;
-use rpm_play::rpm_move_player::*;
-use rpm_play::rpm_note_player::*;
 
 pub struct KifPlayer {}
 impl KifPlayer {

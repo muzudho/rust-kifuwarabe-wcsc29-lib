@@ -1,7 +1,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use rpm_conv::thread::rpm_note::*;
+use kifu_rpm::thread::rpm_note::*;
 use std::*;
 
 const NONE_VALUE: i8 = -1;

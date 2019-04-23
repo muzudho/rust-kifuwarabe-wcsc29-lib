@@ -1,9 +1,9 @@
 use address::*;
 use communication::*;
+use kifu_rpm::play::rpm_note_player::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_conv::thread::rpm_note_operation::*;
-use rpm_play::rpm_note_player::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_record::*;
 

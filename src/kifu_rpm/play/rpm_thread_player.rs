@@ -1,7 +1,7 @@
 use communication::*;
+use kifu_rpm::play::rpm_move_player::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_play::rpm_move_player::*;
 
 pub struct RpmThreadPlayer {}
 impl RpmThreadPlayer {

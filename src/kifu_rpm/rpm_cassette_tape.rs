@@ -1,8 +1,8 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use rpm_conv::rpm_tape::*;
-use rpm_conv::thread::rpm_note::*;
+use kifu_rpm::rpm_tape::*;
+use kifu_rpm::thread::rpm_note::*;
 use std::*;
 
 /// 対局情報。

@@ -1,5 +1,5 @@
 use board_size::BoardSize;
-use rpm_conv::thread::rpm_move::*;
+use kifu_rpm::thread::rpm_move::*;
 
 /// シーケンスな手筋１個分。
 #[derive(Default)]

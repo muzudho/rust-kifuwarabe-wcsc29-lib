@@ -1,11 +1,11 @@
 use communication::*;
 use human::human_interface::*;
+use kifu_rpm::rpm_cassette_tape::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::thread::rpm_note::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_conv::thread::rpm_note::*;
-use rpm_conv::thread::rpm_note_operation::*;
 use std::*;
 
 pub struct RpmNotePlayer {}

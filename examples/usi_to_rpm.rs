@@ -5,8 +5,8 @@ use std::env;
 
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::position::*;
-use kifuwarabe_wcsc29_lib::rpm_conv::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_position::*;

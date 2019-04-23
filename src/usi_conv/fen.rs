@@ -2,10 +2,10 @@
 use address::*;
 use board_size::*;
 use communication::*;
+use kifu_rpm::play::rpm_move_player::*;
+use kifu_rpm::rpm_cassette_tape_recorder::*;
 use piece_etc::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape_recorder::*;
-use rpm_play::rpm_move_player::*;
 //use rpm_play::rpm_note_player::*;
 use std::*;
 use usi_conv::usi_move::*;

@@ -2,12 +2,12 @@ use board_size::*;
 use common::caret::*;
 use communication::*;
 use human::human_interface::*;
+use kifu_rpm::play::rpm_note_player::*;
+use kifu_rpm::rpm_cassette_tape::*;
+use kifu_rpm::thread::rpm_move::*;
+use kifu_rpm::thread::rpm_note::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use position::*;
-use rpm_conv::rpm_cassette_tape::*;
-use rpm_conv::thread::rpm_move::*;
-use rpm_conv::thread::rpm_note::*;
-use rpm_conv::thread::rpm_note_operation::*;
-use rpm_play::rpm_note_player::*;
 use std::*;
 
 pub struct RpmCassetteTapeRecorder {

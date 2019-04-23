@@ -6,9 +6,9 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
+use kifu_rpm::json::rpm_book_file::*;
+use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
-use rpm_conv::thread::rpm_note_operation::*;
-use rpm_for_json::rpm_book_file::*;
 use std::fmt;
 
 //#[derive(Debug)]

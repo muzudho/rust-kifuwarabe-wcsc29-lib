@@ -1,20 +1,18 @@
-use kif_conv::kif_move::*;
-use std::*;
+use kifu_kif::kif_move::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::*;
 
- #[derive(Default)]
+#[derive(Default)]
 pub struct KifRecord {
-    pub items : Vec<KifMove>,
+    pub items: Vec<KifMove>,
 }
 impl KifRecord {
     pub fn new() -> KifRecord {
-        KifRecord {
-            items: Vec::new(),
-        }
+        KifRecord { items: Vec::new() }
     }
 
-    pub fn load(file:&str) -> KifRecord {
+    pub fn load(file: &str) -> KifRecord {
         let mut record = KifRecord::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
@@ -29,10 +27,10 @@ impl KifRecord {
                         if let Some(kif_move) = KifMove::parse(&line) {
                             record.push(kif_move);
                         }
-                    },
+                    }
                     Err(_err) => {
                         // この行は無視。
-                    },
+                    }
                 }
             }
         }
@@ -51,7 +49,7 @@ impl KifRecord {
         record
     }
 
-    pub fn push(&mut self, mov:KifMove) {
+    pub fn push(&mut self, mov: KifMove) {
         self.items.push(mov);
     }
 
@@ -76,7 +74,7 @@ impl KifRecord {
                 source_piece = promotion_piece(source_piece);
             }
             */
-            
+
             position.set_id_piece(cmove.destination_file, cmove.destination_rank, source_id_piece_opt);
             self.push(cmove);
         }

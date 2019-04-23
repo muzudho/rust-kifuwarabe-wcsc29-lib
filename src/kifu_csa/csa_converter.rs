@@ -1,14 +1,14 @@
 use communication::*;
-use kif_conv::kif_player::*;
-use kif_conv::kif_record::*;
+use kifu_csa::csa_player::*;
+use kifu_csa::csa_record::*;
+use kifu_rpm::rpm_object_sheet::*;
 use position::*;
-use rpm_conv::rpm_object_sheet::*;
 use std::fs;
 use std::path::Path;
 
-pub struct KifConverter {}
-impl KifConverter {
-    pub fn convert_kif(input_path: &str, output_path: &str) {
+pub struct CsaConverter {}
+impl CsaConverter {
+    pub fn convert_csa(input_path: &str, output_path: &str) {
         // Logging.
         let comm = Communication::new();
         // comm.println(&format!("input_path: {}", input_path));
@@ -28,10 +28,10 @@ impl KifConverter {
 
         // Model.
         let mut position = Position::default();
-        let krecord = KifRecord::load(&input_path);
+        let crecord = CsaRecord::load(&input_path);
 
         // Play.
-        let recorder = KifPlayer::play_out_and_record(&comm, &mut position, &krecord);
+        let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
