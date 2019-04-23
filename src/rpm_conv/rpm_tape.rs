@@ -94,22 +94,44 @@ impl RpmTape {
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn get_note_and_go(&self, note_caret: &mut Caret, comm: &Communication) -> Option<RpmNote> {
+    pub fn get_note_and_go_note(
+        &self,
+        note_caret: &mut Caret,
+        comm: &Communication,
+    ) -> Option<RpmNote> {
         let (is_positive, index) = note_caret.to_index();
 
-        if is_positive {
-            if index < self.positive_notes.len() {
-                note_caret.get_and_go(comm, "tape+get_note_and_go");
-                Some(self.positive_notes[index as usize])
+        if note_caret.is_back() {
+            // 負の無限大の方に向いているとき。
+            if !is_positive {
+                if self.negative_notes.len() <= index {
+                    // 負の先端要素を超えたら。
+                    None
+                } else {
+                    // 負。
+                    note_caret.get_and_go(comm, "tape-get_note_and_go_note");
+                    Some(self.negative_notes[index as usize])
+                }
             } else {
-                None
+                // 正。
+                note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                Some(self.positive_notes[index as usize])
             }
         } else {
-            if index < self.positive_notes.len() {
-                note_caret.get_and_go(comm, "tape-get_note_and_go");
-                Some(self.negative_notes[index as usize])
+            // 正の無限大の方に向いているとき。
+            if is_positive {
+                if self.positive_notes.len() <= index {
+                    // 正の先端要素を超えたら。
+                    None
+                } else {
+                    // 正。
+                    note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                    Some(self.positive_notes[index as usize])
+                }
             } else {
-                None
+                // 負。
+                note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                Some(self.negative_notes[index as usize])
             }
         }
     }

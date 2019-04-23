@@ -119,7 +119,9 @@ impl RpmNoteOpe {
                 if address.is_sky() {
                     "SK".to_string()
                 } else if address.is_on_board(board_size) {
-                    board_size.address_to_cell(address.get_index()).to_string()
+                    board_size
+                        .address_to_cell(address.get_index())
+                        .to_human_presentable()
                 } else if address.is_hand() {
                     address.get_hand_piece().unwrap().to_human_presentable()
                 } else {
@@ -181,19 +183,19 @@ impl RpmNoteOpe {
     /// # Returns
     ///
     /// (last_used_caret, note_ope_opt)
-    pub fn parse_1note(
+    pub fn parse_1ope(
         line: &str,
         caret: &mut Caret,
         board_size: BoardSize,
         comm: &Communication,
     ) -> (i16, Option<RpmNoteOpe>) {
-        let mut n0 = caret.get_and_go(comm, "ope-parse_1note1") as usize;
+        let mut n0 = caret.get_and_go(comm, "ope-parse_1ope1") as usize;
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
             ' ' => (n0 as i16, None),
             '0' => {
                 // 駒台。
-                let mut n1 = caret.get_and_go(comm, "ope-parse_1note-0") as usize;
+                let mut n1 = caret.get_and_go(comm, "ope-parse_1ope-0") as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 if 2 < line.len() {
@@ -202,7 +204,7 @@ impl RpmNoteOpe {
                             // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
                             // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
-                            n1 = caret.get_and_go(comm, "ope-parse_1note0p") as usize;
+                            n1 = caret.get_and_go(comm, "ope-parse_1ope0p") as usize;
                             ch1 = line[n1..=n1].chars().nth(0).unwrap();
                         }
                         _ => {}
@@ -220,7 +222,7 @@ impl RpmNoteOpe {
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
-                let mut n1 = caret.get_and_go(comm, "ope-parse_1note-num") as usize;
+                let mut n1 = caret.get_and_go(comm, "ope-parse_1ope-num") as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 //comm.print(&format!("{}{}", ch1, ch2));
@@ -255,7 +257,7 @@ impl RpmNoteOpe {
                         break;
                     }
 
-                    n0 = caret.get_and_go(comm, "ope-parse_1note") as usize;
+                    n0 = caret.get_and_go(comm, "ope-parse_1ope[") as usize;
                     ch0 = line[n0..=n0].chars().nth(0).unwrap();
 
                     if ch0 == ']' {

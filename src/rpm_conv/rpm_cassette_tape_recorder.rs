@@ -124,8 +124,7 @@ impl RpmCassetteTapeRecorder {
                 return;
             }
 
-            let tuple =
-                RpmNoteOpe::parse_1note(&line, &mut caret, position.get_board_size(), &comm);
+            let tuple = RpmNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &comm);
 
             if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");

@@ -1500,7 +1500,7 @@ impl PieceType {
         }
     }
 
-    pub fn to_sign(&self) -> String {
+    pub fn to_sign(self) -> String {
         use piece_etc::PieceType::*;
         match self {
             K => "K",

@@ -34,24 +34,20 @@ impl fmt::Display for RpmMove {
     }
 }
 impl RpmMove {
-    /// Human presentable.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
-        let mut text = String::new();
-
-        for note in &self.notes {
-            text = format!("{} {}", text, note.to_human_presentable(board_size))
-        }
-
-        format!("({}:{}){}", self.start, self.end, text)
-    }
-
     /// 次の1手分解析。
+    ///
+    /// # Arguments
+    ///
+    /// (parsed_note_count, move_opt)
+    ///
+    /// parsed_note_count は巻き戻すのに使う。
     pub fn parse_1move(
         comm: &Communication,
         record_for_json: &RpmRecordForJson,
         note_caret: &mut Caret,
         board_size: BoardSize,
-    ) -> Option<RpmMove> {
+    ) -> (usize, Option<RpmMove>) {
+        let mut parsed_note_count = 0;
         let mut notes_buffer = Vec::new();
         let mut first_used_caret = 0;
         let mut last_used_caret = 0;
@@ -80,6 +76,8 @@ impl RpmMove {
             if let (sub_first_used_caret, sub_last_used_caret, Some(note)) =
                 RpmNote::parse_1note(comm, record_for_json, note_caret, board_size)
             {
+                parsed_note_count += 1;
+
                 if note.is_phase_change() {
                     if is_first {
 
@@ -94,6 +92,7 @@ impl RpmMove {
                 first_used_caret = sub_first_used_caret;
                 last_used_caret = sub_last_used_caret;
             } else {
+                // パースできるノートが無かった。
                 //comm.print("Break: None.");
                 break 'j_loop;
             };
@@ -102,18 +101,21 @@ impl RpmMove {
         }
 
         if notes_buffer.is_empty() {
-            None
+            (parsed_note_count, None)
         } else if notes_buffer.len() == 1 {
             panic!(
                 "指し手が 1ノート ということは無いはず。 {:?}",
                 record_for_json.body.operation
             )
         } else {
-            Some(RpmMove {
-                notes: notes_buffer,
-                start: first_used_caret as usize,
-                end: last_used_caret as usize,
-            })
+            (
+                parsed_note_count,
+                Some(RpmMove {
+                    notes: notes_buffer,
+                    start: first_used_caret as usize,
+                    end: last_used_caret as usize,
+                }),
+            )
         }
     }
 
@@ -420,5 +422,16 @@ impl RpmMove {
         }
 
         text
+    }
+
+    /// Human presentable.
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        let mut text = String::new();
+
+        for note in &self.notes {
+            text = format!("{} {}", text, note.to_human_presentable(board_size))
+        }
+
+        format!("({}:{}){}", self.start, self.end, text)
     }
 }

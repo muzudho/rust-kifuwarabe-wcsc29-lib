@@ -61,7 +61,7 @@ impl RpmNotePlayer {
         comm: &Communication,
     ) {
         for i in 0..repeat {
-            if let Some(rnote) = cassette_tape.get_note_and_go(comm) {
+            if let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
                 comm.println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
                 RpmNotePlayer::go_1note(&rnote, position, ply, comm);
             } else {

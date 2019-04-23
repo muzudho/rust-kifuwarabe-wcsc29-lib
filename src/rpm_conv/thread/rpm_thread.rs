@@ -1,13 +1,5 @@
-//use communication::*;
-//use conf::kifuwarabe_wcsc29_config::*;
-//use human::human_interface::*;
-//use piece_etc::*;
-//use position::*;
+use board_size::BoardSize;
 use rpm_conv::thread::rpm_move::*;
-//use rpm_for_json::rpm_book_file::*;
-//use std::collections::HashMap;
-//use std::fs;
-//use usi_conv::usi_move::*;
 
 /// シーケンスな手筋１個分。
 #[derive(Default)]
@@ -16,9 +8,7 @@ pub struct RpmThread {
 }
 impl RpmThread {
     pub fn new() -> Self {
-        RpmThread {
-            moves: Vec::new(),
-        }
+        RpmThread { moves: Vec::new() }
     }
 
     pub fn len(&self) -> usize {
@@ -29,7 +19,18 @@ impl RpmThread {
         self.moves.is_empty()
     }
 
-    pub fn push_move(&mut self, rmove:RpmMove) {
+    pub fn push_move(&mut self, rmove: RpmMove) {
         self.moves.push(rmove);
+    }
+
+    /// Human presentable.
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        let mut text = String::new();
+
+        for rmove in &self.moves {
+            text = format!("{} {}", text, rmove.to_human_presentable(board_size))
+        }
+
+        format!("{}", text)
     }
 }

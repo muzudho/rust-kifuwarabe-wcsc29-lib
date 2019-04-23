@@ -39,7 +39,8 @@ impl Cell {
         self.file * 10 + self.rank
     }
 
-    pub fn to_string(self) -> String {
+    // For log.
+    pub fn to_human_presentable(self) -> String {
         self.to_scalar().to_string()
     }
 }
@@ -123,7 +124,9 @@ impl Address {
     pub fn to_human_presentable(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             // 盤上。
-            board_size.address_to_cell(self.index).to_string()
+            board_size
+                .address_to_cell(self.index)
+                .to_human_presentable()
         // それ以外。
         } else if let Some(piece) = self.get_hand_piece() {
             format!("Hand: {}", piece.to_sign()).to_string()

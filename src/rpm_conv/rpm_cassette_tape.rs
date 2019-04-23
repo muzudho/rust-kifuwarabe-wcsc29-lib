@@ -82,8 +82,8 @@ impl RpmCassetteTape {
     }
 
     /// 現在の要素を返してから、キャレットを動かします。
-    pub fn get_note_and_go(&mut self, comm: &Communication) -> Option<RpmNote> {
-        self.tape.get_note_and_go(&mut self.caret, comm)
+    pub fn get_note_and_go_tape(&mut self, comm: &Communication) -> Option<RpmNote> {
+        self.tape.get_note_and_go_note(&mut self.caret, comm)
     }
 
     /// Human presentable large log.

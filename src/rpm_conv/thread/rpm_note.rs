@@ -90,7 +90,7 @@ impl RpmNote {
 
         let mut token_caret = Caret::new_next_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
-            RpmNoteOpe::parse_1note(
+            RpmNoteOpe::parse_1ope(
                 &record_for_json.body.operation[first_used_caret as usize],
                 &mut token_caret,
                 board_size,

@@ -115,7 +115,7 @@ impl RpmMovePlayer {
     /// # Return
     ///
     /// 合法タッチか否か。
-    pub fn get_1move_on_tape_and_move(
+    pub fn get_1move_and_go(
         // next_1move_on_tape
         cassette_tape: &mut RpmCassetteTape,
         position: &mut Position,
@@ -131,7 +131,7 @@ impl RpmMovePlayer {
         ));
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = cassette_tape.get_note_and_go(comm) {
+        while let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
             comm.println(&format!(
                 "<NXm2:{}:{}>",
                 cassette_tape.to_human_presentable(position.get_board_size()),

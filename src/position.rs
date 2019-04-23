@@ -578,30 +578,28 @@ impl Position {
                         }
                     }
                 // 駒台。
-                } else {
-                    if let Some(sky_idp) = self.get_sky_idp() {
-                        // 指に何か持っていた。
-                        // 合法。駒台に置く。
-                        let id_piece_opt = Some(sky_idp);
-                        // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
-                        self.add_hand(id_piece_opt);
-                        self.sky = None;
+                } else if let Some(sky_idp) = self.get_sky_idp() {
+                    // 指に何か持っていた。
+                    // 合法。駒台に置く。
+                    let id_piece_opt = Some(sky_idp);
+                    // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
+                    self.add_hand(id_piece_opt);
+                    self.sky = None;
 
-                        (true, Some(sky_idp))
+                    (true, Some(sky_idp))
+                } else {
+                    // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
+                    self.move_hand_to_finger(address, comm, board_size);
+                    if let Some(ref sky) = self.sky {
+                        // 合法。掴んだ駒を返す。
+                        (true, Some(sky.get_idp()))
                     } else {
-                        // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
-                        self.move_hand_to_finger(address, comm, board_size);
-                        if let Some(ref sky) = self.sky {
-                            // 合法。掴んだ駒を返す。
-                            (true, Some(sky.get_idp()))
-                        } else {
-                            comm.println(&format!(
-                                "<IL-駒台ほこり取り{}>",
-                                address.to_human_presentable(board_size)
-                            ));
-                            // 違法。駒台のほこりを取った。
-                            (false, None)
-                        }
+                        comm.println(&format!(
+                            "<IL-駒台ほこり取り{}>",
+                            address.to_human_presentable(board_size)
+                        ));
+                        // 違法。駒台のほこりを取った。
+                        (false, None)
                     }
                 }
             }
