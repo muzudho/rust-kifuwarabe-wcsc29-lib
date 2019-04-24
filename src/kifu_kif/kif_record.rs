@@ -1,6 +1,5 @@
+use kifu_kif::version::kaki189::*;
 use kifu_kif::kif_move::*;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::*;
 
 #[derive(Default)]
@@ -13,40 +12,8 @@ impl KifRecord {
     }
 
     pub fn load(file: &str) -> KifRecord {
-        let mut record = KifRecord::new();
-
-        for result in BufReader::new(File::open(file).unwrap()).lines() {
-            let line = result.unwrap();
-
-            // スペースを除く、先頭が数字で始まる行は　指し手。
-            if 4 < line.len() {
-                let mut first_ch = line.trim_start().to_string();
-                first_ch = first_ch.chars().nth(0).unwrap().to_string();
-                match first_ch.parse::<i8>() {
-                    Ok(_x) => {
-                        if let Some(kif_move) = KifMove::parse(&line) {
-                            record.push(kif_move);
-                        }
-                    }
-                    Err(_err) => {
-                        // この行は無視。
-                    }
-                }
-            }
-        }
-
-        // '同'を解決する。
-        let mut pre_cell = None;
-        for mov in &mut record.items {
-            if mov.is_same {
-                mov.destination = pre_cell;
-            }
-
-            pre_cell = mov.destination;
-        }
-
-        // これでレコードはできあがり。
-        record
+        // バージョンがいろいろあるようだ。
+        Kaki189::load(file)
     }
 
     pub fn push(&mut self, mov: KifMove) {
