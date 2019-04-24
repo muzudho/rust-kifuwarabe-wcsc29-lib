@@ -31,6 +31,6 @@ impl RpmThread {
             text = format!("{} {}", text, rmove.to_human_presentable(board_size))
         }
 
-        format!("{}", text)
+        format!("{}", text.to_string())
     }
 }

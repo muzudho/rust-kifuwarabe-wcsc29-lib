@@ -120,7 +120,8 @@ impl BestMovePicker {
                     ));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
-                    'piece_loop: for my_piece_id in PieceIdentify::iterator() {
+                    // 'piece_loop: 
+                    for my_piece_id in PieceIdentify::iterator() {
                         // 現局面の盤上の自駒の番地。
                         if let Some((my_idp, my_addr_obj)) =
                             position.find_wild(Some(position.get_phase()), *my_piece_id)

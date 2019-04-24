@@ -1,6 +1,7 @@
 use board_size::*;
 use communication::*;
 use kifu_rpm::rpm_cassette_tape_recorder::*;
+use std::fs;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -31,13 +32,16 @@ impl RpmObjectSheet {
     /// 物理レコードを追加する。
     pub fn append_record(
         &self,
-        _comm: &Communication,
+        comm: &Communication,
         board_size: BoardSize,
         recorder: &RpmCassetteTapeRecorder,
     ) {
-        // comm.println("#Sheet saving...");
+        comm.println(&format!("#Append record to '{}'...", self.file_path));
 
         let path = Path::new(&self.file_path);
+
+        // ディレクトリー作成。
+        fs::create_dir_all(path.parent().unwrap());
 
         // 新規作成、またはレコードを追記。
         let mut file = OpenOptions::new()

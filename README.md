@@ -74,7 +74,10 @@ cargo clippy --example eat_a_csa
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
 cargo run --example eat_a_csa -- --path C:/muzudho/kifuwarabe-wcsc29-learn/output-wcsc-record/extracted-wcsc28_kifu/wcsc28_kifu/WCSC_F1_APR_MCB.csa
+
 cargo run --example eat_a_csa -- --path C:/muzudho/kifuwarabe-wcsc29-learn/csa-record/WCSC_F2_QHA_TNK.csa
+
+cargo run --example eat_a_csa -- --path C:/shogi-record/formation-go/wcsc28_kifu/WCSC_F1_APR_MCB.csa
 ```
 
 Output.
