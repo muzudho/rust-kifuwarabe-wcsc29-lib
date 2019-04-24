@@ -1,6 +1,6 @@
 use board_size::*;
 use communication::*;
-use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::rpm_cassette_tape::*;
 use std::fs;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -29,19 +29,26 @@ impl RpmObjectSheet {
         }
     }
 
-    /// 物理レコードを追加する。
-    pub fn append_record(
+    /// シートに、カセット・テープを追加します。
+    pub fn append_cassette_tape(
         &self,
         comm: &Communication,
         board_size: BoardSize,
-        recorder: &RpmCassetteTapeRecorder,
+        cassette_tape: &RpmCassetteTape,
     ) {
         comm.println(&format!("#Append record to '{}'...", self.file_path));
 
         let path = Path::new(&self.file_path);
 
         // ディレクトリー作成。
-        fs::create_dir_all(path.parent().unwrap());
+        if let Some(parent) = path.parent() {
+            match fs::create_dir_all(parent) {
+                Ok(_x) => {},
+                Err(err) => panic!(err),
+            }
+        } else {
+            panic!("Create directory fail. {}", self.file_path);
+        }
 
         // 新規作成、またはレコードを追記。
         let mut file = OpenOptions::new()
@@ -51,11 +58,13 @@ impl RpmObjectSheet {
             .open(path)
             .unwrap();
 
+        comm.println(&format!("#Append record: セーブする内容: {}", cassette_tape.to_json_object(board_size)));
+
         // 末尾にカンマを付けて終わる。
         if let Err(e) = writeln!(
             file,
             "{},",
-            recorder.cassette_tape.to_json_object(board_size)
+            cassette_tape.to_json_object(board_size)
         ) {
             eprintln!("Couldn't write to file: {}", e);
         }

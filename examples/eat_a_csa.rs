@@ -76,7 +76,7 @@ pub fn main() {
 
     // Save.
     let rpm_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
-    rpm_sheet.append_record(&comm, position.get_board_size(), &recorder);
+    rpm_sheet.append_cassette_tape(&comm, position.get_board_size(), &recorder.cassette_tape);
 
     comm.println("Finished.");
 }

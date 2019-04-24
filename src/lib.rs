@@ -240,7 +240,7 @@ pub fn main_loop() {
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            rpm_object_sheet.append_record(&comm, position.get_board_size(), &recorder);
+            rpm_object_sheet.append_cassette_tape(&comm, position.get_board_size(), &recorder.cassette_tape);
 
         // #####
         // # H #

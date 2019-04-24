@@ -26,5 +26,8 @@ impl HumanInterface {
         // 棋譜。
         let (_numbers, operations) = &cassette_tape.to_sign(position.get_board_size());
         comm.println(operations);
+
+        // デバッグ。
+        comm.println(&format!("#Append record: セーブ用の内容: {}", cassette_tape.to_json_object(position.get_board_size())));
     }
 }
