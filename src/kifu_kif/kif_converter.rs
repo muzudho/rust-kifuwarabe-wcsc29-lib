@@ -1,7 +1,7 @@
 use communication::*;
 use kifu_kif::kif_player::*;
 use kifu_kif::kif_record::*;
-use kifu_rpm::rpm_object_sheet::*;
+use kifu_rpm::rpm_cassette_tape_box::*;
 use position::*;
 use std::fs;
 use std::path::Path;
@@ -35,8 +35,12 @@ impl KifConverter {
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
-        let rpm_object_sheet = RpmObjectSheet::default(output_path);
-        rpm_object_sheet.append_cassette_tape(&comm, position.get_board_size(), &recorder.cassette_tape);
+        let rpm_object_sheet = RpmCassetteTapeBox::default(output_path);
+        rpm_object_sheet.append_cassette_tape(
+            &comm,
+            position.get_board_size(),
+            &recorder.cassette_tape,
+        );
 
         // comm.println("Finished.");
     }

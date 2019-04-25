@@ -9,12 +9,12 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 /// .rpmove ファイルに対応。
-pub struct RpmObjectSheet {
+pub struct RpmCassetteTapeBox {
     file_path: String,
 }
-impl RpmObjectSheet {
-    pub fn default(path_text: &str) -> RpmObjectSheet {
-        RpmObjectSheet {
+impl RpmCassetteTapeBox {
+    pub fn default(path_text: &str) -> RpmCassetteTapeBox {
+        RpmCassetteTapeBox {
             file_path: path_text.to_string(),
         }
     }
@@ -43,7 +43,7 @@ impl RpmObjectSheet {
         // ディレクトリー作成。
         if let Some(parent) = path.parent() {
             match fs::create_dir_all(parent) {
-                Ok(_x) => {},
+                Ok(_x) => {}
                 Err(err) => panic!(err),
             }
         } else {
@@ -58,14 +58,13 @@ impl RpmObjectSheet {
             .open(path)
             .unwrap();
 
-        comm.println(&format!("#Append record: セーブする内容: {}", cassette_tape.to_json_object(board_size)));
+        comm.println(&format!(
+            "#Append record: セーブする内容: {}",
+            cassette_tape.to_json_object(board_size)
+        ));
 
         // 末尾にカンマを付けて終わる。
-        if let Err(e) = writeln!(
-            file,
-            "{},",
-            cassette_tape.to_json_object(board_size)
-        ) {
+        if let Err(e) = writeln!(file, "{},", cassette_tape.to_json_object(board_size)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 

@@ -58,8 +58,8 @@ use conf::kifuwarabe_wcsc29_lib_config::*;
 use human::human_interface::*;
 use kifu_rpm::play::rpm_move_player::*;
 use kifu_rpm::play::rpm_note_player::*;
+use kifu_rpm::rpm_cassette_tape_box::*;
 use kifu_rpm::rpm_cassette_tape_recorder::*;
-use kifu_rpm::rpm_object_sheet::*;
 use piece_etc::*;
 use position::*;
 use thought::best_move_picker::*;
@@ -94,7 +94,7 @@ pub fn main_loop() {
     }
 
     // 対局中の棋譜を入れる。
-    let rpm_object_sheet = RpmObjectSheet::default(&rpm_object_sheet_path);
+    let rpm_object_sheet = RpmCassetteTapeBox::default(&rpm_object_sheet_path);
     let mut recorder = RpmCassetteTapeRecorder::default();
 
     let mut position = Position::default();
@@ -240,7 +240,11 @@ pub fn main_loop() {
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            rpm_object_sheet.append_cassette_tape(&comm, position.get_board_size(), &recorder.cassette_tape);
+            rpm_object_sheet.append_cassette_tape(
+                &comm,
+                position.get_board_size(),
+                &recorder.cassette_tape,
+            );
 
         // #####
         // # H #

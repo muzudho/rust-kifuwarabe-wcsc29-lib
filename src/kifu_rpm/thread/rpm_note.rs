@@ -6,7 +6,8 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::json::rpm_book_file::*;
+use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
+use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
 use std::fmt;
@@ -70,11 +71,11 @@ impl RpmNote {
     /// (first_used_caret, last_used_caret, note_opt)
     pub fn parse_1note(
         comm: &Communication,
-        record_for_json: &RpmRecordForJson,
+        record_for_json: &RpmCasetteTapeForJson,
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, i16, Option<RpmNote>) {
-        let size = record_for_json.body.operation.len();
+        let size = record_for_json.tape.operation.len();
 
         if note_caret.is_greater_than_or_equal_to(size as i16) {
             // 範囲外はエラーで落とす。
@@ -91,7 +92,7 @@ impl RpmNote {
         let mut token_caret = Caret::new_next_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
             RpmNoteOpe::parse_1ope(
-                &record_for_json.body.operation[first_used_caret as usize],
+                &record_for_json.tape.operation[first_used_caret as usize],
                 &mut token_caret,
                 board_size,
                 &comm,
@@ -100,11 +101,11 @@ impl RpmNote {
         } else {
             panic!(
                 "Unexpected operation note token. {}",
-                record_for_json.body.operation[first_used_caret as usize]
+                record_for_json.tape.operation[first_used_caret as usize]
             )
         };
 
-        let pnum = record_for_json.body.piece_number[first_used_caret as usize];
+        let pnum = record_for_json.tape.piece_number[first_used_caret as usize];
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None

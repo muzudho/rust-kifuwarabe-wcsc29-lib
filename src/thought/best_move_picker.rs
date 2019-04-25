@@ -3,7 +3,8 @@ use common::caret::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
-use kifu_rpm::json::rpm_book_file::*;
+use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
+use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::play::rpm_move_player::*;
 use kifu_rpm::play::rpm_thread_player::*;
 use kifu_rpm::rpm_cassette_tape_recorder::*;
@@ -101,7 +102,7 @@ impl BestMovePicker {
             }
             */
 
-            let book_file = RpmBookFile::load(&file);
+            let book_file = RpmCassetteTapeBoxFile::load(&file);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
@@ -120,7 +121,7 @@ impl BestMovePicker {
                     ));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
-                    // 'piece_loop: 
+                    // 'piece_loop:
                     for my_piece_id in PieceIdentify::iterator() {
                         // 現局面の盤上の自駒の番地。
                         if let Some((my_idp, my_addr_obj)) =
@@ -308,7 +309,7 @@ impl BestMovePicker {
         &mut self,
         comm: &Communication,
         position: &mut Position,
-        record_for_json: &RpmRecordForJson,
+        record_for_json: &RpmCasetteTapeForJson,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,

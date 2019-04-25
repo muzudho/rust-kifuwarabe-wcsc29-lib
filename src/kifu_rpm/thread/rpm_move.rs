@@ -7,7 +7,8 @@ use address::*;
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::json::rpm_book_file::*;
+use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
+use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::thread::rpm_note::*;
 use piece_etc::*;
 use std::fmt;
@@ -43,7 +44,7 @@ impl RpmMove {
     /// parsed_note_count は巻き戻すのに使う。
     pub fn parse_1move(
         comm: &Communication,
-        record_for_json: &RpmRecordForJson,
+        record_for_json: &RpmCasetteTapeForJson,
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (usize, Option<RpmMove>) {
@@ -52,11 +53,11 @@ impl RpmMove {
         let mut first_used_caret = 0;
         let mut last_used_caret = 0;
 
-        let note_size = record_for_json.body.operation.len();
+        let note_size = record_for_json.tape.operation.len();
         if note_size == 1 {
             panic!(
                 "操作トラックが 1ノート ということは無いはず。 {:?}",
-                record_for_json.body.operation
+                record_for_json.tape.operation
             )
         }
 
@@ -105,7 +106,7 @@ impl RpmMove {
         } else if notes_buffer.len() == 1 {
             panic!(
                 "指し手が 1ノート ということは無いはず。 {:?}",
-                record_for_json.body.operation
+                record_for_json.tape.operation
             )
         } else {
             (
