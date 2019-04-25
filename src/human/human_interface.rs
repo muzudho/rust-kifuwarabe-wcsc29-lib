@@ -1,5 +1,5 @@
 use communication::*;
-use kifu_rpm::rpm_cassette_tape::*;
+use kifu_rpm::object::rpm_cassette_tape::*;
 use position::*;
 use std::*;
 
@@ -28,6 +28,9 @@ impl HumanInterface {
         comm.println(operations);
 
         // デバッグ。
-        comm.println(&format!("#Append record: セーブ用の内容: {}", cassette_tape.to_json_object(position.get_board_size())));
+        comm.println(&format!(
+            "#Append record: セーブ用の内容: {}",
+            cassette_tape.to_json_object(position.get_board_size())
+        ));
     }
 }

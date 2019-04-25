@@ -1,11 +1,9 @@
 use board_size::*;
 use communication::*;
-use kifu_rpm::rpm_cassette_tape::*;
+use kifu_rpm::object::rpm_cassette_tape::*;
 use std::fs;
-use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
-use std::io::{BufRead, BufReader};
 use std::path::Path;
 
 /// .rpmove ファイルに対応。
@@ -16,16 +14,6 @@ impl RpmCassetteTapeBox {
     pub fn default(path_text: &str) -> RpmCassetteTapeBox {
         RpmCassetteTapeBox {
             file_path: path_text.to_string(),
-        }
-    }
-
-    pub fn read_sheet(&mut self) {
-        // Path::new(directory).join(file_path_text)
-        let path = Path::new(&self.file_path);
-        for result in BufReader::new(File::open(path).unwrap()).lines() {
-            let line = result.unwrap();
-            println!("Read line: `{}`.", line);
-            // TODO self.records.push(record);
         }
     }
 

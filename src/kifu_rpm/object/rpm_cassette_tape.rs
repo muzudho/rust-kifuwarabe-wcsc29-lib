@@ -1,7 +1,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::rpm_tape::*;
+use kifu_rpm::object::rpm_tape::*;
 use kifu_rpm::thread::rpm_note::*;
 use std::*;
 

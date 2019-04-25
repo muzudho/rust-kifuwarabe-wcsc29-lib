@@ -12,7 +12,7 @@ use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::rpm_cassette_tape_box::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 #[derive(Debug)]

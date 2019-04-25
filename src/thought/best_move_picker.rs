@@ -7,7 +7,7 @@ use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
 use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::play::rpm_move_player::*;
 use kifu_rpm::play::rpm_thread_player::*;
-use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifu_rpm::thread::rpm_move::*;
 use kifu_rpm::thread::rpm_thread::*;
 use piece_etc::*;
@@ -102,22 +102,22 @@ impl BestMovePicker {
             }
             */
 
-            let book_file = RpmCassetteTapeBoxFile::load(&file);
+            let cassette_tape_box_j = RpmCassetteTapeBoxForJson::load_file(&file);
 
             // ファイルの中身をすこし見てみる。
-            //comm.println(&format!("file: {}, Book len: {}.", file, book_file.book.len() ));
-            if !book_file.book.is_empty() {
-                //comm.println(&format!("Ope len: {}, Num len: {}.", book_file.book[0].body.operation.len(), book_file.book[0].body.piece_number.len() ));
+            //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
+            if !cassette_tape_box_j.cassette_tape_for_json.is_empty() {
+                //comm.println(&format!("Ope len: {}, Num len: {}.", cassette_tape_box_j.book[0].body.operation.len(), cassette_tape_box_j.book[0].body.piece_number.len() ));
 
                 let mut record_index = -1;
 
                 // レコードがいっぱいある。
-                for record_for_json in book_file.book {
+                for cassette_tape_j in cassette_tape_box_j.cassette_tape_for_json {
                     record_index += 1;
                     comm.println(&format!(
                         "Record index: {}. Json: {}",
                         record_index,
-                        record_for_json.to_human_presentable()
+                        cassette_tape_j.to_human_presentable()
                     ));
 
                     // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
@@ -151,7 +151,7 @@ impl BestMovePicker {
                                 let rmove_opt = self.go_pattern_match_move(
                                     &comm,
                                     position,
-                                    &record_for_json,
+                                    &cassette_tape_j,
                                     *my_piece_id,
                                     my_addr_obj,
                                     &mut note_caret,
@@ -309,7 +309,7 @@ impl BestMovePicker {
         &mut self,
         comm: &Communication,
         position: &mut Position,
-        record_for_json: &RpmCasetteTapeForJson,
+        cassette_tape_j: &RpmCasetteTapeForJson,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
@@ -323,7 +323,7 @@ impl BestMovePicker {
         // とりあえず 1手分をパースします。
         if let (_parsed_note_count, Some(rmove)) = RpmMove::parse_1move(
             comm,
-            &record_for_json,
+            &cassette_tape_j,
             note_caret,
             position.get_board_size(),
         ) {

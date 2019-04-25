@@ -1,7 +1,7 @@
 use communication::*;
 use kifu_csa::csa_player::*;
 use kifu_csa::csa_record::*;
-use kifu_rpm::rpm_cassette_tape_box::*;
+use kifu_rpm::object::rpm_cassette_tape_box::*;
 use position::*;
 use std::fs;
 use std::path::Path;

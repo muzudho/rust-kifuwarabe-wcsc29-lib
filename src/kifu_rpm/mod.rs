@@ -1,7 +1,5 @@
 pub mod json;
+pub mod object;
 pub mod play;
-pub mod rpm_cassette_tape;
-pub mod rpm_cassette_tape_box;
-pub mod rpm_cassette_tape_recorder;
-pub mod rpm_tape;
+pub mod recorder;
 pub mod thread;

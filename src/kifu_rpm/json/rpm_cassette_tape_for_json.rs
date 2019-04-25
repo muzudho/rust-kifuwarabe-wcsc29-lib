@@ -14,11 +14,11 @@ pub struct RpmCassetteTapeLabelForJson {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmCasetteTapeForJson {
-    pub label: RpmCassetteTapeLabelForJson,
-    pub tape: RpmTapeForJson,
+    pub label_for_json: RpmCassetteTapeLabelForJson,
+    pub tape_for_json: RpmTapeForJson,
 }
 impl RpmCasetteTapeForJson {
     pub fn to_human_presentable(&self) -> String {
-        self.tape.to_human_presentable()
+        self.tape_for_json.to_human_presentable()
     }
 }

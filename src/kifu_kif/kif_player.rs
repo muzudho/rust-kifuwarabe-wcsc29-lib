@@ -4,7 +4,7 @@ use kifu_kif::kif_move::*;
 use kifu_kif::kif_record::*;
 use kifu_rpm::play::rpm_move_player::*;
 use kifu_rpm::play::rpm_note_player::*;
-use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
 use position::*;

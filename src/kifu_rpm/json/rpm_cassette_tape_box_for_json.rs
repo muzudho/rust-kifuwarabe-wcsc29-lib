@@ -8,14 +8,16 @@ use std::path::Path;
 /// -rpmrec.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmCassetteTapeBoxFile {
-    pub book: Vec<RpmCasetteTapeForJson>,
+pub struct RpmCassetteTapeBoxForJson {
+    pub cassette_tape_for_json: Vec<RpmCasetteTapeForJson>,
 }
-impl RpmCassetteTapeBoxFile {
-    pub fn new() -> RpmCassetteTapeBoxFile {
-        RpmCassetteTapeBoxFile { book: Vec::new() }
+impl RpmCassetteTapeBoxForJson {
+    pub fn new() -> Self {
+        RpmCassetteTapeBoxForJson {
+            cassette_tape_for_json: Vec::new(),
+        }
     }
-    pub fn load(file: &str) -> RpmCassetteTapeBoxFile {
+    pub fn load_file(file: &str) -> Self {
         // JSONファイル。
         let path = Path::new(file);
         let mut file = match File::open(path) {
@@ -34,7 +36,7 @@ impl RpmCassetteTapeBoxFile {
             Err(err) => {
                 print!("info File: {:?}", file);
                 print!("info Unexpected config: {}", err);
-                RpmCassetteTapeBoxFile::new()
+                RpmCassetteTapeBoxForJson::new()
             }
             // TODO Err(err) => panic!("Unexpected config: {}", err),
         }

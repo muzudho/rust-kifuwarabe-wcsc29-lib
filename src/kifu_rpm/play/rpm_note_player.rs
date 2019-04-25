@@ -1,7 +1,7 @@
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::rpm_cassette_tape::*;
-use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::object::rpm_cassette_tape::*;
+use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifu_rpm::thread::rpm_note::*;
 use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;

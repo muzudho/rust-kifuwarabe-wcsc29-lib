@@ -3,7 +3,7 @@ use address::*;
 use board_size::*;
 use communication::*;
 use kifu_rpm::play::rpm_move_player::*;
-use kifu_rpm::rpm_cassette_tape_recorder::*;
+use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use piece_etc::*;
 use position::*;
 //use rpm_play::rpm_note_player::*;
