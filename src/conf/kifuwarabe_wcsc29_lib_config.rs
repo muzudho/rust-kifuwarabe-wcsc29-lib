@@ -13,7 +13,6 @@ pub struct KifuwarabeWcsc29LibConfig {
     pub kifuwarabe_wcsc29_config_path: String,
 }
 impl KifuwarabeWcsc29LibConfig {
-
     /// 設定ファイル読込。
     pub fn load() -> KifuwarabeWcsc29LibConfig {
         let path = Path::new("./kifuwarabe-wcsc29-lib-config.json");
@@ -31,7 +30,7 @@ impl KifuwarabeWcsc29LibConfig {
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected config: {}", err),
+            Err(err) => panic!("Unexpected wcsc29 lib config: {}", err),
         }
     }
 }

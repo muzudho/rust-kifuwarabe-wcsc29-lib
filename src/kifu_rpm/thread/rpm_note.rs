@@ -75,7 +75,7 @@ impl RpmNote {
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, i16, Option<RpmNote>) {
-        let size = cassette_tape_j.tape_for_json.operation.len();
+        let size = cassette_tape_j.tape.ope.len();
 
         if note_caret.is_greater_than_or_equal_to(size as i16) {
             // 範囲外はエラーで落とす。
@@ -92,7 +92,7 @@ impl RpmNote {
         let mut token_caret = Caret::new_next_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
             RpmNoteOpe::parse_1ope(
-                &cassette_tape_j.tape_for_json.operation[first_used_caret as usize],
+                &cassette_tape_j.tape.ope[first_used_caret as usize],
                 &mut token_caret,
                 board_size,
                 &comm,
@@ -101,11 +101,11 @@ impl RpmNote {
         } else {
             panic!(
                 "Unexpected operation note token. {}",
-                cassette_tape_j.tape_for_json.operation[first_used_caret as usize]
+                cassette_tape_j.tape.ope[first_used_caret as usize]
             )
         };
 
-        let pnum = cassette_tape_j.tape_for_json.piece_number[first_used_caret as usize];
+        let pnum = cassette_tape_j.tape.id[first_used_caret as usize];
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None

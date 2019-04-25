@@ -53,11 +53,11 @@ impl RpmMove {
         let mut first_used_caret = 0;
         let mut last_used_caret = 0;
 
-        let note_size = cassette_tape_j.tape_for_json.operation.len();
+        let note_size = cassette_tape_j.tape.ope.len();
         if note_size == 1 {
             panic!(
                 "操作トラックが 1ノート ということは無いはず。 {:?}",
-                cassette_tape_j.tape_for_json.operation
+                cassette_tape_j.tape.ope
             )
         }
 
@@ -106,7 +106,7 @@ impl RpmMove {
         } else if notes_buffer.len() == 1 {
             panic!(
                 "指し手が 1ノート ということは無いはず。 {:?}",
-                cassette_tape_j.tape_for_json.operation
+                cassette_tape_j.tape.ope
             )
         } else {
             (

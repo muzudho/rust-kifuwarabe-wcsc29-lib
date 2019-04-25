@@ -319,14 +319,11 @@ impl RpmTape {
             for note in notes {
                 if is_first {
                     // 最初はカンマなし。
-                    numbers = format!(
-                        "{}",
-                        if let Some(pid) = note.get_id() {
-                            pid.get_number().to_string()
-                        } else {
-                            NONE_VALUE.to_string()
-                        }
-                    );
+                    numbers = if let Some(pid) = note.get_id() {
+                        pid.get_number().to_string()
+                    } else {
+                        NONE_VALUE.to_string()
+                    };
                     operations = format!("\"{}\"", note.get_ope().to_sign(board_size));
                 } else {
                     // ２つ目からカンマあり。

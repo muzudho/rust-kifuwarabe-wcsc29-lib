@@ -1,31 +1,30 @@
+use conf::kifuwarabe_wcsc29_lib_config::*;
 /// # 設定ファイル
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
-use conf::kifuwarabe_wcsc29_lib_config::*;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct Kw29Directories {
-	pub go : String,
-	pub went : String,
-	pub output : String,
+    pub go: String,
+    pub went: String,
+    pub output: String,
 }
 
 /// 統一設定ファイル。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct KifuwarabeWcsc29Config {
-	pub expansion : Kw29Directories,
-	pub formation : Kw29Directories,
-	pub eating : Kw29Directories,
-    pub learning : String,
-    pub rpm_record : String,
+    pub expansion: Kw29Directories,
+    pub formation: Kw29Directories,
+    pub eating: Kw29Directories,
+    pub learning: String,
+    pub rpm_record: String,
 }
 impl KifuwarabeWcsc29Config {
-
     /// 設定ファイル読込。
-    pub fn load(my_confing:&KifuwarabeWcsc29LibConfig) -> KifuwarabeWcsc29Config {
+    pub fn load(my_confing: &KifuwarabeWcsc29LibConfig) -> KifuwarabeWcsc29Config {
         let path = &my_confing.kifuwarabe_wcsc29_config_path;
         let mut file = match File::open(path) {
             Ok(x) => x,
@@ -40,7 +39,7 @@ impl KifuwarabeWcsc29Config {
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected config: {}", err),
+            Err(err) => panic!("Unexpected wcsc29 config: {}", err),
         }
     }
 }

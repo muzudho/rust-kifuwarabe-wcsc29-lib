@@ -106,13 +106,13 @@ impl BestMovePicker {
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
-            if !cassette_tape_box_j.cassette_tape_for_json.is_empty() {
+            if !cassette_tape_box_j.tape_box.is_empty() {
                 //comm.println(&format!("Ope len: {}, Num len: {}.", cassette_tape_box_j.book[0].body.operation.len(), cassette_tape_box_j.book[0].body.piece_number.len() ));
 
                 let mut record_index = -1;
 
                 // レコードがいっぱいある。
-                for cassette_tape_j in cassette_tape_box_j.cassette_tape_for_json {
+                for cassette_tape_j in cassette_tape_box_j.tape_box {
                     record_index += 1;
                     comm.println(&format!(
                         "Record index: {}. Json: {}",

@@ -27,6 +27,7 @@ impl HumanInterface {
         let (_numbers, operations) = &cassette_tape.to_sign(position.get_board_size());
         comm.println(operations);
 
+        /*
         // デバッグ。
         comm.println(&format!(
             "#Append record: 確認用: {}",
@@ -36,5 +37,6 @@ impl HumanInterface {
             "#Append record: セーブ用の内容: {}",
             cassette_tape.to_json_object(position.get_board_size())
         ));
+        */
     }
 }

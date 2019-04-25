@@ -9,12 +9,12 @@ use std::path::Path;
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmCassetteTapeBoxForJson {
-    pub cassette_tape_for_json: Vec<RpmCasetteTapeForJson>,
+    pub tape_box: Vec<RpmCasetteTapeForJson>,
 }
 impl RpmCassetteTapeBoxForJson {
     pub fn new() -> Self {
         RpmCassetteTapeBoxForJson {
-            cassette_tape_for_json: Vec::new(),
+            tape_box: Vec::new(),
         }
     }
     pub fn load_file(file: &str) -> Self {
@@ -35,7 +35,7 @@ impl RpmCassetteTapeBoxForJson {
             Ok(x) => x,
             Err(err) => {
                 print!("info File: {:?}", file);
-                print!("info Unexpected config: {}", err);
+                print!("info Unexpected cassette tape box: {}", err);
                 RpmCassetteTapeBoxForJson::new()
             }
             // TODO Err(err) => panic!("Unexpected config: {}", err),
