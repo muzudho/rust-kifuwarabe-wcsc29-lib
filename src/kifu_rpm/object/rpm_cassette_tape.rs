@@ -110,16 +110,16 @@ impl RpmCassetteTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_json(&self, board_size: BoardSize) -> (String, String) {
-        self.tape.to_json(board_size)
+    pub fn to_casette_tape_json(&self, board_size: BoardSize) -> (String, String) {
+        self.tape.to_tape_json(board_size)
     }
 
     /// JSONのオブジェクト形式。ラベル付き。
     pub fn to_json_object(&self, board_size: BoardSize) -> String {
-        let (numbers, operations) = self.to_json(board_size);
+        let (numbers, operations) = self.to_casette_tape_json(board_size);
 
         let mut text = "{\n".to_string();
-        text = format!("{}    \"header\" : {{\n", text);
+        text = format!("{}    \"label\" : {{\n", text);
         text = format!("{}        \"date\" : \"{}\",\n", text, self.label.date);
         text = format!("{}        \"event\" : \"{}\",\n", text, self.label.event);
         text = format!(
@@ -135,12 +135,12 @@ impl RpmCassetteTape {
             text, self.label.read_file
         );
         text = format!("{}    }},\n", text);
-        text = format!("{}    \"body\" : {{\n", text);
-        text = format!("{}        \"operation\" : [\n", text);
-        text = format!("{}            {}\n", text, operations);
-        text = format!("{}        ],\n", text);
-        text = format!("{}        \"piece_number\" : [\n", text);
+        text = format!("{}    \"tape\" : {{\n", text);
+        text = format!("{}        \"id\" : [\n", text);
         text = format!("{}            {}\n", text, numbers);
+        text = format!("{}        ],\n", text);
+        text = format!("{}        \"ope\" : [\n", text);
+        text = format!("{}            {}\n", text, operations);
         text = format!("{}        ]\n", text);
         text = format!("{}    }}\n", text);
         text = format!("{}}}", text);

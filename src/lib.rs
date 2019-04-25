@@ -326,31 +326,16 @@ pub fn main_loop() {
                 );
             }
             HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-
         // #####
-        // # Q #
+        // # P #
         // #####
-        } else if line == "quit" {
-            break;
-
-        // #####
-        // # U #
-        // #####
-        } else if line == "usi" {
-            comm.println("id name Kifuwarabe Build.18");
-            comm.println("id author Satoshi TAKAHASHI");
-            comm.println("usiok");
-        } else if line == "usinewgame" {
-            // #####
-            // # P #
-            // #####
         } else if line.starts_with("position") {
             // 相手が指したあとの局面まで進める。
             let mut urecord_opt = None;
             let mut start = 0;
 
             //comm.println("#Lib: 'position' command(1).");
-            if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
+            if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
                 urecord_opt = UsiPosition::parse_usi_line_moves(
                     &comm,
                     &line,
@@ -367,7 +352,7 @@ pub fn main_loop() {
             {
                 //comm.println("#Lib: 'position' command(2).");
                 let mut start = 0;
-                if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
+                if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
                     //comm.println("#Position parsed.");
                 }
 
@@ -379,6 +364,21 @@ pub fn main_loop() {
                 //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
                 //comm.println("#Record converted2.");
             }
+
+        // #####
+        // # Q #
+        // #####
+        } else if line == "quit" {
+            break;
+
+        // #####
+        // # U #
+        // #####
+        } else if line == "usi" {
+            comm.println("id name Kifuwarabe Build.18");
+            comm.println("id author Satoshi TAKAHASHI");
+            comm.println("usiok");
+        } else if line == "usinewgame" {
         }
     }
 }

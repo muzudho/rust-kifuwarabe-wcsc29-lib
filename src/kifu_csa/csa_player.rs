@@ -109,7 +109,7 @@ impl CsaPlayer {
         // TODO とりあえず平手初期局面だけ対応。
         let mut recorder = RpmCassetteTapeRecorder::default();
         position.reset_origin_position();
-        RpmMovePlayer::record_ohashi_starting(comm, &mut recorder, position);
+        RpmMovePlayer::play_ohashi_starting(comm, &mut recorder, position);
 
         let mut ply = 1;
         for cmove in &crecord.items {

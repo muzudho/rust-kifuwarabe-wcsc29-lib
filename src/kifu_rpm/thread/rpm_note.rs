@@ -23,7 +23,7 @@ impl fmt::Display for RpmNote {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "'{}'{}",
+            "{}'{}'",
             match self.identify {
                 Some(pid) => pid.to_human_presentable(),
                 None => "--".to_string(),

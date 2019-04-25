@@ -51,7 +51,7 @@ pub fn main() {
     let mut recorder = RpmCassetteTapeRecorder::default();
 
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
+    if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
         comm.println("Position parsed.");
 
         if let Some(parsed_urecord) =
@@ -65,7 +65,7 @@ pub fn main() {
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_position(&comm, &line, &mut start, &mut recorder, &mut position) {
+    if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
         comm.println("Position parsed.");
     }
 

@@ -28,9 +28,23 @@ impl RpmNotePlayer {
             None
         };
 
-        comm.println("End#touch_brandnew_note");
         HumanInterface::show_position(comm, recorder.ply, position);
-        recorder.record_note(RpmNote::from_id_ope(pid_opt, *rnote_ope), comm);
+        let rnote = RpmNote::from_id_ope(pid_opt, *rnote_ope);
+        comm.println(&format!(
+            "End     :touch_brandnew_note. Rnote: {}.",
+            rnote.to_human_presentable(board_size)
+        ));
+        recorder.record_note(rnote, comm);
+        comm.println(&format!(
+            "End     :Recorder: {}.",
+            recorder.to_human_presentable(board_size)
+        ));
+        /* TODO
+        comm.println(&format!(
+            "End     :Recorder json: {}.",
+            recorder.cassette_tape.to_json(board_size)
+        ));
+        */
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。

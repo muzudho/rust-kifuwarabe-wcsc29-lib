@@ -67,7 +67,7 @@ impl BestMovePicker {
         // RPMを検索。
         println!("#get_best_move start. Phase: {:?}", position.get_phase());
 
-        // TODO とりあえず -rpmrec.json ファイルを１個読む。
+        // TODO とりあえず -rbox.json ファイルを１個読む。
         'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
 

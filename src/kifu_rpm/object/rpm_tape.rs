@@ -304,7 +304,7 @@ impl RpmTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_json(&self, board_size: BoardSize) -> (String, String) {
+    pub fn to_tape_json(&self, board_size: BoardSize) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
 
@@ -315,33 +315,35 @@ impl RpmTape {
                 &self.positive_notes
             };
 
-            // 最初はカンマなし。
-            if !notes.is_empty() {
-                let note = notes.iter().next().unwrap();
-                numbers = format!(
-                    "{} {}",
-                    numbers,
-                    if let Some(pid) = note.get_id() {
-                        pid.get_number().to_string()
-                    } else {
-                        NONE_VALUE.to_string()
-                    }
-                );
-                operations = format!("{} \"{}\"", operations, note.get_ope().to_sign(board_size));
-            }
+            let mut is_first = true;
+            for note in notes {
+                if is_first {
+                    // 最初はカンマなし。
+                    numbers = format!(
+                        "{}",
+                        if let Some(pid) = note.get_id() {
+                            pid.get_number().to_string()
+                        } else {
+                            NONE_VALUE.to_string()
+                        }
+                    );
+                    operations = format!("\"{}\"", note.get_ope().to_sign(board_size));
+                } else {
+                    // ２つ目からカンマあり。
+                    numbers = format!(
+                        "{}, {}",
+                        numbers,
+                        if let Some(pid) = note.get_id() {
+                            pid.get_number().to_string()
+                        } else {
+                            NONE_VALUE.to_string()
+                        }
+                    );
+                    operations =
+                        format!("{}, \"{}\"", operations, note.get_ope().to_sign(board_size));
+                }
 
-            for _index in 1..notes.len() {
-                let note = notes.iter().next().unwrap();
-                numbers = format!(
-                    "{}, {}",
-                    numbers,
-                    if let Some(pid) = note.get_id() {
-                        pid.get_number().to_string()
-                    } else {
-                        NONE_VALUE.to_string()
-                    }
-                );
-                operations = format!("{}, \"{}\"", operations, note.get_ope().to_sign(board_size));
+                is_first = false;
             }
         }
 

@@ -29,6 +29,10 @@ impl HumanInterface {
 
         // デバッグ。
         comm.println(&format!(
+            "#Append record: 確認用: {}",
+            cassette_tape.to_human_presentable(position.get_board_size())
+        ));
+        comm.println(&format!(
             "#Append record: セーブ用の内容: {}",
             cassette_tape.to_json_object(position.get_board_size())
         ));

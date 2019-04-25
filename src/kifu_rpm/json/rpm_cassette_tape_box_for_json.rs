@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
-/// -rpmrec.json ファイルに対応。
+/// -rbox.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmCassetteTapeBoxForJson {

@@ -13,15 +13,17 @@ use usi_conv::usi_position::*;
 
 pub struct Fen {}
 impl Fen {
-    pub fn do_startpos(
+    pub fn play_startpos(
         comm: &Communication,
         recorder: &mut RpmCassetteTapeRecorder,
         position: &mut Position,
     ) -> bool {
-        // 平手初期局面にリセット。
+        // 大橋流を始めるところまでリセット。
         recorder.clear();
         position.reset_origin_position();
-        RpmMovePlayer::record_ohashi_starting(comm, recorder, position);
+
+        // 大橋流で初期局面まで指す☆（＾～＾）
+        RpmMovePlayer::play_ohashi_starting(comm, recorder, position);
         true
     }
 
@@ -64,8 +66,8 @@ impl Fen {
         true
     }
 
-    // 解析と、局面の編集は同時に行う。
-    pub fn parse_position(
+    // 初期局面解析。
+    pub fn parse_initial_position(
         comm: &Communication,
         line: &str,
         start: &mut usize,
@@ -75,7 +77,7 @@ impl Fen {
         match UsiPosition::parse_startpos_test(comm, line, start) {
             Some(is_startpos) => {
                 if is_startpos {
-                    Fen::do_startpos(comm, recorder, position)
+                    Fen::play_startpos(comm, recorder, position)
                 } else {
                     Fen::do_sfen(line, start, position)
                 }
