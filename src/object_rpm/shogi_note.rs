@@ -6,20 +6,19 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-//use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
-use kifu_rpm::json::rpm_cassette_tape_for_json::*;
-use kifu_rpm::thread::rpm_note_operation::*;
+use kifu_rpm::rpm_cassette_tape_for_json::*;
+use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use std::fmt;
 
 //#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
-pub struct RpmNote {
+pub struct ShogiNote {
     // 駒の背番号。フェーズ・チェンジのときは None。
     identify: Option<PieceIdentify>,
-    operation: RpmNoteOpe,
+    operation: ShogiNoteOpe,
 }
-impl fmt::Display for RpmNote {
+impl fmt::Display for ShogiNote {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -32,7 +31,7 @@ impl fmt::Display for RpmNote {
         )
     }
 }
-impl RpmNote {
+impl ShogiNote {
     /// For log.
     pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         format!(
@@ -45,14 +44,14 @@ impl RpmNote {
         )
     }
 
-    pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: RpmNoteOpe) -> RpmNote {
-        RpmNote {
+    pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: ShogiNoteOpe) -> ShogiNote {
+        ShogiNote {
             identify: pid,
             operation: operation_note,
         }
     }
 
-    pub fn get_ope(&self) -> RpmNoteOpe {
+    pub fn get_ope(&self) -> ShogiNoteOpe {
         self.operation
     }
 
@@ -74,7 +73,7 @@ impl RpmNote {
         cassette_tape_j: &RpmCasetteTapeForJson,
         note_caret: &mut Caret,
         board_size: BoardSize,
-    ) -> (i16, i16, Option<RpmNote>) {
+    ) -> (i16, i16, Option<ShogiNote>) {
         let size = cassette_tape_j.tape.ope.len();
 
         if note_caret.is_greater_than_or_equal_to(size as i16) {
@@ -91,7 +90,7 @@ impl RpmNote {
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
-            RpmNoteOpe::parse_1ope(
+            ShogiNoteOpe::parse_1ope(
                 &cassette_tape_j.tape.ope[first_used_caret as usize],
                 &mut token_caret,
                 board_size,
@@ -116,7 +115,7 @@ impl RpmNote {
         (
             first_used_caret,
             last_used_caret,
-            Some(RpmNote::from_id_ope(pid_opt, note_ope)),
+            Some(ShogiNote::from_id_ope(pid_opt, note_ope)),
         )
     }
 }

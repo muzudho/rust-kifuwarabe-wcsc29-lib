@@ -1,23 +1,23 @@
 use board_size::*;
 use communication::*;
-use kifu_rpm::object::rpm_cassette_tape::*;
+use object_rpm::cassette_tape::*;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
 
 /// .rbox ファイルに対応。
-pub struct RpmCassetteTapeBox {
+pub struct CassetteTapeBox {
     file: String,
 }
-impl RpmCassetteTapeBox {
-    pub fn new_cassette_tape_box(file: &str) -> RpmCassetteTapeBox {
-        RpmCassetteTapeBox {
+impl CassetteTapeBox {
+    pub fn new_cassette_tape_box(file: &str) -> CassetteTapeBox {
+        CassetteTapeBox {
             file: file.to_string(),
         }
     }
 
-    pub fn to_box_json(&self, board_size: BoardSize, cassette_tape: &RpmCassetteTape) -> String {
+    pub fn to_box_json(&self, board_size: BoardSize, cassette_tape: &CassetteTape) -> String {
         let content = cassette_tape.to_tape_json(board_size);
         format!("{{\"tape_box\": [{}]}}", content).to_string()
     }
@@ -26,7 +26,7 @@ impl RpmCassetteTapeBox {
     pub fn write_cassette_tape_box(
         &self,
         board_size: BoardSize,
-        cassette_tape: &RpmCassetteTape,
+        cassette_tape: &CassetteTape,
         comm: &Communication,
     ) {
         comm.println(&format!("#Append record to '{}'...", self.file));

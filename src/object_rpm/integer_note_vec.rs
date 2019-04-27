@@ -1,8 +1,8 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::thread::rpm_move::RpmMove;
-use kifu_rpm::thread::rpm_note::*;
+use object_rpm::shogi_move::ShogiMove;
+use object_rpm::shogi_note::*;
 use std::*;
 
 const NONE_VALUE: i8 = -1;
@@ -10,11 +10,11 @@ const NONE_VALUE: i8 = -1;
 /// Reversible physical move.
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 #[derive(Default)]
-pub struct RpmTape {
-    pub positive_notes: Vec<RpmNote>,
-    pub negative_notes: Vec<RpmNote>,
+pub struct IntegerNoteVec {
+    pub positive_notes: Vec<ShogiNote>,
+    pub negative_notes: Vec<ShogiNote>,
 }
-impl fmt::Display for RpmTape {
+impl fmt::Display for IntegerNoteVec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -24,28 +24,28 @@ impl fmt::Display for RpmTape {
         )
     }
 }
-impl RpmTape {
+impl IntegerNoteVec {
     pub fn default() -> Self {
-        RpmTape {
+        IntegerNoteVec {
             positive_notes: Vec::new(),
             negative_notes: Vec::new(),
         }
     }
 
-    pub fn from_vector(positive_v: Vec<RpmNote>, negative_v: Vec<RpmNote>) -> Self {
-        RpmTape {
+    pub fn from_vector(positive_v: Vec<ShogiNote>, negative_v: Vec<ShogiNote>) -> Self {
+        IntegerNoteVec {
             positive_notes: positive_v,
             negative_notes: negative_v,
         }
     }
 
-    pub fn from_1_move(removable_rmove: &RpmMove) -> Self {
+    pub fn from_1_move(removable_rmove: &ShogiMove) -> Self {
         let mut pnotes = Vec::new();
 
         // & を頭に付けると元のベクターは残るらしい。付けてないとアクセスできなくなるらしい。
         pnotes.extend(&removable_rmove.notes);
 
-        RpmTape {
+        IntegerNoteVec {
             positive_notes: pnotes,
             negative_notes: Vec::new(),
         }
@@ -107,7 +107,7 @@ impl RpmTape {
         &self,
         note_caret: &mut Caret,
         comm: &Communication,
-    ) -> Option<RpmNote> {
+    ) -> Option<ShogiNote> {
         let (is_positive, index) = note_caret.to_index();
 
         if note_caret.is_facing_left() {
@@ -146,7 +146,7 @@ impl RpmTape {
     }
 
     /// start <= end.
-    pub fn slice(&self, start: i16, end: i16) -> Vec<RpmNote> {
+    pub fn slice(&self, start: i16, end: i16) -> Vec<ShogiNote> {
         //let len = end - start;
         let mut v = Vec::new();
 
@@ -176,7 +176,7 @@ impl RpmTape {
     }
 
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn overwrite_note(&self, note_caret: Caret, note: RpmNote) -> RpmTape {
+    pub fn overwrite_note(&self, note_caret: Caret, note: ShogiNote) -> Self {
         let (is_positive, index) = note_caret.to_index();
 
         let mut posi_v = Vec::new();
@@ -206,7 +206,7 @@ impl RpmTape {
             posi_v.extend_from_slice(&self.positive_notes[..]);
         }
 
-        RpmTape::from_vector(posi_v, nega_v)
+        IntegerNoteVec::from_vector(posi_v, nega_v)
     }
 
     /// 削除はこれ。
@@ -219,14 +219,14 @@ impl RpmTape {
     /// # Returns
     ///
     /// (RpmTape, Removed note)
-    pub fn new_truncated_tape(&self, note_caret: &Caret) -> (RpmTape, Option<RpmNote>) {
+    pub fn new_truncated_tape(&self, note_caret: &Caret) -> (Self, Option<ShogiNote>) {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
         let (is_positive, index) = note_caret.to_index();
 
         if index == 0 {
-            (RpmTape::from_vector(posi_v, nega_v), None)
+            (IntegerNoteVec::from_vector(posi_v, nega_v), None)
         } else {
             let removed_note_opt = if is_positive {
                 // 正のテープ側で切り落とし。
@@ -252,18 +252,21 @@ impl RpmTape {
                 }
             };
 
-            (RpmTape::from_vector(posi_v, nega_v), removed_note_opt)
+            (
+                IntegerNoteVec::from_vector(posi_v, nega_v),
+                removed_note_opt,
+            )
         }
     }
 
     /// 連結。
-    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut RpmTape) {
+    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut IntegerNoteVec) {
         self.positive_notes
             .append(&mut tape_to_empty.negative_notes);
         self.positive_notes
             .append(&mut tape_to_empty.positive_notes);
     }
-    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut RpmTape) {
+    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut IntegerNoteVec) {
         self.negative_notes
             .append(&mut tape_to_empty.positive_notes);
         self.negative_notes

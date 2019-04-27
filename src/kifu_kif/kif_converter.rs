@@ -3,10 +3,10 @@ use application::Application;
 use communication::*;
 use kifu_kif::kif_move::*;
 use kifu_kif::kif_tape::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
-use kifu_rpm::thread::rpm_note_operation::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use position::*;
 
@@ -14,8 +14,8 @@ pub struct KifConverter {}
 impl KifConverter {
     pub fn convert_kif(
         input_path: &str,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         // comm.println(&format!("input_path: {}", input_path));
@@ -44,20 +44,20 @@ impl KifConverter {
     fn play_out_kifu_tape(
         position: &mut Position,
         ktape: &KifTape,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         comm: &Communication,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        RpmCassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
 
         let mut ply = 1;
         for kmove in &ktape.items {
             let rnote_opes = KifConverter::convert_move(comm, kmove, position, ply);
 
             for rnote_ope in rnote_opes {
-                RpmCassetteTapeRecorder::touch_1note_ope(
+                CassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,
@@ -76,7 +76,7 @@ impl KifConverter {
         kmove: &KifMove,
         position: &Position,
         ply: i16,
-    ) -> Vec<RpmNoteOpe> {
+    ) -> Vec<ShogiNoteOpe> {
         let mut rmoves = Vec::new();
 
         let destination_address =
@@ -89,14 +89,14 @@ impl KifConverter {
             let drop = position.peek_hand(piece);
 
             // hand-off
-            let hand_off = RpmNoteOpe::from_address(Address::from_hand_ph_pt(
+            let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                 Some(position.get_phase()),
                 drop.unwrap().get_type(),
             ));
             rmoves.push(hand_off);
 
             // hand-on
-            let hand_on = RpmNoteOpe::from_address(destination_address);
+            let hand_on = ShogiNoteOpe::from_address(destination_address);
             rmoves.push(hand_on);
         } else {
             // 駒を進める動きの場合
@@ -106,22 +106,22 @@ impl KifConverter {
                 // 駒を取る動きが入る場合
 
                 // hand-off
-                let hand_off = RpmNoteOpe::from_address(destination_address);
+                let hand_off = ShogiNoteOpe::from_address(destination_address);
                 rmoves.push(hand_off);
 
                 // hand-turn
                 if capture_id_piece.is_promoted() {
-                    let hand_turn = RpmNoteOpe::turn_over();
+                    let hand_turn = ShogiNoteOpe::turn_over();
                     rmoves.push(hand_turn);
                 }
 
                 // hand-rotate
-                let hand_rotate = RpmNoteOpe::rotate();
+                let hand_rotate = ShogiNoteOpe::rotate();
                 rmoves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
-                let hand_on = RpmNoteOpe::from_address(Address::from_hand_ph_pt(
+                let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                     Some(position.get_phase()),
                     up,
                 ));
@@ -129,7 +129,7 @@ impl KifConverter {
             }
 
             // board-off
-            let board_off = RpmNoteOpe::from_address(Address::from_cell(
+            let board_off = ShogiNoteOpe::from_address(Address::from_cell(
                 kmove.source.unwrap(),
                 position.get_board_size(),
             ));
@@ -144,17 +144,17 @@ impl KifConverter {
             };
 
             if kmove.is_promote {
-                let board_turn = RpmNoteOpe::turn_over();
+                let board_turn = ShogiNoteOpe::turn_over();
                 rmoves.push(board_turn);
             }
 
             // board-on
-            let board_on = RpmNoteOpe::from_address(destination_address);
+            let board_on = ShogiNoteOpe::from_address(destination_address);
             rmoves.push(board_on);
         };
 
         // change-phase
-        let change_phase = RpmNoteOpe::change_phase(ply);
+        let change_phase = ShogiNoteOpe::change_phase(ply);
         rmoves.push(change_phase);
 
         rmoves

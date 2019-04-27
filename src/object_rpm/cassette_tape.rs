@@ -1,20 +1,20 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::object::rpm_tape::*;
-use kifu_rpm::thread::rpm_move::RpmMove;
-use kifu_rpm::thread::rpm_note::*;
+use object_rpm::integer_note_vec::*;
+use object_rpm::shogi_move::ShogiMove;
+use object_rpm::shogi_note::*;
 use std::*;
 
 /// 対局情報。
-pub struct RpmCassetteTapeLabel {
+pub struct CassetteTapeLabel {
     pub date: String,
     pub event: String,
     pub player1: String,
     pub player2: String,
     pub read_file: String,
 }
-impl RpmCassetteTapeLabel {
+impl CassetteTapeLabel {
     pub fn clear(&mut self) {
         self.date = "".to_string();
         self.event = "".to_string();
@@ -26,12 +26,12 @@ impl RpmCassetteTapeLabel {
 
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1753122
-pub struct RpmCassetteTape {
+pub struct CassetteTape {
     pub caret: Caret,
-    pub label: RpmCassetteTapeLabel,
-    pub tape: RpmTape,
+    pub label: CassetteTapeLabel,
+    pub tape: IntegerNoteVec,
 }
-impl fmt::Display for RpmCassetteTape {
+impl fmt::Display for CassetteTape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -41,33 +41,33 @@ impl fmt::Display for RpmCassetteTape {
         )
     }
 }
-impl RpmCassetteTape {
+impl CassetteTape {
     pub fn new_facing_right_cassette_tape() -> Self {
-        RpmCassetteTape {
+        CassetteTape {
             caret: Caret::new_facing_right_caret(),
-            label: RpmCassetteTapeLabel {
+            label: CassetteTapeLabel {
                 date: "".to_string(),
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            tape: RpmTape::default(),
+            tape: IntegerNoteVec::default(),
         }
     }
 
     /// 指し手１つから、テープを作るぜ☆（＾～＾）
-    pub fn from_1_move(rmove: &RpmMove) -> Self {
-        RpmCassetteTape {
+    pub fn from_1_move(rmove: &ShogiMove) -> Self {
+        CassetteTape {
             caret: Caret::new_facing_right_caret(),
-            label: RpmCassetteTapeLabel {
+            label: CassetteTapeLabel {
                 date: "".to_string(),
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            tape: RpmTape::from_1_move(rmove),
+            tape: IntegerNoteVec::from_1_move(rmove),
         }
     }
 
@@ -97,17 +97,17 @@ impl RpmCassetteTape {
     }
 
     /// 連結。
-    pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
+    pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
         self.tape
             .append_tape_to_right(&mut cassette_tape_to_empty.tape);
     }
-    pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
+    pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
         self.tape
             .append_tape_to_left(&mut cassette_tape_to_empty.tape);
     }
 
     /// 現在の要素を返してから、キャレットを動かします。
-    pub fn go_1note_forcely(&mut self, comm: &Communication) -> Option<RpmNote> {
+    pub fn go_1note_forcely(&mut self, comm: &Communication) -> Option<ShogiNote> {
         self.tape.go_1note_forcely(&mut self.caret, comm)
     }
 

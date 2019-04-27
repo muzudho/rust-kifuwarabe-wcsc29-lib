@@ -1,11 +1,11 @@
 use address::*;
 use communication::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
-use kifu_rpm::thread::rpm_note_operation::*;
 use kifu_usi::usi_move::*;
 use kifu_usi::usi_tape::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::shogi_note_operation::*;
 use position::*;
 
 pub struct UsiConverter {}
@@ -17,8 +17,8 @@ impl UsiConverter {
     pub fn play_out_usi_tape(
         position: &mut Position,
         utape: &UsiTape,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         comm: &Communication,
     ) {
         // 局面を動かしながら変換していく。
@@ -28,7 +28,7 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                RpmCassetteTapeRecorder::touch_1note_ope(
+                CassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,
@@ -41,11 +41,11 @@ impl UsiConverter {
         }
     }
 
-    pub fn convert_move(umove: UsiMove, position: &Position, ply: i16) -> Vec<RpmNoteOpe> {
+    pub fn convert_move(umove: UsiMove, position: &Position, ply: i16) -> Vec<ShogiNoteOpe> {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
-            rpm_move.push(RpmNoteOpe::resign());
+            rpm_move.push(ShogiNoteOpe::resign());
             return rpm_move;
         }
 
@@ -57,14 +57,14 @@ impl UsiConverter {
                 // 駒を打つ動きの場合
 
                 // hand-off
-                let hand_off = RpmNoteOpe::from_address(Address::from_hand_ph_pt(
+                let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                     Some(position.get_phase()),
                     drop,
                 ));
                 rpm_move.push(hand_off);
 
                 // hand-on
-                let hand_on = RpmNoteOpe::from_address(destination_address);
+                let hand_on = ShogiNoteOpe::from_address(destination_address);
                 rpm_move.push(hand_on);
             }
             None => {
@@ -75,22 +75,22 @@ impl UsiConverter {
                     // 駒を取る動きが入る場合
 
                     // hand-off
-                    let hand_off = RpmNoteOpe::from_address(destination_address);
+                    let hand_off = ShogiNoteOpe::from_address(destination_address);
                     rpm_move.push(hand_off);
 
                     // hand-turn
                     if id_piece.is_promoted() {
-                        let hand_turn = RpmNoteOpe::turn_over();
+                        let hand_turn = ShogiNoteOpe::turn_over();
                         rpm_move.push(hand_turn);
                     }
 
                     // hand-rotate
-                    let hand_rotate = RpmNoteOpe::rotate();
+                    let hand_rotate = ShogiNoteOpe::rotate();
                     rpm_move.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
-                    let hand_on = RpmNoteOpe::from_address(Address::from_hand_ph_pt(
+                    let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                         Some(position.get_phase()),
                         up,
                     ));
@@ -98,7 +98,7 @@ impl UsiConverter {
                 }
 
                 // board-off
-                let board_off = RpmNoteOpe::from_address(Address::from_cell(
+                let board_off = ShogiNoteOpe::from_address(Address::from_cell(
                     umove.source.unwrap(),
                     position.get_board_size(),
                 ));
@@ -106,18 +106,18 @@ impl UsiConverter {
 
                 // board-turn-over
                 if umove.promotion {
-                    let board_turn = RpmNoteOpe::turn_over();
+                    let board_turn = ShogiNoteOpe::turn_over();
                     rpm_move.push(board_turn);
                 }
 
                 // board-on
-                let board_on = RpmNoteOpe::from_address(destination_address);
+                let board_on = ShogiNoteOpe::from_address(destination_address);
                 rpm_move.push(board_on);
             }
         }
 
         // change-phase
-        let change_phase = RpmNoteOpe::change_phase(ply);
+        let change_phase = ShogiNoteOpe::change_phase(ply);
         rpm_move.push(change_phase);
 
         rpm_move

@@ -1,10 +1,10 @@
 use application::*;
 use board_size::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_usi::usi_converter::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
 use piece_etc::*;
 use position::*;
 use thought::best_move_picker::*;
@@ -13,41 +13,35 @@ pub struct LibSub {}
 impl LibSub {
     pub fn back_1_note(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         let rec_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
 
         rec_tape.caret.turn_to_negative();
         if let Some(rnote) = rec_tape.go_1note_forcely(&app.comm) {
-            RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
+            CassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
             HumanInterface::bo(&app.comm, &rec_tape, recorder.ply, &position);
         }
     }
 
     pub fn back_1_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         let rec_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
         rec_tape.caret.turn_to_negative();
-        RpmCassetteTapeRecorder::try_1move_on_tape(
-            rec_tape,
-            position,
-            recorder.ply,
-            true,
-            &app.comm,
-        );
+        CassetteTapeRecorder::try_read_tape_for_1move(rec_tape, position, recorder.ply, &app.comm);
         HumanInterface::bo(&app.comm, &rec_tape, recorder.ply, &position);
     }
 
     pub fn back_10_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -55,11 +49,10 @@ impl LibSub {
             .caret
             .turn_to_negative();
         for _i in 0..10 {
-            RpmCassetteTapeRecorder::try_1move_on_tape(
+            CassetteTapeRecorder::try_read_tape_for_1move(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
-                true,
                 &app.comm,
             );
         }
@@ -73,8 +66,8 @@ impl LibSub {
 
     pub fn back_400_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -82,11 +75,10 @@ impl LibSub {
             .caret
             .turn_to_negative();
         for _i in 0..400 {
-            RpmCassetteTapeRecorder::try_1move_on_tape(
+            CassetteTapeRecorder::try_read_tape_for_1move(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
-                true,
                 &app.comm,
             );
         }
@@ -100,8 +92,8 @@ impl LibSub {
 
     pub fn forward_1_note(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -112,7 +104,7 @@ impl LibSub {
             .get_mut_recording_cassette_tape()
             .go_1note_forcely(&app.comm)
         {
-            RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
+            CassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
             HumanInterface::bo(
                 &app.comm,
                 &tape_box_conveyor.recording_cassette_tape,
@@ -124,8 +116,8 @@ impl LibSub {
 
     pub fn forward_1_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         // 非合法タッチは自動で戻します。
@@ -133,11 +125,10 @@ impl LibSub {
             .get_mut_recording_cassette_tape()
             .caret
             .turn_to_positive();
-        RpmCassetteTapeRecorder::try_1move_on_tape(
+        CassetteTapeRecorder::try_read_tape_for_1move(
             &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
             position,
             recorder.ply,
-            true,
             &app.comm,
         );
         HumanInterface::bo(
@@ -150,8 +141,8 @@ impl LibSub {
 
     pub fn forward_10_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -159,11 +150,10 @@ impl LibSub {
             .caret
             .turn_to_positive();
         for _i in 0..10 {
-            RpmCassetteTapeRecorder::try_1move_on_tape(
+            CassetteTapeRecorder::try_read_tape_for_1move(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
-                true,
                 &app.comm,
             );
         }
@@ -177,8 +167,8 @@ impl LibSub {
 
     pub fn forward_400_move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -186,11 +176,10 @@ impl LibSub {
             .caret
             .turn_to_positive();
         for _i in 0..400 {
-            RpmCassetteTapeRecorder::try_1move_on_tape(
+            CassetteTapeRecorder::try_read_tape_for_1move(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
-                true,
                 &app.comm,
             );
         }
@@ -205,8 +194,8 @@ impl LibSub {
     pub fn go(
         best_move_picker: &mut BestMovePicker,
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) {
         tape_box_conveyor
@@ -226,7 +215,7 @@ impl LibSub {
         let rnote_opes = UsiConverter::convert_move(best_umove, &position, recorder.ply);
         for rnote_ope in rnote_opes {
             app.comm.println("lib.rs:go: touch_1note_ope");
-            RpmCassetteTapeRecorder::touch_1note_ope(
+            CassetteTapeRecorder::touch_1note_ope(
                 &rnote_ope,
                 position,
                 tape_box_conveyor,
@@ -238,7 +227,7 @@ impl LibSub {
 
     pub fn gameover(
         board_size: BoardSize,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
         app: &Application,
     ) {
         tape_box_conveyor.write_cassette_tape_box(board_size, &app);

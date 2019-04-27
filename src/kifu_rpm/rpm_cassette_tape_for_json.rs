@@ -1,9 +1,9 @@
-use kifu_rpm::json::rpm_tape_for_json::*;
+use kifu_rpm::integer_note_vec_for_json::*;
 use serde::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmCassetteTapeLabelForJson {
+pub struct CassetteTapeLabelForJson {
     pub date: String,
     pub event: String,
     pub player1: String,
@@ -14,8 +14,8 @@ pub struct RpmCassetteTapeLabelForJson {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmCasetteTapeForJson {
-    pub label: RpmCassetteTapeLabelForJson,
-    pub tape: RpmTapeForJson,
+    pub label: CassetteTapeLabelForJson,
+    pub tape: IntegerNoteVecForJson,
 }
 impl RpmCasetteTapeForJson {
     pub fn to_human_presentable(&self) -> String {

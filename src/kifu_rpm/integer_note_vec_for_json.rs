@@ -3,11 +3,11 @@ use serde::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmTapeForJson {
+pub struct IntegerNoteVecForJson {
     pub id: Vec<i8>,
     pub ope: Vec<String>,
 }
-impl RpmTapeForJson {
+impl IntegerNoteVecForJson {
     pub fn to_human_presentable(&self) -> String {
         let mut text = String::new();
 

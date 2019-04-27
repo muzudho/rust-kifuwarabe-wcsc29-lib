@@ -7,23 +7,22 @@ use address::*;
 use board_size::*;
 use common::caret::*;
 use communication::*;
-//use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
-use kifu_rpm::json::rpm_cassette_tape_for_json::*;
-use kifu_rpm::thread::rpm_note::*;
+use kifu_rpm::rpm_cassette_tape_for_json::*;
 use kifu_usi::usi_move::*;
+use object_rpm::shogi_note::*;
 use piece_etc::*;
 use std::fmt;
 
 /// １手分。
 //#[derive(Debug)]
-pub struct RpmMove {
-    pub notes: Vec<RpmNote>,
+pub struct ShogiMove {
+    pub notes: Vec<ShogiNote>,
 
     // 動作確認用。
     pub start: usize,
     pub end: usize,
 }
-impl fmt::Display for RpmMove {
+impl fmt::Display for ShogiMove {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut text = String::new();
 
@@ -34,7 +33,7 @@ impl fmt::Display for RpmMove {
         write!(f, "({}:{}){}", self.start, self.end, text)
     }
 }
-impl RpmMove {
+impl ShogiMove {
     /// 次の1手分解析。
     ///
     /// # Arguments
@@ -47,7 +46,7 @@ impl RpmMove {
         cassette_tape_j: &RpmCasetteTapeForJson,
         note_caret: &mut Caret,
         board_size: BoardSize,
-    ) -> (usize, Option<RpmMove>) {
+    ) -> (usize, Option<ShogiMove>) {
         let mut parsed_note_count = 0;
         let mut notes_buffer = Vec::new();
         let mut first_used_caret = 0;
@@ -75,7 +74,7 @@ impl RpmMove {
             //comm.print(&format!("Scanning: note_caret: {}.", note_caret));
 
             if let (sub_first_used_caret, sub_last_used_caret, Some(note)) =
-                RpmNote::parse_1note(comm, cassette_tape_j, note_caret, board_size)
+                ShogiNote::parse_1note(comm, cassette_tape_j, note_caret, board_size)
             {
                 parsed_note_count += 1;
 
@@ -111,7 +110,7 @@ impl RpmMove {
         } else {
             (
                 parsed_note_count,
-                Some(RpmMove {
+                Some(ShogiMove {
                     notes: notes_buffer,
                     start: first_used_caret as usize,
                     end: last_used_caret as usize,

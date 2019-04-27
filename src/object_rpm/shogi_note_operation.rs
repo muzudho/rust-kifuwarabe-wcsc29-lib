@@ -14,7 +14,7 @@ use std::fmt;
 /// Vector に入れるときコピーする。
 //#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
-pub struct RpmNoteOpe {
+pub struct ShogiNoteOpe {
     pub address: Option<Address>,
     /// +
     pub sky_turn: bool,
@@ -24,7 +24,7 @@ pub struct RpmNoteOpe {
     phase_change: Option<i16>,
     resign: bool,
 }
-impl fmt::Display for RpmNoteOpe {
+impl fmt::Display for ShogiNoteOpe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.address {
             Some(address) => write!(f, "{}", address.get_index()),
@@ -48,9 +48,9 @@ impl fmt::Display for RpmNoteOpe {
         }
     }
 }
-impl RpmNoteOpe {
+impl ShogiNoteOpe {
     pub fn from_address(address: Address) -> Self {
-        RpmNoteOpe {
+        ShogiNoteOpe {
             address: Some(address),
             sky_turn: false,
             sky_rotate: false,
@@ -60,7 +60,7 @@ impl RpmNoteOpe {
     }
 
     pub fn turn_over() -> Self {
-        RpmNoteOpe {
+        ShogiNoteOpe {
             address: None,
             sky_turn: true,
             sky_rotate: false,
@@ -70,7 +70,7 @@ impl RpmNoteOpe {
     }
 
     pub fn rotate() -> Self {
-        RpmNoteOpe {
+        ShogiNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: true,
@@ -80,7 +80,7 @@ impl RpmNoteOpe {
     }
 
     pub fn change_phase(ply: i16) -> Self {
-        RpmNoteOpe {
+        ShogiNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -90,7 +90,7 @@ impl RpmNoteOpe {
     }
 
     pub fn resign() -> Self {
-        RpmNoteOpe {
+        ShogiNoteOpe {
             address: None,
             sky_turn: false,
             sky_rotate: false,
@@ -188,7 +188,7 @@ impl RpmNoteOpe {
         caret: &mut Caret,
         board_size: BoardSize,
         comm: &Communication,
-    ) -> (i16, Option<RpmNoteOpe>) {
+    ) -> (i16, Option<ShogiNoteOpe>) {
         let mut n0 = caret.go_next(comm, "ope-parse_1ope1") as usize;
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
@@ -218,7 +218,7 @@ impl RpmNoteOpe {
                 let address =
                     Address::from_hand_ph_pt(piece.get_phase(), PieceType::from_piece(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
-                (n1 as i16, Some(RpmNoteOpe::from_address(address)))
+                (n1 as i16, Some(ShogiNoteOpe::from_address(address)))
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
@@ -233,21 +233,21 @@ impl RpmNoteOpe {
                     ),
                     board_size,
                 );
-                (n1 as i16, Some(RpmNoteOpe::from_address(address)))
+                (n1 as i16, Some(ShogiNoteOpe::from_address(address)))
             }
             '+' => {
                 // 成り。
                 //comm.print(&ch1.to_string());
-                (n0 as i16, Some(RpmNoteOpe::turn_over()))
+                (n0 as i16, Some(ShogiNoteOpe::turn_over()))
             }
             '-' => {
                 // １８０°回転。
                 //comm.print(&ch1.to_string());
-                (n0 as i16, Some(RpmNoteOpe::rotate()))
+                (n0 as i16, Some(ShogiNoteOpe::rotate()))
             }
             '|' => {
                 // フェーズ交代。Ply は分からない。
-                (n0 as i16, Some(RpmNoteOpe::change_phase(-1)))
+                (n0 as i16, Some(ShogiNoteOpe::change_phase(-1)))
             }
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
@@ -269,7 +269,7 @@ impl RpmNoteOpe {
                     ply *= 10;
                     ply += num;
                 }
-                (n0 as i16, Some(RpmNoteOpe::change_phase(ply)))
+                (n0 as i16, Some(ShogiNoteOpe::change_phase(ply)))
             }
             _ => {
                 let last = line.len();

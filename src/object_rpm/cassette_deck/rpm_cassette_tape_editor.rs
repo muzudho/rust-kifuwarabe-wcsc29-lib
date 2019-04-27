@@ -1,19 +1,19 @@
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
-use kifu_rpm::thread::rpm_move::*;
-use kifu_rpm::thread::rpm_note::*;
+use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::shogi_move::*;
+use object_rpm::shogi_note::*;
 use position::*;
 use std::*;
 
-pub struct RpmCassetteTapeEditor {
+pub struct CassetteTapeEditor {
     /// 何も指していない状態で 1。
     /// TODO 本将棋の大橋流の最初の玉は Ply=-39 にしたい。
     pub ply: i16,
 }
-impl RpmCassetteTapeEditor {
+impl CassetteTapeEditor {
     pub fn new_cassette_tape_editor() -> Self {
-        RpmCassetteTapeEditor { ply: 1 }
+        CassetteTapeEditor { ply: 1 }
     }
 
     pub fn clear_tape_editor1(&mut self) {
@@ -23,8 +23,8 @@ impl RpmCassetteTapeEditor {
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(
         &mut self,
-        note: RpmNote,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        note: ShogiNote,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
         comm: &Communication,
     ) {
         let (is_positive, index) = tape_box_conveyor.recording_cassette_tape.caret.to_index();
@@ -112,8 +112,8 @@ impl RpmCassetteTapeEditor {
 
     pub fn put_1move(
         &mut self,
-        rmove: &RpmMove,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        rmove: &ShogiMove,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
         comm: &Communication,
     ) {
         for note in rmove.notes.iter() {
@@ -126,8 +126,8 @@ impl RpmCassetteTapeEditor {
 
     pub fn delete_1note(
         &mut self,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-    ) -> Option<RpmNote> {
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+    ) -> Option<ShogiNote> {
         let recording_cassette_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
         let caret = &recording_cassette_tape.caret;
 
@@ -148,10 +148,10 @@ impl RpmCassetteTapeEditor {
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_1note(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         comm: &Communication,
-    ) -> Option<RpmNote> {
+    ) -> Option<ShogiNote> {
         HumanInterface::show_position(comm, -1, position);
 
         if let Some(rpm_note) = recorder.delete_1note(tape_box_conveyor) {
@@ -167,14 +167,14 @@ impl RpmCassetteTapeEditor {
     /// 1手削除する。
     pub fn pop_1move(
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         comm: &Communication,
     ) {
         let mut count = 0;
         // 開始前に達したら終了。
         while let Some(rpm_note) =
-            RpmCassetteTapeEditor::pop_1note(position, tape_box_conveyor, recorder, comm)
+            CassetteTapeEditor::pop_1note(position, tape_box_conveyor, recorder, comm)
         {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）

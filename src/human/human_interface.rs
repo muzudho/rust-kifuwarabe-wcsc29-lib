@@ -1,5 +1,5 @@
 use communication::*;
-use kifu_rpm::object::rpm_cassette_tape::*;
+use object_rpm::cassette_tape::*;
 use position::*;
 use std::*;
 
@@ -14,12 +14,7 @@ impl HumanInterface {
     }
 
     /// 局面と棋譜の表示。
-    pub fn bo(
-        comm: &Communication,
-        cassette_tape: &RpmCassetteTape,
-        ply: i16,
-        position: &Position,
-    ) {
+    pub fn bo(comm: &Communication, cassette_tape: &CassetteTape, ply: i16, position: &Position) {
         // 局面。
         HumanInterface::show_position(comm, ply, position);
 

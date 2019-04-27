@@ -1,5 +1,4 @@
-use kifu_rpm::json::rpm_cassette_tape_for_json::*;
-//use piece_etc::*;
+use kifu_rpm::rpm_cassette_tape_for_json::*;
 use serde::*;
 use std::fs::File;
 use std::io::prelude::*;
@@ -8,12 +7,12 @@ use std::path::Path;
 /// -rbox.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmCassetteTapeBoxForJson {
+pub struct CassetteTapeBoxForJson {
     pub tape_box: Vec<RpmCasetteTapeForJson>,
 }
-impl RpmCassetteTapeBoxForJson {
+impl CassetteTapeBoxForJson {
     pub fn new() -> Self {
-        RpmCassetteTapeBoxForJson {
+        CassetteTapeBoxForJson {
             tape_box: Vec::new(),
         }
     }
@@ -36,7 +35,7 @@ impl RpmCassetteTapeBoxForJson {
             Err(err) => {
                 print!("info File: {:?}", file);
                 print!("info Unexpected cassette tape box: {}", err);
-                RpmCassetteTapeBoxForJson::new()
+                CassetteTapeBoxForJson::new()
             }
             // TODO Err(err) => panic!("Unexpected config: {}", err),
         }

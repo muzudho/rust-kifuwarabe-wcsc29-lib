@@ -1,14 +1,14 @@
 use board_size::BoardSize;
-use kifu_rpm::thread::rpm_move::*;
+use object_rpm::shogi_move::*;
 
 /// シーケンスな手筋１個分。
 #[derive(Default)]
-pub struct RpmThread {
-    pub moves: Vec<RpmMove>,
+pub struct ShogiThread {
+    pub moves: Vec<ShogiMove>,
 }
-impl RpmThread {
+impl ShogiThread {
     pub fn new() -> Self {
-        RpmThread { moves: Vec::new() }
+        ShogiThread { moves: Vec::new() }
     }
 
     pub fn len(&self) -> usize {
@@ -19,7 +19,7 @@ impl RpmThread {
         self.moves.is_empty()
     }
 
-    pub fn push_move(&mut self, rmove: RpmMove) {
+    pub fn push_move(&mut self, rmove: ShogiMove) {
         self.moves.push(rmove);
     }
 

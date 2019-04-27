@@ -45,19 +45,20 @@ pub mod kifu_rpm;
 pub mod kifu_usi;
 pub mod learn;
 pub mod lib_sub;
+pub mod object_rpm;
 pub mod parser;
 pub mod piece_etc;
 pub mod position;
 pub mod thought;
 use application::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_converter::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifu_usi::fen::*;
 use kifu_usi::usi_converter::*;
 use kifu_usi::usi_position::*;
 use lib_sub::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_converter::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use object_rpm::cassette_tape_box_conveyor::*;
 use position::*;
 use thought::best_move_picker::*;
 
@@ -66,8 +67,8 @@ pub fn main_loop() {
     let app = Application::new();
 
     // Record.
-    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-    let mut tape_editor = RpmCassetteTapeEditor::new_cassette_tape_editor();
+    let mut tape_box_conveyor = CassetteTapeBoxConveyor::new_empty();
+    let mut tape_editor = CassetteTapeEditor::new_cassette_tape_editor();
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -104,7 +105,7 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            RpmCassetteTapeConverter::read_ope_track(
+            CassetteTapeConverter::read_ope_track(
                 &line,
                 &mut position,
                 &mut tape_box_conveyor,
@@ -166,7 +167,7 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            RpmCassetteTapeEditor::pop_1note(
+            CassetteTapeEditor::pop_1note(
                 &mut position,
                 &mut tape_box_conveyor,
                 &mut tape_editor,
@@ -180,7 +181,7 @@ pub fn main_loop() {
             );
         } else if line == "dd" {
             // Delete 1ply.
-            RpmCassetteTapeEditor::pop_1move(
+            CassetteTapeEditor::pop_1move(
                 &mut position,
                 &mut tape_box_conveyor,
                 &mut tape_editor,
@@ -195,7 +196,7 @@ pub fn main_loop() {
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                RpmCassetteTapeEditor::pop_1move(
+                CassetteTapeEditor::pop_1move(
                     &mut position,
                     &mut tape_box_conveyor,
                     &mut tape_editor,
@@ -211,7 +212,7 @@ pub fn main_loop() {
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                RpmCassetteTapeEditor::pop_1move(
+                CassetteTapeEditor::pop_1move(
                     &mut position,
                     &mut tape_box_conveyor,
                     &mut tape_editor,
@@ -299,7 +300,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            RpmCassetteTapeConverter::read_ope_track(
+            CassetteTapeConverter::read_ope_track(
                 &line,
                 &mut position,
                 &mut tape_box_conveyor,

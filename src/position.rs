@@ -1,7 +1,7 @@
 use address::*;
 use board_size::*;
 use communication::*;
-use kifu_rpm::thread::rpm_note_operation::*;
+use object_rpm::shogi_note_operation::*;
 use parser::*;
 use piece_etc::*;
 use std::*;
@@ -496,7 +496,7 @@ impl Position {
     /// Is legal touch, Identified piece.
     pub fn touch_beautiful_1note(
         &mut self,
-        rpm_operation_note: &RpmNoteOpe,
+        rpm_operation_note: &ShogiNoteOpe,
         comm: &Communication,
         board_size: BoardSize,
     ) -> (bool, Option<IdentifiedPiece>) {

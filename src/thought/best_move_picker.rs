@@ -3,22 +3,22 @@ use application::Application;
 use common::caret::*;
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
-use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
-use kifu_rpm::json::rpm_cassette_tape_for_json::*;
-use kifu_rpm::object::rpm_cassette_tape::*;
-use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
-use kifu_rpm::thread::rpm_move::*;
-use kifu_rpm::thread::rpm_thread::*;
+use kifu_rpm::rpm_cassette_tape_box_for_json::*;
+use kifu_rpm::rpm_cassette_tape_for_json::*;
 use kifu_usi::usi_move::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use object_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use object_rpm::cassette_tape::*;
+use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::shogi_move::*;
+use object_rpm::shogi_thread::*;
 use piece_etc::*;
 use position::*;
 use std::collections::HashMap;
 use std::fs;
 
 pub struct BestMovePicker {
-    thread_by_piece_id: HashMap<i8, RpmThread>,
+    thread_by_piece_id: HashMap<i8, ShogiThread>,
 }
 impl BestMovePicker {
     pub fn default() -> Self {
@@ -37,7 +37,7 @@ impl BestMovePicker {
 
         for id in PieceIdentify::iterator() {
             let number = id.get_number();
-            let thread = RpmThread::new();
+            let thread = ShogiThread::new();
             self.thread_by_piece_id.insert(number, thread);
         }
     }
@@ -58,8 +58,8 @@ impl BestMovePicker {
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
+        recorder: &mut CassetteTapeEditor,
         app: &Application,
     ) -> UsiMove {
         // クリアー。
@@ -106,7 +106,7 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = RpmCassetteTapeBoxForJson::load_tape_box_by_file(&file);
+            let cassette_tape_box_j = CassetteTapeBoxForJson::load_tape_box_by_file(&file);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
@@ -181,7 +181,7 @@ impl BestMovePicker {
                                 }
                             }
 
-                            // let mut thread = RpmThread::new();
+                            // let mut thread = ShogiThread::new();
                             // let thread_len = thread.len() as i16;
                             // let thread_to_human_presentable =
                             //    thread.to_human_presentable(position.get_board_size());
@@ -197,7 +197,7 @@ impl BestMovePicker {
                             app.comm
                                 .println(&format!("Tried, go opponent {} move!", record_count,));
                             /*
-                            RpmCassetteTapeRecorder::try_n_moves_on_tape(
+                            CassetteTapeRecorder::try_n_moves_on_tape(
                                 record_count,
                                 recorder.ply,
                                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
@@ -205,9 +205,9 @@ impl BestMovePicker {
                                 &app.comm,
                             );
                             */
-                            RpmCassetteTapeRecorder::go_n_move_on_tape_forcely(
-                                record_count,
+                            CassetteTapeRecorder::read_tape_for_n_moves_forcely(
                                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
+                                record_count,
                                 position,
                                 recorder.ply,
                                 &app.comm,
@@ -278,7 +278,7 @@ impl BestMovePicker {
         position: &mut Position,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
-        rmove: &RpmMove,
+        rmove: &ShogiMove,
         subject_pid: PieceIdentify,
         subject_address: Address,
         object_address_opt: Option<Address>,
@@ -347,7 +347,7 @@ impl BestMovePicker {
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
-    ) -> (Option<RpmMove>, bool) {
+    ) -> (Option<ShogiMove>, bool) {
         /*
         comm.println(&format!(
             "#>{} note.",
@@ -355,7 +355,7 @@ impl BestMovePicker {
         ));
         */
         // とりあえず 1手分をパースします。
-        if let (_parsed_note_count, Some(rmove)) = RpmMove::parse_1move(
+        if let (_parsed_note_count, Some(rmove)) = ShogiMove::parse_1move(
             comm,
             &cassette_tape_j,
             note_caret,
@@ -401,11 +401,11 @@ impl BestMovePicker {
                 // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
 
                 // 新規に テープを作る。ムーブ１つだけ。
-                //let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
+                //let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
                 //recorder.put_1note(&rmove, comm);
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
-                let mut cassette_tape_2 = RpmCassetteTape::from_1_move(&rmove);
+                let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove);
                 /*
                 println!(
                     "BMP: This move rtape: {}.",
@@ -414,11 +414,10 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmCassetteTapeRecorder::try_1move_on_tape(
+                if CassetteTapeRecorder::try_read_tape_for_1move(
                     &mut cassette_tape_2,
                     position,
                     ply_2,
-                    true,
                     &comm,
                 ) {
                     // 合法タッチ。戻さず抜けます。

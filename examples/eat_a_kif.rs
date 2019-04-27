@@ -4,8 +4,8 @@ extern crate regex;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
 use std::env;
 
 #[derive(Debug)]
@@ -39,9 +39,9 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Record.
-    let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
+    let mut tape_box_conveyer = CassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
-    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
+    let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 
     KifConverter::convert_kif(&path, &mut tape_box_conveyer, &mut recorder, &app);
 }

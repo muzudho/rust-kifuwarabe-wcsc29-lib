@@ -2,29 +2,29 @@ extern crate rand;
 use application::Application;
 use board_size::BoardSize;
 use conf::kifuwarabe_wcsc29_config::*;
-use kifu_rpm::object::rpm_cassette_tape::RpmCassetteTape;
-use kifu_rpm::object::rpm_cassette_tape_box::*;
+use object_rpm::cassette_tape::CassetteTape;
+use object_rpm::cassette_tape_box::*;
 use rand::Rng;
 use std::path::Path;
 
 /// カセット・テープ・ボックスが満杯になったら、
 /// 次のカセット・テープ・ボックスに変えてくれる☆（*＾～＾*）
-pub struct RpmCassetteTapeBoxConveyor {
-    current_box_for_write: Option<RpmCassetteTapeBox>,
+pub struct CassetteTapeBoxConveyor {
+    current_box_for_write: Option<CassetteTapeBox>,
 
     /// 記録用のカセットテープ。
-    pub recording_cassette_tape: RpmCassetteTape,
+    pub recording_cassette_tape: CassetteTape,
 }
-impl RpmCassetteTapeBoxConveyor {
+impl CassetteTapeBoxConveyor {
     pub fn new_empty() -> Self {
-        RpmCassetteTapeBoxConveyor {
+        CassetteTapeBoxConveyor {
             current_box_for_write: None,
-            recording_cassette_tape: RpmCassetteTape::new_facing_right_cassette_tape(),
+            recording_cassette_tape: CassetteTape::new_facing_right_cassette_tape(),
         }
     }
 
-    pub fn from_cassette_tape(inner_cassette_tape: RpmCassetteTape) -> Self {
-        RpmCassetteTapeBoxConveyor {
+    pub fn from_cassette_tape(inner_cassette_tape: CassetteTape) -> Self {
+        CassetteTapeBoxConveyor {
             current_box_for_write: None,
             recording_cassette_tape: inner_cassette_tape,
         }
@@ -38,7 +38,7 @@ impl RpmCassetteTapeBoxConveyor {
         self.recording_cassette_tape.reset_caret();
     }
 
-    pub fn get_mut_recording_cassette_tape(&mut self) -> &mut RpmCassetteTape {
+    pub fn get_mut_recording_cassette_tape(&mut self) -> &mut CassetteTape {
         &mut self.recording_cassette_tape
     }
 
@@ -60,21 +60,20 @@ impl RpmCassetteTapeBoxConveyor {
 
     /// テープボックスを指定するぜ☆（＾～＾）
     pub fn choice_box_manually(&mut self, file: &str) {
-        self.current_box_for_write = Some(RpmCassetteTapeBox::new_cassette_tape_box(file));
+        self.current_box_for_write = Some(CassetteTapeBox::new_cassette_tape_box(file));
     }
 
     /// 空、または満杯なら、新しいテープボックスを作成するぜ☆（＾～＾）
     fn choice_box_automatically(&mut self, kw29_conf: &KifuwarabeWcsc29Config) {
         // パスをランダムに作成する。
         let tape_box_path = Path::new(&kw29_conf.learning)
-            .join(RpmCassetteTapeBoxConveyor::create_file_name())
+            .join(CassetteTapeBoxConveyor::create_file_name())
             .to_str()
             .unwrap()
             .to_string();
 
         // TODO 本当は満杯になるまで使い回したい☆（＾～＾）
-        self.current_box_for_write =
-            Some(RpmCassetteTapeBox::new_cassette_tape_box(&tape_box_path));
+        self.current_box_for_write = Some(CassetteTapeBox::new_cassette_tape_box(&tape_box_path));
     }
 
     /// テープ・ボックス単位で書き込めるぜ☆（*＾～＾*）
