@@ -1,6 +1,6 @@
 extern crate rand;
+use application::Application;
 use board_size::BoardSize;
-use communication::Communication;
 use conf::kifuwarabe_wcsc29_config::*;
 use kifu_rpm::object::rpm_cassette_tape::RpmCassetteTape;
 use kifu_rpm::object::rpm_cassette_tape_box::*;
@@ -78,16 +78,15 @@ impl RpmCassetteTapeBoxConveyor {
     }
 
     /// テープ・ボックス単位で書き込めるぜ☆（*＾～＾*）
-    pub fn write_cassette_tape_box(
-        &mut self,
-        kw29_conf: &KifuwarabeWcsc29Config,
-        board_size: BoardSize,
-        comm: &Communication,
-    ) {
-        self.choice_box_automatically(&kw29_conf);
+    pub fn write_cassette_tape_box(&mut self, board_size: BoardSize, app: &Application) {
+        self.choice_box_automatically(&app.kw29_conf);
 
         if let Some(box_for_write) = &self.current_box_for_write {
-            box_for_write.write_cassette_tape_box(board_size, &self.recording_cassette_tape, comm)
+            box_for_write.write_cassette_tape_box(
+                board_size,
+                &self.recording_cassette_tape,
+                &app.comm,
+            )
         } else {
             panic!("Get tape box fail.")
         }

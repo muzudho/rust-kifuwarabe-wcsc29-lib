@@ -72,13 +72,7 @@ fn main() {
                 );
             }
             "CSA" => {
-                CsaConverter::convert_csa(
-                    &app.kw29_conf,
-                    &in_file,
-                    &mut tape_box_conveyer,
-                    &mut recorder,
-                    &app.comm,
-                );
+                CsaConverter::convert_csa(&in_file, &mut tape_box_conveyer, &mut recorder, &app);
             }
             _ => print!("Pass extension: {}", ext),
         }

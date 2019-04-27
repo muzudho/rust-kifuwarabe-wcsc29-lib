@@ -1,5 +1,5 @@
 use kifu_kif::kif_move::*;
-use kifu_kif::kif_record::*;
+use kifu_kif::kif_tape::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
@@ -8,9 +8,9 @@ use std::*;
 # ----  柿木将棋 V1.89 棋譜ファイル  ----
 # ファイル名：kifu\morita.kif
 # 対  局  日：1990/12/02(日)
-# 開始時刻  ：10:21:22 
-# コメント  ： 
-手合割：平手　　
+# 開始時刻  ：10:21:22
+# コメント  ：
+手合割：平手
 先手：通信:morita
 後手：コンピュータ L1
 手数----指手---------消費時間--
@@ -24,12 +24,10 @@ use std::*;
  */
 /// Kifファイルには色んなパターンがあるようだ。
 /// 柿木将棋 V1.89 棋譜ファイル
-pub struct Kaki189 {
-
-}
+pub struct Kaki189 {}
 impl Kaki189 {
-    pub fn load(file: &str) -> KifRecord {
-        let mut record = KifRecord::new();
+    pub fn load(file: &str) -> KifTape {
+        let mut record = KifTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();

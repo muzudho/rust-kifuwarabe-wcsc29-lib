@@ -10,9 +10,9 @@ use communication::*;
 //use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
 use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::thread::rpm_note::*;
+use kifu_usi::usi_move::*;
 use piece_etc::*;
 use std::fmt;
-use usi_conv::usi_move::*;
 
 /// １手分。
 //#[derive(Debug)]

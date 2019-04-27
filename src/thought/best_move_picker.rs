@@ -11,11 +11,11 @@ use kifu_rpm::object::rpm_cassette_tape::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_move::*;
 use kifu_rpm::thread::rpm_thread::*;
+use kifu_usi::usi_move::*;
 use piece_etc::*;
 use position::*;
 use std::collections::HashMap;
 use std::fs;
-use usi_conv::usi_move::*;
 
 pub struct BestMovePicker {
     thread_by_piece_id: HashMap<i8, RpmThread>,

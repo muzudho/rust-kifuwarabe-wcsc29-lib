@@ -5,11 +5,11 @@ use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::kifu_usi::fen::*;
+use kifuwarabe_wcsc29_lib::kifu_usi::usi_converter::*;
+use kifuwarabe_wcsc29_lib::kifu_usi::usi_position::*;
+use kifuwarabe_wcsc29_lib::kifu_usi::usi_tape::*;
 use kifuwarabe_wcsc29_lib::position::*;
-use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
-use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
-use kifuwarabe_wcsc29_lib::usi_conv::usi_position::*;
-use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
 use std::env;
 
 #[derive(Debug)]
@@ -43,10 +43,10 @@ pub fn main() {
 
     let mut position = Position::default();
 
-    let line = UsiRecord::read_first_line(&app.comm, &path);
+    let line = UsiTape::read_first_line(&app.comm, &path);
 
     app.comm.println(&format!("Parse line: `{}`.", line));
-    let mut urecord = UsiRecord::default();
+    let mut utape = UsiTape::default();
 
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
@@ -64,17 +64,17 @@ pub fn main() {
     ) {
         app.comm.println("Position parsed.");
 
-        if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(
+        if let Some(parsed_utape) = UsiPosition::parse_usi_line_moves(
             &app.comm,
             &line,
             &mut start,
             position.get_board_size(),
         ) {
             app.comm.println("Moves parsed.");
-            urecord = parsed_urecord;
+            utape = parsed_utape;
         };
     }
-    app.comm.println("Created urecord.");
+    app.comm.println("Created utape.");
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
@@ -91,9 +91,9 @@ pub fn main() {
 
     recorder.clear_recorder1();
     tape_box_conveyer.clear_recorder2();
-    UsiPlayer::play_out_and_record(
+    UsiConverter::play_out_usi_tape(
         &mut position,
-        &urecord,
+        &utape,
         &mut tape_box_conveyer,
         &mut recorder,
         &app.comm,

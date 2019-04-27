@@ -6,8 +6,8 @@ use std::env;
 
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
-use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
-use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
+use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::*;
+use kifuwarabe_wcsc29_lib::kifu_csa::csa_tape::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::position::*;
@@ -48,10 +48,10 @@ pub fn main() {
 
     // Model.
     let mut position = Position::default();
-    let crecord = CsaRecord::load(&path);
+    let crecord = CsaTape::load(&path);
 
     // Play out.
-    CsaPlayer::play_out_and_record(
+    CsaConverter::play_out_usi_tape(
         &mut position,
         &crecord,
         &mut tape_box_conveyor,

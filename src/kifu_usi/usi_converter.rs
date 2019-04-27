@@ -4,12 +4,45 @@ use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_note_operation::*;
+use kifu_usi::usi_move::*;
+use kifu_usi::usi_tape::*;
 use position::*;
-use usi_conv::usi_move::*;
-use usi_conv::usi_record::*;
 
-pub struct UsiPlayer {}
-impl UsiPlayer {
+pub struct UsiConverter {}
+impl UsiConverter {
+    /// # Arguments
+    ///
+    /// * 'position' - USIレコードと 初期局面を合わせてください。
+    ///
+    pub fn play_out_usi_tape(
+        position: &mut Position,
+        utape: &UsiTape,
+        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeEditor,
+        comm: &Communication,
+    ) {
+        // 局面を動かしながら変換していく。
+        let mut ply = 1;
+        for umove in &utape.moves {
+            let rnote_opes = UsiConverter::convert_move(*umove, position, ply);
+            //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
+
+            for rnote_ope in rnote_opes {
+                //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
+                comm.println("usi_player.rs:play_out_and_record: touch_brandnew_note");
+                RpmCassetteTapeRecorder::touch_brandnew_note(
+                    &rnote_ope,
+                    position,
+                    tape_box_conveyor,
+                    recorder,
+                    comm,
+                );
+            }
+
+            ply += 1;
+        }
+    }
+
     pub fn convert_move(umove: UsiMove, position: &Position, ply: i16) -> Vec<RpmNoteOpe> {
         let mut rpm_move = Vec::new();
 
@@ -90,38 +123,5 @@ impl UsiPlayer {
         rpm_move.push(change_phase);
 
         rpm_move
-    }
-
-    /// # Arguments
-    ///
-    /// * 'position' - USIレコードと 初期局面を合わせてください。
-    ///
-    pub fn play_out_and_record(
-        position: &mut Position,
-        urecord: &UsiRecord,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeEditor,
-        comm: &Communication,
-    ) {
-        // 局面を動かしながら変換していく。
-        let mut ply = 1;
-        for umove in &urecord.moves {
-            let rnote_opes = UsiPlayer::convert_move(*umove, position, ply);
-            //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
-
-            for rnote_ope in rnote_opes {
-                //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
-                comm.println("usi_player.rs:play_out_and_record: touch_brandnew_note");
-                RpmCassetteTapeRecorder::touch_brandnew_note(
-                    &rnote_ope,
-                    position,
-                    tape_box_conveyor,
-                    recorder,
-                    comm,
-                );
-            }
-
-            ply += 1;
-        }
     }
 }

@@ -5,11 +5,11 @@ use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 /// フォーサイス エドワーズ記法
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
+use kifu_usi::usi_move::*;
+use kifu_usi::usi_position::*;
 use piece_etc::*;
 use position::*;
 use std::*;
-use usi_conv::usi_move::*;
-use usi_conv::usi_position::*;
 
 pub struct Fen {}
 impl Fen {

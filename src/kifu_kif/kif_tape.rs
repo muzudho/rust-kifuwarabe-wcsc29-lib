@@ -3,15 +3,15 @@ use kifu_kif::kif_move::*;
 use std::*;
 
 #[derive(Default)]
-pub struct KifRecord {
+pub struct KifTape {
     pub items: Vec<KifMove>,
 }
-impl KifRecord {
-    pub fn new() -> KifRecord {
-        KifRecord { items: Vec::new() }
+impl KifTape {
+    pub fn new() -> KifTape {
+        KifTape { items: Vec::new() }
     }
 
-    pub fn load(file: &str) -> KifRecord {
+    pub fn load(file: &str) -> KifTape {
         // バージョンがいろいろあるようだ。
         Kaki189::load(file)
     }

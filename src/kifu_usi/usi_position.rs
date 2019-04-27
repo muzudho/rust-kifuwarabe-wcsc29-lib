@@ -1,8 +1,8 @@
 use board_size::*;
 use communication::*;
+use kifu_usi::usi_tape::*;
 use parser::*;
 use std::*;
-use usi_conv::usi_record::*;
 
 pub struct UsiPosition {}
 impl UsiPosition {
@@ -30,7 +30,7 @@ impl UsiPosition {
         line: &str,
         start: &mut usize,
         board_size: BoardSize,
-    ) -> Option<UsiRecord> {
+    ) -> Option<UsiTape> {
         if Parser::match_keyword(&comm, &line, "moves", start)
             || Parser::match_keyword(&comm, &line, " moves", start)
         {
@@ -39,6 +39,6 @@ impl UsiPosition {
             return None;
         }
 
-        UsiRecord::parse_usi_1record(&comm, line, start, board_size)
+        UsiTape::parse_usi_1record(&comm, line, start, board_size)
     }
 }

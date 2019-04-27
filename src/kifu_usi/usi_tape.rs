@@ -1,30 +1,31 @@
 use board_size::*;
 use communication::*;
+use kifu_usi::fen::*;
+use kifu_usi::usi_move::*;
 use parser::*;
 use piece_etc::*;
 use position::*;
-use std::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use usi_conv::fen::*;
-use usi_conv::usi_move::*;
+use std::*;
 
- #[derive(Default)]
-pub struct UsiRecord {
-    pub moves : Vec<UsiMove>,
+#[derive(Default)]
+pub struct UsiTape {
+    pub moves: Vec<UsiMove>,
 }
-impl UsiRecord {
-    pub fn new_usi_record() -> UsiRecord {
-        UsiRecord {
-            moves: Vec::new(),
-        }
+impl UsiTape {
+    pub fn new_usi_tape() -> UsiTape {
+        UsiTape { moves: Vec::new() }
     }
 
     ///
-    pub fn parse_usi_1record(comm:&Communication, line:&str, start:&mut usize, board_size:BoardSize) -> Option<Self> {
-        let mut urecord = UsiRecord {
-            moves: Vec::new(),
-        };
+    pub fn parse_usi_1record(
+        comm: &Communication,
+        line: &str,
+        start: &mut usize,
+        board_size: BoardSize,
+    ) -> Option<Self> {
+        let mut urecord = UsiTape { moves: Vec::new() };
 
         Parser::skip_spaces(&comm, &line, start);
 
@@ -53,7 +54,7 @@ impl UsiRecord {
     }
 
     /// 1行目のテキストを返す。
-    pub fn read_first_line(comm:&Communication, file:&str) -> String {
+    pub fn read_first_line(comm: &Communication, file: &str) -> String {
         if let Some(first_line_result) = BufReader::new(File::open(file).unwrap()).lines().next() {
             let first_line = first_line_result.unwrap();
             comm.println(&format!("Read first line: `{}`.", first_line));
@@ -70,7 +71,7 @@ impl UsiRecord {
         }
     }
 
-    pub fn make_usi_move(&mut self, umove:UsiMove, position:&mut Position){
+    pub fn make_usi_move(&mut self, umove: UsiMove, position: &mut Position) {
         if umove.is_drop() {
             // TODO drop
 

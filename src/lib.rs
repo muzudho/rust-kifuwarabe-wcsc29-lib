@@ -42,24 +42,23 @@ pub mod human;
 pub mod kifu_csa;
 pub mod kifu_kif;
 pub mod kifu_rpm;
+pub mod kifu_usi;
 pub mod learn;
 pub mod lib_sub;
 pub mod parser;
 pub mod piece_etc;
 pub mod position;
 pub mod thought;
-pub mod usi_conv;
 use application::*;
 use human::human_interface::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifu_usi::fen::*;
+use kifu_usi::usi_converter::*;
+use kifu_usi::usi_position::*;
 use lib_sub::*;
 use position::*;
 use thought::best_move_picker::*;
-use usi_conv::fen::*;
-use usi_conv::usi_player::*;
-use usi_conv::usi_position::*;
 
 pub fn main_loop() {
     // The application contains all immutable content.
@@ -303,7 +302,7 @@ pub fn main_loop() {
                     // 差し替え。
                     recorder.clear_recorder1();
                     tape_box_conveyor.clear_recorder2();
-                    UsiPlayer::play_out_and_record(
+                    UsiConverter::play_out_usi_tape(
                         &mut position,
                         &urecord,
                         &mut tape_box_conveyor,

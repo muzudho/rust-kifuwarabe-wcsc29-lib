@@ -6,16 +6,16 @@ use std::io::{BufRead, BufReader};
 use std::*;
 
 #[derive(Default)]
-pub struct CsaRecord {
+pub struct CsaTape {
     pub items: Vec<CsaMove>,
 }
-impl CsaRecord {
-    pub fn new() -> CsaRecord {
-        CsaRecord { items: Vec::new() }
+impl CsaTape {
+    pub fn new() -> CsaTape {
+        CsaTape { items: Vec::new() }
     }
 
-    pub fn load(file: &str) -> CsaRecord {
-        let mut record = CsaRecord::new();
+    pub fn load(file: &str) -> CsaTape {
+        let mut record = CsaTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
             let line = result.unwrap();

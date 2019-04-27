@@ -4,10 +4,10 @@ use human::human_interface::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
+use kifu_usi::usi_converter::*;
 use piece_etc::*;
 use position::*;
 use thought::best_move_picker::*;
-use usi_conv::usi_player::*;
 
 pub struct LibSub {}
 impl LibSub {
@@ -216,7 +216,8 @@ impl LibSub {
         app.comm
             .println(&format!("bestmove {}", best_logical_move.to_sign()));
 
-        let best_rnote_opes = UsiPlayer::convert_move(best_logical_move, &position, recorder.ply);
+        let best_rnote_opes =
+            UsiConverter::convert_move(best_logical_move, &position, recorder.ply);
         for rnote_ope in best_rnote_opes {
             app.comm.println("lib.rs:go: touch_brandnew_note");
             RpmCassetteTapeRecorder::touch_brandnew_note(
@@ -234,7 +235,7 @@ impl LibSub {
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
         app: &Application,
     ) {
-        tape_box_conveyor.write_cassette_tape_box(&app.kw29_conf, board_size, &app.comm);
+        tape_box_conveyor.write_cassette_tape_box(board_size, &app);
     }
 
     pub fn hand1(position: &Position, app: &Application) {
