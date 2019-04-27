@@ -2,9 +2,9 @@ use address::*;
 use communication::*;
 use kifu_kif::kif_move::*;
 use kifu_kif::kif_record::*;
-use kifu_rpm::play::rpm_move_player::*;
-use kifu_rpm::play::rpm_note_player::*;
-use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_note_operation::*;
 use piece_etc::*;
 use position::*;
@@ -105,12 +105,13 @@ impl KifPlayer {
     pub fn play_out_and_record(
         position: &mut Position,
         krecord: &KifRecord,
+        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
         recorder: &mut RpmCassetteTapeRecorder,
         comm: &Communication,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        RpmMovePlayer::play_ohashi_starting(position, recorder, comm);
+        RpmCassetteTapePlayer::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
 
         let mut ply = 1;
         for kmove in &krecord.items {
@@ -118,7 +119,13 @@ impl KifPlayer {
 
             for rnote_ope in rnote_opes {
                 comm.println("kif_player.rs: touch_brandnew_note");
-                RpmNotePlayer::touch_brandnew_note(&rnote_ope, position, recorder, comm);
+                RpmCassetteTapePlayer::touch_brandnew_note(
+                    &rnote_ope,
+                    position,
+                    tape_box_conveyor,
+                    recorder,
+                    comm,
+                );
             }
 
             ply += 1;

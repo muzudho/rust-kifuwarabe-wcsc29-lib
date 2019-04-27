@@ -1,14 +1,12 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 extern crate regex;
-
 use getopts::Options;
-use std::env;
-
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
+use std::env;
 
 #[derive(Debug)]
 struct Args {

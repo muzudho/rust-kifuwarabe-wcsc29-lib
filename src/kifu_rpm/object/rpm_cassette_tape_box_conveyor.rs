@@ -6,16 +6,46 @@ use kifu_rpm::object::rpm_cassette_tape::RpmCassetteTape;
 use kifu_rpm::object::rpm_cassette_tape_box::*;
 use rand::Rng;
 use std::path::Path;
+
 /// カセット・テープ・ボックスが満杯になったら、
 /// 次のカセット・テープ・ボックスに変えてくれる☆（*＾～＾*）
 pub struct RpmCassetteTapeBoxConveyor {
     current_box_for_write: Option<RpmCassetteTapeBox>,
+
+    /// 記録用のカセットテープ。
+    pub recording_cassette_tape: RpmCassetteTape,
 }
 impl RpmCassetteTapeBoxConveyor {
     pub fn new_empty() -> Self {
         RpmCassetteTapeBoxConveyor {
             current_box_for_write: None,
+            recording_cassette_tape: RpmCassetteTape::new_facing_right_cassette_tape(),
         }
+    }
+
+    pub fn from_cassette_tape(inner_cassette_tape: RpmCassetteTape) -> Self {
+        RpmCassetteTapeBoxConveyor {
+            current_box_for_write: None,
+            recording_cassette_tape: inner_cassette_tape,
+        }
+    }
+
+    pub fn clear_recorder2(&mut self) {
+        self.recording_cassette_tape.clear();
+    }
+
+    pub fn reset_caret(&mut self) {
+        self.recording_cassette_tape.reset_caret();
+    }
+
+    pub fn get_mut_recording_cassette_tape(&mut self) -> &mut RpmCassetteTape {
+        &mut self.recording_cassette_tape
+    }
+
+    /// Human presentable large log.
+    pub fn to_recording_cassette_tape_human_presentable(&self, board_size: BoardSize) -> String {
+        self.recording_cassette_tape
+            .to_human_presentable(board_size)
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
@@ -52,13 +82,12 @@ impl RpmCassetteTapeBoxConveyor {
         &mut self,
         kw29_conf: &KifuwarabeWcsc29Config,
         board_size: BoardSize,
-        cassette_tape: &RpmCassetteTape,
         comm: &Communication,
     ) {
         self.choice_box_automatically(&kw29_conf);
 
         if let Some(box_for_write) = &self.current_box_for_write {
-            box_for_write.write_cassette_tape_box(board_size, cassette_tape, comm)
+            box_for_write.write_cassette_tape_box(board_size, &self.recording_cassette_tape, comm)
         } else {
             panic!("Get tape box fail.")
         }

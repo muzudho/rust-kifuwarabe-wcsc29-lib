@@ -1,14 +1,14 @@
 use address::Address;
+use application::Application;
 use common::caret::*;
 use communication::*;
-use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
 use kifu_rpm::json::rpm_cassette_tape_for_json::*;
 use kifu_rpm::object::rpm_cassette_tape::*;
-use kifu_rpm::play::rpm_move_player::*;
-use kifu_rpm::play::rpm_thread_player::*;
-use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
+use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_move::*;
 use kifu_rpm::thread::rpm_thread::*;
 use piece_etc::*;
@@ -55,21 +55,24 @@ impl BestMovePicker {
     }
 
     /// TODO 学習ファイルをもとに動く。
-    pub fn get_best_move(
+    pub fn get_mut_best_move(
         &mut self,
-        comm: &Communication,
-        kw29config: &KifuwarabeWcsc29Config,
-        recorder: &mut RpmCassetteTapeRecorder,
         position: &mut Position,
+        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeRecorder,
+        app: &Application,
     ) -> UsiMove {
         // クリアー。
         self.clear();
 
         // RPMを検索。
-        println!("#get_best_move start. Phase: {:?}", position.get_phase());
+        println!(
+            "#get_mut_best_move start. Phase: {:?}",
+            position.get_phase()
+        );
 
         // TODO とりあえず -rbox.json ファイルを１個読む。
-        'path_loop: for path in fs::read_dir(&kw29config.rpm_record).unwrap() {
+        'path_loop: for path in fs::read_dir(&app.kw29_conf.rpm_record).unwrap() {
             let file = path.unwrap().path().display().to_string();
 
             /*
@@ -115,7 +118,7 @@ impl BestMovePicker {
                 // レコードがいっぱいある。
                 for cassette_tape_j in cassette_tape_box_j.tape_box {
                     record_index += 1;
-                    comm.println(&format!(
+                    app.comm.println(&format!(
                         "Record index: {}. Json: {}",
                         record_index,
                         cassette_tape_j.to_human_presentable()
@@ -130,12 +133,12 @@ impl BestMovePicker {
                         {
                             // Display.
                             HumanInterface::bo(
-                                &comm,
-                                &recorder.cassette_tape,
+                                &app.comm,
+                                &tape_box_conveyor.recording_cassette_tape,
                                 recorder.ply,
                                 &position,
                             );
-                            comm.println(&format!(
+                            app.comm.println(&format!(
                                 "[{}] Find: {}'{}'{}.",
                                 recorder.ply,
                                 position.get_phase().to_log(),
@@ -150,7 +153,7 @@ impl BestMovePicker {
                             loop {
                                 // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
                                 let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
-                                    &comm,
+                                    &app.comm,
                                     position,
                                     &cassette_tape_j,
                                     *my_piece_id,
@@ -164,7 +167,7 @@ impl BestMovePicker {
                                 } else if let Some(rmove) = rmove_opt {
                                     // ヒットしたようだぜ☆（＾～＾）
                                     record_count += 1;
-                                    comm.println(&format!(
+                                    app.comm.println(&format!(
                                         "{} hit! Rmove: {}.",
                                         record_count,
                                         rmove.to_human_presentable(position.get_board_size())
@@ -187,17 +190,24 @@ impl BestMovePicker {
 
                             // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
                             // それを逆順にすれば　指し手だぜ☆（＾～＾）
-                            recorder.cassette_tape.caret.turn_to_opponent();
-                            comm.println(&format!("Tried, go opponent {} move!", record_count,));
-                            RpmThreadPlayer::go_next_n_repeats(
+                            tape_box_conveyor
+                                .get_mut_recording_cassette_tape()
+                                .caret
+                                .turn_to_opponent();
+                            app.comm
+                                .println(&format!("Tried, go opponent {} move!", record_count,));
+                            RpmCassetteTapePlayer::go_next_n_repeats(
                                 record_count,
                                 recorder.ply,
-                                &mut recorder.cassette_tape,
+                                &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                                 position,
-                                comm,
+                                &app.comm,
                             );
-                            recorder.cassette_tape.caret.turn_to_opponent();
-                            comm.println("Backed.");
+                            tape_box_conveyor
+                                .get_mut_recording_cassette_tape()
+                                .caret
+                                .turn_to_opponent();
+                            app.comm.println("Backed.");
                         }
                     }
 
@@ -395,8 +405,13 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmMovePlayer::go_next_1_move(&mut cassette_tape_2, position, ply_2, true, &comm)
-                {
+                if RpmCassetteTapePlayer::go_next_1_move(
+                    &mut cassette_tape_2,
+                    position,
+                    ply_2,
+                    true,
+                    &comm,
+                ) {
                     // 合法タッチ。戻さず抜けます。
                     comm.println(&format!(
                         "Hit and go! ({}) {}",

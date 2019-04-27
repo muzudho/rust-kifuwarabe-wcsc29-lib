@@ -1,5 +1,4 @@
 pub mod json;
 pub mod object;
-pub mod play;
-pub mod recorder;
+pub mod cassette_deck;
 pub mod thread;

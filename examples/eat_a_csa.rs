@@ -8,8 +8,8 @@ use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 #[derive(Debug)]
@@ -51,16 +51,22 @@ pub fn main() {
     let crecord = CsaRecord::load(&path);
 
     // Play out.
-    CsaPlayer::play_out_and_record(&mut position, &crecord, &mut recorder, &app.comm);
-    HumanInterface::bo(&app.comm, &recorder.cassette_tape, recorder.ply, &position);
-
-    // Save.
-    tape_box_conveyor.write_cassette_tape_box(
-        &app.kw29_conf,
-        position.get_board_size(),
-        &recorder.cassette_tape,
+    CsaPlayer::play_out_and_record(
+        &mut position,
+        &crecord,
+        &mut tape_box_conveyor,
+        &mut recorder,
         &app.comm,
     );
+    HumanInterface::bo(
+        &app.comm,
+        &tape_box_conveyor.recording_cassette_tape,
+        recorder.ply,
+        &position,
+    );
+
+    // Save.
+    tape_box_conveyor.write_cassette_tape_box(&app.kw29_conf, position.get_board_size(), &app.comm);
 
     app.comm.println("Finished.");
 }

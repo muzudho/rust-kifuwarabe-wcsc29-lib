@@ -1,12 +1,12 @@
-/// フォーサイス エドワーズ記法
 use address::*;
 use board_size::*;
 use communication::*;
-use kifu_rpm::play::rpm_move_player::*;
-use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+/// フォーサイス エドワーズ記法
+use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use piece_etc::*;
 use position::*;
-//use rpm_play::rpm_note_player::*;
 use std::*;
 use usi_conv::usi_move::*;
 use usi_conv::usi_position::*;
@@ -14,16 +14,18 @@ use usi_conv::usi_position::*;
 pub struct Fen {}
 impl Fen {
     pub fn play_startpos(
-        comm: &Communication,
-        recorder: &mut RpmCassetteTapeRecorder,
         position: &mut Position,
+        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeRecorder,
+        comm: &Communication,
     ) -> bool {
         // 大橋流を始めるところまでリセット。
-        recorder.clear_recorder();
+        recorder.clear_recorder1();
+        tape_box_conveyor.clear_recorder2();
         position.reset_origin_position();
 
         // 大橋流で初期局面まで指す☆（＾～＾）
-        RpmMovePlayer::play_ohashi_starting(position, recorder, comm);
+        RpmCassetteTapePlayer::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
         true
     }
 
@@ -68,16 +70,17 @@ impl Fen {
 
     // 初期局面解析。
     pub fn parse_initial_position(
-        comm: &Communication,
         line: &str,
         start: &mut usize,
-        recorder: &mut RpmCassetteTapeRecorder,
         position: &mut Position,
+        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeRecorder,
+        comm: &Communication,
     ) -> bool {
-        match UsiPosition::parse_startpos_test(comm, line, start) {
+        match UsiPosition::parse_startpos_test(line, start, comm) {
             Some(is_startpos) => {
                 if is_startpos {
-                    Fen::play_startpos(comm, recorder, position)
+                    Fen::play_startpos(position, tape_box_conveyor, recorder, comm)
                 } else {
                     Fen::do_sfen(line, start, position)
                 }

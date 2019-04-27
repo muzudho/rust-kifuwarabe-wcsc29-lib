@@ -11,12 +11,12 @@ pub struct Application {
 }
 impl Application {
     pub fn new() -> Self {
-        let my_conf = KifuwarabeWcsc29LibConfig::load();
-        let kw29_conf = KifuwarabeWcsc29Config::load(&my_conf);
+        let my_config = KifuwarabeWcsc29LibConfig::load();
+        let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
         Application {
             comm: Communication::new(),
-            my_conf: my_conf,
-            kw29_conf: kw29_conf,
+            my_conf: my_config,
+            kw29_conf: kw29_config,
         }
     }
 }
