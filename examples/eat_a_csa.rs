@@ -48,12 +48,12 @@ pub fn main() {
 
     // Model.
     let mut position = Position::default();
-    let crecord = CsaTape::load(&path);
+    let crecord = CsaTape::load(&path, &app.comm);
 
     // Play out.
-    CsaConverter::play_out_usi_tape(
-        &mut position,
+    CsaConverter::play_out_csa_tape(
         &crecord,
+        &mut position,
         &mut tape_box_conveyor,
         &mut recorder,
         &app.comm,

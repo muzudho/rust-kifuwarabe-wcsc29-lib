@@ -22,7 +22,7 @@ impl CsaConverter {
 
         // Model.
         let mut position = Position::default();
-        let ctape = CsaTape::load(&input_path);
+        let ctape = CsaTape::load(&input_path, &app.comm);
 
         // Play.
         CsaConverter::play_out_csa_tape(

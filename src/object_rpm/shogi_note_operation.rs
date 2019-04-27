@@ -225,7 +225,7 @@ impl ShogiNoteOpe {
                 let mut n1 = caret.go_next(comm, "ope-parse_1ope-num") as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
-                //comm.print(&format!("{}{}", ch1, ch2));
+                comm.print(&format!("Parse1Op: '{}', '{}'.", ch0, ch1));
                 let address = Address::from_cell(
                     Cell::from_file_rank(
                         Parser::file_char_to_i8(ch0),

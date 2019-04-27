@@ -1,3 +1,4 @@
+use communication::*;
 use kifu_csa::csa_move::*;
 use piece_etc::*;
 use position::*;
@@ -14,7 +15,7 @@ impl CsaTape {
         CsaTape { items: Vec::new() }
     }
 
-    pub fn load(file: &str) -> CsaTape {
+    pub fn load(file: &str, comm: &Communication) -> CsaTape {
         let mut record = CsaTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
@@ -24,7 +25,7 @@ impl CsaTape {
                 && line.len() == 7
             {
                 print!("{}  ", line);
-                if let Some(csa_move) = CsaMove::parse(&line) {
+                if let Some(csa_move) = CsaMove::parse(&line, &comm) {
                     record.push(csa_move);
                 }
             }

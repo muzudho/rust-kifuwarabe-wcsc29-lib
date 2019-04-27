@@ -1,19 +1,21 @@
 use address::*;
+use communication::*;
 use parser::*;
 use piece_etc::*;
 
 pub struct CsaMove {
-    pub phase:Phase,
-    pub source:Option<Cell>,
-    pub destination:Cell,
+    pub phase: Phase,
+    pub source: Option<Cell>,
+    pub destination: Cell,
     // 成ったかどうかは、盤上で駒を動かしてみないと分からない。
-    pub koma:Option<PieceType>,
+    pub koma: Option<PieceType>,
 }
 impl CsaMove {
+    pub fn parse(line: &str, _comm: &Communication) -> Option<CsaMove> {
+        // comm.println(&format!("Parse   : line: '{}'.", line));
 
-    pub fn parse(line:&str) -> Option<CsaMove> {
         if line.len() < 7 {
-            return None
+            return None;
         };
 
         let ch0 = line.chars().nth(0).unwrap();
@@ -23,28 +25,34 @@ impl CsaMove {
         let ch4 = line.chars().nth(4).unwrap();
         let str5 = &line[5..=6];
 
+        if ch0 == '%' {
+            // '%CHUDAN' かも。
+            return None;
+        }
+
         let src_opt = if ch1 == '0' {
             // drop.
             None
         } else {
             Some(Cell::from_file_rank(
                 Parser::file_char_to_i8(ch1),
-                Parser::rank_char_to_i8(ch2)))
+                Parser::rank_char_to_i8(ch2),
+            ))
         };
 
         let piece_type = CsaMove::koma_to_piece_type(str5);
 
         Some(CsaMove {
-            phase : match ch0 {
-                '+' => {Phase::First}
-                '-' => {Phase::Second}
-                _ => panic!("Unexpected phase: '{}'.", ch1)
+            phase: match ch0 {
+                '+' => Phase::First,
+                '-' => Phase::Second,
+                _ => panic!("Unexpected phase: '{}'.", ch1),
             },
             source: src_opt,
-            destination:
-                Cell::from_file_rank(
-                    Parser::file_char_to_i8(ch3),
-                    Parser::rank_char_to_i8(ch4)),
+            destination: Cell::from_file_rank(
+                Parser::file_char_to_i8(ch3),
+                Parser::rank_char_to_i8(ch4),
+            ),
             koma: piece_type,
         })
     }
@@ -65,25 +73,25 @@ impl CsaMove {
         }
     }
 
-    pub fn koma_to_piece_type(koma:&str) -> Option<PieceType> {
+    pub fn koma_to_piece_type(koma: &str) -> Option<PieceType> {
         use piece_etc::PieceType::*;
         match koma {
-            "FU" => { Some(P) },
-            "KY" => { Some(L) },
-            "KE" => { Some(N) },
-            "GI" => { Some(S) },
-            "KI" => { Some(G) },
-            "KA" => { Some(B) },
-            "HI" => { Some(R) },
-            "OU" => { Some(K) },
-            "TO" => { Some(PP) },
-            "NY" => { Some(PL) },
-            "NK" => { Some(PN) },
-            "NG" => { Some(PS) },
-            "UM" => { Some(PB) },
-            "RY" => { Some(PR) },
+            "FU" => Some(P),
+            "KY" => Some(L),
+            "KE" => Some(N),
+            "GI" => Some(S),
+            "KI" => Some(G),
+            "KA" => Some(B),
+            "HI" => Some(R),
+            "OU" => Some(K),
+            "TO" => Some(PP),
+            "NY" => Some(PL),
+            "NK" => Some(PN),
+            "NG" => Some(PS),
+            "UM" => Some(PB),
+            "RY" => Some(PR),
             // _ => { None },
-            _ => panic!("Unexpected koma: '{}'.", koma)
+            _ => panic!("Unexpected koma: '{}'.", koma),
         }
     }
 
