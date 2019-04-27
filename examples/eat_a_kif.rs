@@ -6,7 +6,10 @@ use getopts::Options;
 use std::env;
 
 use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
+use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 
 #[derive(Debug)]
 struct Args {
@@ -37,5 +40,13 @@ pub fn main() {
     let path = args.path.unwrap();
     comm.println(&format!("args.path = '{}'.", path));
 
-    KifConverter::convert_kif(&path, "sheet.txt");
+    // Config.
+    let my_conf = KifuwarabeWcsc29LibConfig::load();
+    let kw29_conf = KifuwarabeWcsc29Config::load(&my_conf);
+
+    // Record.
+    let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
+    tape_box_conveyer.choice_box_manually("sheet.txt");
+
+    KifConverter::convert_kif(&kw29_conf, &path, &mut tape_box_conveyer, &comm);
 }

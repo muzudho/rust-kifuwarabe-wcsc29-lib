@@ -2,9 +2,7 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 extern crate rand;
 use getopts::Options;
-use rand::Rng;
 use std::env;
-use std::path::Path;
 
 use kifuwarabe_wcsc29_lib::communication::*;
 use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
@@ -12,7 +10,7 @@ use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 #[derive(Debug)]
@@ -48,24 +46,6 @@ pub fn main() {
     let my_config = KifuwarabeWcsc29LibConfig::load();
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
-    // ファイル名をランダムに作成する。
-    let rpm_object_sheet_path;
-    {
-        let mut rng = rand::thread_rng();
-        let rand1: u64 = rng.gen();
-        let rand2: u64 = rng.gen();
-        let rand3: u64 = rng.gen();
-        let rand4: u64 = rng.gen();
-        rpm_object_sheet_path = Path::new(&kw29_config.learning)
-            .join(format!(
-                "{}-{}-{}-{}-learning.rpmove",
-                rand1, rand2, rand3, rand4
-            ))
-            .to_str()
-            .unwrap()
-            .to_string();
-    }
-
     // Model.
     let mut position = Position::default();
     let crecord = CsaRecord::load(&path);
@@ -75,8 +55,13 @@ pub fn main() {
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
-    let tape_box = RpmCassetteTapeBox::default(&rpm_object_sheet_path);
-    tape_box.write_cassette_tape(position.get_board_size(), &recorder.cassette_tape, &comm);
+    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
+    tape_box_conveyor.write_cassette_tape(
+        &kw29_config,
+        position.get_board_size(),
+        &recorder.cassette_tape,
+        &comm,
+    );
 
     comm.println("Finished.");
 }

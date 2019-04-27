@@ -75,7 +75,7 @@ pub fn main_loop() {
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
     // カセット・テープ・ボックス・コンベヤー。
-    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new();
+    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
 
     let mut recorder = RpmCassetteTapeRecorder::default();
 
