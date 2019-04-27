@@ -4,7 +4,7 @@ extern crate kifuwarabe_wcsc29_lib;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::CsaConverter;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::*;
 use std::ffi::OsStr;

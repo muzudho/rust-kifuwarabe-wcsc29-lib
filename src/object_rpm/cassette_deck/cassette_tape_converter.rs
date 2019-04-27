@@ -1,8 +1,8 @@
 use common::caret::*;
 use communication::*;
 use human::human_interface::*;
-use object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
-use object_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use object_rpm::cassette_deck::cassette_tape_editor::*;
+use object_rpm::cassette_deck::cassette_tape_recorder::*;
 use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
 use object_rpm::shogi_note_operation::*;
 use position::*;

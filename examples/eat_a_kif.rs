@@ -4,7 +4,7 @@ extern crate regex;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
 use std::env;
 
