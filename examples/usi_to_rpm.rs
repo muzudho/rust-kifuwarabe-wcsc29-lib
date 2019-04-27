@@ -1,9 +1,7 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
-use std::env;
-
-use kifuwarabe_wcsc29_lib::communication::*;
+use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::position::*;
@@ -11,9 +9,7 @@ use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_player::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_position::*;
 use kifuwarabe_wcsc29_lib::usi_conv::usi_record::*;
-
-//use std::fs::File;
-//use std::io::{BufRead, BufReader};
+use std::env;
 
 #[derive(Debug)]
 struct Args {
@@ -38,40 +34,45 @@ fn parse_args() -> Args {
 pub fn main() {
     let args = parse_args();
 
-    let comm = Communication::new();
+    // The application contains all immutable content.
+    let app = Application::new();
+
     let path = args.path.unwrap();
-    comm.println(&format!("args.path = '{}'.", path));
+    app.comm.println(&format!("args.path = '{}'.", path));
 
     let mut position = Position::default();
 
-    let line = UsiRecord::read_first_line(&comm, &path);
+    let line = UsiRecord::read_first_line(&app.comm, &path);
 
-    comm.println(&format!("Parse line: `{}`.", line));
+    app.comm.println(&format!("Parse line: `{}`.", line));
     let mut urecord = UsiRecord::default();
 
     // Record.
     let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     let mut start = 0;
-    if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
-        comm.println("Position parsed.");
+    if Fen::parse_initial_position(&app.comm, &line, &mut start, &mut recorder, &mut position) {
+        app.comm.println("Position parsed.");
 
-        if let Some(parsed_urecord) =
-            UsiPosition::parse_usi_line_moves(&comm, &line, &mut start, position.get_board_size())
-        {
-            comm.println("Moves parsed.");
+        if let Some(parsed_urecord) = UsiPosition::parse_usi_line_moves(
+            &app.comm,
+            &line,
+            &mut start,
+            position.get_board_size(),
+        ) {
+            app.comm.println("Moves parsed.");
             urecord = parsed_urecord;
         };
     }
-    comm.println("Created urecord.");
+    app.comm.println("Created urecord.");
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
-        comm.println("Position parsed.");
+    if Fen::parse_initial_position(&app.comm, &line, &mut start, &mut recorder, &mut position) {
+        app.comm.println("Position parsed.");
     }
 
     recorder.clear_recorder();
-    UsiPlayer::play_out_and_record(&mut position, &urecord, &mut recorder, &comm);
-    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+    UsiPlayer::play_out_and_record(&mut position, &urecord, &mut recorder, &app.comm);
+    HumanInterface::bo(&app.comm, &recorder.cassette_tape, recorder.ply, &position);
 }

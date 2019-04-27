@@ -4,9 +4,7 @@ extern crate rand;
 use getopts::Options;
 use std::env;
 
-use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
+use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
@@ -38,14 +36,11 @@ pub fn main() {
     // Command line arguments.
     let args = parse_args();
 
-    // Logging.
-    let comm = Communication::new();
-    let path = args.path.unwrap();
-    comm.println(&format!("args.path = '{}'.", path));
+    // The application contains all immutable content.
+    let app = Application::new();
 
-    // Config.
-    let my_config = KifuwarabeWcsc29LibConfig::load();
-    let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
+    let path = args.path.unwrap();
+    app.comm.println(&format!("args.path = '{}'.", path));
 
     // Record.
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
@@ -56,16 +51,16 @@ pub fn main() {
     let crecord = CsaRecord::load(&path);
 
     // Play out.
-    CsaPlayer::play_out_and_record(&mut position, &crecord, &mut recorder, &comm);
-    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+    CsaPlayer::play_out_and_record(&mut position, &crecord, &mut recorder, &app.comm);
+    HumanInterface::bo(&app.comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
     tape_box_conveyor.write_cassette_tape_box(
-        &kw29_config,
+        &app.kw29_conf,
         position.get_board_size(),
         &recorder.cassette_tape,
-        &comm,
+        &app.comm,
     );
 
-    comm.println("Finished.");
+    app.comm.println("Finished.");
 }

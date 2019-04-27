@@ -1,9 +1,7 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 
-use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
+use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::CsaConverter;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
@@ -49,12 +47,8 @@ fn main() {
     let in_file = args.input_file.unwrap();
     let tape_box_file_for_write = args.output_file.unwrap();
 
-    // Logging.
-    let comm = Communication::new();
-
-    // Config.
-    let my_conf = KifuwarabeWcsc29LibConfig::load();
-    let kw29_conf = KifuwarabeWcsc29Config::load(&my_conf);
+    // The application contains all immutable content.
+    let app = Application::new();
 
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
@@ -70,20 +64,20 @@ fn main() {
         match ext.as_str() {
             "KIF" => {
                 KifConverter::convert_kif(
-                    &kw29_conf,
+                    &app.kw29_conf,
                     &in_file,
                     &mut tape_box_conveyer,
                     &mut recorder,
-                    &comm,
+                    &app.comm,
                 );
             }
             "CSA" => {
                 CsaConverter::convert_csa(
-                    &kw29_conf,
+                    &app.kw29_conf,
                     &in_file,
                     &mut tape_box_conveyer,
                     &mut recorder,
-                    &comm,
+                    &app.comm,
                 );
             }
             _ => print!("Pass extension: {}", ext),

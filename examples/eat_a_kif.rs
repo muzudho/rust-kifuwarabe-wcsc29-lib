@@ -5,9 +5,7 @@ extern crate regex;
 use getopts::Options;
 use std::env;
 
-use kifuwarabe_wcsc29_lib::communication::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
-use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
+use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
@@ -36,14 +34,11 @@ pub fn main() {
     // Command line arguments.
     let args = parse_args();
 
-    // Logging.
-    let comm = Communication::new();
-    let path = args.path.unwrap();
-    comm.println(&format!("args.path = '{}'.", path));
+    // The application contains all immutable content.
+    let app = Application::new();
 
-    // Config.
-    let my_conf = KifuwarabeWcsc29LibConfig::load();
-    let kw29_conf = KifuwarabeWcsc29Config::load(&my_conf);
+    let path = args.path.unwrap();
+    app.comm.println(&format!("args.path = '{}'.", path));
 
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
@@ -51,10 +46,10 @@ pub fn main() {
     let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     KifConverter::convert_kif(
-        &kw29_conf,
+        &app.kw29_conf,
         &path,
         &mut tape_box_conveyer,
         &mut recorder,
-        &comm,
+        &app.comm,
     );
 }
