@@ -30,7 +30,7 @@ impl RpmCassetteTapeBoxConveyor {
         }
     }
 
-    pub fn clear_recorder2(&mut self) {
+    pub fn clear_tape_editor2(&mut self) {
         self.recording_cassette_tape.clear();
     }
 

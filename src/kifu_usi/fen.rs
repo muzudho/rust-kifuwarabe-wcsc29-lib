@@ -20,8 +20,8 @@ impl Fen {
         comm: &Communication,
     ) -> bool {
         // 大橋流を始めるところまでリセット。
-        recorder.clear_recorder1();
-        tape_box_conveyor.clear_recorder2();
+        recorder.clear_tape_editor1();
+        tape_box_conveyor.clear_tape_editor2();
         position.reset_origin_position();
 
         // 大橋流で初期局面まで指す☆（＾～＾）

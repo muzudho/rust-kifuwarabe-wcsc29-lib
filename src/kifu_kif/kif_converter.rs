@@ -57,8 +57,7 @@ impl KifConverter {
             let rnote_opes = KifConverter::convert_move(comm, kmove, position, ply);
 
             for rnote_ope in rnote_opes {
-                comm.println("kif_player.rs: touch_brandnew_note");
-                RpmCassetteTapeRecorder::touch_brandnew_note(
+                RpmCassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,

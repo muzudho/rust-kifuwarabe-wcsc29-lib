@@ -44,7 +44,7 @@ pub fn main() {
 
     // Record.
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
 
     // Model.
     let mut position = Position::default();
@@ -66,7 +66,7 @@ pub fn main() {
     );
 
     // Save.
-    tape_box_conveyor.write_cassette_tape_box(&app.kw29_conf, position.get_board_size(), &app.comm);
+    tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
 
     app.comm.println("Finished.");
 }

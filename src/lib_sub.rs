@@ -20,8 +20,8 @@ impl LibSub {
         let rec_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
 
         rec_tape.caret.turn_to_negative();
-        if let Some(rnote) = rec_tape.get_note_and_go_tape(&app.comm) {
-            RpmCassetteTapeRecorder::go_1note(&rnote, position, recorder.ply, &app.comm);
+        if let Some(rnote) = rec_tape.go_1note_forcely(&app.comm) {
+            RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
             HumanInterface::bo(&app.comm, &rec_tape, recorder.ply, &position);
         }
     }
@@ -34,7 +34,13 @@ impl LibSub {
     ) {
         let rec_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
         rec_tape.caret.turn_to_negative();
-        RpmCassetteTapeRecorder::go_next_1_move(rec_tape, position, recorder.ply, true, &app.comm);
+        RpmCassetteTapeRecorder::try_1move_on_tape(
+            rec_tape,
+            position,
+            recorder.ply,
+            true,
+            &app.comm,
+        );
         HumanInterface::bo(&app.comm, &rec_tape, recorder.ply, &position);
     }
 
@@ -49,7 +55,7 @@ impl LibSub {
             .caret
             .turn_to_negative();
         for _i in 0..10 {
-            RpmCassetteTapeRecorder::go_next_1_move(
+            RpmCassetteTapeRecorder::try_1move_on_tape(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
@@ -76,7 +82,7 @@ impl LibSub {
             .caret
             .turn_to_negative();
         for _i in 0..400 {
-            RpmCassetteTapeRecorder::go_next_1_move(
+            RpmCassetteTapeRecorder::try_1move_on_tape(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
@@ -104,9 +110,9 @@ impl LibSub {
             .turn_to_positive();
         if let Some(rnote) = tape_box_conveyor
             .get_mut_recording_cassette_tape()
-            .get_note_and_go_tape(&app.comm)
+            .go_1note_forcely(&app.comm)
         {
-            RpmCassetteTapeRecorder::go_1note(&rnote, position, recorder.ply, &app.comm);
+            RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, recorder.ply, &app.comm);
             HumanInterface::bo(
                 &app.comm,
                 &tape_box_conveyor.recording_cassette_tape,
@@ -127,7 +133,7 @@ impl LibSub {
             .get_mut_recording_cassette_tape()
             .caret
             .turn_to_positive();
-        RpmCassetteTapeRecorder::go_next_1_move(
+        RpmCassetteTapeRecorder::try_1move_on_tape(
             &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
             position,
             recorder.ply,
@@ -153,7 +159,7 @@ impl LibSub {
             .caret
             .turn_to_positive();
         for _i in 0..10 {
-            RpmCassetteTapeRecorder::go_next_1_move(
+            RpmCassetteTapeRecorder::try_1move_on_tape(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
@@ -180,7 +186,7 @@ impl LibSub {
             .caret
             .turn_to_positive();
         for _i in 0..400 {
-            RpmCassetteTapeRecorder::go_next_1_move(
+            RpmCassetteTapeRecorder::try_1move_on_tape(
                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                 position,
                 recorder.ply,
@@ -207,20 +213,20 @@ impl LibSub {
             .get_mut_recording_cassette_tape()
             .caret
             .turn_to_positive();
-        let best_logical_move =
+        let best_umove =
             best_move_picker.get_mut_best_move(position, tape_box_conveyor, recorder, &app);
         // Examples.
         // println!("bestmove 7g7f");
         // println!("bestmove win");
         // println!("bestmove resign");
         app.comm
-            .println(&format!("bestmove {}", best_logical_move.to_sign()));
+            .println(&format!("bestmove {}", best_umove.to_sign()));
 
-        let best_rnote_opes =
-            UsiConverter::convert_move(best_logical_move, &position, recorder.ply);
-        for rnote_ope in best_rnote_opes {
-            app.comm.println("lib.rs:go: touch_brandnew_note");
-            RpmCassetteTapeRecorder::touch_brandnew_note(
+        // USI を再翻訳して再生するぜ☆（＾～＾）
+        let rnote_opes = UsiConverter::convert_move(best_umove, &position, recorder.ply);
+        for rnote_ope in rnote_opes {
+            app.comm.println("lib.rs:go: touch_1note_ope");
+            RpmCassetteTapeRecorder::touch_1note_ope(
                 &rnote_ope,
                 position,
                 tape_box_conveyor,

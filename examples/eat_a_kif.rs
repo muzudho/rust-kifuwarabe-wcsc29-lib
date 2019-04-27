@@ -41,13 +41,7 @@ pub fn main() {
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
-    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
 
-    KifConverter::convert_kif(
-        &app.kw29_conf,
-        &path,
-        &mut tape_box_conveyer,
-        &mut recorder,
-        &app.comm,
-    );
+    KifConverter::convert_kif(&path, &mut tape_box_conveyer, &mut recorder, &app);
 }

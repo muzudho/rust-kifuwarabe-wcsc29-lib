@@ -41,7 +41,7 @@ impl CsaConverter {
     }
 
     /// 変換には、初期局面が必要。
-    fn play_out_csa_tape(
+    pub fn play_out_csa_tape(
         crecord: &CsaTape,
         position: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
@@ -57,8 +57,7 @@ impl CsaConverter {
             let rnote_opes = CsaConverter::convert_move(comm, cmove, position, ply);
 
             for rnote_ope in rnote_opes {
-                comm.println("csa_player.rs: touch_brandnew_note");
-                RpmCassetteTapeRecorder::touch_brandnew_note(
+                RpmCassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,

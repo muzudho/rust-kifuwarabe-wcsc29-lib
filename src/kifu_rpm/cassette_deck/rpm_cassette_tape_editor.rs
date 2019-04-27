@@ -1,11 +1,8 @@
-use common::caret::*;
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_move::*;
 use kifu_rpm::thread::rpm_note::*;
-use kifu_rpm::thread::rpm_note_operation::*;
 use position::*;
 use std::*;
 
@@ -15,16 +12,16 @@ pub struct RpmCassetteTapeEditor {
     pub ply: i16,
 }
 impl RpmCassetteTapeEditor {
-    pub fn new_cassette_tape_recorder() -> Self {
+    pub fn new_cassette_tape_editor() -> Self {
         RpmCassetteTapeEditor { ply: 1 }
     }
 
-    pub fn clear_recorder1(&mut self) {
+    pub fn clear_tape_editor1(&mut self) {
         self.ply = 1;
     }
 
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
-    pub fn record_note(
+    pub fn put_1note(
         &mut self,
         note: RpmNote,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
@@ -50,7 +47,7 @@ impl RpmCassetteTapeEditor {
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
                     .caret
-                    .go_next(comm, "record_note+new");
+                    .go_next(comm, "r_n+new");
             } else {
                 // 先端でなければ、上書き。
                 tape_box_conveyor
@@ -60,7 +57,7 @@ impl RpmCassetteTapeEditor {
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
                     .caret
-                    .go_next(comm, "record_note+exists");
+                    .go_next(comm, "r_n+exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) =
@@ -89,7 +86,7 @@ impl RpmCassetteTapeEditor {
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
                     .caret
-                    .go_next(comm, "record_note-new");
+                    .go_next(comm, "r_n-new");
             } else {
                 // 先端でなければ、上書き。
                 tape_box_conveyor
@@ -99,7 +96,7 @@ impl RpmCassetteTapeEditor {
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
                     .caret
-                    .go_next(comm, "record_note-exists");
+                    .go_next(comm, "r_n-exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) =
@@ -113,21 +110,21 @@ impl RpmCassetteTapeEditor {
         }
     }
 
-    pub fn record_move(
+    pub fn put_1move(
         &mut self,
         rmove: &RpmMove,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
         comm: &Communication,
     ) {
         for note in rmove.notes.iter() {
-            self.record_note(*note, tape_box_conveyor, comm);
+            self.put_1note(*note, tape_box_conveyor, comm);
             if let Some(recorded_ply) = note.get_ope().get_phase_change() {
                 self.ply = recorded_ply;
             }
         }
     }
 
-    pub fn delete(
+    pub fn delete_1note(
         &mut self,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
     ) -> Option<RpmNote> {
@@ -148,48 +145,6 @@ impl RpmCassetteTapeEditor {
         }
     }
 
-    /// 棋譜読取。
-    pub fn read_tape(
-        &mut self,
-        line: &str,
-        position: &mut Position,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        comm: &Communication,
-    ) {
-        let mut caret = Caret::new_facing_right_caret();
-
-        loop {
-            if caret.is_greater_than_or_equal_to(line.len() as i16) {
-                return;
-            }
-
-            let tuple = RpmNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &comm);
-
-            if let (_last_used_caret, Some(rnote_ope)) = tuple {
-                comm.println("rpm_cassette_tape_editor.rs:read_tape: touch_brandnew_note");
-                RpmCassetteTapeRecorder::touch_brandnew_note(
-                    &rnote_ope,
-                    position,
-                    tape_box_conveyor,
-                    self,
-                    comm,
-                );
-
-                let ply = if let Some(ply) = rnote_ope.get_phase_change() {
-                    ply
-                } else {
-                    -1
-                };
-                HumanInterface::bo(
-                    comm,
-                    &tape_box_conveyor.recording_cassette_tape,
-                    ply,
-                    &position,
-                );
-            }
-        }
-    }
-
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
     pub fn pop_1note(
         position: &mut Position,
@@ -199,7 +154,7 @@ impl RpmCassetteTapeEditor {
     ) -> Option<RpmNote> {
         HumanInterface::show_position(comm, -1, position);
 
-        if let Some(rpm_note) = recorder.delete(tape_box_conveyor) {
+        if let Some(rpm_note) = recorder.delete_1note(tape_box_conveyor) {
             let board_size = position.get_board_size();
             let (_is_legal_touch, _piece_identify_opt) =
                 position.touch_beautiful_1note(&rpm_note.get_ope(), comm, board_size);

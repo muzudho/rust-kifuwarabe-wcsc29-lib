@@ -103,7 +103,7 @@ impl RpmTape {
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn get_note_and_go_note(
+    pub fn go_1note_forcely(
         &self,
         note_caret: &mut Caret,
         comm: &Communication,
@@ -118,12 +118,12 @@ impl RpmTape {
                     None
                 } else {
                     // 負。
-                    note_caret.go_next(comm, "tape-get_note_and_go_note");
+                    note_caret.go_next(comm, "tape-go_1note_forcely");
                     Some(self.negative_notes[index as usize])
                 }
             } else {
                 // 正。
-                note_caret.go_next(comm, "tape+get_note_and_go_note");
+                note_caret.go_next(comm, "tape+go_1note_forcely");
                 Some(self.positive_notes[index as usize])
             }
         } else {
@@ -134,12 +134,12 @@ impl RpmTape {
                     None
                 } else {
                     // 正。
-                    note_caret.go_next(comm, "tape+get_note_and_go_note");
+                    note_caret.go_next(comm, "tape+go_1note_forcely");
                     Some(self.positive_notes[index as usize])
                 }
             } else {
                 // 負。
-                note_caret.go_next(comm, "tape+get_note_and_go_note");
+                note_caret.go_next(comm, "tape+go_1note_forcely");
                 Some(self.negative_notes[index as usize])
             }
         }

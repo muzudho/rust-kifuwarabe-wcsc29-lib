@@ -52,7 +52,7 @@ fn main() {
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually(&tape_box_file_for_write);
-    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
 
     if !in_file.is_empty() {
         // 棋譜解析。
@@ -62,13 +62,7 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif(
-                    &app.kw29_conf,
-                    &in_file,
-                    &mut tape_box_conveyer,
-                    &mut recorder,
-                    &app.comm,
-                );
+                KifConverter::convert_kif(&in_file, &mut tape_box_conveyer, &mut recorder, &app);
             }
             "CSA" => {}
             _ => print!("Pass extension: {}", ext),

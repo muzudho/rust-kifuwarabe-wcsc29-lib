@@ -106,7 +106,7 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = RpmCassetteTapeBoxForJson::load_file(&file);
+            let cassette_tape_box_j = RpmCassetteTapeBoxForJson::load_tape_box_by_file(&file);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
@@ -115,11 +115,11 @@ impl BestMovePicker {
 
                 let mut record_index = -1;
 
-                // レコードがいっぱいある。
+                // カセット・テープがいっぱいある。
                 for cassette_tape_j in cassette_tape_box_j.tape_box {
                     record_index += 1;
                     app.comm.println(&format!(
-                        "Record index: {}. Json: {}",
+                        "Tape index: {}. Json: {}",
                         record_index,
                         cassette_tape_j.to_human_presentable()
                     ));
@@ -196,11 +196,20 @@ impl BestMovePicker {
                                 .turn_to_opponent();
                             app.comm
                                 .println(&format!("Tried, go opponent {} move!", record_count,));
-                            RpmCassetteTapeRecorder::go_next_n_repeats(
+                            /*
+                            RpmCassetteTapeRecorder::try_n_moves_on_tape(
                                 record_count,
                                 recorder.ply,
                                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
                                 position,
+                                &app.comm,
+                            );
+                            */
+                            RpmCassetteTapeRecorder::go_n_move_on_tape_forcely(
+                                record_count,
+                                &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
+                                position,
+                                recorder.ply,
                                 &app.comm,
                             );
                             tape_box_conveyor
@@ -392,8 +401,8 @@ impl BestMovePicker {
                 // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
 
                 // 新規に テープを作る。ムーブ１つだけ。
-                //let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
-                //recorder.record_move(&rmove, comm);
+                //let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
+                //recorder.put_1note(&rmove, comm);
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
                 let mut cassette_tape_2 = RpmCassetteTape::from_1_move(&rmove);
@@ -405,7 +414,7 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmCassetteTapeRecorder::go_next_1_move(
+                if RpmCassetteTapeRecorder::try_1move_on_tape(
                     &mut cassette_tape_2,
                     position,
                     ply_2,

@@ -17,7 +17,7 @@ impl RpmCassetteTapeBoxForJson {
             tape_box: Vec::new(),
         }
     }
-    pub fn load_file(file: &str) -> Self {
+    pub fn load_tape_box_by_file(file: &str) -> Self {
         // JSONファイル。
         let path = Path::new(file);
         let mut file = match File::open(path) {

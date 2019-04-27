@@ -51,7 +51,7 @@ pub fn main() {
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
-    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_editor();
 
     let mut start = 0;
     if Fen::parse_initial_position(
@@ -89,8 +89,8 @@ pub fn main() {
         app.comm.println("Position parsed.");
     }
 
-    recorder.clear_recorder1();
-    tape_box_conveyer.clear_recorder2();
+    recorder.clear_tape_editor1();
+    tape_box_conveyer.clear_tape_editor2();
     UsiConverter::play_out_usi_tape(
         &mut position,
         &utape,

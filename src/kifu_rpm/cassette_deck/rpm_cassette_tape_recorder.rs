@@ -85,22 +85,22 @@ impl RpmCassetteTapeRecorder {
         ];
 
         for element in array.iter() {
-            comm.println("rpm_move_player.rs:play_ohashi_starting: touch_brandnew_note");
-            RpmCassetteTapeRecorder::touch_brandnew_note(
+            comm.println("rpm_move_player.rs:play_ohashi_starting: touch_1note_ope");
+            RpmCassetteTapeRecorder::touch_1note_ope(
                 &element.0,
                 pos,
                 tape_box_conveyor,
                 recorder,
                 comm,
             );
-            RpmCassetteTapeRecorder::touch_brandnew_note(
+            RpmCassetteTapeRecorder::touch_1note_ope(
                 &element.1,
                 pos,
                 tape_box_conveyor,
                 recorder,
                 comm,
             );
-            RpmCassetteTapeRecorder::touch_brandnew_note(
+            RpmCassetteTapeRecorder::touch_1note_ope(
                 &element.2,
                 pos,
                 tape_box_conveyor,
@@ -110,65 +110,9 @@ impl RpmCassetteTapeRecorder {
         }
     }
 
-    /// 1手進める。（非合法タッチは自動で戻します）
-    ///
-    /// # Return
-    ///
-    /// 合法タッチか否か。
-    pub fn go_next_1_move(
-        cassette_tape: &mut RpmCassetteTape,
-        position: &mut Position,
-        ply: i16,
-        is_auto_reverse: bool,
-        comm: &Communication,
-    ) -> bool {
-        let mut is_legal_touch = true;
-        let mut forwarding_count = 0;
-        comm.println("go_next_1_move.");
-
-        // 最後尾に達していたのなら終了。
-        while let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
-            comm.println(&format!(
-                "<NXm1:{}>",
-                rnote.to_human_presentable(position.get_board_size())
-            ));
-            is_legal_touch = RpmCassetteTapeRecorder::go_1note(&rnote, position, ply, comm);
-            forwarding_count += 1;
-
-            if is_auto_reverse && !is_legal_touch {
-                break;
-            }
-
-            if forwarding_count != 1 && rnote.is_phase_change() {
-                // フェーズ切り替えしたら終了。（ただし、初回除く）
-                print!("<NXm1End{} {}>", forwarding_count, rnote);
-                break;
-            }
-        }
-
-        if is_auto_reverse && !is_legal_touch {
-            // 非合法タッチを自動で戻す。
-            comm.println("Illegal, go opponent forcely!");
-            cassette_tape.caret.turn_to_opponent();
-            RpmCassetteTapeRecorder::get_n_note_and_go_forcely(
-                forwarding_count,
-                cassette_tape,
-                position,
-                ply,
-                comm,
-            );
-            cassette_tape.caret.turn_to_opponent();
-
-            return false;
-        }
-
-        // 1つ以上読んでいれば合法。
-        forwarding_count > 0
-    }
-
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_brandnew_note(
+    pub fn touch_1note_ope(
         // ノートの中に Ply もある☆（＾～＾）
         rnote_ope: &RpmNoteOpe,
         position: &mut Position,
@@ -189,29 +133,11 @@ impl RpmCassetteTapeRecorder {
         let rnote = RpmNote::from_id_ope(pid_opt, *rnote_ope);
         /*
         comm.println(&format!(
-            "End     :touch_brandnew_note. Rnote: {}.",
+            "End     :touch_1note_ope. Rnote: {}.",
             rnote.to_human_presentable(board_size)
         ));
          */
-        recorder.record_note(rnote, tape_box_conveyor, comm);
-    }
-
-    /// 非合法手はない前提で、強制的に巻き進めます。
-    pub fn get_n_note_and_go_forcely(
-        repeat: u8,
-        cassette_tape: &mut RpmCassetteTape,
-        position: &mut Position,
-        ply: i16,
-        comm: &Communication,
-    ) {
-        for i in 0..repeat {
-            if let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
-                comm.println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
-                RpmCassetteTapeRecorder::go_1note(&rnote, position, ply, comm);
-            } else {
-                panic!("<Go forcely fail:{}/{} None>", i, repeat);
-            }
-        }
+        recorder.put_1note(rnote, tape_box_conveyor, comm);
     }
 
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
@@ -221,7 +147,7 @@ impl RpmCassetteTapeRecorder {
     /// # Return
     ///
     /// 合法タッチか否か。
-    pub fn go_1note(
+    pub fn try_1note_on_1note(
         rnote: &RpmNote,
         position: &mut Position,
         ply: i16,
@@ -241,7 +167,7 @@ impl RpmCassetteTapeRecorder {
     }
 
     /// 棋譜の上を進めます。
-    pub fn go_next_n_repeats(
+    pub fn try_n_moves_on_tape(
         repeats: i16,
         ply: i16,
         cassette_tape: &mut RpmCassetteTape,
@@ -249,7 +175,135 @@ impl RpmCassetteTapeRecorder {
         comm: &Communication,
     ) {
         for _i in 0..repeats {
-            RpmCassetteTapeRecorder::go_next_1_move(cassette_tape, position, ply, false, &comm);
+            RpmCassetteTapeRecorder::try_1move_on_tape(cassette_tape, position, ply, false, &comm);
+        }
+    }
+
+    /// 1手進める。（非合法タッチは自動で戻します）
+    ///
+    /// # Return
+    ///
+    /// 合法タッチか否か。
+    pub fn try_1move_on_tape(
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        is_auto_reverse: bool,
+        comm: &Communication,
+    ) -> bool {
+        let mut is_legal_touch = true;
+        let mut forwarding_count = 0;
+
+        // 最後尾に達していたのなら終了。
+        while let Some(rnote) = cassette_tape.go_1note_forcely(comm) {
+            comm.println(&format!(
+                "<NXm1:{}>",
+                rnote.to_human_presentable(position.get_board_size())
+            ));
+            is_legal_touch =
+                RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, ply, comm);
+            forwarding_count += 1;
+
+            if is_auto_reverse && !is_legal_touch {
+                break;
+            }
+
+            if forwarding_count != 1 && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                break;
+            }
+        }
+
+        if is_auto_reverse && !is_legal_touch {
+            // 非合法タッチを自動で戻す。
+            comm.println("Illegal, go opponent forcely!");
+            cassette_tape.caret.turn_to_opponent();
+            RpmCassetteTapeRecorder::read_n_notes_on_tape_forcely(
+                forwarding_count,
+                cassette_tape,
+                position,
+                ply,
+                comm,
+            );
+            cassette_tape.caret.turn_to_opponent();
+
+            return false;
+        }
+
+        // 1つ以上読んでいれば合法。
+        forwarding_count > 0
+    }
+
+    pub fn go_n_move_on_tape_forcely(
+        repeats: i16,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        for _i in 0..repeats {
+            RpmCassetteTapeRecorder::go_1move_on_tape_forcely(cassette_tape, position, ply, comm);
+        }
+    }
+
+    /// 必ず1手進める。（非合法タッチがあれば強制終了）
+    pub fn go_1move_on_tape_forcely(
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        let mut is_legal_touch = true;
+        let mut forwarding_count = 0;
+
+        // 最後尾に達していたのなら終了。
+        while let Some(rnote) = cassette_tape.go_1note_forcely(comm) {
+            comm.println(&format!(
+                "<NXm1:{}>",
+                rnote.to_human_presentable(position.get_board_size())
+            ));
+            is_legal_touch =
+                RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, ply, comm);
+            forwarding_count += 1;
+
+            if !is_legal_touch {
+                break;
+            }
+
+            if forwarding_count != 1 && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                break;
+            }
+        }
+
+        if !is_legal_touch {
+            // 非合法タッチは強制終了。
+            panic!("Illegal, go opponent forcely!");
+        }
+
+        // 1つも読まなかったら強制終了。
+        if forwarding_count < 1 {
+            panic!("Illegal, zero foward!");
+        }
+    }
+
+    /// 非合法手はない前提で、強制的にテープを進めます。
+    pub fn read_n_notes_on_tape_forcely(
+        repeat: u8,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        for i in 0..repeat {
+            if let Some(rnote) = cassette_tape.go_1note_forcely(comm) {
+                comm.println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
+                RpmCassetteTapeRecorder::try_1note_on_1note(&rnote, position, ply, comm);
+            } else {
+                panic!("<Go forcely fail:{}/{} None>", i, repeat);
+            }
         }
     }
 }
