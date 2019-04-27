@@ -5,18 +5,21 @@ pub struct Caret {
     number: i16,
 }
 impl Caret {
-    pub fn new_right_caret() -> Self {
-        Caret {
+    pub fn new_facing_right_caret() -> Self {
+        let mut brandnew = Caret {
             facing_left: false,
             number: 0,
-        }
+        };
+
+        // Human care.
+        brandnew.clear_facing_right();
+
+        brandnew
     }
 
-    pub fn new_left_caret(last_number: i16) -> Self {
-        Caret {
-            facing_left: true,
-            number: last_number,
-        }
+    pub fn clear_facing_right(&mut self) {
+        self.facing_left = false;
+        self.number = 0;
     }
 
     pub fn reset(&mut self) {

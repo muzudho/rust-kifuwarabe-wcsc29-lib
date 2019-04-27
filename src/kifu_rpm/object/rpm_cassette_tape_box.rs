@@ -11,7 +11,7 @@ pub struct RpmCassetteTapeBox {
     file_path: String,
 }
 impl RpmCassetteTapeBox {
-    pub fn default(path_text: &str) -> RpmCassetteTapeBox {
+    pub fn new_cassette_tape_box(path_text: &str) -> RpmCassetteTapeBox {
         RpmCassetteTapeBox {
             file_path: path_text.to_string(),
         }

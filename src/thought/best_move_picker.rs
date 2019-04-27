@@ -144,7 +144,7 @@ impl BestMovePicker {
 
                             // ノートをスキャン。
                             // TODO 次方向と、前方向がある。
-                            let mut note_caret = Caret::new_right_caret();
+                            let mut note_caret = Caret::new_facing_right_caret();
                             let mut record_count = 0;
                             loop {
                                 // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
@@ -381,7 +381,7 @@ impl BestMovePicker {
                 // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
 
                 // 新規に テープを作る。ムーブ１つだけ。
-                let mut recorder = RpmCassetteTapeRecorder::default();
+                let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
                 recorder.record_move(&rmove, comm);
                 recorder.reset_caret();
                 println!(

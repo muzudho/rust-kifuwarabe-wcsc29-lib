@@ -51,7 +51,7 @@ impl RpmCassetteTapeBoxConveyor {
             .to_string();
 
         // TODO 本当は満杯になるまで使い回したい☆（＾～＾）
-        self.current_tape_box = Some(RpmCassetteTapeBox::default(&tape_box_path));
+        self.current_tape_box = Some(RpmCassetteTapeBox::new_cassette_tape_box(&tape_box_path));
     }
 
     /// まだ書き込めるテープ・ボックスを適当に返すぜ☆（*＾～＾*）

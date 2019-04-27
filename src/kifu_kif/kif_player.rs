@@ -103,14 +103,14 @@ impl KifPlayer {
 
     /// 変換には、初期局面が必要。
     pub fn play_out_and_record(
-        comm: &Communication,
         position: &mut Position,
         krecord: &KifRecord,
-    ) -> RpmCassetteTapeRecorder {
+        recorder: &mut RpmCassetteTapeRecorder,
+        comm: &Communication,
+    ) {
         // TODO とりあえず平手初期局面だけ対応。
-        let mut recorder = RpmCassetteTapeRecorder::default();
         position.reset_origin_position();
-        RpmMovePlayer::play_ohashi_starting(comm, &mut recorder, position);
+        RpmMovePlayer::play_ohashi_starting(position, recorder, comm);
 
         let mut ply = 1;
         for kmove in &krecord.items {
@@ -118,12 +118,10 @@ impl KifPlayer {
 
             for rnote_ope in rnote_opes {
                 comm.println("kif_player.rs: touch_brandnew_note");
-                RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, position, comm);
+                RpmNotePlayer::touch_brandnew_note(&rnote_ope, position, recorder, comm);
             }
 
             ply += 1;
         }
-
-        recorder
     }
 }

@@ -19,11 +19,11 @@ impl Fen {
         position: &mut Position,
     ) -> bool {
         // 大橋流を始めるところまでリセット。
-        recorder.clear();
+        recorder.clear_recorder();
         position.reset_origin_position();
 
         // 大橋流で初期局面まで指す☆（＾～＾）
-        RpmMovePlayer::play_ohashi_starting(comm, recorder, position);
+        RpmMovePlayer::play_ohashi_starting(position, recorder, comm);
         true
     }
 

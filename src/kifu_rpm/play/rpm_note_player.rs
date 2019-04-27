@@ -13,10 +13,10 @@ impl RpmNotePlayer {
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_brandnew_note(
-        recorder: &mut RpmCassetteTapeRecorder,
         // ノートの中に Ply もある☆（＾～＾）
         rnote_ope: &RpmNoteOpe,
         position: &mut Position,
+        recorder: &mut RpmCassetteTapeRecorder,
         comm: &Communication,
     ) {
         let board_size = position.get_board_size();

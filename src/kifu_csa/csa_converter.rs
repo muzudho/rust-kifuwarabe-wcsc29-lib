@@ -3,6 +3,7 @@ use conf::kifuwarabe_wcsc29_config::KifuwarabeWcsc29Config;
 use kifu_csa::csa_player::*;
 use kifu_csa::csa_record::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use position::*;
 
 pub struct CsaConverter {}
@@ -11,6 +12,7 @@ impl CsaConverter {
         kw29_conf: &KifuwarabeWcsc29Config,
         input_path: &str,
         cassette_tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeRecorder,
         comm: &Communication,
     ) {
         // comm.println(&format!("input_path: {}", input_path));
@@ -20,7 +22,7 @@ impl CsaConverter {
         let crecord = CsaRecord::load(&input_path);
 
         // Play.
-        let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
+        CsaPlayer::play_out_and_record(&mut position, &crecord, recorder, &comm);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)

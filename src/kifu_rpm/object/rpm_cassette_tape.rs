@@ -41,9 +41,9 @@ impl fmt::Display for RpmCassetteTape {
     }
 }
 impl RpmCassetteTape {
-    pub fn default() -> Self {
+    pub fn new_facing_right_cassette_tape() -> Self {
         RpmCassetteTape {
-            caret: Caret::new_right_caret(),
+            caret: Caret::new_facing_right_caret(),
             label: RpmCassetteTapeLabel {
                 date: "".to_string(),
                 event: "".to_string(),
@@ -53,6 +53,13 @@ impl RpmCassetteTape {
             },
             tape: RpmTape::default(),
         }
+    }
+
+    /// 新品の状態に戻します。
+    pub fn clear(&mut self) {
+        self.caret.clear_facing_right();
+        self.label.clear();
+        self.tape.clear();
     }
 
     pub fn reset_caret(&mut self) {

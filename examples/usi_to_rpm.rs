@@ -48,7 +48,9 @@ pub fn main() {
 
     comm.println(&format!("Parse line: `{}`.", line));
     let mut urecord = UsiRecord::default();
-    let mut recorder = RpmCassetteTapeRecorder::default();
+
+    // Record.
+    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     let mut start = 0;
     if Fen::parse_initial_position(&comm, &line, &mut start, &mut recorder, &mut position) {
@@ -69,6 +71,7 @@ pub fn main() {
         comm.println("Position parsed.");
     }
 
-    recorder = UsiPlayer::play_out_and_record(&comm, &mut position, &urecord);
+    recorder.clear_recorder();
+    UsiPlayer::play_out_and_record(&mut position, &urecord, &mut recorder, &comm);
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 }

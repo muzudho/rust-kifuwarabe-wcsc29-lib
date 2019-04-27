@@ -17,10 +17,10 @@ pub struct RpmCassetteTapeRecorder {
     pub cassette_tape: RpmCassetteTape,
 }
 impl RpmCassetteTapeRecorder {
-    pub fn default() -> Self {
+    pub fn new_cassette_tape_recorder() -> Self {
         RpmCassetteTapeRecorder {
             ply: 1,
-            cassette_tape: RpmCassetteTape::default(),
+            cassette_tape: RpmCassetteTape::new_facing_right_cassette_tape(),
         }
     }
 
@@ -31,9 +31,9 @@ impl RpmCassetteTapeRecorder {
         }
     }
 
-    pub fn clear(&mut self) {
+    pub fn clear_recorder(&mut self) {
         self.ply = 1;
-        self.cassette_tape = RpmCassetteTape::default();
+        self.cassette_tape.clear();
     }
 
     pub fn reset_caret(&mut self) {
@@ -113,7 +113,7 @@ impl RpmCassetteTapeRecorder {
 
     /// 棋譜読取。
     pub fn read_tape(&mut self, comm: &Communication, line: &str, position: &mut Position) {
-        let mut caret = Caret::new_right_caret();
+        let mut caret = Caret::new_facing_right_caret();
 
         loop {
             if caret.is_greater_than_or_equal_to(line.len() as i16) {
@@ -124,7 +124,7 @@ impl RpmCassetteTapeRecorder {
 
             if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");
-                RpmNotePlayer::touch_brandnew_note(self, &rnote_ope, position, comm);
+                RpmNotePlayer::touch_brandnew_note(&rnote_ope, position, self, comm);
 
                 let ply = if let Some(ply) = rnote_ope.get_phase_change() {
                     ply

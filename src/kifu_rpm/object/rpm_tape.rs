@@ -31,20 +31,16 @@ impl RpmTape {
         }
     }
 
-    /*
-    pub fn from_tape(source: RpmTape) -> Self {
-        RpmTape {
-            positive_notes: source.positive_notes,
-            negative_notes: source.negative_notes,
-        }
-    }
-    */
-
     pub fn from_vector(positive_v: Vec<RpmNote>, negative_v: Vec<RpmNote>) -> Self {
         RpmTape {
             positive_notes: positive_v,
             negative_notes: negative_v,
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.positive_notes.clear();
+        self.negative_notes.clear();
     }
 
     /// Human presentable large log.

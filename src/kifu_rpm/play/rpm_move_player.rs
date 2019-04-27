@@ -30,9 +30,9 @@ impl RpmMovePlayer {
 
     /// オリジン・ポジションから、平手初期局面に進めます。
     pub fn play_ohashi_starting(
-        comm: &Communication,
-        recorder: &mut RpmCassetteTapeRecorder,
         pos: &mut Position,
+        recorder: &mut RpmCassetteTapeRecorder,
+        comm: &Communication,
     ) {
         use piece_etc::Phase::*;
         use piece_etc::PieceIdentify::*;
@@ -84,9 +84,9 @@ impl RpmMovePlayer {
 
         for element in array.iter() {
             comm.println("rpm_move_player.rs:play_ohashi_starting: touch_brandnew_note");
-            RpmNotePlayer::touch_brandnew_note(recorder, &element.0, pos, comm);
-            RpmNotePlayer::touch_brandnew_note(recorder, &element.1, pos, comm);
-            RpmNotePlayer::touch_brandnew_note(recorder, &element.2, pos, comm);
+            RpmNotePlayer::touch_brandnew_note(&element.0, pos, recorder, comm);
+            RpmNotePlayer::touch_brandnew_note(&element.1, pos, recorder, comm);
+            RpmNotePlayer::touch_brandnew_note(&element.2, pos, recorder, comm);
         }
     }
 

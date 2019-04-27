@@ -77,7 +77,7 @@ pub fn main_loop() {
     // カセット・テープ・ボックス・コンベヤー。
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
 
-    let mut recorder = RpmCassetteTapeRecorder::default();
+    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -264,7 +264,7 @@ pub fn main_loop() {
                 UsiPlayer::convert_move(best_logical_move, &position, recorder.ply);
             for rnote_ope in best_rnote_opes {
                 comm.println("lib.rs:go: touch_brandnew_note");
-                RpmNotePlayer::touch_brandnew_note(&mut recorder, &rnote_ope, &mut position, &comm);
+                RpmNotePlayer::touch_brandnew_note(&rnote_ope, &mut position, &mut recorder, &comm);
             }
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
@@ -347,7 +347,8 @@ pub fn main_loop() {
 
                 if let Some(urecord) = urecord_opt {
                     // 差し替え。
-                    recorder = UsiPlayer::play_out_and_record(&comm, &mut position, &urecord);
+                    recorder.clear_recorder();
+                    UsiPlayer::play_out_and_record(&mut position, &urecord, &mut recorder, &comm);
                 }
                 //comm.println("#Record converted1.");
                 //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);

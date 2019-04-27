@@ -11,6 +11,7 @@ use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 #[derive(Debug)]
@@ -46,12 +47,15 @@ pub fn main() {
     let my_config = KifuwarabeWcsc29LibConfig::load();
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
+    // Record.
+    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+
     // Model.
     let mut position = Position::default();
     let crecord = CsaRecord::load(&path);
 
     // Play out.
-    let recorder = CsaPlayer::play_out_and_record(&comm, &mut position, &crecord);
+    CsaPlayer::play_out_and_record(&mut position, &crecord, &mut recorder, &comm);
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
