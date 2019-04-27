@@ -1,6 +1,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
+use kifu_rpm::thread::rpm_move::RpmMove;
 use kifu_rpm::thread::rpm_note::*;
 use std::*;
 
@@ -35,6 +36,18 @@ impl RpmTape {
         RpmTape {
             positive_notes: positive_v,
             negative_notes: negative_v,
+        }
+    }
+
+    pub fn from_1_move(removable_rmove: &RpmMove) -> Self {
+        let mut pnotes = Vec::new();
+
+        // & を頭に付けると元のベクターは残るらしい。付けてないとアクセスできなくなるらしい。
+        pnotes.extend(&removable_rmove.notes);
+
+        RpmTape {
+            positive_notes: pnotes,
+            negative_notes: Vec::new(),
         }
     }
 

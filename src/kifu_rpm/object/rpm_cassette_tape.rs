@@ -2,6 +2,7 @@ use board_size::*;
 use common::caret::*;
 use communication::*;
 use kifu_rpm::object::rpm_tape::*;
+use kifu_rpm::thread::rpm_move::RpmMove;
 use kifu_rpm::thread::rpm_note::*;
 use std::*;
 
@@ -52,6 +53,21 @@ impl RpmCassetteTape {
                 read_file: "".to_string(),
             },
             tape: RpmTape::default(),
+        }
+    }
+
+    /// 指し手１つから、テープを作るぜ☆（＾～＾）
+    pub fn from_1_move(rmove: &RpmMove) -> Self {
+        RpmCassetteTape {
+            caret: Caret::new_facing_right_caret(),
+            label: RpmCassetteTapeLabel {
+                date: "".to_string(),
+                event: "".to_string(),
+                player1: "".to_string(),
+                player2: "".to_string(),
+                read_file: "".to_string(),
+            },
+            tape: RpmTape::from_1_move(rmove),
         }
     }
 

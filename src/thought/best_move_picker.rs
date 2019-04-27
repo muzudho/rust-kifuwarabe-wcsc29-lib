@@ -5,6 +5,7 @@ use conf::kifuwarabe_wcsc29_config::*;
 use human::human_interface::*;
 use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
 use kifu_rpm::json::rpm_cassette_tape_for_json::*;
+use kifu_rpm::object::rpm_cassette_tape::*;
 use kifu_rpm::play::rpm_move_player::*;
 use kifu_rpm::play::rpm_thread_player::*;
 use kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
@@ -381,29 +382,28 @@ impl BestMovePicker {
                 // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
 
                 // 新規に テープを作る。ムーブ１つだけ。
-                let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
-                recorder.record_move(&rmove, comm);
-                recorder.reset_caret();
+                //let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+                //recorder.record_move(&rmove, comm);
+                //recorder.reset_caret();
+                let mut ply_2 = 1;
+                let mut cassette_tape_2 = RpmCassetteTape::from_1_move(&rmove);
+                /*
                 println!(
                     "BMP: This move rtape: {}.",
                     recorder.to_human_presentable(position.get_board_size())
                 );
+                 */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmMovePlayer::go_next_1_move(
-                    &mut recorder.cassette_tape,
-                    position,
-                    recorder.ply,
-                    true,
-                    &comm,
-                ) {
+                if RpmMovePlayer::go_next_1_move(&mut cassette_tape_2, position, ply_2, true, &comm)
+                {
                     // 合法タッチ。戻さず抜けます。
                     comm.println(&format!(
                         "Hit and go! ({}) {}",
                         subject_pid.to_human_presentable(),
                         &rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+                    HumanInterface::bo(&comm, &cassette_tape_2, ply_2, &position);
                     (Some(rmove), false)
                 } else {
                     // 非合法タッチ。（自動で戻されています）
@@ -411,7 +411,7 @@ impl BestMovePicker {
                         "Canceled: {}.",
                         rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
+                    HumanInterface::bo(&comm, &cassette_tape_2, ply_2, &position);
                     (None, false)
                 }
             } else {
