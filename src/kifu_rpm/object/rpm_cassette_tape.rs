@@ -114,18 +114,9 @@ impl RpmCassetteTape {
         self.tape.to_sign(board_size)
     }
 
-    /// JSONファイル保存形式。
-    ///
-    /// # Returns
-    ///
-    /// 駒の背番号, 操作。
-    pub fn to_casette_tape_json(&self, board_size: BoardSize) -> (String, String) {
-        self.tape.to_tape_json(board_size)
-    }
-
-    /// JSONのオブジェクト形式。ラベル付き。
-    pub fn to_json_object(&self, board_size: BoardSize) -> String {
-        let (numbers, operations) = self.to_casette_tape_json(board_size);
+    /// JSONのオブジェクト形式。テープだけ。
+    pub fn to_tape_json(&self, board_size: BoardSize) -> String {
+        let (numbers, operations) = self.tape.to_tape_json(board_size);
 
         let mut text = "{\n".to_string();
         text = format!("{}    \"label\" : {{\n", text);

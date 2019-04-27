@@ -74,9 +74,8 @@ pub fn main_loop() {
     let my_config = KifuwarabeWcsc29LibConfig::load();
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
-    // カセット・テープ・ボックス・コンベヤー。
+    // Record.
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-
     let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     let mut position = Position::default();
@@ -269,7 +268,7 @@ pub fn main_loop() {
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
 
-            tape_box_conveyor.write_cassette_tape(
+            tape_box_conveyor.write_cassette_tape_box(
                 &kw29_config,
                 position.get_board_size(),
                 &recorder.cassette_tape,

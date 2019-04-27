@@ -5,18 +5,16 @@ use conf::kifuwarabe_wcsc29_config::*;
 use kifu_rpm::object::rpm_cassette_tape::RpmCassetteTape;
 use kifu_rpm::object::rpm_cassette_tape_box::*;
 use rand::Rng;
-use std::fs;
 use std::path::Path;
-
 /// カセット・テープ・ボックスが満杯になったら、
 /// 次のカセット・テープ・ボックスに変えてくれる☆（*＾～＾*）
 pub struct RpmCassetteTapeBoxConveyor {
-    current_tape_box: Option<RpmCassetteTapeBox>,
+    current_box_for_write: Option<RpmCassetteTapeBox>,
 }
 impl RpmCassetteTapeBoxConveyor {
     pub fn new_empty() -> Self {
         RpmCassetteTapeBoxConveyor {
-            current_tape_box: None,
+            current_box_for_write: None,
         }
     }
 
@@ -27,18 +25,12 @@ impl RpmCassetteTapeBoxConveyor {
         let rand2: u64 = rng.gen();
         let rand3: u64 = rng.gen();
         let rand4: u64 = rng.gen();
-        format!("{}-{}-{}-{}-learning.rpmove", rand1, rand2, rand3, rand4).to_string()
+        format!("{}-{}-{}-{}-learning.rbox", rand1, rand2, rand3, rand4).to_string()
     }
 
     /// テープボックスを指定するぜ☆（＾～＾）
     pub fn choice_box_manually(&mut self, file: &str) {
-        // Prepare parent directory.
-        let file_path = Path::new(file);
-        let parent_dir = file_path.parent().unwrap();
-        match fs::create_dir_all(parent_dir) {
-            Ok(_x) => {}
-            Err(err) => panic!("Directory create fail: {}", err),
-        }
+        self.current_box_for_write = Some(RpmCassetteTapeBox::new_cassette_tape_box(file));
     }
 
     /// 空、または満杯なら、新しいテープボックスを作成するぜ☆（＾～＾）
@@ -51,11 +43,12 @@ impl RpmCassetteTapeBoxConveyor {
             .to_string();
 
         // TODO 本当は満杯になるまで使い回したい☆（＾～＾）
-        self.current_tape_box = Some(RpmCassetteTapeBox::new_cassette_tape_box(&tape_box_path));
+        self.current_box_for_write =
+            Some(RpmCassetteTapeBox::new_cassette_tape_box(&tape_box_path));
     }
 
-    /// まだ書き込めるテープ・ボックスを適当に返すぜ☆（*＾～＾*）
-    pub fn write_cassette_tape(
+    /// テープ・ボックス単位で書き込めるぜ☆（*＾～＾*）
+    pub fn write_cassette_tape_box(
         &mut self,
         kw29_conf: &KifuwarabeWcsc29Config,
         board_size: BoardSize,
@@ -64,8 +57,8 @@ impl RpmCassetteTapeBoxConveyor {
     ) {
         self.choice_box_automatically(&kw29_conf);
 
-        if let Some(tape_box) = &self.current_tape_box {
-            tape_box.write_cassette_tape(board_size, cassette_tape, comm)
+        if let Some(box_for_write) = &self.current_box_for_write {
+            box_for_write.write_cassette_tape_box(board_size, cassette_tape, comm)
         } else {
             panic!("Get tape box fail.")
         }

@@ -47,7 +47,7 @@ fn main() {
     // Command line arguments.
     let args = Arguments::parse();
     let in_file = args.input_file.unwrap();
-    let tape_box_file = args.output_file.unwrap();
+    let tape_box_file_for_write = args.output_file.unwrap();
 
     // Logging.
     let comm = Communication::new();
@@ -58,7 +58,7 @@ fn main() {
 
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
-    tape_box_conveyer.choice_box_manually(&tape_box_file);
+    tape_box_conveyer.choice_box_manually(&tape_box_file_for_write);
     let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     if !in_file.is_empty() {
@@ -69,7 +69,13 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif(&kw29_conf, &in_file, &mut tape_box_conveyer, &comm);
+                KifConverter::convert_kif(
+                    &kw29_conf,
+                    &in_file,
+                    &mut tape_box_conveyer,
+                    &mut recorder,
+                    &comm,
+                );
             }
             "CSA" => {
                 CsaConverter::convert_csa(

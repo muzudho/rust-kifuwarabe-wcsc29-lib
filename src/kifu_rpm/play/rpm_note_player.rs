@@ -37,16 +37,6 @@ impl RpmNotePlayer {
         ));
          */
         recorder.record_note(rnote, comm);
-        /*
-        comm.println(&format!(
-            "End     :Recorder: {}.",
-            recorder.to_human_presentable(board_size)
-        ));
-        comm.println(&format!(
-            "End     :Recorder json: {}.",
-            recorder.cassette_tape.to_json(board_size)
-        ));
-        */
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。

@@ -48,6 +48,7 @@ pub fn main() {
     let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
 
     // Record.
+    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
     let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
     // Model.
@@ -59,8 +60,7 @@ pub fn main() {
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
-    let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-    tape_box_conveyor.write_cassette_tape(
+    tape_box_conveyor.write_cassette_tape_box(
         &kw29_config,
         position.get_board_size(),
         &recorder.cassette_tape,

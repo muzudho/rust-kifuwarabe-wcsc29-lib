@@ -6,27 +6,32 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
 
-/// .rpmove ファイルに対応。
+/// .rbox ファイルに対応。
 pub struct RpmCassetteTapeBox {
-    file_path: String,
+    file: String,
 }
 impl RpmCassetteTapeBox {
-    pub fn new_cassette_tape_box(path_text: &str) -> RpmCassetteTapeBox {
+    pub fn new_cassette_tape_box(file: &str) -> RpmCassetteTapeBox {
         RpmCassetteTapeBox {
-            file_path: path_text.to_string(),
+            file: file.to_string(),
         }
     }
 
+    pub fn to_box_json(&self, board_size: BoardSize, cassette_tape: &RpmCassetteTape) -> String {
+        let content = cassette_tape.to_tape_json(board_size);
+        format!("{{\"tape_box\": [{}]}}", content).to_string()
+    }
+
     /// シートに、カセット・テープを追加書き込みします。
-    pub fn write_cassette_tape(
+    pub fn write_cassette_tape_box(
         &self,
         board_size: BoardSize,
         cassette_tape: &RpmCassetteTape,
         comm: &Communication,
     ) {
-        comm.println(&format!("#Append record to '{}'...", self.file_path));
+        comm.println(&format!("#Append record to '{}'...", self.file));
 
-        let path = Path::new(&self.file_path);
+        let path = Path::new(&self.file);
 
         // ディレクトリー作成。
         if let Some(parent) = path.parent() {
@@ -35,24 +40,18 @@ impl RpmCassetteTapeBox {
                 Err(err) => panic!(err),
             }
         } else {
-            panic!("Create directory fail. {}", self.file_path);
+            panic!("Create directory fail. {}", self.file);
         }
 
-        // 新規作成、またはレコードを追記。
-        let mut file = OpenOptions::new()
+        // TODO 追記にしたいんだが、JSONに向いてない☆（＾～＾）しぶしぶ全文上書きで☆（＾～＾）
+        let mut file_obj = OpenOptions::new()
             .create(true)
             .write(true)
-            .append(true)
+            // .append(true)
             .open(path)
             .unwrap();
 
-        comm.println(&format!(
-            "#Append record: セーブする内容: {}",
-            cassette_tape.to_json_object(board_size)
-        ));
-
-        // 末尾にカンマを付けて終わる。
-        if let Err(e) = writeln!(file, "{},", cassette_tape.to_json_object(board_size)) {
+        if let Err(e) = writeln!(file_obj, "{}", self.to_box_json(board_size, cassette_tape)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 

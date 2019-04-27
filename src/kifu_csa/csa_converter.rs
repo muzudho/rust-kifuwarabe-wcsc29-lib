@@ -26,7 +26,7 @@ impl CsaConverter {
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
-        cassette_tape_box_conveyor.write_cassette_tape(
+        cassette_tape_box_conveyor.write_cassette_tape_box(
             &kw29_conf,
             position.get_board_size(),
             &recorder.cassette_tape,

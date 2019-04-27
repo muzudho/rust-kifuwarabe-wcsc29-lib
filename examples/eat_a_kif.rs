@@ -10,6 +10,7 @@ use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_config::*;
 use kifuwarabe_wcsc29_lib::conf::kifuwarabe_wcsc29_lib_config::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::recorder::rpm_cassette_tape_recorder::*;
 
 #[derive(Debug)]
 struct Args {
@@ -47,6 +48,13 @@ pub fn main() {
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
+    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
 
-    KifConverter::convert_kif(&kw29_conf, &path, &mut tape_box_conveyer, &comm);
+    KifConverter::convert_kif(
+        &kw29_conf,
+        &path,
+        &mut tape_box_conveyer,
+        &mut recorder,
+        &comm,
+    );
 }
