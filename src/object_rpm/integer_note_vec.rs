@@ -315,13 +315,12 @@ impl IntegerNoteVec {
     ///
     /// # Returns
     ///
-    /// 駒の背番号, 操作。
-    pub fn to_tape_json(&self, board_size: BoardSize) -> (String, String) {
+    /// 駒の背番号（ダブルクォーテーション含む）, 操作（ダブルクォーテーション含まず）。
+    pub fn to_tracks_json(&self, board_size: BoardSize) -> (String, String) {
+        // 背番号トラック。
         let mut numbers = "".to_string();
-        let mut operations = "".to_string();
-
-        for i in 0..2 {
-            let mut notes = if i == 0 {
+        for sign in 0..2 {
+            let mut notes = if sign == 0 {
                 &self.negative_notes
             } else {
                 &self.positive_notes
@@ -336,7 +335,6 @@ impl IntegerNoteVec {
                     } else {
                         NONE_VALUE.to_string()
                     };
-                    operations = format!("\"{}\"", note.get_ope().to_sign(board_size));
                 } else {
                     // ２つ目からカンマあり。
                     numbers = format!(
@@ -348,8 +346,29 @@ impl IntegerNoteVec {
                             NONE_VALUE.to_string()
                         }
                     );
-                    operations =
-                        format!("{}, \"{}\"", operations, note.get_ope().to_sign(board_size));
+                }
+
+                is_first = false;
+            }
+        }
+
+        // 操作トラック。
+        let mut operations = "".to_string();
+        for sign in 0..2 {
+            let mut notes = if sign == 0 {
+                &self.negative_notes
+            } else {
+                &self.positive_notes
+            };
+
+            let mut is_first = true;
+            for note in notes {
+                if is_first {
+                    // 最初はスペースなし。
+                    operations = note.get_ope().to_sign(board_size).to_string();
+                } else {
+                    // ２つ目からスペース区切り。
+                    operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
                 }
 
                 is_first = false;

@@ -41,7 +41,7 @@ impl CassetteTapeEditor {
                 // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .positive_notes
                     .push(note);
                 tape_box_conveyor
@@ -52,7 +52,7 @@ impl CassetteTapeEditor {
                 // 先端でなければ、上書き。
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .positive_notes[index] = note;
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
@@ -64,7 +64,7 @@ impl CassetteTapeEditor {
                     tape_box_conveyor.recording_cassette_tape.caret.to_index();
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .positive_notes
                     .truncate(index);
             }
@@ -80,7 +80,7 @@ impl CassetteTapeEditor {
                 // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .negative_notes
                     .push(note);
                 tape_box_conveyor
@@ -91,7 +91,7 @@ impl CassetteTapeEditor {
                 // 先端でなければ、上書き。
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .negative_notes[index] = note;
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
@@ -103,7 +103,7 @@ impl CassetteTapeEditor {
                     tape_box_conveyor.recording_cassette_tape.caret.to_index();
                 tape_box_conveyor
                     .get_mut_recording_cassette_tape()
-                    .tape
+                    .tracks
                     .negative_notes
                     .truncate(index);
             }
@@ -131,8 +131,8 @@ impl CassetteTapeEditor {
         let recording_cassette_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
         let caret = &recording_cassette_tape.caret;
 
-        let (new_tape, removed_note_opt) = recording_cassette_tape.tape.new_truncated_tape(caret);
-        recording_cassette_tape.tape = new_tape;
+        let (new_tape, removed_note_opt) = recording_cassette_tape.tracks.new_truncated_tape(caret);
+        recording_cassette_tape.tracks = new_tape;
 
         if let Some(removed_note) = removed_note_opt {
             if let Some(recorded_ply) = removed_note.get_ope().get_phase_change() {

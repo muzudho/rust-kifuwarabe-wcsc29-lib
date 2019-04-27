@@ -7,7 +7,7 @@ use address::*;
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::rpm_cassette_tape_for_json::*;
+use kifu_rpm::rpm_tape::*;
 use kifu_usi::usi_move::*;
 use object_rpm::shogi_note::*;
 use piece_etc::*;
@@ -52,11 +52,11 @@ impl ShogiMove {
         let mut first_used_caret = 0;
         let mut last_used_caret = 0;
 
-        let note_size = cassette_tape_j.tape.ope.len();
+        let note_size = cassette_tape_j.tracks.ope.len();
         if note_size == 1 {
             panic!(
                 "操作トラックが 1ノート ということは無いはず。 {:?}",
-                cassette_tape_j.tape.ope
+                cassette_tape_j.tracks.ope
             )
         }
 
@@ -105,7 +105,7 @@ impl ShogiMove {
         } else if notes_buffer.len() == 1 {
             panic!(
                 "指し手が 1ノート ということは無いはず。 {:?}",
-                cassette_tape_j.tape.ope
+                cassette_tape_j.tracks.ope
             )
         } else {
             (

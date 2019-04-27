@@ -29,7 +29,7 @@ impl CassetteTapeLabel {
 pub struct CassetteTape {
     pub caret: Caret,
     pub label: CassetteTapeLabel,
-    pub tape: IntegerNoteVec,
+    pub tracks: IntegerNoteVec,
 }
 impl fmt::Display for CassetteTape {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -37,7 +37,7 @@ impl fmt::Display for CassetteTape {
             f,
             "Caret: {} {}",
             self.caret.to_human_presentable(),
-            self.tape
+            self.tracks
         )
     }
 }
@@ -52,7 +52,7 @@ impl CassetteTape {
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            tape: IntegerNoteVec::default(),
+            tracks: IntegerNoteVec::default(),
         }
     }
 
@@ -67,7 +67,7 @@ impl CassetteTape {
                 player2: "".to_string(),
                 read_file: "".to_string(),
             },
-            tape: IntegerNoteVec::from_1_move(rmove),
+            tracks: IntegerNoteVec::from_1_move(rmove),
         }
     }
 
@@ -75,7 +75,7 @@ impl CassetteTape {
     pub fn clear(&mut self) {
         self.caret.clear_facing_right();
         self.label.clear();
-        self.tape.clear();
+        self.tracks.clear();
     }
 
     pub fn reset_caret(&mut self) {
@@ -83,10 +83,10 @@ impl CassetteTape {
     }
 
     pub fn get_positive_peak_caret(&self) -> i16 {
-        self.tape.len_positive() as i16
+        self.tracks.len_positive() as i16
     }
     pub fn get_negative_peak_caret(&self) -> i16 {
-        -(self.tape.len_negative() as i16) - 1
+        -(self.tracks.len_negative() as i16) - 1
     }
 
     pub fn is_positive_peak(&self) -> bool {
@@ -98,17 +98,17 @@ impl CassetteTape {
 
     /// 連結。
     pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
-        self.tape
-            .append_tape_to_right(&mut cassette_tape_to_empty.tape);
+        self.tracks
+            .append_tape_to_right(&mut cassette_tape_to_empty.tracks);
     }
     pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
-        self.tape
-            .append_tape_to_left(&mut cassette_tape_to_empty.tape);
+        self.tracks
+            .append_tape_to_left(&mut cassette_tape_to_empty.tracks);
     }
 
     /// 現在の要素を返してから、キャレットを動かします。
     pub fn go_1note_forcely(&mut self, comm: &Communication) -> Option<ShogiNote> {
-        self.tape.go_1note_forcely(&mut self.caret, comm)
+        self.tracks.go_1note_forcely(&mut self.caret, comm)
     }
 
     /// Human presentable large log.
@@ -116,7 +116,7 @@ impl CassetteTape {
         format!(
             "{} {}",
             self.caret.to_human_presentable(),
-            self.tape.to_human_presentable(board_size)
+            self.tracks.to_human_presentable(board_size)
         )
         .to_string()
     }
@@ -127,12 +127,12 @@ impl CassetteTape {
     ///
     /// 駒の背番号, 操作。
     pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
-        self.tape.to_sign(board_size)
+        self.tracks.to_sign(board_size)
     }
 
     /// JSONのオブジェクト形式。テープだけ。
     pub fn to_tape_json(&self, board_size: BoardSize) -> String {
-        let (numbers, operations) = self.tape.to_tape_json(board_size);
+        let (numbers, operations) = self.tracks.to_tracks_json(board_size);
 
         let mut text = "{\n".to_string();
         text = format!("{}    \"label\" : {{\n", text);
@@ -151,13 +151,11 @@ impl CassetteTape {
             text, self.label.read_file
         );
         text = format!("{}    }},\n", text);
-        text = format!("{}    \"tape\" : {{\n", text);
+        text = format!("{}    \"tracks\" : {{\n", text);
         text = format!("{}        \"id\" : [\n", text);
         text = format!("{}            {}\n", text, numbers);
         text = format!("{}        ],\n", text);
-        text = format!("{}        \"ope\" : [\n", text);
-        text = format!("{}            {}\n", text, operations);
-        text = format!("{}        ]\n", text);
+        text = format!("{}        \"ope\" : \"{}\"\n", text, operations);
         text = format!("{}    }}\n", text);
         text = format!("{}}}", text);
         text

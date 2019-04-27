@@ -1,4 +1,4 @@
-use kifu_rpm::integer_note_vec_for_json::*;
+use kifu_rpm::rpm_tape_tracks::RpmTapeTracks;
 use serde::*;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -15,10 +15,10 @@ pub struct CassetteTapeLabelForJson {
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmCasetteTapeForJson {
     pub label: CassetteTapeLabelForJson,
-    pub tape: IntegerNoteVecForJson,
+    pub tracks: RpmTapeTracks,
 }
 impl RpmCasetteTapeForJson {
     pub fn to_human_presentable(&self) -> String {
-        self.tape.to_human_presentable()
+        self.tracks.to_human_presentable()
     }
 }

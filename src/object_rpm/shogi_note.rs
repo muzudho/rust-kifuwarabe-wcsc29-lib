@@ -6,7 +6,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::rpm_cassette_tape_for_json::*;
+use kifu_rpm::rpm_tape::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use std::fmt;
@@ -74,7 +74,7 @@ impl ShogiNote {
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, i16, Option<ShogiNote>) {
-        let size = cassette_tape_j.tape.ope.len();
+        let size = cassette_tape_j.tracks.ope.len();
 
         if note_caret.is_greater_than_or_equal_to(size as i16) {
             // 範囲外はエラーで落とす。
@@ -88,10 +88,13 @@ impl ShogiNote {
         // カウントアップ。
         let first_used_caret = note_caret.go_next(comm, "note-parse_1note");
 
+        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
+        let ope_vec: Vec<&str> = cassette_tape_j.tracks.ope.split(' ').collect();
+
         let mut token_caret = Caret::new_facing_right_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
             ShogiNoteOpe::parse_1ope(
-                &cassette_tape_j.tape.ope[first_used_caret as usize],
+                &ope_vec[first_used_caret as usize],
                 &mut token_caret,
                 board_size,
                 &comm,
@@ -100,11 +103,11 @@ impl ShogiNote {
         } else {
             panic!(
                 "Unexpected operation note token. {}",
-                cassette_tape_j.tape.ope[first_used_caret as usize]
+                ope_vec[first_used_caret as usize]
             )
         };
 
-        let pnum = cassette_tape_j.tape.id[first_used_caret as usize];
+        let pnum = cassette_tape_j.tracks.id[first_used_caret as usize];
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None

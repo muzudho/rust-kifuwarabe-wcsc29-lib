@@ -3,15 +3,18 @@ use serde::*;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct IntegerNoteVecForJson {
+pub struct RpmTapeTracks {
     pub id: Vec<i8>,
-    pub ope: Vec<String>,
+    // 操作は、半角スペース１個区切り。
+    pub ope: String,
 }
-impl IntegerNoteVecForJson {
+impl RpmTapeTracks {
     pub fn to_human_presentable(&self) -> String {
         let mut text = String::new();
 
-        for i in 0..self.ope.len() {
+        let ope_vec: Vec<&str> = self.ope.split(' ').collect();
+
+        for (i, ope_element) in ope_vec.iter().enumerate() {
             text = format!(
                 "{} '{}'{}",
                 text,
@@ -20,7 +23,7 @@ impl IntegerNoteVecForJson {
                 } else {
                     "|".to_string()
                 },
-                self.ope[i]
+                ope_element
             )
             .to_string();
         }

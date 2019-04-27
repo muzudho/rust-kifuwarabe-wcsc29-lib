@@ -1,4 +1,4 @@
-use kifu_rpm::rpm_cassette_tape_for_json::*;
+use kifu_rpm::rpm_tape::*;
 use serde::*;
 use std::fs::File;
 use std::io::prelude::*;
