@@ -10,6 +10,7 @@ use std::path::Path;
 /// カセット・テープ・ボックスが満杯になったら、
 /// 次のカセット・テープ・ボックスに変えてくれる☆（*＾～＾*）
 pub struct CassetteTapeBoxConveyor {
+    /// 書き込み用のテープ・ボックス。
     current_box_for_write: Option<CassetteTapeBox>,
 
     /// 記録用のカセットテープ。
@@ -49,13 +50,31 @@ impl CassetteTapeBoxConveyor {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_name() -> String {
+    pub fn create_file_name(extension_with_dot: &str) -> String {
         let mut rng = rand::thread_rng();
         let rand1: u64 = rng.gen();
         let rand2: u64 = rng.gen();
         let rand3: u64 = rng.gen();
         let rand4: u64 = rng.gen();
-        format!("{}-{}-{}-{}-learning.rbox", rand1, rand2, rand3, rand4).to_string()
+        format!(
+            "{}-{}-{}-{}-learning{}",
+            rand1, rand2, rand3, rand4, extension_with_dot
+        )
+        .to_string()
+    }
+
+    pub fn create_file_full_path(
+        extension_with_dot: &str,
+        kw29_conf: &KifuwarabeWcsc29Config,
+    ) -> String {
+        // ファイルのフル・パスをランダムに作成する。
+        Path::new(&kw29_conf.learning)
+            .join(CassetteTapeBoxConveyor::create_file_name(
+                extension_with_dot,
+            ))
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 
     /// テープボックスを指定するぜ☆（＾～＾）
@@ -67,13 +86,24 @@ impl CassetteTapeBoxConveyor {
     fn choice_box_automatically(&mut self, kw29_conf: &KifuwarabeWcsc29Config) {
         // パスをランダムに作成する。
         let tape_box_path = Path::new(&kw29_conf.learning)
-            .join(CassetteTapeBoxConveyor::create_file_name())
+            .join(CassetteTapeBoxConveyor::create_file_name(".rbox"))
             .to_str()
             .unwrap()
             .to_string();
 
         // TODO 本当は満杯になるまで使い回したい☆（＾～＾）
         self.current_box_for_write = Some(CassetteTapeBox::new_cassette_tape_box(&tape_box_path));
+    }
+
+    /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）
+    pub fn write_cassette_tape_fragment(
+        &mut self,
+        file: String,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        self.recording_cassette_tape
+            .write_cassette_tape_fragment(file, board_size, &app.comm);
     }
 
     /// テープ・ボックス単位で書き込めるぜ☆（*＾～＾*）

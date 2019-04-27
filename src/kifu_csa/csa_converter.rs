@@ -12,7 +12,7 @@ use position::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
-    pub fn convert_csa(
+    pub fn convert_csa_tape_fragment(
         input_path: &str,
         tape_box_conveyor: &mut CassetteTapeBoxConveyor,
         recorder: &mut CassetteTapeEditor,
@@ -35,7 +35,15 @@ impl CsaConverter {
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
-        tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
+        let output_tapefrag_path =
+            CassetteTapeBoxConveyor::create_file_full_path(".tapefrag", &app.kw29_conf);
+        tape_box_conveyor.write_cassette_tape_fragment(
+            output_tapefrag_path,
+            position.get_board_size(),
+            &app,
+        );
+        //.write_cassette_tape_box(position.get_board_size(), &app);
+        // tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
 
         // comm.println("Finished.");
     }

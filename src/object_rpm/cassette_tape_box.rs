@@ -22,14 +22,14 @@ impl CassetteTapeBox {
         format!("{{\"tape_box\": [{}]}}", content).to_string()
     }
 
-    /// シートに、カセット・テープを追加書き込みします。
+    /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
     pub fn write_cassette_tape_box(
         &self,
         board_size: BoardSize,
         cassette_tape: &CassetteTape,
         comm: &Communication,
     ) {
-        comm.println(&format!("#Append record to '{}'...", self.file));
+        comm.println(&format!("#Write tape box to '{}'...", self.file));
 
         let path = Path::new(&self.file);
 

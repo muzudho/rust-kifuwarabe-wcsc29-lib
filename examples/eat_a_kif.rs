@@ -43,5 +43,5 @@ pub fn main() {
     tape_box_conveyer.choice_box_manually("sheet.txt");
     let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 
-    KifConverter::convert_kif(&path, &mut tape_box_conveyer, &mut recorder, &app);
+    KifConverter::convert_kif_tape_fragment(&path, &mut tape_box_conveyer, &mut recorder, &app);
 }

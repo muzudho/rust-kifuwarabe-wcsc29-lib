@@ -4,6 +4,10 @@ use communication::*;
 use object_rpm::integer_note_vec::*;
 use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::*;
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+use std::path::Path;
 use std::*;
 
 /// 対局情報。
@@ -128,6 +132,42 @@ impl CassetteTape {
     /// 駒の背番号, 操作。
     pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
         self.tracks.to_sign(board_size)
+    }
+
+    /// テープ・フラグメント単位で書きだすぜ☆（＾～＾）
+    pub fn write_cassette_tape_fragment(
+        &self,
+        file: String,
+        board_size: BoardSize,
+        comm: &Communication,
+    ) {
+        comm.println(&format!("#Write tape fragment to '{}'...", file));
+
+        let path = Path::new(&file);
+
+        // ディレクトリー作成。
+        if let Some(parent) = path.parent() {
+            match fs::create_dir_all(parent) {
+                Ok(_x) => {}
+                Err(err) => panic!(err),
+            }
+        } else {
+            panic!("Create directory fail. {}", file);
+        }
+
+        // 末尾に カンマ を付けて追記していくぜ☆（＾～＾）
+        let mut file_obj = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open(path)
+            .unwrap();
+
+        if let Err(e) = writeln!(file_obj, "{},", self.to_tape_json(board_size)) {
+            eprintln!("Couldn't write to file: {}", e);
+        }
+
+        // comm.println("#Sheet saved.");
     }
 
     /// JSONのオブジェクト形式。テープだけ。

@@ -230,6 +230,7 @@ impl LibSub {
         tape_box_conveyor: &mut CassetteTapeBoxConveyor,
         app: &Application,
     ) {
+        // TODO とりあえず、テープが１個入った　テープ・ボックス形式で書きだし☆（＾～＾）
         tape_box_conveyor.write_cassette_tape_box(board_size, &app);
     }
 

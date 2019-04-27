@@ -63,10 +63,20 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif(&in_file, &mut tape_box_conveyer, &mut recorder, &app);
+                KifConverter::convert_kif_tape_fragment(
+                    &in_file,
+                    &mut tape_box_conveyer,
+                    &mut recorder,
+                    &app,
+                );
             }
             "CSA" => {
-                CsaConverter::convert_csa(&in_file, &mut tape_box_conveyer, &mut recorder, &app);
+                CsaConverter::convert_csa_tape_fragment(
+                    &in_file,
+                    &mut tape_box_conveyer,
+                    &mut recorder,
+                    &app,
+                );
             }
             _ => print!("Pass extension: {}", ext),
         }
