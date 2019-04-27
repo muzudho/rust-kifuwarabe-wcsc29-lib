@@ -1,6 +1,6 @@
 use address::*;
 use communication::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_note_operation::*;
@@ -100,7 +100,7 @@ impl UsiPlayer {
         position: &mut Position,
         urecord: &UsiRecord,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
         // 局面を動かしながら変換していく。
@@ -112,7 +112,7 @@ impl UsiPlayer {
             for rnote_ope in rnote_opes {
                 //comm.println(&format!("Pmove: '{}'.", rpm_note.to_sign(position.get_board_size(), &mut ply)));
                 comm.println("usi_player.rs:play_out_and_record: touch_brandnew_note");
-                RpmCassetteTapePlayer::touch_brandnew_note(
+                RpmCassetteTapeRecorder::touch_brandnew_note(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,

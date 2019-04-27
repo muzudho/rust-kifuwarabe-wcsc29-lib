@@ -2,7 +2,7 @@ use communication::*;
 use conf::kifuwarabe_wcsc29_config::KifuwarabeWcsc29Config;
 use kifu_kif::kif_player::*;
 use kifu_kif::kif_record::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use position::*;
 
@@ -12,7 +12,7 @@ impl KifConverter {
         kw29_conf: &KifuwarabeWcsc29Config,
         input_path: &str,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
         // comm.println(&format!("input_path: {}", input_path));

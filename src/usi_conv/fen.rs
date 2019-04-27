@@ -1,7 +1,7 @@
 use address::*;
 use board_size::*;
 use communication::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 /// フォーサイス エドワーズ記法
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
@@ -16,7 +16,7 @@ impl Fen {
     pub fn play_startpos(
         position: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) -> bool {
         // 大橋流を始めるところまでリセット。
@@ -25,7 +25,7 @@ impl Fen {
         position.reset_origin_position();
 
         // 大橋流で初期局面まで指す☆（＾～＾）
-        RpmCassetteTapePlayer::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        RpmCassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
         true
     }
 
@@ -74,7 +74,7 @@ impl Fen {
         start: &mut usize,
         position: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) -> bool {
         match UsiPosition::parse_startpos_test(line, start, comm) {

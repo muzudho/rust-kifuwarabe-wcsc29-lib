@@ -8,7 +8,7 @@ use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_player::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_record::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
@@ -44,7 +44,7 @@ pub fn main() {
 
     // Record.
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
 
     // Model.
     let mut position = Position::default();

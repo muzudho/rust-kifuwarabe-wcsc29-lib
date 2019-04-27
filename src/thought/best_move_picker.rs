@@ -3,7 +3,7 @@ use application::Application;
 use common::caret::*;
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::json::rpm_cassette_tape_box_for_json::*;
 use kifu_rpm::json::rpm_cassette_tape_for_json::*;
@@ -59,7 +59,7 @@ impl BestMovePicker {
         &mut self,
         position: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         app: &Application,
     ) -> UsiMove {
         // クリアー。
@@ -196,7 +196,7 @@ impl BestMovePicker {
                                 .turn_to_opponent();
                             app.comm
                                 .println(&format!("Tried, go opponent {} move!", record_count,));
-                            RpmCassetteTapePlayer::go_next_n_repeats(
+                            RpmCassetteTapeRecorder::go_next_n_repeats(
                                 record_count,
                                 recorder.ply,
                                 &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
@@ -392,7 +392,7 @@ impl BestMovePicker {
                 // 例えば 味方の駒の上に駒を動かすような動きは イリーガル・タッチ として弾く。
 
                 // 新規に テープを作る。ムーブ１つだけ。
-                //let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+                //let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
                 //recorder.record_move(&rmove, comm);
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
@@ -405,7 +405,7 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmCassetteTapePlayer::go_next_1_move(
+                if RpmCassetteTapeRecorder::go_next_1_move(
                     &mut cassette_tape_2,
                     position,
                     ply_2,

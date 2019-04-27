@@ -2,7 +2,7 @@ use address::*;
 use communication::*;
 use kifu_csa::csa_move::*;
 use kifu_csa::csa_record::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
 use kifu_rpm::thread::rpm_note_operation::*;
@@ -105,12 +105,12 @@ impl CsaPlayer {
         position: &mut Position,
         crecord: &CsaRecord,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        RpmCassetteTapePlayer::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        RpmCassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
 
         let mut ply = 1;
         for cmove in &crecord.items {
@@ -118,7 +118,7 @@ impl CsaPlayer {
 
             for rnote_ope in rnote_opes {
                 comm.println("csa_player.rs: touch_brandnew_note");
-                RpmCassetteTapePlayer::touch_brandnew_note(
+                RpmCassetteTapeRecorder::touch_brandnew_note(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,

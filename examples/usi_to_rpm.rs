@@ -3,7 +3,7 @@ extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
-use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
+use kifuwarabe_wcsc29_lib::kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use kifuwarabe_wcsc29_lib::position::*;
 use kifuwarabe_wcsc29_lib::usi_conv::fen::*;
@@ -51,7 +51,7 @@ pub fn main() {
     // Record.
     let mut tape_box_conveyer = RpmCassetteTapeBoxConveyor::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
-    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
 
     let mut start = 0;
     if Fen::parse_initial_position(

@@ -1,192 +1,255 @@
-use common::caret::*;
+use address::*;
+use board_size::*;
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
+use kifu_rpm::object::rpm_cassette_tape::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::RpmCassetteTapeBoxConveyor;
-use kifu_rpm::thread::rpm_move::*;
 use kifu_rpm::thread::rpm_note::*;
 use kifu_rpm::thread::rpm_note_operation::*;
+use piece_etc::*;
 use position::*;
 use std::*;
 
-pub struct RpmCassetteTapeRecorder {
-    /// 何も指していない状態で 1。
-    /// TODO 本将棋の大橋流の最初の玉は Ply=-39 にしたい。
-    pub ply: i16,
-}
+pub struct RpmCassetteTapeRecorder {}
 impl RpmCassetteTapeRecorder {
-    pub fn new_cassette_tape_recorder() -> Self {
-        RpmCassetteTapeRecorder { ply: 1 }
+    /// 初期化に使う。
+    fn init_note(
+        ply: i16,
+        ph: Phase,
+        file: i8,
+        rank: i8,
+        pid: PieceIdentify,
+        bs: BoardSize,
+    ) -> (RpmNoteOpe, RpmNoteOpe, RpmNoteOpe) {
+        (
+            RpmNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(Some(ph), pid))),
+            RpmNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs)),
+            RpmNoteOpe::change_phase(ply),
+        )
     }
 
-    pub fn clear_recorder1(&mut self) {
-        self.ply = 1;
-    }
-
-    /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
-    pub fn record_note(
-        &mut self,
-        note: RpmNote,
+    /// オリジン・ポジションから、平手初期局面に進めます。
+    pub fn play_ohashi_starting(
+        pos: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
-        let (is_positive, index) = tape_box_conveyor.recording_cassette_tape.caret.to_index();
+        use piece_etc::Phase::*;
+        use piece_etc::PieceIdentify::*;
 
-        if is_positive {
-            // 正のテープ。
-            // 最先端かどうか判断。
-            if tape_box_conveyor.recording_cassette_tape.is_positive_peak()
-                && !tape_box_conveyor
-                    .recording_cassette_tape
-                    .caret
-                    .is_facing_left()
-            {
-                // 正の絶対値が大きい方の新しい要素を追加しようとしている。
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .positive_notes
-                    .push(note);
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .caret
-                    .go_next(comm, "record_note+new");
-            } else {
-                // 先端でなければ、上書き。
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .positive_notes[index] = note;
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .caret
-                    .go_next(comm, "record_note+exists");
+        // 大橋流の順序にしてください。
+        let bs = pos.get_board_size();
+        let array: [(RpmNoteOpe, RpmNoteOpe, RpmNoteOpe); 40] = [
+            RpmCassetteTapeRecorder::init_note(-39, Second, 5, 1, K00, bs),
+            RpmCassetteTapeRecorder::init_note(-38, First, 5, 9, K01, bs),
+            RpmCassetteTapeRecorder::init_note(-37, Second, 4, 1, G02, bs),
+            RpmCassetteTapeRecorder::init_note(-36, First, 6, 9, G03, bs),
+            RpmCassetteTapeRecorder::init_note(-35, Second, 6, 1, G04, bs),
+            RpmCassetteTapeRecorder::init_note(-34, First, 4, 9, G05, bs),
+            RpmCassetteTapeRecorder::init_note(-33, Second, 3, 1, S06, bs),
+            RpmCassetteTapeRecorder::init_note(-32, First, 7, 9, S07, bs),
+            RpmCassetteTapeRecorder::init_note(-31, Second, 7, 1, S08, bs),
+            RpmCassetteTapeRecorder::init_note(-30, First, 3, 9, S09, bs),
+            RpmCassetteTapeRecorder::init_note(-29, Second, 2, 1, N10, bs),
+            RpmCassetteTapeRecorder::init_note(-28, First, 8, 9, N11, bs),
+            RpmCassetteTapeRecorder::init_note(-27, Second, 8, 1, N12, bs),
+            RpmCassetteTapeRecorder::init_note(-26, First, 2, 9, N13, bs),
+            RpmCassetteTapeRecorder::init_note(-25, Second, 1, 1, L14, bs),
+            RpmCassetteTapeRecorder::init_note(-24, First, 9, 9, L15, bs),
+            RpmCassetteTapeRecorder::init_note(-23, Second, 9, 1, L16, bs),
+            RpmCassetteTapeRecorder::init_note(-22, First, 1, 9, L17, bs),
+            RpmCassetteTapeRecorder::init_note(-21, Second, 2, 2, B18, bs),
+            RpmCassetteTapeRecorder::init_note(-20, First, 8, 8, B19, bs),
+            RpmCassetteTapeRecorder::init_note(-19, Second, 8, 2, R20, bs),
+            RpmCassetteTapeRecorder::init_note(-18, First, 2, 8, R21, bs),
+            RpmCassetteTapeRecorder::init_note(-17, Second, 5, 3, P22, bs),
+            RpmCassetteTapeRecorder::init_note(-16, First, 5, 7, P23, bs),
+            RpmCassetteTapeRecorder::init_note(-15, Second, 4, 3, P24, bs),
+            RpmCassetteTapeRecorder::init_note(-14, First, 6, 7, P25, bs),
+            RpmCassetteTapeRecorder::init_note(-13, Second, 6, 3, P26, bs),
+            RpmCassetteTapeRecorder::init_note(-12, First, 4, 7, P27, bs),
+            RpmCassetteTapeRecorder::init_note(-11, Second, 3, 3, P28, bs),
+            RpmCassetteTapeRecorder::init_note(-10, First, 7, 7, P29, bs),
+            RpmCassetteTapeRecorder::init_note(-9, Second, 7, 3, P30, bs),
+            RpmCassetteTapeRecorder::init_note(-8, First, 3, 7, P31, bs),
+            RpmCassetteTapeRecorder::init_note(-7, Second, 2, 3, P32, bs),
+            RpmCassetteTapeRecorder::init_note(-6, First, 8, 7, P33, bs),
+            RpmCassetteTapeRecorder::init_note(-5, Second, 8, 3, P34, bs),
+            RpmCassetteTapeRecorder::init_note(-4, First, 2, 7, P35, bs),
+            RpmCassetteTapeRecorder::init_note(-3, Second, 1, 3, P36, bs),
+            RpmCassetteTapeRecorder::init_note(-2, First, 9, 7, P37, bs),
+            RpmCassetteTapeRecorder::init_note(-1, Second, 9, 3, P38, bs),
+            RpmCassetteTapeRecorder::init_note(0, First, 1, 7, P39, bs),
+        ];
 
-                // 仮のおわり を更新。
-                let (_is_positive, index) =
-                    tape_box_conveyor.recording_cassette_tape.caret.to_index();
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .positive_notes
-                    .truncate(index);
-            }
-        } else {
-            // 負のテープ。
-            // 最先端かどうか判断。
-            if tape_box_conveyor.recording_cassette_tape.is_negative_peak()
-                && tape_box_conveyor
-                    .recording_cassette_tape
-                    .caret
-                    .is_facing_left()
-            {
-                // 負の絶対値が大きい方の新しい要素を追加しようとしている。
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .negative_notes
-                    .push(note);
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .caret
-                    .go_next(comm, "record_note-new");
-            } else {
-                // 先端でなければ、上書き。
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .negative_notes[index] = note;
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .caret
-                    .go_next(comm, "record_note-exists");
-
-                // 仮のおわり を更新。
-                let (_is_positive, index) =
-                    tape_box_conveyor.recording_cassette_tape.caret.to_index();
-                tape_box_conveyor
-                    .get_mut_recording_cassette_tape()
-                    .tape
-                    .negative_notes
-                    .truncate(index);
-            }
+        for element in array.iter() {
+            comm.println("rpm_move_player.rs:play_ohashi_starting: touch_brandnew_note");
+            RpmCassetteTapeRecorder::touch_brandnew_note(
+                &element.0,
+                pos,
+                tape_box_conveyor,
+                recorder,
+                comm,
+            );
+            RpmCassetteTapeRecorder::touch_brandnew_note(
+                &element.1,
+                pos,
+                tape_box_conveyor,
+                recorder,
+                comm,
+            );
+            RpmCassetteTapeRecorder::touch_brandnew_note(
+                &element.2,
+                pos,
+                tape_box_conveyor,
+                recorder,
+                comm,
+            );
         }
     }
 
-    pub fn record_move(
-        &mut self,
-        rmove: &RpmMove,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+    /// 1手進める。（非合法タッチは自動で戻します）
+    ///
+    /// # Return
+    ///
+    /// 合法タッチか否か。
+    pub fn go_next_1_move(
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        is_auto_reverse: bool,
         comm: &Communication,
-    ) {
-        for note in rmove.notes.iter() {
-            self.record_note(*note, tape_box_conveyor, comm);
-            if let Some(recorded_ply) = note.get_ope().get_phase_change() {
-                self.ply = recorded_ply;
-            }
-        }
-    }
+    ) -> bool {
+        let mut is_legal_touch = true;
+        let mut forwarding_count = 0;
+        comm.println("go_next_1_move.");
 
-    pub fn delete(
-        &mut self,
-        tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-    ) -> Option<RpmNote> {
-        let recording_cassette_tape = tape_box_conveyor.get_mut_recording_cassette_tape();
-        let caret = &recording_cassette_tape.caret;
+        // 最後尾に達していたのなら終了。
+        while let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
+            comm.println(&format!(
+                "<NXm1:{}>",
+                rnote.to_human_presentable(position.get_board_size())
+            ));
+            is_legal_touch = RpmCassetteTapeRecorder::go_1note(&rnote, position, ply, comm);
+            forwarding_count += 1;
 
-        let (new_tape, removed_note_opt) = recording_cassette_tape.tape.new_truncated_tape(caret);
-        recording_cassette_tape.tape = new_tape;
-
-        if let Some(removed_note) = removed_note_opt {
-            if let Some(recorded_ply) = removed_note.get_ope().get_phase_change() {
-                self.ply = recorded_ply;
+            if is_auto_reverse && !is_legal_touch {
+                break;
             }
 
-            Some(removed_note)
-        } else {
-            None
+            if forwarding_count != 1 && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                break;
+            }
         }
+
+        if is_auto_reverse && !is_legal_touch {
+            // 非合法タッチを自動で戻す。
+            comm.println("Illegal, go opponent forcely!");
+            cassette_tape.caret.turn_to_opponent();
+            RpmCassetteTapeRecorder::get_n_note_and_go_forcely(
+                forwarding_count,
+                cassette_tape,
+                position,
+                ply,
+                comm,
+            );
+            cassette_tape.caret.turn_to_opponent();
+
+            return false;
+        }
+
+        // 1つ以上読んでいれば合法。
+        forwarding_count > 0
     }
 
-    /// 棋譜読取。
-    pub fn read_tape(
-        &mut self,
-        line: &str,
+    /// 棋譜を作る☆（＾～＾）
+    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    pub fn touch_brandnew_note(
+        // ノートの中に Ply もある☆（＾～＾）
+        rnote_ope: &RpmNoteOpe,
         position: &mut Position,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
-        let mut caret = Caret::new_facing_right_caret();
+        let board_size = position.get_board_size();
+        let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
+            position.touch_beautiful_1note(&rnote_ope, comm, board_size)
+        {
+            PieceIdentify::from_number(piece_identify.get_id().get_number())
+        } else {
+            None
+        };
 
-        loop {
-            if caret.is_greater_than_or_equal_to(line.len() as i16) {
-                return;
+        HumanInterface::show_position(comm, recorder.ply, position);
+        let rnote = RpmNote::from_id_ope(pid_opt, *rnote_ope);
+        /*
+        comm.println(&format!(
+            "End     :touch_brandnew_note. Rnote: {}.",
+            rnote.to_human_presentable(board_size)
+        ));
+         */
+        recorder.record_note(rnote, tape_box_conveyor, comm);
+    }
+
+    /// 非合法手はない前提で、強制的に巻き進めます。
+    pub fn get_n_note_and_go_forcely(
+        repeat: u8,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) {
+        for i in 0..repeat {
+            if let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
+                comm.println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
+                RpmCassetteTapeRecorder::go_1note(&rnote, position, ply, comm);
+            } else {
+                panic!("<Go forcely fail:{}/{} None>", i, repeat);
             }
+        }
+    }
 
-            let tuple = RpmNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &comm);
+    /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
+    /// Next も Back も違いはない。キャレットは使わない。
+    /// 動かせなかったなら、Noneを返す。
+    ///
+    /// # Return
+    ///
+    /// 合法タッチか否か。
+    pub fn go_1note(
+        rnote: &RpmNote,
+        position: &mut Position,
+        ply: i16,
+        comm: &Communication,
+    ) -> bool {
+        let board_size = position.get_board_size();
 
-            if let (_last_used_caret, Some(rnote_ope)) = tuple {
-                comm.println("rpm_cassette_tape_recorder.rs:read_tape: touch_brandnew_note");
-                RpmCassetteTapePlayer::touch_brandnew_note(
-                    &rnote_ope,
-                    position,
-                    tape_box_conveyor,
-                    self,
-                    comm,
-                );
+        comm.println(&format!(
+            "<NXn:{}>",
+            rnote.to_human_presentable(board_size) //rnote.get_ope().to_human_presentable(board_size)
+        ));
+        let (is_legal_touch, _piece_identify_opt) =
+            position.touch_beautiful_1note(&rnote.get_ope(), comm, board_size);
+        HumanInterface::show_position(comm, ply, position);
 
-                let ply = if let Some(ply) = rnote_ope.get_phase_change() {
-                    ply
-                } else {
-                    -1
-                };
-                HumanInterface::bo(
-                    comm,
-                    &tape_box_conveyor.recording_cassette_tape,
-                    ply,
-                    &position,
-                );
-            }
+        is_legal_touch
+    }
+
+    /// 棋譜の上を進めます。
+    pub fn go_next_n_repeats(
+        repeats: i16,
+        ply: i16,
+        cassette_tape: &mut RpmCassetteTape,
+        position: &mut Position,
+        comm: &Communication,
+    ) {
+        for _i in 0..repeats {
+            RpmCassetteTapeRecorder::go_next_1_move(cassette_tape, position, ply, false, &comm);
         }
     }
 }

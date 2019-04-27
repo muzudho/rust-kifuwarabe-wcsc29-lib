@@ -51,7 +51,7 @@ pub mod thought;
 pub mod usi_conv;
 use application::*;
 use human::human_interface::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_player::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
 use lib_sub::*;
@@ -67,7 +67,7 @@ pub fn main_loop() {
 
     // Record.
     let mut tape_box_conveyor = RpmCassetteTapeBoxConveyor::new_empty();
-    let mut recorder = RpmCassetteTapeRecorder::new_cassette_tape_recorder();
+    let mut recorder = RpmCassetteTapeEditor::new_cassette_tape_recorder();
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -140,7 +140,7 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            RpmCassetteTapePlayer::pop_1note(
+            RpmCassetteTapeEditor::pop_1note(
                 &mut position,
                 &mut tape_box_conveyor,
                 &mut recorder,
@@ -154,7 +154,7 @@ pub fn main_loop() {
             );
         } else if line == "dd" {
             // Delete 1ply.
-            RpmCassetteTapePlayer::pop_current_1move_on_record(
+            RpmCassetteTapeEditor::pop_1move(
                 &mut position,
                 &mut tape_box_conveyor,
                 &mut recorder,
@@ -169,7 +169,7 @@ pub fn main_loop() {
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                RpmCassetteTapePlayer::pop_current_1move_on_record(
+                RpmCassetteTapeEditor::pop_1move(
                     &mut position,
                     &mut tape_box_conveyor,
                     &mut recorder,
@@ -185,7 +185,7 @@ pub fn main_loop() {
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                RpmCassetteTapePlayer::pop_current_1move_on_record(
+                RpmCassetteTapeEditor::pop_1move(
                     &mut position,
                     &mut tape_box_conveyor,
                     &mut recorder,

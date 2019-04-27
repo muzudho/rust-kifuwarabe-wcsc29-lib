@@ -2,8 +2,8 @@ use communication::*;
 use conf::kifuwarabe_wcsc29_config::KifuwarabeWcsc29Config;
 use kifu_csa::csa_player::*;
 use kifu_csa::csa_record::*;
+use kifu_rpm::cassette_deck::rpm_cassette_tape_editor::*;
 use kifu_rpm::object::rpm_cassette_tape_box_conveyor::*;
-use kifu_rpm::cassette_deck::rpm_cassette_tape_recorder::*;
 use position::*;
 
 pub struct CsaConverter {}
@@ -12,7 +12,7 @@ impl CsaConverter {
         kw29_conf: &KifuwarabeWcsc29Config,
         input_path: &str,
         tape_box_conveyor: &mut RpmCassetteTapeBoxConveyor,
-        recorder: &mut RpmCassetteTapeRecorder,
+        recorder: &mut RpmCassetteTapeEditor,
         comm: &Communication,
     ) {
         // comm.println(&format!("input_path: {}", input_path));
