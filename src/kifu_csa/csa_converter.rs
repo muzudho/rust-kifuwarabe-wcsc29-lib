@@ -36,10 +36,10 @@ impl CsaConverter {
 
         // Save. (Append)
         let rpm_object_sheet = RpmCassetteTapeBox::default(output_path);
-        rpm_object_sheet.append_cassette_tape(
-            &comm,
+        rpm_object_sheet.write_cassette_tape(
             position.get_board_size(),
             &recorder.cassette_tape,
+            &comm,
         );
 
         // comm.println("Finished.");

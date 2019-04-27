@@ -43,7 +43,7 @@ impl fmt::Display for RpmCassetteTape {
 impl RpmCassetteTape {
     pub fn default() -> Self {
         RpmCassetteTape {
-            caret: Caret::new_next_caret(),
+            caret: Caret::new_right_caret(),
             label: RpmCassetteTapeLabel {
                 date: "".to_string(),
                 event: "".to_string(),
@@ -74,11 +74,13 @@ impl RpmCassetteTape {
     }
 
     /// 連結。
-    pub fn append_next_cassette_tape(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
-        self.tape.append_next_tape(&mut cassette_tape_to_empty.tape);
+    pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
+        self.tape
+            .append_tape_to_right(&mut cassette_tape_to_empty.tape);
     }
-    pub fn append_back_cassette_tape(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
-        self.tape.append_back_tape(&mut cassette_tape_to_empty.tape);
+    pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut RpmCassetteTape) {
+        self.tape
+            .append_tape_to_left(&mut cassette_tape_to_empty.tape);
     }
 
     /// 現在の要素を返してから、キャレットを動かします。

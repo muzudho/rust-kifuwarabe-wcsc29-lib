@@ -47,16 +47,14 @@ impl RpmCassetteTapeRecorder {
         if is_positive {
             // 正のテープ。
             // 最先端かどうか判断。
-            if self.cassette_tape.is_positive_peak() && !self.cassette_tape.caret.is_back() {
+            if self.cassette_tape.is_positive_peak() && !self.cassette_tape.caret.is_facing_left() {
                 // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 self.cassette_tape.tape.positive_notes.push(note);
-                self.cassette_tape.caret.get_and_go(comm, "record_note+new");
+                self.cassette_tape.caret.go_next(comm, "record_note+new");
             } else {
                 // 先端でなければ、上書き。
                 self.cassette_tape.tape.positive_notes[index] = note;
-                self.cassette_tape
-                    .caret
-                    .get_and_go(comm, "record_note+exists");
+                self.cassette_tape.caret.go_next(comm, "record_note+exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) = self.cassette_tape.caret.to_index();
@@ -65,16 +63,14 @@ impl RpmCassetteTapeRecorder {
         } else {
             // 負のテープ。
             // 最先端かどうか判断。
-            if self.cassette_tape.is_negative_peak() && self.cassette_tape.caret.is_back() {
+            if self.cassette_tape.is_negative_peak() && self.cassette_tape.caret.is_facing_left() {
                 // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                 self.cassette_tape.tape.negative_notes.push(note);
-                self.cassette_tape.caret.get_and_go(comm, "record_note-new");
+                self.cassette_tape.caret.go_next(comm, "record_note-new");
             } else {
                 // 先端でなければ、上書き。
                 self.cassette_tape.tape.negative_notes[index] = note;
-                self.cassette_tape
-                    .caret
-                    .get_and_go(comm, "record_note-exists");
+                self.cassette_tape.caret.go_next(comm, "record_note-exists");
 
                 // 仮のおわり を更新。
                 let (_is_positive, index) = self.cassette_tape.caret.to_index();
@@ -117,7 +113,7 @@ impl RpmCassetteTapeRecorder {
 
     /// 棋譜読取。
     pub fn read_tape(&mut self, comm: &Communication, line: &str, position: &mut Position) {
-        let mut caret = Caret::new_next_caret();
+        let mut caret = Caret::new_right_caret();
 
         loop {
             if caret.is_greater_than_or_equal_to(line.len() as i16) {

@@ -114,8 +114,7 @@ impl RpmMovePlayer {
     /// # Return
     ///
     /// 合法タッチか否か。
-    pub fn get_1move_and_go(
-        // next_1move_on_tape
+    pub fn go_next_1_move(
         cassette_tape: &mut RpmCassetteTape,
         position: &mut Position,
         ply: i16,
@@ -124,16 +123,12 @@ impl RpmMovePlayer {
     ) -> bool {
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
-        comm.println(&format!(
-            "<NXm1:{}>",
-            cassette_tape.to_human_presentable(position.get_board_size())
-        ));
+        comm.println("go_next_1_move.");
 
         // 最後尾に達していたのなら終了。
         while let Some(rnote) = cassette_tape.get_note_and_go_tape(comm) {
             comm.println(&format!(
-                "<NXm2:{}:{}>",
-                cassette_tape.to_human_presentable(position.get_board_size()),
+                "<NXm1:{}>",
                 rnote.to_human_presentable(position.get_board_size())
             ));
             is_legal_touch = RpmNotePlayer::go_1note(&rnote, position, ply, comm);
@@ -145,14 +140,14 @@ impl RpmMovePlayer {
 
             if forwarding_count != 1 && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
-                print!("<Fpc{} {}>", forwarding_count, rnote);
+                print!("<NXm1End{} {}>", forwarding_count, rnote);
                 break;
             }
         }
 
         if is_auto_reverse && !is_legal_touch {
             // 非合法タッチを自動で戻す。
-            comm.println("Illegal, go back forcely!");
+            comm.println("Illegal, go opponent forcely!");
             cassette_tape.caret.turn_to_opponent();
             RpmNotePlayer::get_n_note_and_go_forcely(
                 forwarding_count,

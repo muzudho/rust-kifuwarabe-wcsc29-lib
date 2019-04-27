@@ -75,8 +75,8 @@ pub fn main() {
     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
 
     // Save.
-    let rpm_sheet = RpmCassetteTapeBox::default(&rpm_object_sheet_path);
-    rpm_sheet.append_cassette_tape(&comm, position.get_board_size(), &recorder.cassette_tape);
+    let tape_box = RpmCassetteTapeBox::default(&rpm_object_sheet_path);
+    tape_box.write_cassette_tape(position.get_board_size(), &recorder.cassette_tape, &comm);
 
     comm.println("Finished.");
 }

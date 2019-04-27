@@ -101,7 +101,7 @@ impl RpmTape {
     ) -> Option<RpmNote> {
         let (is_positive, index) = note_caret.to_index();
 
-        if note_caret.is_back() {
+        if note_caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
             if !is_positive {
                 if self.negative_notes.len() <= index {
@@ -109,12 +109,12 @@ impl RpmTape {
                     None
                 } else {
                     // 負。
-                    note_caret.get_and_go(comm, "tape-get_note_and_go_note");
+                    note_caret.go_next(comm, "tape-get_note_and_go_note");
                     Some(self.negative_notes[index as usize])
                 }
             } else {
                 // 正。
-                note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                note_caret.go_next(comm, "tape+get_note_and_go_note");
                 Some(self.positive_notes[index as usize])
             }
         } else {
@@ -125,12 +125,12 @@ impl RpmTape {
                     None
                 } else {
                     // 正。
-                    note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                    note_caret.go_next(comm, "tape+get_note_and_go_note");
                     Some(self.positive_notes[index as usize])
                 }
             } else {
                 // 負。
-                note_caret.get_and_go(comm, "tape+get_note_and_go_note");
+                note_caret.go_next(comm, "tape+get_note_and_go_note");
                 Some(self.negative_notes[index as usize])
             }
         }
@@ -248,13 +248,13 @@ impl RpmTape {
     }
 
     /// 連結。
-    pub fn append_next_tape(&mut self, tape_to_empty: &mut RpmTape) {
+    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut RpmTape) {
         self.positive_notes
             .append(&mut tape_to_empty.negative_notes);
         self.positive_notes
             .append(&mut tape_to_empty.positive_notes);
     }
-    pub fn append_back_tape(&mut self, tape_to_empty: &mut RpmTape) {
+    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut RpmTape) {
         self.negative_notes
             .append(&mut tape_to_empty.positive_notes);
         self.negative_notes

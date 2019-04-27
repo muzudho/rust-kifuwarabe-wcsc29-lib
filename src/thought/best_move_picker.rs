@@ -144,11 +144,11 @@ impl BestMovePicker {
 
                             // ノートをスキャン。
                             // TODO 次方向と、前方向がある。
-                            let mut note_caret = Caret::new_next_caret();
-                            let mut thread = RpmThread::new();
-                            //'track_scan:
+                            let mut note_caret = Caret::new_right_caret();
+                            let mut record_count = 0;
                             loop {
-                                let rmove_opt = self.go_pattern_match_move(
+                                // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
+                                let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
                                     &comm,
                                     position,
                                     &cassette_tape_j,
@@ -157,32 +157,46 @@ impl BestMovePicker {
                                     &mut note_caret,
                                 );
 
-                                if let Some(rmove) = rmove_opt {
+                                if is_end_of_tape {
+                                    // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
+                                    break;
+                                } else if let Some(rmove) = rmove_opt {
+                                    // ヒットしたようだぜ☆（＾～＾）
+                                    record_count += 1;
                                     comm.println(&format!(
-                                        "Push move! {}",
+                                        "{} hit! Rmove: {}.",
+                                        record_count,
                                         rmove.to_human_presentable(position.get_board_size())
                                     ));
-                                    thread.push_move(rmove);
-                                } else {
+                                    // thread.push_move(rmove);
+                                    // とりあえず抜ける☆（＾～＾）
                                     break;
+                                } else {
+                                    // 一致しなかった☆（＾～＾）
+                                    // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
                                 }
                             }
-                            let thread_len = thread.len() as i16;
-                            let thread_to_human_presentable =
-                                thread.to_human_presentable(position.get_board_size());
-                            self.thread_by_piece_id
-                                .insert(my_piece_id.get_number(), thread);
 
-                            // 局面を動かしてしまったので戻す。
+                            // let mut thread = RpmThread::new();
+                            // let thread_len = thread.len() as i16;
+                            // let thread_to_human_presentable =
+                            //    thread.to_human_presentable(position.get_board_size());
+                            // self.thread_by_piece_id
+                            //    .insert(my_piece_id.get_number(), thread);
+
+                            // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
+                            // それを逆順にすれば　指し手だぜ☆（＾～＾）
                             recorder.cassette_tape.caret.turn_to_opponent();
-                            comm.println(&format!(
-                                "Legal, go back! thread_len: {}, thread: {}",
-                                thread_len, thread_to_human_presentable,
-                            ));
-                            RpmThreadPlayer::get_n_move_and_go(
-                                thread_len, recorder, position, comm,
+                            comm.println(&format!("Tried, go opponent {} move!", record_count,));
+                            RpmThreadPlayer::go_next_n_repeats(
+                                record_count,
+                                recorder.ply,
+                                &mut recorder.cassette_tape,
+                                position,
+                                comm,
                             );
                             recorder.cassette_tape.caret.turn_to_opponent();
+                            comm.println("Backed.");
                         }
                     }
 
@@ -299,13 +313,13 @@ impl BestMovePicker {
         true
     }
 
-    /// 次方向へのパターン・マッチ。
-    /// 正常終了すると、トラックの検索を続行します。
+    /// 指し手単位での、パターン・マッチ。
+    /// 一致したか、一致しなかったか、一致せずテープの終わりだったかの３択☆（＾～＾）
     ///
     /// # Returns
     ///
-    /// (move_opt)
-    pub fn go_pattern_match_move(
+    /// (move_opt, is_end_of_tape)
+    pub fn pattern_match_and_go(
         &mut self,
         comm: &Communication,
         position: &mut Position,
@@ -313,7 +327,7 @@ impl BestMovePicker {
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
-    ) -> Option<RpmMove> {
+    ) -> (Option<RpmMove>, bool) {
         /*
         comm.println(&format!(
             "#>{} note.",
@@ -376,22 +390,21 @@ impl BestMovePicker {
                 );
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if RpmMovePlayer::get_1move_and_go(
+                if RpmMovePlayer::go_next_1_move(
                     &mut recorder.cassette_tape,
                     position,
                     recorder.ply,
                     true,
                     &comm,
                 ) {
-                    // 合法タッチ。
-                    // TODO とりあえず抜けて次の駒へ。
+                    // 合法タッチ。戻さず抜けます。
                     comm.println(&format!(
-                        "Hit and break! ({}) {}",
+                        "Hit and go! ({}) {}",
                         subject_pid.to_human_presentable(),
                         &rmove.to_human_presentable(position.get_board_size())
                     ));
                     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-                    Some(rmove)
+                    (Some(rmove), false)
                 } else {
                     // 非合法タッチ。（自動で戻されています）
                     comm.println(&format!(
@@ -399,16 +412,16 @@ impl BestMovePicker {
                         rmove.to_human_presentable(position.get_board_size())
                     ));
                     HumanInterface::bo(&comm, &recorder.cassette_tape, recorder.ply, &position);
-                    None
+                    (None, false)
                 }
             } else {
                 // パターン不一致。
-                None
+                (None, false)
             }
         } else {
-            // トラックの終わり。
-            comm.println("Break: End of track.");
-            None
+            // テープの終わり。
+            comm.println("Break: End of tape.");
+            (None, true)
         }
     }
 }

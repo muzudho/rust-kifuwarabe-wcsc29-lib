@@ -17,12 +17,12 @@ impl RpmCassetteTapeBox {
         }
     }
 
-    /// シートに、カセット・テープを追加します。
-    pub fn append_cassette_tape(
+    /// シートに、カセット・テープを追加書き込みします。
+    pub fn write_cassette_tape(
         &self,
-        comm: &Communication,
         board_size: BoardSize,
         cassette_tape: &RpmCassetteTape,
+        comm: &Communication,
     ) {
         comm.println(&format!("#Append record to '{}'...", self.file_path));
 

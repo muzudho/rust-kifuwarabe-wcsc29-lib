@@ -1,20 +1,20 @@
 use communication::*;
 
 pub struct Caret {
-    back: bool,
+    facing_left: bool,
     number: i16,
 }
 impl Caret {
-    pub fn new_next_caret() -> Self {
+    pub fn new_right_caret() -> Self {
         Caret {
-            back: false,
+            facing_left: false,
             number: 0,
         }
     }
 
-    pub fn new_back_caret(last_number: i16) -> Self {
+    pub fn new_left_caret(last_number: i16) -> Self {
         Caret {
-            back: true,
+            facing_left: true,
             number: last_number,
         }
     }
@@ -24,31 +24,31 @@ impl Caret {
     }
 
     pub fn turn_to_negative(&mut self) {
-        if !self.is_back() {
-            self.back = true;
+        if !self.is_facing_left() {
+            self.facing_left = true;
         }
     }
 
     pub fn turn_to_positive(&mut self) {
-        if self.is_back() {
-            self.back = false;
+        if self.is_facing_left() {
+            self.facing_left = false;
         }
     }
 
     pub fn turn_to_opponent(&mut self) {
-        self.back = !self.back;
+        self.facing_left = !self.facing_left;
     }
 
     pub fn to_human_presentable(&self) -> String {
-        if self.is_back() {
+        if self.is_facing_left() {
             format!("[<--{}]", self.number).to_string()
         } else {
             format!("[{}-->]", self.number).to_string()
         }
     }
 
-    pub fn is_back(&self) -> bool {
-        self.back
+    pub fn is_facing_left(&self) -> bool {
+        self.facing_left
     }
 
     /// 等しい。
@@ -61,10 +61,10 @@ impl Caret {
     }
 
     /// 要素を返してから、向きの通りに移動します。
-    pub fn get_and_go(&mut self, _comm: &Communication, _hint: &str) -> i16 {
+    pub fn go_next(&mut self, _comm: &Communication, _hint: &str) -> i16 {
         let old = self.number;
 
-        if self.back {
+        if self.facing_left {
             self.number -= 1;
         } else {
             self.number += 1;
@@ -94,7 +94,7 @@ impl Caret {
     ///
     /// (is_positive, index)
     pub fn to_index(&self) -> (bool, usize) {
-        if self.is_back() {
+        if self.is_facing_left() {
             // 負の無限大の方を向いているとき。
             if self.number <= 0 {
                 // 0以下の左隣は負。負の配列では-1します。

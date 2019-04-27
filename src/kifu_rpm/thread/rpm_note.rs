@@ -87,9 +87,9 @@ impl RpmNote {
         }
 
         // カウントアップ。
-        let first_used_caret = note_caret.get_and_go(comm, "note-parse_1note");
+        let first_used_caret = note_caret.go_next(comm, "note-parse_1note");
 
-        let mut token_caret = Caret::new_next_caret();
+        let mut token_caret = Caret::new_right_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
             RpmNoteOpe::parse_1ope(
                 &cassette_tape_j.tape.ope[first_used_caret as usize],
