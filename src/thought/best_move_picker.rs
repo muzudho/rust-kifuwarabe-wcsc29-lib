@@ -105,7 +105,7 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = RpmTapeBox::from_box_file(&file);
+            let cassette_tape_box_j = RpmTapeBox::from_box_file(&file, &app);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));

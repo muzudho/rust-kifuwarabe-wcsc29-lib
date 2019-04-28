@@ -26,27 +26,28 @@ impl RpmTapeBox {
         }
     }
 
-    pub fn push(&mut self, tape: RpmTape) {
-        self.tape_box.push(tape);
-    }
-
     /// JSONファイル読み取り。
     ///
     /// # Arguments
     ///
     /// * `box_file` - ファイル名。存在しないファイルの場合、新規作成。
-    pub fn from_box_file(box_file: &str) -> Self {
+    pub fn from_box_file(box_file: &str, app: &Application) -> Self {
         let path = Path::new(box_file);
         let mut file = match File::open(path) {
             Ok(x) => x,
             Err(_err) => {
                 // 存在しないファイルの場合、新規作成。
-                OpenOptions::new()
+                let file_obj = OpenOptions::new()
                     .create(true)
                     .write(true)
                     .read(true)
                     .open(path)
-                    .unwrap()
+                    .unwrap();
+
+                // ダミーの内容を書いておきたい☆（＾～＾）
+                RpmTapeBox::new().write(box_file, &app.comm);
+
+                file_obj
             }
         };
 
@@ -62,6 +63,10 @@ impl RpmTapeBox {
                 panic!(err);
             }
         }
+    }
+
+    pub fn push(&mut self, tape: RpmTape) {
+        self.tape_box.push(tape);
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
@@ -81,7 +86,7 @@ impl RpmTapeBox {
     }
 
     /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
-    pub fn write(&self, file_name: String, comm: &Communication) {
+    pub fn write(&self, file_name: &str, comm: &Communication) {
         comm.println(&format!("#Write tape box to '{}'...", file_name));
 
         let path = Path::new(&file_name);

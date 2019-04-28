@@ -79,7 +79,7 @@ impl CassetteDeck {
         if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
             // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
             let file_name = learning_box.get_file_name();
-            learning_box.to_rpm(board_size).write(file_name, &app.comm);
+            learning_box.to_rpm(board_size).write(&file_name, &app.comm);
 
             if 499 < learning_box.len() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）

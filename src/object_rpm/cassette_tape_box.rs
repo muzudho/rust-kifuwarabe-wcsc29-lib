@@ -24,7 +24,7 @@ impl CassetteTapeBox {
     }
 
     pub fn from_file(file_name: String, board_size: BoardSize, app: &Application) -> Self {
-        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name);
+        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
         rpm_tape_box.to_object(board_size, &app)
     }
 
@@ -161,6 +161,6 @@ impl CassetteTapeBox {
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
-        rpm_tape_box.write(self.file.to_string(), &app.comm);
+        rpm_tape_box.write(&self.file, &app.comm);
     }
 }
