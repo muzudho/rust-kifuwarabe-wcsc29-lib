@@ -13,8 +13,12 @@ pub struct CsaConverter {}
 impl CsaConverter {
     /// .csa ファイルを読み取り、.tapefrag ファイルを書きだします。
     pub fn convert_csa_tape_fragment(input_path: &str, deck: &mut CassetteDeck, app: &Application) {
-        app.comm
-            .println(&format!("ConvCSA : input_path: {}", input_path));
+        app.comm.println("### Convert CSA tape fragment ###");
+        app.comm.println(&format!("Input_path: '{}'.", input_path));
+        app.comm.println(&format!(
+            "L-tape box file: '{}'.",
+            deck.get_learning_tape_box_file_name()
+        ));
 
         // Model.
         let mut position = Position::new_honshogi_origin();

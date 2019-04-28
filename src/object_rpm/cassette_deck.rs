@@ -120,21 +120,13 @@ impl CassetteDeck {
         }
     }
 
-    /*
-    /// テープの文字化。
-    pub fn to_mut_tape_sign(
-        &mut self,
-        slot: Slot,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> (String, String) {
-        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
-            tape_box.get_sign_of_current_tape(board_size)
+    pub fn get_learning_tape_box_file_name(&self) -> String {
+        if let Some(tape_box) = &self.slots[Slot::Learning as usize].tape_box {
+            tape_box.get_file_name()
         } else {
-            panic!("tape box none.");
+            panic!("l_tape box none.");
         }
     }
-    */
 
     pub fn get_ply(&self, slot: Slot) -> i16 {
         self.slots[slot as usize].ply
