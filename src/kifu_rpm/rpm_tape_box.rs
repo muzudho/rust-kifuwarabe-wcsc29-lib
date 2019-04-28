@@ -31,11 +31,22 @@ impl RpmTapeBox {
     }
 
     /// JSONファイル読み取り。
+    ///
+    /// # Arguments
+    ///
+    /// * `box_file` - ファイル名。存在しないファイルの場合、新規作成。
     pub fn from_box_file(box_file: &str) -> Self {
         let path = Path::new(box_file);
         let mut file = match File::open(path) {
             Ok(x) => x,
-            Err(err) => panic!("File open error. {:?}", err),
+            Err(_err) => {
+                // 存在しないファイルの場合、新規作成。
+                OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .open(path)
+                    .unwrap()
+            }
         };
 
         let mut contents = String::new();
