@@ -19,7 +19,8 @@ pub struct KifuwarabeWcsc29Config {
     pub expansion: Kw29Directories,
     pub formation: Kw29Directories,
     pub eating: Kw29Directories,
-    pub learning: String,
+    pub recording: String,
+    pub tape_fragments: String,
     pub rpm_record: String,
 }
 impl KifuwarabeWcsc29Config {

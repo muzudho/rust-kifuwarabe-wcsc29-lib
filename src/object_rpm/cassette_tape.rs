@@ -1,9 +1,13 @@
+extern crate rand;
+use application::Application;
 use board_size::*;
 use common::caret::*;
 use communication::*;
+use conf::kifuwarabe_wcsc29_config::*;
 use object_rpm::integer_note_vec::*;
 use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::*;
+use rand::Rng;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
@@ -31,6 +35,7 @@ impl CassetteTapeLabel {
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1753122
 pub struct CassetteTape {
+    pub fragment_file_name: String,
     pub caret: Caret,
     pub label: CassetteTapeLabel,
     pub tracks: IntegerNoteVec,
@@ -46,8 +51,24 @@ impl fmt::Display for CassetteTape {
     }
 }
 impl CassetteTape {
-    pub fn new_facing_right_cassette_tape() -> Self {
+    pub fn new_facing_right_at_random(app: &Application) -> Self {
         CassetteTape {
+            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf),
+            caret: Caret::new_facing_right_caret(),
+            label: CassetteTapeLabel {
+                date: "".to_string(),
+                event: "".to_string(),
+                player1: "".to_string(),
+                player2: "".to_string(),
+                read_file: "".to_string(),
+            },
+            tracks: IntegerNoteVec::default(),
+        }
+    }
+
+    pub fn new_facing_right_with_file(new_file_for_write: String) -> Self {
+        CassetteTape {
+            fragment_file_name: new_file_for_write,
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
                 date: "".to_string(),
@@ -61,8 +82,9 @@ impl CassetteTape {
     }
 
     /// 指し手１つから、テープを作るぜ☆（＾～＾）
-    pub fn from_1_move(rmove: &ShogiMove) -> Self {
+    pub fn from_1_move(rmove: &ShogiMove, app: &Application) -> Self {
         CassetteTape {
+            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
                 date: "".to_string(),
@@ -84,6 +106,22 @@ impl CassetteTape {
 
     pub fn reset_caret(&mut self) {
         self.caret.reset();
+    }
+
+    /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
+    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
+        let mut rng = rand::thread_rng();
+        let rand1: u64 = rng.gen();
+        let rand2: u64 = rng.gen();
+        let rand3: u64 = rng.gen();
+        let rand4: u64 = rng.gen();
+        let file = format!("{}-{}-{}-{}.tapefrag", rand1, rand2, rand3, rand4).to_string();
+
+        Path::new(&kw29_conf.tape_fragments)
+            .join(file)
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 
     pub fn get_positive_peak_caret(&self) -> i16 {
@@ -134,16 +172,14 @@ impl CassetteTape {
         self.tracks.to_sign(board_size)
     }
 
-    /// テープ・フラグメント単位で書きだすぜ☆（＾～＾）
-    pub fn write_cassette_tape_fragment(
-        &self,
-        file: String,
-        board_size: BoardSize,
-        comm: &Communication,
-    ) {
-        comm.println(&format!("#Write tape fragment to '{}'...", file));
+    /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
+    pub fn write_cassette_tape_fragment(&self, board_size: BoardSize, comm: &Communication) {
+        comm.println(&format!(
+            "#Write tape fragment to '{}'...",
+            self.fragment_file_name
+        ));
 
-        let path = Path::new(&file);
+        let path = Path::new(&self.fragment_file_name);
 
         // ディレクトリー作成。
         if let Some(parent) = path.parent() {
@@ -152,7 +188,7 @@ impl CassetteTape {
                 Err(err) => panic!(err),
             }
         } else {
-            panic!("Create directory fail. {}", file);
+            panic!("Create directory fail. {}", self.fragment_file_name);
         }
 
         // 末尾に カンマ を付けて追記していくぜ☆（＾～＾）

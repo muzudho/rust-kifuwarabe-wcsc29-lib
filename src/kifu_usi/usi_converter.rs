@@ -1,10 +1,10 @@
 use address::*;
+use application::Application;
 use communication::*;
 use kifu_usi::usi_move::*;
 use kifu_usi::usi_tape::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
-use object_rpm::cassette_deck::cassette_tape_recorder::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::cassette_deck::*;
+use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_note_operation::*;
 use position::*;
 
@@ -17,9 +17,8 @@ impl UsiConverter {
     pub fn play_out_usi_tape(
         position: &mut Position,
         utape: &UsiTape,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) {
         // 局面を動かしながら変換していく。
         let mut ply = 1;
@@ -32,8 +31,7 @@ impl UsiConverter {
                     &rnote_ope,
                     position,
                     tape_box_conveyor,
-                    recorder,
-                    comm,
+                    &app,
                 );
             }
 

@@ -1,11 +1,11 @@
 use address::*;
+use application::Application;
 use board_size::*;
 use communication::*;
 use kifu_usi::usi_move::*;
 use kifu_usi::usi_position::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
-use object_rpm::cassette_deck::cassette_tape_recorder::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::cassette_deck::*;
+use object_rpm::cassette_tape_recorder::*;
 use piece_etc::*;
 use position::*;
 use std::*;
@@ -15,17 +15,15 @@ pub struct Fen {}
 impl Fen {
     pub fn play_startpos(
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) -> bool {
         // 大橋流を始めるところまでリセット。
-        recorder.clear_tape_editor1();
-        tape_box_conveyor.clear_tape_editor2();
+        tape_box_conveyor.clear_tape_editor(&app);
         position.reset_origin_position();
 
         // 大橋流で初期局面まで指す☆（＾～＾）
-        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, &app);
         true
     }
 
@@ -73,14 +71,13 @@ impl Fen {
         line: &str,
         start: &mut usize,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) -> bool {
-        match UsiPosition::parse_startpos_test(line, start, comm) {
+        match UsiPosition::parse_startpos_test(line, start, &app.comm) {
             Some(is_startpos) => {
                 if is_startpos {
-                    Fen::play_startpos(position, tape_box_conveyor, recorder, comm)
+                    Fen::play_startpos(position, tape_box_conveyor, &app)
                 } else {
                     Fen::do_sfen(line, start, position)
                 }

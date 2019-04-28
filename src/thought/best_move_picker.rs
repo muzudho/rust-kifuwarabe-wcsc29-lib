@@ -6,10 +6,9 @@ use human::human_interface::*;
 use kifu_rpm::rpm_cassette_tape_box::*;
 use kifu_rpm::rpm_tape::*;
 use kifu_usi::usi_move::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
-use object_rpm::cassette_deck::cassette_tape_recorder::*;
+use object_rpm::cassette_deck::*;
 use object_rpm::cassette_tape::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_move::*;
 use object_rpm::shogi_thread::*;
 use piece_etc::*;
@@ -58,8 +57,7 @@ impl BestMovePicker {
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
         // クリアー。
@@ -106,7 +104,7 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = CassetteTapeBoxForJson::load_tape_box_by_file(&file);
+            let cassette_tape_box_j = RpmTapeBox::load_tape_box_by_file(&file);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
@@ -132,15 +130,11 @@ impl BestMovePicker {
                             position.find_wild(Some(position.get_phase()), *my_piece_id)
                         {
                             // Display.
-                            HumanInterface::bo(
-                                &app.comm,
-                                &tape_box_conveyor.recording_cassette_tape,
-                                recorder.ply,
-                                &position,
-                            );
+                            HumanInterface::bo(tape_box_conveyor, &position, &app);
+
                             app.comm.println(&format!(
                                 "[{}] Find: {}'{}'{}.",
-                                recorder.ply,
+                                tape_box_conveyor.recording_tape_ply,
                                 position.get_phase().to_log(),
                                 my_idp.to_human_presentable(),
                                 my_addr_obj.to_physical_sign(position.get_board_size())
@@ -153,12 +147,12 @@ impl BestMovePicker {
                             loop {
                                 // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
                                 let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
-                                    &app.comm,
                                     position,
                                     &cassette_tape_j,
                                     *my_piece_id,
                                     my_addr_obj,
                                     &mut note_caret,
+                                    &app,
                                 );
 
                                 if is_end_of_tape {
@@ -191,7 +185,7 @@ impl BestMovePicker {
                             // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
                             // それを逆順にすれば　指し手だぜ☆（＾～＾）
                             tape_box_conveyor
-                                .get_mut_recording_cassette_tape()
+                                .get_mut_recording_tape(&app)
                                 .caret
                                 .turn_to_opponent();
                             app.comm
@@ -206,14 +200,14 @@ impl BestMovePicker {
                             );
                             */
                             CassetteTapeRecorder::read_tape_for_n_moves_forcely(
-                                &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
+                                &mut tape_box_conveyor.get_mut_recording_tape(&app),
                                 record_count,
                                 position,
-                                recorder.ply,
+                                tape_box_conveyor.recording_tape_ply,
                                 &app.comm,
                             );
                             tape_box_conveyor
-                                .get_mut_recording_cassette_tape()
+                                .get_mut_recording_tape(&app)
                                 .caret
                                 .turn_to_opponent();
                             app.comm.println("Backed.");
@@ -341,12 +335,12 @@ impl BestMovePicker {
     /// (move_opt, is_end_of_tape)
     pub fn pattern_match_and_go(
         &mut self,
-        comm: &Communication,
         position: &mut Position,
         cassette_tape_j: &RpmCasetteTapeForJson,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
+        app: &Application,
     ) -> (Option<ShogiMove>, bool) {
         /*
         comm.println(&format!(
@@ -356,7 +350,7 @@ impl BestMovePicker {
         */
         // とりあえず 1手分をパースします。
         if let (_parsed_note_count, Some(rmove)) = ShogiMove::parse_1move(
-            comm,
+            &app.comm,
             &cassette_tape_j,
             note_caret,
             position.get_board_size(),
@@ -366,7 +360,7 @@ impl BestMovePicker {
             let (subject_pid, subject_address, opject_pid_opt, object_address_opt) =
                 rmove.to_first_touch_piece_id(position.get_board_size());
 
-            comm.println(&format!(
+            app.comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
                 note_caret.to_human_presentable(),
                 rmove.to_human_presentable(position.get_board_size()),
@@ -387,7 +381,7 @@ impl BestMovePicker {
             ));
 
             if self.position_match(
-                comm,
+                &app.comm,
                 position,
                 my_piece_id,
                 my_addr_obj,
@@ -405,7 +399,7 @@ impl BestMovePicker {
                 //recorder.put_1note(&rmove, comm);
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
-                let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove);
+                let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
                 /*
                 println!(
                     "BMP: This move rtape: {}.",
@@ -418,23 +412,23 @@ impl BestMovePicker {
                     &mut cassette_tape_2,
                     position,
                     ply_2,
-                    &comm,
+                    &app.comm,
                 ) {
                     // 合法タッチ。戻さず抜けます。
-                    comm.println(&format!(
+                    app.comm.println(&format!(
                         "Hit and go! ({}) {}",
                         subject_pid.to_human_presentable(),
                         &rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo(&comm, &cassette_tape_2, ply_2, &position);
+                    HumanInterface::bo_with_tape(&cassette_tape_2, ply_2, &position, &app);
                     (Some(rmove), false)
                 } else {
                     // 非合法タッチ。（自動で戻されています）
-                    comm.println(&format!(
+                    app.comm.println(&format!(
                         "Canceled: {}.",
                         rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo(&comm, &cassette_tape_2, ply_2, &position);
+                    HumanInterface::bo_with_tape(&cassette_tape_2, ply_2, &position, &app);
                     (None, false)
                 }
             } else {
@@ -443,7 +437,7 @@ impl BestMovePicker {
             }
         } else {
             // テープの終わり。
-            comm.println("Break: End of tape.");
+            app.comm.println("Break: End of tape.");
             (None, true)
         }
     }

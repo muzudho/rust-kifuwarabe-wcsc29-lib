@@ -7,17 +7,18 @@ use std::path::Path;
 /// -rbox.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct CassetteTapeBoxForJson {
+pub struct RpmTapeBox {
     pub tape_box: Vec<RpmCasetteTapeForJson>,
 }
-impl CassetteTapeBoxForJson {
+impl RpmTapeBox {
     pub fn new() -> Self {
-        CassetteTapeBoxForJson {
+        RpmTapeBox {
             tape_box: Vec::new(),
         }
     }
+
+    /// JSONファイル読み取り。
     pub fn load_tape_box_by_file(file: &str) -> Self {
-        // JSONファイル。
         let path = Path::new(file);
         let mut file = match File::open(path) {
             Ok(x) => x,
@@ -35,9 +36,8 @@ impl CassetteTapeBoxForJson {
             Err(err) => {
                 print!("info File: {:?}", file);
                 print!("info Unexpected cassette tape box: {}", err);
-                CassetteTapeBoxForJson::new()
+                RpmTapeBox::new()
             }
-            // TODO Err(err) => panic!("Unexpected config: {}", err),
         }
     }
     pub fn to_json(&self) -> String {

@@ -3,45 +3,37 @@ use application::Application;
 use communication::*;
 use kifu_csa::csa_move::*;
 use kifu_csa::csa_tape::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
-use object_rpm::cassette_deck::cassette_tape_recorder::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::cassette_deck::*;
+use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use position::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
+    /// .csa ファイルを読み取り、.tapefrag ファイルを書きだします。
     pub fn convert_csa_tape_fragment(
         input_path: &str,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteDeck,
         app: &Application,
     ) {
-        // comm.println(&format!("input_path: {}", input_path));
+        app.comm
+            .println(&format!("ConvCSA : input_path: {}", input_path));
 
         // Model.
         let mut position = Position::default();
         let ctape = CsaTape::load(&input_path, &app.comm);
 
         // Play.
-        CsaConverter::play_out_csa_tape(
-            &ctape,
-            &mut position,
-            tape_box_conveyor,
-            recorder,
-            &app.comm,
-        );
+        CsaConverter::play_out_csa_tape(&ctape, &mut position, tape_box_conveyor, &app);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
-        let output_tapefrag_path =
-            CassetteTapeBoxConveyor::create_file_full_path(".tapefrag", &app.kw29_conf);
-        tape_box_conveyor.write_cassette_tape_fragment(
-            output_tapefrag_path,
-            position.get_board_size(),
-            &app,
-        );
+        /*
+        let output_tapefrag_path = tape_box_conveyor.recording_cassette_tape.
+            CassetteDeck::create_file_full_path(".tapefrag", &app.kw29_conf);
+         */
+        tape_box_conveyor.write_cassette_tape_fragment(position.get_board_size(), &app);
         //.write_cassette_tape_box(position.get_board_size(), &app);
         // tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
 
@@ -52,25 +44,23 @@ impl CsaConverter {
     pub fn play_out_csa_tape(
         crecord: &CsaTape,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, app);
 
         let mut ply = 1;
         for cmove in &crecord.items {
-            let rnote_opes = CsaConverter::convert_move(comm, cmove, position, ply);
+            let rnote_opes = CsaConverter::convert_move(&app.comm, cmove, position, ply);
 
             for rnote_ope in rnote_opes {
                 CassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,
-                    recorder,
-                    comm,
+                    &app,
                 );
             }
 

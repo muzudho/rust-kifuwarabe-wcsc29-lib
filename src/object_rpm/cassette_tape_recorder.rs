@@ -1,10 +1,10 @@
 use address::*;
+use application::Application;
 use board_size::*;
 use communication::*;
 use human::human_interface::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
+use object_rpm::cassette_deck::CassetteDeck;
 use object_rpm::cassette_tape::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
 use object_rpm::shogi_note::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
@@ -32,9 +32,8 @@ impl CassetteTapeRecorder {
     /// オリジン・ポジションから、平手初期局面に進めます。
     pub fn play_ohashi_starting(
         pos: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) {
         use piece_etc::Phase::*;
         use piece_etc::PieceIdentify::*;
@@ -85,28 +84,11 @@ impl CassetteTapeRecorder {
         ];
 
         for element in array.iter() {
-            comm.println("rpm_move_player.rs:play_ohashi_starting: touch_1note_ope");
-            CassetteTapeRecorder::touch_1note_ope(
-                &element.0,
-                pos,
-                tape_box_conveyor,
-                recorder,
-                comm,
-            );
-            CassetteTapeRecorder::touch_1note_ope(
-                &element.1,
-                pos,
-                tape_box_conveyor,
-                recorder,
-                comm,
-            );
-            CassetteTapeRecorder::touch_1note_ope(
-                &element.2,
-                pos,
-                tape_box_conveyor,
-                recorder,
-                comm,
-            );
+            app.comm
+                .println("rpm_move_player.rs:play_ohashi_starting: touch_1note_ope");
+            CassetteTapeRecorder::touch_1note_ope(&element.0, pos, tape_box_conveyor, &app);
+            CassetteTapeRecorder::touch_1note_ope(&element.1, pos, tape_box_conveyor, &app);
+            CassetteTapeRecorder::touch_1note_ope(&element.2, pos, tape_box_conveyor, &app);
         }
     }
 
@@ -116,20 +98,19 @@ impl CassetteTapeRecorder {
         // ノートの中に Ply もある☆（＾～＾）
         rnote_ope: &ShogiNoteOpe,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) {
         let board_size = position.get_board_size();
         let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
-            position.touch_beautiful_1note(&rnote_ope, comm, board_size)
+            position.touch_beautiful_1note(&rnote_ope, &app.comm, board_size)
         {
             PieceIdentify::from_number(piece_identify.get_id().get_number())
         } else {
             None
         };
 
-        HumanInterface::show_position(comm, recorder.ply, position);
+        HumanInterface::show_position(&app.comm, tape_box_conveyor.recording_tape_ply, position);
         let rnote = ShogiNote::from_id_ope(pid_opt, *rnote_ope);
         /*
         comm.println(&format!(
@@ -137,7 +118,7 @@ impl CassetteTapeRecorder {
             rnote.to_human_presentable(board_size)
         ));
          */
-        recorder.put_1note(rnote, tape_box_conveyor, comm);
+        tape_box_conveyor.put_1note(rnote, app);
     }
 
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
@@ -165,27 +146,6 @@ impl CassetteTapeRecorder {
 
         is_legal_touch
     }
-
-    /*
-    /// 棋譜の上を進めます。
-    pub fn try_n_moves_on_tape(
-        repeats: i16,
-        ply: i16,
-        cassette_tape: &mut CassetteTape,
-        position: &mut Position,
-        comm: &Communication,
-    ) {
-        for _i in 0..repeats {
-            CassetteTapeRecorder::try_read_tape_for_1move(
-                cassette_tape,
-                position,
-                ply,
-                false,
-                &comm,
-            );
-        }
-    }
-    */
 
     /// 1手進める。（非合法タッチは自動で戻します）
     ///

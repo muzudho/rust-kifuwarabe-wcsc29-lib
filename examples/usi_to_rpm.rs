@@ -7,8 +7,8 @@ use kifuwarabe_wcsc29_lib::kifu_usi::fen::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_converter::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_position::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_tape::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::cassette_tape_editor::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_editor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::position::*;
 use std::env;
 
@@ -49,9 +49,8 @@ pub fn main() {
     let mut utape = UsiTape::default();
 
     // Record.
-    let mut tape_box_conveyer = CassetteTapeBoxConveyor::new_empty();
+    let mut tape_box_conveyer = CassetteDeck::new_empty();
     tape_box_conveyer.choice_box_manually("sheet.txt");
-    let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 
     let mut start = 0;
     if Fen::parse_initial_position(
@@ -89,8 +88,7 @@ pub fn main() {
         app.comm.println("Position parsed.");
     }
 
-    recorder.clear_tape_editor1();
-    tape_box_conveyer.clear_tape_editor2();
+    tape_box_conveyer.clear_tape_editor();
     UsiConverter::play_out_usi_tape(
         &mut position,
         &utape,

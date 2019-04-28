@@ -3,8 +3,8 @@ extern crate kifuwarabe_wcsc29_lib;
 
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::cassette_tape_editor::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_editor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::*;
 use std::ffi::OsStr;
 use std::path::Path;
@@ -50,7 +50,7 @@ fn main() {
     let app = Application::new();
 
     // Record.
-    let mut tape_box_conveyer = CassetteTapeBoxConveyor::new_empty();
+    let mut tape_box_conveyer = CassetteDeck::new_empty();
     tape_box_conveyer.choice_box_manually(&tape_box_file_for_write);
     let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 

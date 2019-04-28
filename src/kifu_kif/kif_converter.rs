@@ -3,9 +3,8 @@ use application::Application;
 use communication::*;
 use kifu_kif::kif_move::*;
 use kifu_kif::kif_tape::*;
-use object_rpm::cassette_deck::cassette_tape_editor::*;
-use object_rpm::cassette_deck::cassette_tape_recorder::*;
-use object_rpm::cassette_tape_box_conveyor::CassetteTapeBoxConveyor;
+use object_rpm::cassette_deck::*;
+use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use position::*;
@@ -14,8 +13,7 @@ pub struct KifConverter {}
 impl KifConverter {
     pub fn convert_kif_tape_fragment(
         input_path: &str,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
+        tape_box_conveyor: &mut CassetteDeck,
         app: &Application,
     ) {
         // comm.println(&format!("input_path: {}", input_path));
@@ -25,23 +23,15 @@ impl KifConverter {
         let ktape = KifTape::load(&input_path);
 
         // Play.
-        KifConverter::play_out_kifu_tape(
-            &mut position,
-            &ktape,
-            tape_box_conveyor,
-            recorder,
-            &app.comm,
-        );
+        KifConverter::play_out_kifu_tape(&mut position, &ktape, tape_box_conveyor, &app);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
+        /*
         let output_tapefrag_path =
-            CassetteTapeBoxConveyor::create_file_full_path(".tapefrag", &app.kw29_conf);
-        tape_box_conveyor.write_cassette_tape_fragment(
-            output_tapefrag_path,
-            position.get_board_size(),
-            &app,
-        );
+            CassetteDeck::create_file_full_path(".tapefrag", &app.kw29_conf);
+            */
+        tape_box_conveyor.write_cassette_tape_fragment(position.get_board_size(), &app);
         /*
         // Save. (Append)
         tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
@@ -54,25 +44,23 @@ impl KifConverter {
     fn play_out_kifu_tape(
         position: &mut Position,
         ktape: &KifTape,
-        tape_box_conveyor: &mut CassetteTapeBoxConveyor,
-        recorder: &mut CassetteTapeEditor,
-        comm: &Communication,
+        tape_box_conveyor: &mut CassetteDeck,
+        app: &Application,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, recorder, comm);
+        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, &app);
 
         let mut ply = 1;
         for kmove in &ktape.items {
-            let rnote_opes = KifConverter::convert_move(comm, kmove, position, ply);
+            let rnote_opes = KifConverter::convert_move(&app.comm, kmove, position, ply);
 
             for rnote_ope in rnote_opes {
                 CassetteTapeRecorder::touch_1note_ope(
                     &rnote_ope,
                     position,
                     tape_box_conveyor,
-                    recorder,
-                    comm,
+                    &app,
                 );
             }
 

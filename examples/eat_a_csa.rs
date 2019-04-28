@@ -8,8 +8,8 @@ use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_tape::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::cassette_tape_editor::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box_conveyor::*;
+use kifuwarabe_wcsc29_lib::object_rpm::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::position::*;
 
 #[derive(Debug)]
@@ -43,7 +43,7 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Record.
-    let mut tape_box_conveyor = CassetteTapeBoxConveyor::new_empty();
+    let mut tape_box_conveyor = CassetteDeck::new_empty();
     let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 
     // Model.
