@@ -4,9 +4,7 @@ use human::human_interface::*;
 use object_rpm::cassette_tape::CassetteTape;
 use object_rpm::cassette_tape_box::*;
 use object_rpm::shogi_move::ShogiMove;
-use object_rpm::shogi_move::*;
 use object_rpm::shogi_note::ShogiNote;
-use object_rpm::shogi_note::*;
 use shogi_ban::position::*;
 
 pub enum Slot {
@@ -104,6 +102,14 @@ impl CassetteDeck {
     pub fn write_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
         if let Some(tape_box) = self.slots[Slot::Learning as usize].tape_box {
             tape_box.write_tape_fragment_of_current_tape(board_size, &app);
+        } else {
+            panic!("tape box none.");
+        }
+    }
+
+    pub fn write_tape_box(&mut self, board_size: BoardSize, app: &Application) {
+        if let Some(tape_box) = self.slots[Slot::Learning as usize].tape_box {
+            tape_box.write_tape_box(board_size, &app);
         } else {
             panic!("tape box none.");
         }

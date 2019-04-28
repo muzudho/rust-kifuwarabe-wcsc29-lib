@@ -57,14 +57,18 @@ impl RpmTapeTracks {
         for (i, ope_element) in id_vec.iter().enumerate() {
             let id: i8 = id_vec[i].parse().unwrap();
 
-            let caret = Caret::new_facing_right_caret();
-            let (_last_caret, Some(note_ope)) =
+            let mut caret = Caret::new_facing_right_caret();
+            let (_last_caret, note_ope_opt) =
                 ShogiNoteOpe::parse_1ope(&ope_element, &mut caret, board_size, &app.comm);
 
-            notes.push(ShogiNote {
-                identify: PieceIdentify::from_number(id),
-                operation: note_ope,
-            });
+            if let Some(note_ope) = note_ope_opt {
+                notes.push(ShogiNote {
+                    identify: PieceIdentify::from_number(id),
+                    operation: note_ope,
+                });
+            } else {
+                panic!("Note_ope none.")
+            }
         }
 
         notes

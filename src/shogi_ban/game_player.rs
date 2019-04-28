@@ -152,7 +152,7 @@ impl GamePlayer {
     ///
     /// 合法タッチか否か。
     pub fn try_read_tape_for_1move(
-        cassette_tape: &mut CassetteTape,
+        tape_box: &mut CassetteTapeBox,
         position: &mut Position,
         ply: i16,
         app: &Application,
@@ -161,7 +161,7 @@ impl GamePlayer {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = cassette_tape.go_1note_forcely(&app.comm) {
+        while let Some(rnote) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
                 "<NXm1:{}>",
                 rnote.to_human_presentable(position.get_board_size())
@@ -183,15 +183,15 @@ impl GamePlayer {
         if !is_legal_touch {
             // 非合法タッチを自動で戻す。
             app.comm.println("Illegal, go opponent forcely!");
-            cassette_tape.caret.turn_to_opponent();
+            tape_box.turn_caret_to_opponent();
             GamePlayer::read_tape_for_n_notes_forcely(
-                cassette_tape,
+                &mut tape_box,
                 forwarding_count,
                 position,
                 ply,
                 &app,
             );
-            cassette_tape.caret.turn_to_opponent();
+            tape_box.turn_caret_to_opponent();
 
             return false;
         }
@@ -255,14 +255,14 @@ impl GamePlayer {
 
     /// 非合法手はない前提で、強制的にテープを進めます。
     pub fn read_tape_for_n_notes_forcely(
-        cassette_tape: &mut CassetteTape,
+        tape_box: &mut CassetteTapeBox,
         repeat: u8,
         position: &mut Position,
         ply: i16,
         app: &Application,
     ) {
         for i in 0..repeat {
-            if let Some(rnote) = cassette_tape.go_1note_forcely(&app.comm) {
+            if let Some(rnote) = tape_box.go_1note_forcely(&app) {
                 app.comm
                     .println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
                 GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);

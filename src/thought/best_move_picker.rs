@@ -8,6 +8,7 @@ use kifu_rpm::rpm_tape_box::*;
 use kifu_usi::usi_move::*;
 use object_rpm::cassette_deck::*;
 use object_rpm::cassette_tape::*;
+use object_rpm::cassette_tape_box::*;
 use object_rpm::shogi_move::*;
 use object_rpm::shogi_thread::*;
 use piece_etc::*;
@@ -389,7 +390,9 @@ impl BestMovePicker {
                 //recorder.put_1note(&rmove, comm);
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
+                let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                 let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
+                cassette_tape_box_2.change_with_training_tape(cassette_tape_2, &app);
                 /*
                 println!(
                     "BMP: This move rtape: {}.",
@@ -398,8 +401,12 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if GamePlayer::try_read_tape_for_1move(&mut cassette_tape_2, position, ply_2, &app)
-                {
+                if GamePlayer::try_read_tape_for_1move(
+                    &mut cassette_tape_box_2,
+                    position,
+                    ply_2,
+                    &app,
+                ) {
                     // 合法タッチ。戻さず抜けます。
                     app.comm.println(&format!(
                         "Hit and go! ({}) {}",

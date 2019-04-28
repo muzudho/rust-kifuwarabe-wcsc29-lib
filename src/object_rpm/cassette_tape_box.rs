@@ -4,6 +4,11 @@ use board_size::*;
 use kifu_rpm::rpm_tape_box::*;
 use object_rpm::cassette_tape::*;
 use object_rpm::shogi_note::ShogiNote;
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+use std::path::Path;
+use std::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {
@@ -27,6 +32,12 @@ impl CassetteTapeBox {
 
     pub fn turn_caret_to_opponent(&mut self) {
         self.tapes[self.tape_index].caret.turn_to_opponent();
+    }
+    pub fn turn_caret_to_negative(&mut self) {
+        self.tapes[self.tape_index].caret.turn_to_negative();
+    }
+    pub fn turn_caret_to_positive(&mut self) {
+        self.tapes[self.tape_index].caret.turn_to_positive();
     }
 
     /// # Returns
@@ -97,12 +108,17 @@ impl CassetteTapeBox {
         self.file
     }
 
-    /// 新しいラーニング・テープを追加するぜ☆（＾ｑ＾）
+    /// トレーニング・テープを交換し、新しいラーニング・テープを追加するぜ☆（＾ｑ＾）
     pub fn change(&mut self, app: &Application) -> CassetteTape {
         let brandnew = CassetteTape::new_facing_right(&app);
         self.tapes.push(brandnew);
         self.tape_index = self.tapes.len() - 1;
         brandnew
+    }
+
+    pub fn change_with_training_tape(&mut self, training_tape: CassetteTape, app: &Application) {
+        self.tapes.push(training_tape);
+        self.tape_index = self.tapes.len() - 1;
     }
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
@@ -126,5 +142,11 @@ impl CassetteTapeBox {
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
     pub fn write_tape_fragment_of_current_tape(&self, board_size: BoardSize, app: &Application) {
         self.tapes[self.tape_index].write_tape_fragment(board_size, &app.comm)
+    }
+
+    /// このテープ・ボックスを書きだすぜ☆（＾～＾）
+    pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
+        let rpm_tape_box = self.to_rpm(board_size);
+        rpm_tape_box.write(self.file, board_size, &app.comm);
     }
 }

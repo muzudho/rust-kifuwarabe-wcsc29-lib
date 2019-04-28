@@ -66,7 +66,7 @@ pub fn main_loop() {
     let app = Application::new();
 
     // Record.
-    let mut deck = CassetteDeck::new_empty();
+    let mut deck = CassetteDeck::new_empty(&app);
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -119,7 +119,7 @@ pub fn main_loop() {
         } else if line.starts_with("bo") {
             // Board.
 
-            HumanInterface::bo(&mut deck, &position, &app);
+            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
 
         /*
         // #####
@@ -135,28 +135,28 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            deck.pop_1note(&mut position, &app);
+            deck.pop_1note(Slot::Learning, &mut position, &app);
 
-            HumanInterface::bo(&mut deck, &position, &app);
+            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
-            deck.pop_1move(&mut position, &app);
+            deck.pop_1move(Slot::Learning, &mut position, &app);
 
-            HumanInterface::bo(&mut deck, &position, &app);
+            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                deck.pop_1move(&mut position, &app);
+                deck.pop_1move(Slot::Learning, &mut position, &app);
             }
 
-            HumanInterface::bo(&mut deck, &position, &app);
+            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                deck.pop_1move(&mut position, &app);
+                deck.pop_1move(Slot::Learning, &mut position, &app);
             }
 
-            HumanInterface::bo(&mut deck, &position, &app);
+            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
 
         // #####
         // # N #
