@@ -31,7 +31,6 @@ extern crate rand;
 extern crate regex;
 extern crate serde;
 extern crate serde_json;
-use std::io;
 pub mod address;
 pub mod application;
 pub mod board_size;
@@ -48,7 +47,7 @@ pub mod lib_sub;
 pub mod object_rpm;
 pub mod parser;
 pub mod piece_etc;
-pub mod position;
+pub mod shogi_ban;
 pub mod thought;
 use application::*;
 use human::human_interface::*;
@@ -57,8 +56,9 @@ use kifu_usi::usi_converter::*;
 use kifu_usi::usi_position::*;
 use lib_sub::*;
 use object_rpm::cassette_deck::*;
-use object_rpm::cassette_tape_converter::*;
-use position::*;
+use shogi_ban::game_player::*;
+use shogi_ban::position::*;
+use std::io;
 use thought::best_move_picker::*;
 
 pub fn main_loop() {
@@ -66,7 +66,7 @@ pub fn main_loop() {
     let app = Application::new();
 
     // Record.
-    let mut tape_box_conveyor = CassetteDeck::new_empty();
+    let mut deck = CassetteDeck::new_empty();
 
     let mut position = Position::default();
     let mut best_move_picker = BestMovePicker::default();
@@ -103,28 +103,23 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            CassetteTapeConverter::read_ope_track(
-                &line,
-                &mut position,
-                &mut tape_box_conveyor,
-                &app,
-            );
+            GamePlayer::read_ope_track(&line, &mut position, &mut deck, &app);
 
         // #####
         // # B #
         // #####
         } else if line == "b" {
-            LibSub::back_1_note(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::back_1_note(&mut position, &mut deck, &app);
         } else if line == "bb" {
-            LibSub::back_1_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::back_1_move(&mut position, &mut deck, &app);
         } else if line == "bbb" {
-            LibSub::back_10_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::back_10_move(&mut position, &mut deck, &app);
         } else if line == "bbbb" {
-            LibSub::back_400_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::back_400_move(&mut position, &mut deck, &app);
         } else if line.starts_with("bo") {
             // Board.
 
-            HumanInterface::bo(&mut tape_box_conveyor, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
 
         /*
         // #####
@@ -140,55 +135,50 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            tape_box_conveyor.pop_1note(&mut position, &app);
+            deck.pop_1note(&mut position, &app);
 
-            HumanInterface::bo(&mut tape_box_conveyor, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
-            tape_box_conveyor.pop_1move(&mut position, &app);
+            deck.pop_1move(&mut position, &app);
 
-            HumanInterface::bo(&mut tape_box_conveyor, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                tape_box_conveyor.pop_1move(&mut position, &app);
+                deck.pop_1move(&mut position, &app);
             }
 
-            HumanInterface::bo(&mut tape_box_conveyor, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                tape_box_conveyor.pop_1move(&mut position, &app);
+                deck.pop_1move(&mut position, &app);
             }
 
-            HumanInterface::bo(&mut tape_box_conveyor, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
 
         // #####
         // # N #
         // #####
         } else if line == "f" {
-            LibSub::forward_1_note(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::forward_1_note(&mut position, &mut deck, &app);
         // Forward 1note.
         } else if line == "ff" {
-            LibSub::forward_1_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::forward_1_move(&mut position, &mut deck, &app);
         } else if line == "fff" {
-            LibSub::forward_10_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::forward_10_move(&mut position, &mut deck, &app);
         } else if line == "ffff" {
-            LibSub::forward_400_move(&mut position, &mut tape_box_conveyor, &app);
+            LibSub::forward_400_move(&mut position, &mut deck, &app);
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
-            LibSub::go(
-                &mut best_move_picker,
-                &mut position,
-                &mut tape_box_conveyor,
-                &app,
-            );
+            LibSub::go(&mut best_move_picker, &mut position, &mut deck, &app);
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
-            LibSub::gameover(position.get_board_size(), &mut tape_box_conveyor, &app);
+            LibSub::gameover(position.get_board_size(), &mut deck, &app);
         // #####
         // # H #
         // #####
@@ -217,12 +207,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            CassetteTapeConverter::read_ope_track(
-                &line,
-                &mut position,
-                &mut tape_box_conveyor,
-                &app,
-            );
+            GamePlayer::read_ope_track(&line, &mut position, &mut deck, &app);
 
         // #####
         // # P #
@@ -233,13 +218,7 @@ pub fn main_loop() {
             let mut start = 0;
 
             //comm.println("#Lib: 'position' command(1).");
-            if Fen::parse_initial_position(
-                &line,
-                &mut start,
-                &mut position,
-                &mut tape_box_conveyor,
-                &app,
-            ) {
+            if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
                 urecord_opt = UsiPosition::parse_usi_line_moves(
                     &app.comm,
                     &line,
@@ -256,25 +235,14 @@ pub fn main_loop() {
             {
                 //comm.println("#Lib: 'position' command(2).");
                 let mut start = 0;
-                if Fen::parse_initial_position(
-                    &line,
-                    &mut start,
-                    &mut position,
-                    &mut tape_box_conveyor,
-                    &app,
-                ) {
+                if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
                     //comm.println("#Position parsed.");
                 }
 
                 if let Some(urecord) = urecord_opt {
                     // 差し替え。
-                    tape_box_conveyor.clear_tape_editor(&app);
-                    UsiConverter::play_out_usi_tape(
-                        &mut position,
-                        &urecord,
-                        &mut tape_box_conveyor,
-                        &app,
-                    );
+                    deck.change(None, position.get_board_size(), &app);
+                    UsiConverter::play_out_usi_tape(&mut position, &urecord, &mut deck, &app);
                 }
                 //comm.println("#Record converted1.");
                 //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);

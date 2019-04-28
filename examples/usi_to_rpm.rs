@@ -49,15 +49,15 @@ pub fn main() {
     let mut utape = UsiTape::default();
 
     // Record.
-    let mut tape_box_conveyer = CassetteDeck::new_empty();
-    tape_box_conveyer.choice_box_manually("sheet.txt");
+    let mut deck = CassetteDeck::new_empty();
+    deck.choice_box_manually("sheet.txt");
 
     let mut start = 0;
     if Fen::parse_initial_position(
         &line,
         &mut start,
         &mut position,
-        &mut tape_box_conveyer,
+        &mut deck,
         &mut recorder,
         &app.comm,
     ) {
@@ -81,24 +81,24 @@ pub fn main() {
         &line,
         &mut start,
         &mut position,
-        &mut tape_box_conveyer,
+        &mut deck,
         &mut recorder,
         &app.comm,
     ) {
         app.comm.println("Position parsed.");
     }
 
-    tape_box_conveyer.clear_tape_editor();
+    deck.change(None, position.get_board_size(), &app);
     UsiConverter::play_out_usi_tape(
         &mut position,
         &utape,
-        &mut tape_box_conveyer,
+        &mut deck,
         &mut recorder,
         &app.comm,
     );
     HumanInterface::bo(
         &app.comm,
-        &tape_box_conveyer.recording_cassette_tape,
+        &deck.recording_cassette_tape,
         recorder.ply,
         &position,
     );

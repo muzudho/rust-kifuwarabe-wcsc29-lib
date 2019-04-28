@@ -1,88 +1,130 @@
 extern crate rand;
 use application::Application;
 use board_size::*;
-use communication::*;
-use conf::kifuwarabe_wcsc29_config::*;
+use kifu_rpm::rpm_tape_box::*;
 use object_rpm::cassette_tape::*;
-use rand::Rng;
-use std::fs;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::path::Path;
+use object_rpm::shogi_note::ShogiNote;
 
-/// .rbox ファイルに対応。
+/// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {
     file: String,
     tapes: Vec<CassetteTape>,
+    tape_index: usize,
 }
 impl CassetteTapeBox {
-    pub fn new_at_random(app: &Application) -> CassetteTapeBox {
+    /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
+    pub fn new_empty(app: &Application) -> CassetteTapeBox {
         CassetteTapeBox {
-            file: CassetteTapeBox::create_file_full_name(&app.kw29_conf),
+            file: RpmTapeBox::create_file_full_name(&app.kw29_conf),
             tapes: Vec::new(),
+            tape_index: 0,
         }
     }
 
-    pub fn new_with_file(file: &str) -> CassetteTapeBox {
-        CassetteTapeBox {
-            file: file.to_string(),
-        }
+    pub fn go_1note_forcely(&mut self, app: &Application) -> Option<ShogiNote> {
+        self.tapes[self.tape_index].go_1note_forcely(&app.comm)
     }
 
-    /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
-        let mut rng = rand::thread_rng();
-        let rand1: u64 = rng.gen();
-        let rand2: u64 = rng.gen();
-        let rand3: u64 = rng.gen();
-        let rand4: u64 = rng.gen();
-        let file = format!("{}-{}-{}-{}.rbox", rand1, rand2, rand3, rand4).to_string();
-
-        Path::new(&kw29_conf.recording)
-            .join(file)
-            .to_str()
-            .unwrap()
-            .to_string()
+    pub fn turn_caret_to_opponent(&mut self) {
+        self.tapes[self.tape_index].caret.turn_to_opponent();
     }
 
-    pub fn to_box_json(&self, board_size: BoardSize, cassette_tape: &CassetteTape) -> String {
-        let content = cassette_tape.to_tape_json(board_size);
-        format!("{{\"tape_box\": [{}]}}", content).to_string()
-    }
+    /// # Returns
+    ///
+    /// 削除したノート。
+    pub fn delete_1note(&mut self, app: &Application) -> Option<ShogiNote> {
+        let caret = &self.tapes[self.tape_index].caret;
 
-    /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
-    pub fn write_cassette_tape_box(
-        &self,
-        board_size: BoardSize,
-        cassette_tape: &CassetteTape,
-        comm: &Communication,
-    ) {
-        comm.println(&format!("#Write tape box to '{}'...", self.file));
+        let (new_tape, removed_note_opt) =
+            self.tapes[self.tape_index].tracks.new_truncated_tape(caret);
+        self.tapes[self.tape_index].tracks = new_tape;
 
-        let path = Path::new(&self.file);
-
-        // ディレクトリー作成。
-        if let Some(parent) = path.parent() {
-            match fs::create_dir_all(parent) {
-                Ok(_x) => {}
-                Err(err) => panic!(err),
-            }
+        if let Some(removed_note) = removed_note_opt {
+            Some(removed_note)
         } else {
-            panic!("Create directory fail. {}", self.file);
+            None
+        }
+    }
+
+    pub fn get_current_tape(&self) -> CassetteTape {
+        if self.tapes.is_empty() {
+            panic!("Tape box is empty.");
         }
 
-        // TODO 追記にしたいんだが、JSONに向いてない☆（＾～＾）しぶしぶ全文上書きで☆（＾～＾）
-        let mut file_obj = OpenOptions::new()
-            .create(true)
-            .write(true)
-            // .append(true)
-            .open(path)
-            .unwrap();
+        self.tapes[self.tape_index]
+    }
 
-        if let Err(e) = writeln!(file_obj, "{}", self.to_box_json(board_size, cassette_tape)) {
-            eprintln!("Couldn't write to file: {}", e);
+    pub fn push_note_to_positive_of_current_tape(&mut self, note: ShogiNote) {
+        self.tapes[self.tape_index].tracks.positive_notes.push(note);
+    }
+    pub fn push_note_to_negative_of_current_tape(&mut self, note: ShogiNote) {
+        self.tapes[self.tape_index].tracks.negative_notes.push(note);
+    }
+
+    pub fn set_note_to_positive_of_current_tape(&mut self, index: usize, note: ShogiNote) {
+        self.tapes[self.tape_index].tracks.positive_notes[index] = note;
+    }
+    pub fn set_note_to_negative_of_current_tape(&mut self, index: usize, note: ShogiNote) {
+        self.tapes[self.tape_index].tracks.negative_notes[index] = note;
+    }
+
+    pub fn truncate_positive_of_current_tape(&mut self, len: usize) {
+        self.tapes[self.tape_index]
+            .tracks
+            .positive_notes
+            .truncate(len);
+    }
+    pub fn truncate_negative_of_current_tape(&mut self, len: usize) {
+        self.tapes[self.tape_index]
+            .tracks
+            .negative_notes
+            .truncate(len);
+    }
+
+    pub fn get_caret_index_of_current_tape(&self) -> (bool, usize) {
+        self.tapes[self.tape_index].caret.to_index()
+    }
+
+    pub fn get_sign_of_current_tape(&self, board_size: BoardSize) -> (String, String) {
+        self.tapes[self.tape_index].to_sign(board_size)
+    }
+
+    pub fn go_caret_to_next(&mut self, app: &Application) {
+        self.tapes[self.tape_index].caret.go_next(&app.comm);
+    }
+
+    pub fn get_file_name(&self) -> String {
+        self.file
+    }
+
+    /// 新しいラーニング・テープを追加するぜ☆（＾ｑ＾）
+    pub fn change(&mut self, app: &Application) -> CassetteTape {
+        let brandnew = CassetteTape::new_facing_right(&app);
+        self.tapes.push(brandnew);
+        self.tape_index = self.tapes.len() - 1;
+        brandnew
+    }
+
+    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
+        let rbox = RpmTapeBox::new();
+
+        for tape in self.tapes {
+            rbox.push(tape.to_rpm(board_size));
         }
 
-        // comm.println("#Sheet saved.");
+        rbox
+    }
+
+    pub fn len(&self) -> usize {
+        self.tapes.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.tapes.is_empty()
+    }
+
+    /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
+    pub fn write_tape_fragment_of_current_tape(&self, board_size: BoardSize, app: &Application) {
+        self.tapes[self.tape_index].write_tape_fragment(board_size, &app.comm)
     }
 }

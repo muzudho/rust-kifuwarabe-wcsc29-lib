@@ -1,12 +1,11 @@
 use address::*;
 use application::Application;
-use communication::*;
 use kifu_usi::usi_move::*;
 use kifu_usi::usi_tape::*;
 use object_rpm::cassette_deck::*;
-use object_rpm::cassette_tape_recorder::*;
+use shogi_ban::game_player::*;
 use object_rpm::shogi_note_operation::*;
-use position::*;
+use shogi_ban::position::*;
 
 pub struct UsiConverter {}
 impl UsiConverter {
@@ -17,7 +16,7 @@ impl UsiConverter {
     pub fn play_out_usi_tape(
         position: &mut Position,
         utape: &UsiTape,
-        tape_box_conveyor: &mut CassetteDeck,
+        deck: &mut CassetteDeck,
         app: &Application,
     ) {
         // 局面を動かしながら変換していく。
@@ -27,12 +26,7 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                CassetteTapeRecorder::touch_1note_ope(
-                    &rnote_ope,
-                    position,
-                    tape_box_conveyor,
-                    &app,
-                );
+                GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
             }
 
             ply += 1;

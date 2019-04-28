@@ -1,5 +1,5 @@
 /*
-use position::*;
+use shogi_ban::position::*;
 
 pub reverse_cell_vec(phase:&Phase, cell_vec:&Vec<i8>) -> Vec<i8> {
     let v = Vec::new();

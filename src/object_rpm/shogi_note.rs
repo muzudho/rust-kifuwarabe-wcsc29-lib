@@ -70,7 +70,7 @@ impl ShogiNote {
     /// (first_used_caret, last_used_caret, note_opt)
     pub fn parse_1note(
         comm: &Communication,
-        cassette_tape_j: &RpmCasetteTapeForJson,
+        cassette_tape_j: &RpmTape,
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, i16, Option<ShogiNote>) {
@@ -86,7 +86,7 @@ impl ShogiNote {
         }
 
         // カウントアップ。
-        let first_used_caret = note_caret.go_next(comm, "note-parse_1note");
+        let first_used_caret = note_caret.go_next(comm);
 
         // TODO 毎回スプリットするのはもったいない☆（＾～＾）
         let ope_vec: Vec<&str> = cassette_tape_j.tracks.ope.split(' ').collect();
@@ -107,7 +107,10 @@ impl ShogiNote {
             )
         };
 
-        let pnum = cassette_tape_j.tracks.id[first_used_caret as usize];
+        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
+        let id_vec: Vec<&str> = cassette_tape_j.tracks.id.split(' ').collect();
+
+        let pnum: i8 = id_vec[first_used_caret as usize].parse().unwrap();
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None

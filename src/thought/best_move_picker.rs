@@ -3,16 +3,16 @@ use application::Application;
 use common::caret::*;
 use communication::*;
 use human::human_interface::*;
-use kifu_rpm::rpm_cassette_tape_box::*;
 use kifu_rpm::rpm_tape::*;
+use kifu_rpm::rpm_tape_box::*;
 use kifu_usi::usi_move::*;
 use object_rpm::cassette_deck::*;
 use object_rpm::cassette_tape::*;
-use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_move::*;
 use object_rpm::shogi_thread::*;
 use piece_etc::*;
-use position::*;
+use shogi_ban::game_player::*;
+use shogi_ban::position::*;
 use std::collections::HashMap;
 use std::fs;
 
@@ -57,7 +57,7 @@ impl BestMovePicker {
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteDeck,
+        deck: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
         // クリアー。
@@ -104,7 +104,7 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = RpmTapeBox::load_tape_box_by_file(&file);
+            let cassette_tape_box_j = RpmTapeBox::from_box_file(&file);
 
             // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
@@ -130,11 +130,11 @@ impl BestMovePicker {
                             position.find_wild(Some(position.get_phase()), *my_piece_id)
                         {
                             // Display.
-                            HumanInterface::bo(tape_box_conveyor, &position, &app);
+                            HumanInterface::bo(deck, Slot::Learning, &position, &app);
 
                             app.comm.println(&format!(
                                 "[{}] Find: {}'{}'{}.",
-                                tape_box_conveyor.recording_tape_ply,
+                                deck.get_ply(Slot::Training),
                                 position.get_phase().to_log(),
                                 my_idp.to_human_presentable(),
                                 my_addr_obj.to_physical_sign(position.get_board_size())
@@ -184,32 +184,22 @@ impl BestMovePicker {
 
                             // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
                             // それを逆順にすれば　指し手だぜ☆（＾～＾）
-                            tape_box_conveyor
-                                .get_mut_recording_tape(&app)
-                                .caret
-                                .turn_to_opponent();
+                            deck.turn_caret_to_opponent(Slot::Learning);
                             app.comm
                                 .println(&format!("Tried, go opponent {} move!", record_count,));
-                            /*
-                            CassetteTapeRecorder::try_n_moves_on_tape(
-                                record_count,
-                                recorder.ply,
-                                &mut tape_box_conveyor.get_mut_recording_cassette_tape(),
-                                position,
-                                &app.comm,
-                            );
-                            */
-                            CassetteTapeRecorder::read_tape_for_n_moves_forcely(
-                                &mut tape_box_conveyor.get_mut_recording_tape(&app),
-                                record_count,
-                                position,
-                                tape_box_conveyor.recording_tape_ply,
-                                &app.comm,
-                            );
-                            tape_box_conveyor
-                                .get_mut_recording_tape(&app)
-                                .caret
-                                .turn_to_opponent();
+                            let learning_slot = deck.slots[Slot::Learning as usize];
+                            if let Some(mut tape_box) = learning_slot.tape_box {
+                                GamePlayer::read_tape_for_n_moves_forcely(
+                                    &mut tape_box,
+                                    record_count,
+                                    position,
+                                    learning_slot.ply,
+                                    &app,
+                                );
+                            } else {
+                                panic!("Tape box none.");
+                            }
+                            deck.turn_caret_to_opponent(Slot::Learning);
                             app.comm.println("Backed.");
                         }
                     }
@@ -336,7 +326,7 @@ impl BestMovePicker {
     pub fn pattern_match_and_go(
         &mut self,
         position: &mut Position,
-        cassette_tape_j: &RpmCasetteTapeForJson,
+        cassette_tape_j: &RpmTape,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
@@ -408,12 +398,8 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if CassetteTapeRecorder::try_read_tape_for_1move(
-                    &mut cassette_tape_2,
-                    position,
-                    ply_2,
-                    &app.comm,
-                ) {
+                if GamePlayer::try_read_tape_for_1move(&mut cassette_tape_2, position, ply_2, &app)
+                {
                     // 合法タッチ。戻さず抜けます。
                     app.comm.println(&format!(
                         "Hit and go! ({}) {}",

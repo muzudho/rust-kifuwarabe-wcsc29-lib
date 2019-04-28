@@ -1,6 +1,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
+use kifu_rpm::rpm_tape_tracks::*;
 use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::*;
 use std::*;
@@ -118,12 +119,12 @@ impl IntegerNoteVec {
                     None
                 } else {
                     // 負。
-                    note_caret.go_next(comm, "tape-go_1note_forcely");
+                    note_caret.go_next(comm);
                     Some(self.negative_notes[index as usize])
                 }
             } else {
                 // 正。
-                note_caret.go_next(comm, "tape+go_1note_forcely");
+                note_caret.go_next(comm);
                 Some(self.positive_notes[index as usize])
             }
         } else {
@@ -134,12 +135,12 @@ impl IntegerNoteVec {
                     None
                 } else {
                     // 正。
-                    note_caret.go_next(comm, "tape+go_1note_forcely");
+                    note_caret.go_next(comm);
                     Some(self.positive_notes[index as usize])
                 }
             } else {
                 // 負。
-                note_caret.go_next(comm, "tape+go_1note_forcely");
+                note_caret.go_next(comm);
                 Some(self.negative_notes[index as usize])
             }
         }
@@ -315,8 +316,8 @@ impl IntegerNoteVec {
     ///
     /// # Returns
     ///
-    /// 駒の背番号（ダブルクォーテーション含む）, 操作（ダブルクォーテーション含まず）。
-    pub fn to_tracks_json(&self, board_size: BoardSize) -> (String, String) {
+    /// 駒の背番号（ダブルクォーテーション含まず）, 操作（ダブルクォーテーション含まず）。
+    pub fn to_rpm_tracks(&self, board_size: BoardSize) -> RpmTapeTracks {
         // 背番号トラック。
         let mut numbers = "".to_string();
         for sign in 0..2 {
@@ -329,16 +330,16 @@ impl IntegerNoteVec {
             let mut is_first = true;
             for note in notes {
                 if is_first {
-                    // 最初はカンマなし。
+                    // 最初。
                     numbers = if let Some(pid) = note.get_id() {
                         pid.get_number().to_string()
                     } else {
                         NONE_VALUE.to_string()
                     };
                 } else {
-                    // ２つ目からカンマあり。
+                    // ２つ目からスペース区切り。
                     numbers = format!(
-                        "{}, {}",
+                        "{} {}",
                         numbers,
                         if let Some(pid) = note.get_id() {
                             pid.get_number().to_string()
@@ -364,7 +365,7 @@ impl IntegerNoteVec {
             let mut is_first = true;
             for note in notes {
                 if is_first {
-                    // 最初はスペースなし。
+                    // 最初。
                     operations = note.get_ope().to_sign(board_size).to_string();
                 } else {
                     // ２つ目からスペース区切り。
@@ -375,9 +376,11 @@ impl IntegerNoteVec {
             }
         }
 
-        (
-            numbers.trim_start().to_string(),
-            operations.trim_start().to_string(),
-        )
+        RpmTapeTracks {
+            // 駒の背番号は、半角スペース１個区切り。
+            id: numbers.trim_start().to_string(),
+            // 操作は、半角スペース１個区切り。
+            ope: operations.trim_start().to_string(),
+        }
     }
 }

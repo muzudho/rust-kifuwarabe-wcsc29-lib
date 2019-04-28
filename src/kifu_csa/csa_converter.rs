@@ -4,19 +4,15 @@ use communication::*;
 use kifu_csa::csa_move::*;
 use kifu_csa::csa_tape::*;
 use object_rpm::cassette_deck::*;
-use object_rpm::cassette_tape_recorder::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
-use position::*;
+use shogi_ban::game_player::*;
+use shogi_ban::position::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
     /// .csa ファイルを読み取り、.tapefrag ファイルを書きだします。
-    pub fn convert_csa_tape_fragment(
-        input_path: &str,
-        tape_box_conveyor: &mut CassetteDeck,
-        app: &Application,
-    ) {
+    pub fn convert_csa_tape_fragment(input_path: &str, deck: &mut CassetteDeck, app: &Application) {
         app.comm
             .println(&format!("ConvCSA : input_path: {}", input_path));
 
@@ -25,17 +21,17 @@ impl CsaConverter {
         let ctape = CsaTape::load(&input_path, &app.comm);
 
         // Play.
-        CsaConverter::play_out_csa_tape(&ctape, &mut position, tape_box_conveyor, &app);
+        CsaConverter::play_out_csa_tape(&ctape, &mut position, deck, &app);
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
         /*
-        let output_tapefrag_path = tape_box_conveyor.recording_cassette_tape.
+        let output_tapefrag_path = deck.recording_cassette_tape.
             CassetteDeck::create_file_full_path(".tapefrag", &app.kw29_conf);
          */
-        tape_box_conveyor.write_cassette_tape_fragment(position.get_board_size(), &app);
+        deck.write_tape_fragment(position.get_board_size(), &app);
         //.write_cassette_tape_box(position.get_board_size(), &app);
-        // tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
+        // deck.write_cassette_tape_box(position.get_board_size(), &app);
 
         // comm.println("Finished.");
     }
@@ -44,24 +40,19 @@ impl CsaConverter {
     pub fn play_out_csa_tape(
         crecord: &CsaTape,
         position: &mut Position,
-        tape_box_conveyor: &mut CassetteDeck,
+        deck: &mut CassetteDeck,
         app: &Application,
     ) {
         // TODO とりあえず平手初期局面だけ対応。
         position.reset_origin_position();
-        CassetteTapeRecorder::play_ohashi_starting(position, tape_box_conveyor, app);
+        GamePlayer::play_ohashi_starting(position, deck, app);
 
         let mut ply = 1;
         for cmove in &crecord.items {
             let rnote_opes = CsaConverter::convert_move(&app.comm, cmove, position, ply);
 
             for rnote_ope in rnote_opes {
-                CassetteTapeRecorder::touch_1note_ope(
-                    &rnote_ope,
-                    position,
-                    tape_box_conveyor,
-                    &app,
-                );
+                GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
             }
 
             ply += 1;

@@ -43,7 +43,7 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Record.
-    let mut tape_box_conveyor = CassetteDeck::new_empty();
+    let mut deck = CassetteDeck::new_empty();
     let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
 
     // Model.
@@ -54,19 +54,19 @@ pub fn main() {
     CsaConverter::play_out_csa_tape(
         &crecord,
         &mut position,
-        &mut tape_box_conveyor,
+        &mut deck,
         &mut recorder,
         &app.comm,
     );
     HumanInterface::bo(
         &app.comm,
-        &tape_box_conveyor.recording_cassette_tape,
+        &deck.recording_cassette_tape,
         recorder.ply,
         &position,
     );
 
     // Save.
-    tape_box_conveyor.write_cassette_tape_box(position.get_board_size(), &app);
+    deck.write_cassette_tape_box(position.get_board_size(), &app);
 
     app.comm.println("Finished.");
 }

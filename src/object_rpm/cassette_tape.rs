@@ -4,6 +4,7 @@ use board_size::*;
 use common::caret::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
+use kifu_rpm::rpm_tape::*;
 use object_rpm::integer_note_vec::*;
 use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::*;
@@ -20,7 +21,7 @@ pub struct CassetteTapeLabel {
     pub event: String,
     pub player1: String,
     pub player2: String,
-    pub read_file: String,
+    pub source_file: String,
 }
 impl CassetteTapeLabel {
     pub fn clear(&mut self) {
@@ -28,7 +29,17 @@ impl CassetteTapeLabel {
         self.event = "".to_string();
         self.player1 = "".to_string();
         self.player2 = "".to_string();
-        self.read_file = "".to_string();
+        self.source_file = "".to_string();
+    }
+
+    pub fn to_rpm(&self) -> RpmTapeLabel {
+        RpmTapeLabel {
+            date: self.date,
+            event: self.event,
+            player1: self.player1,
+            player2: self.player2,
+            source_file: self.source_file,
+        }
     }
 }
 
@@ -51,7 +62,7 @@ impl fmt::Display for CassetteTape {
     }
 }
 impl CassetteTape {
-    pub fn new_facing_right_at_random(app: &Application) -> Self {
+    pub fn new_facing_right(app: &Application) -> Self {
         CassetteTape {
             fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf),
             caret: Caret::new_facing_right_caret(),
@@ -60,7 +71,7 @@ impl CassetteTape {
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
-                read_file: "".to_string(),
+                source_file: "".to_string(),
             },
             tracks: IntegerNoteVec::default(),
         }
@@ -75,7 +86,7 @@ impl CassetteTape {
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
-                read_file: "".to_string(),
+                source_file: "".to_string(),
             },
             tracks: IntegerNoteVec::default(),
         }
@@ -91,7 +102,7 @@ impl CassetteTape {
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
-                read_file: "".to_string(),
+                source_file: "".to_string(),
             },
             tracks: IntegerNoteVec::from_1_move(rmove),
         }
@@ -173,7 +184,7 @@ impl CassetteTape {
     }
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
-    pub fn write_cassette_tape_fragment(&self, board_size: BoardSize, comm: &Communication) {
+    pub fn write_tape_fragment(&self, board_size: BoardSize, comm: &Communication) {
         comm.println(&format!(
             "#Write tape fragment to '{}'...",
             self.fragment_file_name
@@ -199,41 +210,19 @@ impl CassetteTape {
             .open(path)
             .unwrap();
 
-        if let Err(e) = writeln!(file_obj, "{},", self.to_tape_json(board_size)) {
+        let rpm_tape = self.to_rpm(board_size);
+
+        if let Err(e) = writeln!(file_obj, "{},", rpm_tape.to_json()) {
             eprintln!("Couldn't write to file: {}", e);
         }
 
         // comm.println("#Sheet saved.");
     }
 
-    /// JSONのオブジェクト形式。テープだけ。
-    pub fn to_tape_json(&self, board_size: BoardSize) -> String {
-        let (numbers, operations) = self.tracks.to_tracks_json(board_size);
-
-        let mut text = "{\n".to_string();
-        text = format!("{}    \"label\" : {{\n", text);
-        text = format!("{}        \"date\" : \"{}\",\n", text, self.label.date);
-        text = format!("{}        \"event\" : \"{}\",\n", text, self.label.event);
-        text = format!(
-            "{}        \"player1\" : \"{}\",\n",
-            text, self.label.player1
-        );
-        text = format!(
-            "{}        \"player2\" : \"{}\",\n",
-            text, self.label.player2
-        );
-        text = format!(
-            "{}        \"read_file\" : \"{}\"\n",
-            text, self.label.read_file
-        );
-        text = format!("{}    }},\n", text);
-        text = format!("{}    \"tracks\" : {{\n", text);
-        text = format!("{}        \"id\" : [\n", text);
-        text = format!("{}            {}\n", text, numbers);
-        text = format!("{}        ],\n", text);
-        text = format!("{}        \"ope\" : \"{}\"\n", text, operations);
-        text = format!("{}    }}\n", text);
-        text = format!("{}}}", text);
-        text
+    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTape {
+        RpmTape {
+            label: self.label.to_rpm(),
+            tracks: self.tracks.to_rpm_tracks(board_size),
+        }
     }
 }

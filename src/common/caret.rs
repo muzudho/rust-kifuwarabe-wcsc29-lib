@@ -64,7 +64,7 @@ impl Caret {
     }
 
     /// 要素を返してから、向きの通りに移動します。
-    pub fn go_next(&mut self, _comm: &Communication, _hint: &str) -> i16 {
+    pub fn go_next(&mut self, _comm: &Communication) -> i16 {
         let old = self.number;
 
         if self.facing_left {
@@ -72,15 +72,6 @@ impl Caret {
         } else {
             self.number += 1;
         }
-
-        /*
-        comm.println(&format!(
-            "<Old{},New{}:{}>",
-            old,
-            &self.to_human_presentable(),
-            hint
-        ));
-        */
 
         old
     }

@@ -1,7 +1,7 @@
 /// 局面ファイル☆（＾～＾）
 use serde_json::Value;
 use fen::*;
-use position::*;
+use shogi_ban::position::*;
 use std::fs::File;
 use std::io::Read;
 

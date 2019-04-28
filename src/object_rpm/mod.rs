@@ -1,8 +1,6 @@
 pub mod cassette_deck;
 pub mod cassette_tape;
 pub mod cassette_tape_box;
-pub mod cassette_tape_converter;
-pub mod cassette_tape_recorder;
 pub mod integer_note_vec;
 pub mod shogi_move;
 pub mod shogi_note;

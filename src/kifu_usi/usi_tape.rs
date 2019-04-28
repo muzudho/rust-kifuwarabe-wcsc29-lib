@@ -4,7 +4,7 @@ use kifu_usi::fen::*;
 use kifu_usi::usi_move::*;
 use parser::*;
 use piece_etc::*;
-use position::*;
+use shogi_ban::position::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;

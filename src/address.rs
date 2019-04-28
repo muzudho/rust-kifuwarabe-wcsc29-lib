@@ -1,6 +1,5 @@
 use board_size::*;
 use piece_etc::*;
-//use position::*;
 use std::fmt;
 
 /// TODO 暫定。

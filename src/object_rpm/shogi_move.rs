@@ -43,7 +43,7 @@ impl ShogiMove {
     /// parsed_note_count は巻き戻すのに使う。
     pub fn parse_1move(
         comm: &Communication,
-        cassette_tape_j: &RpmCasetteTapeForJson,
+        cassette_tape_j: &RpmTape,
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (usize, Option<ShogiMove>) {

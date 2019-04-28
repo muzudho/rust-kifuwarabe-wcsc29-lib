@@ -1,8 +1,9 @@
 use application::Application;
 use communication::*;
 use object_rpm::cassette_deck::CassetteDeck;
+use object_rpm::cassette_deck::Slot;
 use object_rpm::cassette_tape::CassetteTape;
-use position::*;
+use shogi_ban::position::*;
 use std::*;
 
 pub struct HumanInterface {}
@@ -15,15 +16,19 @@ impl HumanInterface {
         comm.println(&position.to_text(comm, position.get_phase(), position.get_board_size()));
     }
 
-    /// 局面と、記録中の棋譜　の表示。
-    pub fn bo(deck: &mut CassetteDeck, position: &Position, app: &Application) {
+    /// トレーニング局面と、棋譜　の表示。
+    pub fn bo(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         // 局面。
-        HumanInterface::show_position(&app.comm, deck.recording_tape_ply, position);
+        HumanInterface::show_position(&app.comm, deck.slots[slot as usize].ply, position);
 
         // 棋譜。
-        let (_numbers, operations) =
-            &deck.to_mut_recording_tape_sign(position.get_board_size(), &app);
-        app.comm.println(&format!("REC: {}", operations));
+        if let Some(tape_box) = deck.slots[slot as usize].tape_box {
+            let (_numbers, operations) =
+                &tape_box.get_sign_of_current_tape(position.get_board_size());
+            app.comm.println(&format!("Score: {}", operations));
+        } else {
+            panic!("tape_box none.")
+        }
     }
 
     /// 局面と、テープ中の棋譜　の表示。

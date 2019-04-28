@@ -1,7 +1,7 @@
 use communication::*;
 use kifu_csa::csa_move::*;
 use piece_etc::*;
-use position::*;
+use shogi_ban::position::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
