@@ -6,7 +6,7 @@ use object_rpm::cassette_tape::*;
 use object_rpm::integer_note_vec::*;
 use serde::*;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTapeLabel {
     pub date: String,
@@ -27,7 +27,7 @@ impl RpmTapeLabel {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTape {
     pub label: RpmTapeLabel,

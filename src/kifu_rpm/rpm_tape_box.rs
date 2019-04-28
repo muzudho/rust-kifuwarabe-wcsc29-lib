@@ -69,7 +69,7 @@ impl RpmTapeBox {
     }
 
     /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
-    pub fn write(&self, file_name: String, board_size: BoardSize, comm: &Communication) {
+    pub fn write(&self, file_name: String, comm: &Communication) {
         comm.println(&format!("#Write tape box to '{}'...", file_name));
 
         let path = Path::new(&file_name);

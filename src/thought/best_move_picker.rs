@@ -395,7 +395,7 @@ impl BestMovePicker {
                 let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                 {
                     let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
-                    cassette_tape_box_2.change_with_training_tape(cassette_tape_2, &app);
+                    cassette_tape_box_2.change_with_training_tape(cassette_tape_2);
                 }
                 /*
                 println!(

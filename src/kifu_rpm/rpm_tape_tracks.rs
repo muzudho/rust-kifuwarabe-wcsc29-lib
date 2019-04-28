@@ -6,7 +6,7 @@ use object_rpm::shogi_note_operation::ShogiNoteOpe;
 use piece_etc::*;
 use serde::*;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTapeTracks {
     // 駒の背番号は、半角スペース１個区切り。
@@ -28,7 +28,7 @@ impl RpmTapeTracks {
         let id_vec: Vec<&str> = self.id.split(' ').collect();
         let ope_vec: Vec<&str> = self.ope.split(' ').collect();
 
-        for (i, ope_element) in id_vec.iter().enumerate() {
+        for (i, ope_element) in ope_vec.iter().enumerate() {
             let id: i8 = id_vec[i].parse().unwrap();
 
             text = format!(
@@ -54,7 +54,7 @@ impl RpmTapeTracks {
         let id_vec: Vec<&str> = self.id.split(' ').collect();
         let ope_vec: Vec<&str> = self.ope.split(' ').collect();
 
-        for (i, ope_element) in id_vec.iter().enumerate() {
+        for (i, ope_element) in ope_vec.iter().enumerate() {
             let id: i8 = id_vec[i].parse().unwrap();
 
             let mut caret = Caret::new_facing_right_caret();

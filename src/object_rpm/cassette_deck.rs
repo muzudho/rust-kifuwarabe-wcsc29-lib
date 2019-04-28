@@ -1,7 +1,7 @@
 use application::Application;
 use board_size::BoardSize;
 use human::human_interface::*;
-use object_rpm::cassette_tape::CassetteTape;
+// use object_rpm::cassette_tape::CassetteTape;
 use object_rpm::cassette_tape_box::*;
 use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::ShogiNote;
@@ -70,9 +70,7 @@ impl CassetteDeck {
         if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
             // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
             let file_name = learning_box.get_file_name();
-            learning_box
-                .to_rpm(board_size)
-                .write(file_name, board_size, &app.comm);
+            learning_box.to_rpm(board_size).write(file_name, &app.comm);
 
             if 499 < learning_box.len() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
@@ -113,6 +111,7 @@ impl CassetteDeck {
         }
     }
 
+    /*
     /// テープの文字化。
     pub fn to_mut_tape_sign(
         &mut self,
@@ -126,6 +125,7 @@ impl CassetteDeck {
             panic!("tape box none.");
         }
     }
+    */
 
     pub fn get_ply(&self, slot: Slot) -> i16 {
         self.slots[slot as usize].ply

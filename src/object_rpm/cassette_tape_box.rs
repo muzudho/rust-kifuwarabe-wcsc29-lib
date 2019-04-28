@@ -4,10 +4,7 @@ use board_size::*;
 use kifu_rpm::rpm_tape_box::*;
 use object_rpm::cassette_tape::*;
 use object_rpm::shogi_note::ShogiNote;
-use std::fs;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::path::Path;
+//use std::io::prelude::*;
 use std::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
@@ -127,7 +124,7 @@ impl CassetteTapeBox {
     }
 
     /// トレーニング・テープを交換するぜ☆（＾～＾）
-    pub fn change_with_training_tape(&mut self, training_tape: CassetteTape, app: &Application) {
+    pub fn change_with_training_tape(&mut self, training_tape: CassetteTape) {
         self.tapes.push(training_tape);
         self.tape_index = self.tapes.len() - 1;
     }
@@ -164,6 +161,6 @@ impl CassetteTapeBox {
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
-        rpm_tape_box.write(self.file.to_string(), board_size, &app.comm);
+        rpm_tape_box.write(self.file.to_string(), &app.comm);
     }
 }

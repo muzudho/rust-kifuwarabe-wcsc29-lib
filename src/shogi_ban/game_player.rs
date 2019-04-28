@@ -2,11 +2,11 @@ use address::*;
 use application::Application;
 use board_size::*;
 use common::caret::*;
-use communication::*;
+//use communication::*;
 use human::human_interface::*;
 use object_rpm::cassette_deck::CassetteDeck;
 use object_rpm::cassette_deck::*;
-use object_rpm::cassette_tape::*;
+//use object_rpm::cassette_tape::*;
 use object_rpm::cassette_tape_box::CassetteTapeBox;
 use object_rpm::shogi_note::*;
 use object_rpm::shogi_note_operation::*;
@@ -293,12 +293,6 @@ impl GamePlayer {
                 app.comm
                     .println("rpm_cassette_tape_editor.rs:read_ope_track: touch_1note_ope");
                 GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
-
-                let ply = if let Some(ply) = rnote_ope.get_phase_change() {
-                    ply
-                } else {
-                    -1
-                };
 
                 HumanInterface::bo(deck, Slot::Learning, &position, &app);
             }
