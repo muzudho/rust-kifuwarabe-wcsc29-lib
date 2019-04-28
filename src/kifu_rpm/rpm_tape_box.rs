@@ -33,34 +33,38 @@ impl RpmTapeBox {
     /// * `box_file` - ファイル名。存在しないファイルの場合、新規作成。
     pub fn from_box_file(box_file: &str, app: &Application) -> Self {
         let path = Path::new(box_file);
-        let mut file = match File::open(path) {
-            Ok(x) => x,
+        match File::open(path) {
+            Ok(mut file) => {
+                let mut contents = String::new();
+                match file.read_to_string(&mut contents) {
+                    Ok(x) => x,
+                    Err(err) => panic!("File open error. {:?}", err),
+                };
+
+                match serde_json::from_str(&contents) {
+                    Ok(x) => x,
+                    Err(err) => {
+                        panic!(err);
+                    }
+                }
+            }
             Err(_err) => {
-                // 存在しないファイルの場合、新規作成。
+                // 存在しないファイルの場合。
+                /*
+                // 新規作成。
                 let file_obj = OpenOptions::new()
                     .create(true)
                     .write(true)
                     .read(true)
                     .open(path)
                     .unwrap();
+                */
 
                 // ダミーの内容を書いておきたい☆（＾～＾）
-                RpmTapeBox::new().write(box_file, &app.comm);
+                let rpm_tape_box = RpmTapeBox::new();
+                rpm_tape_box.write(box_file, &app.comm);
 
-                file_obj
-            }
-        };
-
-        let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
-            Ok(x) => x,
-            Err(err) => panic!("File open error. {:?}", err),
-        };
-
-        match serde_json::from_str(&contents) {
-            Ok(x) => x,
-            Err(err) => {
-                panic!(err);
+                rpm_tape_box
             }
         }
     }
