@@ -40,10 +40,10 @@ impl RpmTapeBox {
         let mut file = match File::open(path) {
             Ok(x) => x,
             Err(_err) => {
-                // 存在しないファイルの場合、新規作成。
+                // 存在しないファイルの場合、読み取り用で新規作成。
                 OpenOptions::new()
                     .create(true)
-                    .write(true)
+                    .read(true)
                     .open(path)
                     .unwrap()
             }
