@@ -1,5 +1,4 @@
 use conf::kifuwarabe_wcsc29_lib_config::*;
-/// # 設定ファイル
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
@@ -19,21 +18,22 @@ pub struct KifuwarabeWcsc29Config {
     pub expansion: Kw29Directories,
     pub formation: Kw29Directories,
     pub eating: Kw29Directories,
-    pub recording: String,
+    pub training: String,
+    pub learning: String,
     pub tape_fragments: String,
-    pub rpm_record: String,
+    pub kifuwarabe_wcsc29_exe_path_for_read_kifu: String,
 }
 impl KifuwarabeWcsc29Config {
     /// 設定ファイル読込。
-    pub fn load(my_confing: &KifuwarabeWcsc29LibConfig) -> KifuwarabeWcsc29Config {
-        let path = &my_confing.kifuwarabe_wcsc29_config_path;
-        let mut file = match File::open(path) {
+    pub fn load(my_app_conf: &KifuwarabeWcsc29LibConfig) -> KifuwarabeWcsc29Config {
+        let kw29_path = &my_app_conf.kifuwarabe_wcsc29_config_path;
+        let mut kw29_file = match File::open(kw29_path) {
             Ok(x) => x,
             Err(err) => panic!("File open error. {:?}", err),
         };
 
         let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
+        match kw29_file.read_to_string(&mut contents) {
             Ok(x) => x,
             Err(err) => panic!("File open error. {:?}", err),
         };

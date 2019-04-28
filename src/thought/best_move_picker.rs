@@ -71,7 +71,7 @@ impl BestMovePicker {
         );
 
         // TODO とりあえず -rbox.json ファイルを１個読む。
-        'path_loop: for path in fs::read_dir(&app.kw29_conf.rpm_record).unwrap() {
+        'path_loop: for path in fs::read_dir(&app.kw29_conf.training).unwrap() {
             let file = path.unwrap().path().display().to_string();
 
             /*

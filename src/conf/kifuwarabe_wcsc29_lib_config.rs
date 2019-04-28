@@ -1,5 +1,4 @@
 /// # 設定ファイル
-// use serde_json::*;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;

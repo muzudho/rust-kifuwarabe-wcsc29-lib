@@ -63,7 +63,7 @@ RPM形式棋譜というのは きふわらべ に読める棋譜の形式(Rever
 | eating.went      | C:/shogi-record/went/ate             | 感じろ。                                                         |
 | eating.output    | C:/muzudho/shogi-record/rpm          | ここに成果物を置く。実践では使わない。                           |
 | learning         | C:/muzudho/shogi-record/learning/rpm | 実践で対局した棋譜を置く。実践では使わない。                     |
-| rpm_record       | C:/muzudho/shogi-record/rpm-json     | 実践で使う。使いたいRPM棋譜をここへ移動しろだぜ。                |
+| training         | C:/muzudho/shogi-record/rpm-json     | 実践で使う。使いたいRPM棋譜をここへ移動しろだぜ。                |
 
 棋譜の変換（翻訳）は Rust言語 の examples に入っている。
 これはライブラリなので実行できないので、 kifuwarabe-wcsc29.exe の方を呼び出せだぜ。
@@ -161,6 +161,7 @@ cls
 ### Compile.
 set RUST_BACKTRACE=1
 cargo clippy --example main
+cargo build --release
  
 ### Run.
 cargo run --example main

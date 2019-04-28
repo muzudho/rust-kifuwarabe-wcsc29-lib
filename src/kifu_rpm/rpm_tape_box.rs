@@ -61,7 +61,7 @@ impl RpmTapeBox {
         let rand4: u64 = rng.gen();
         let file = format!("{}-{}-{}-{}.rbox", rand1, rand2, rand3, rand4).to_string();
 
-        Path::new(&kw29_conf.recording)
+        Path::new(&kw29_conf.learning)
             .join(file)
             .to_str()
             .unwrap()
