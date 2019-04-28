@@ -32,6 +32,8 @@ impl RpmTapeBox {
     ///
     /// * `box_file` - ファイル名。存在しないファイルの場合、新規作成。
     pub fn from_box_file(box_file: &str, app: &Application) -> Self {
+        app.comm.println(&format!("Box file name: '{}'.", box_file));
+
         let path = Path::new(box_file);
         match File::open(path) {
             Ok(mut file) => {
@@ -40,6 +42,8 @@ impl RpmTapeBox {
                     Ok(x) => x,
                     Err(err) => panic!("File open error. {:?}", err),
                 };
+
+                app.comm.println(&format!("Contents: '{}'.", contents));
 
                 match serde_json::from_str(&contents) {
                     Ok(x) => x,
