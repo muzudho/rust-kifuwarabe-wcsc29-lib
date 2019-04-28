@@ -46,7 +46,7 @@ pub fn main() {
     // Deck.
     let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
-    let crecord = CsaTape::load(&path, &app.comm);
+    let crecord = CsaTape::from_file(&path, &app.comm);
 
     // Play out.
     CsaConverter::play_out_csa_tape(&crecord, &mut position, &mut deck, &app);

@@ -39,6 +39,6 @@ impl UsiPosition {
             return None;
         }
 
-        UsiTape::parse_usi_1record(&comm, line, start, board_size)
+        UsiTape::parse_usi_all_moves(&comm, line, start, board_size)
     }
 }

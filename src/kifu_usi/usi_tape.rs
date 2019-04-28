@@ -19,7 +19,7 @@ impl UsiTape {
     }
 
     ///
-    pub fn parse_usi_1record(
+    pub fn parse_usi_all_moves(
         comm: &Communication,
         line: &str,
         start: &mut usize,

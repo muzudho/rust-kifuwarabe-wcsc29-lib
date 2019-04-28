@@ -26,7 +26,7 @@ use std::*;
 /// 柿木将棋 V1.89 棋譜ファイル
 pub struct Kaki189 {}
 impl Kaki189 {
-    pub fn load(file: &str) -> KifTape {
+    pub fn from_file(file: &str) -> KifTape {
         let mut record = KifTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {

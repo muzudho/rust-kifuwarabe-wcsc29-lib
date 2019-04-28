@@ -11,40 +11,14 @@ use shogi_ban::position::*;
 
 pub struct KifConverter {}
 impl KifConverter {
-    pub fn convert_kif_tape_fragment(input_path: &str, deck: &mut CassetteDeck, app: &Application) {
-        // comm.println(&format!("input_path: {}", input_path));
-
-        // Model.
-        let mut position = Position::new_honshogi_origin();
-        let ktape = KifTape::load(&input_path);
-
-        // Play.
-        KifConverter::play_out_kifu_tape(&mut position, &ktape, deck, &app);
-        // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
-
-        // Save. (Append)
-        /*
-        let output_tapefrag_path =
-            CassetteDeck::create_file_full_path(".tapefrag", &app.kw29_conf);
-            */
-        deck.write_tape_fragment(position.get_board_size(), &app);
-        /*
-        // Save. (Append)
-        deck.write_cassette_tape_box(position.get_board_size(), &app);
-        */
-
-        // comm.println("Finished.");
-    }
-
     /// 変換には、初期局面が必要。
-    fn play_out_kifu_tape(
-        position: &mut Position,
+    pub fn play_out_kifu_tape(
         ktape: &KifTape,
+        position: &mut Position,
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
-        // TODO とりあえず平手初期局面だけ対応。
-        position.reset_origin_position();
+        // 大橋流を指すところから☆（*＾～＾*）
         GamePlayer::play_ohashi_starting(position, deck, &app);
 
         let mut ply = 1;

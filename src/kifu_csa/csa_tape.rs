@@ -15,7 +15,7 @@ impl CsaTape {
         CsaTape { items: Vec::new() }
     }
 
-    pub fn load(file: &str, comm: &Communication) -> CsaTape {
+    pub fn from_file(file: &str, comm: &Communication) -> CsaTape {
         let mut record = CsaTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {

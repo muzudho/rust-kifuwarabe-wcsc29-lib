@@ -4,6 +4,7 @@ extern crate regex;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
+use kifuwarabe_wcsc29_lib::kifu_kif::kif_tape::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
 use std::env;
@@ -39,10 +40,17 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
-    let position = Position::new_honshogi_origin();
+    let mut position = Position::new_honshogi_origin();
 
     // Deck.
     let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
-    KifConverter::convert_kif_tape_fragment(&path, &mut deck, &app);
+    // Training data.
+    let ktape = KifTape::from_file(&path);
+
+    // Play out.
+    KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
+
+    // Write.
+    deck.write_tape_fragment(position.get_board_size(), &app);
 }

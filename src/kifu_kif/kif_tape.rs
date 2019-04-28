@@ -1,5 +1,5 @@
-use kifu_kif::version::kaki189::*;
 use kifu_kif::kif_move::*;
+use kifu_kif::version::kaki189::*;
 use std::*;
 
 #[derive(Default)]
@@ -11,9 +11,9 @@ impl KifTape {
         KifTape { items: Vec::new() }
     }
 
-    pub fn load(file: &str) -> KifTape {
+    pub fn from_file(file: &str) -> KifTape {
         // バージョンがいろいろあるようだ。
-        Kaki189::load(file)
+        Kaki189::from_file(file)
     }
 
     pub fn push(&mut self, mov: KifMove) {

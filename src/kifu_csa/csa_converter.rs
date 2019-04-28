@@ -11,27 +11,6 @@ use shogi_ban::position::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
-    /// .csa ファイルを読み取り、.tapefrag ファイルを書きだします。
-    pub fn convert_csa_tape_fragment(input_path: &str, deck: &mut CassetteDeck, app: &Application) {
-        app.comm.println("### Convert CSA tape fragment ###");
-        app.comm.println(&format!("Input_path: '{}'.", input_path));
-        app.comm.println(&format!(
-            "L-tape box file: '{}'.",
-            deck.get_learning_tape_box_file_name()
-        ));
-
-        // Model.
-        let mut position = Position::new_honshogi_origin();
-        let ctape = CsaTape::load(&input_path, &app.comm);
-
-        // Play.
-        CsaConverter::play_out_csa_tape(&ctape, &mut position, deck, &app);
-        // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
-
-        // Save. (Append)
-        deck.write_tape_fragment(position.get_board_size(), &app);
-    }
-
     /// 変換には、初期局面が必要。
     pub fn play_out_csa_tape(
         crecord: &CsaTape,
@@ -39,8 +18,7 @@ impl CsaConverter {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
-        // TODO とりあえず平手初期局面だけ対応。
-        position.reset_origin_position();
+        // 大橋流を指すところから☆（*＾～＾*）
         GamePlayer::play_ohashi_starting(position, deck, app);
 
         let mut ply = 1;

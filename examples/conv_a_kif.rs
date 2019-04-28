@@ -4,6 +4,7 @@ extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
+use kifuwarabe_wcsc29_lib::kifu_kif::kif_tape::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box::*;
 use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
@@ -50,7 +51,7 @@ fn main() {
     let app = Application::new();
 
     // Position.
-    let position = Position::new_honshogi_origin();
+    let mut position = Position::new_honshogi_origin();
 
     // Deck.
     let mut deck = CassetteDeck::new_change(
@@ -71,7 +72,15 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif_tape_fragment(&in_file, &mut deck, &app);
+                //KifConverter::convert_kif_tape_fragment(&in_file, &mut deck, &app);
+                // Training data.
+                let ktape = KifTape::from_file(&in_file);
+
+                // Play out.
+                KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
+
+                // Write.
+                deck.write_tape_fragment(position.get_board_size(), &app);
             }
             "CSA" => {}
             _ => print!("Pass extension: {}", ext),
