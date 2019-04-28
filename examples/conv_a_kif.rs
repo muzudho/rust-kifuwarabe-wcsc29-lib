@@ -49,12 +49,11 @@ fn main() {
     // The application contains all immutable content.
     let app = Application::new();
 
-    // Model.
-    let position = Position::default();
+    // Position.
+    let position = Position::new_honshogi_origin();
 
-    // Record.
-    let mut deck = CassetteDeck::new_empty(&app);
-    deck.change(
+    // Deck.
+    let mut deck = CassetteDeck::new_change(
         Some(CassetteTapeBox::from_file(
             tape_box_file_for_write.to_string(),
             position.get_board_size(),

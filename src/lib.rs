@@ -51,9 +51,6 @@ pub mod shogi_ban;
 pub mod thought;
 use application::*;
 use human::human_interface::*;
-use kifu_usi::fen::*;
-use kifu_usi::usi_converter::*;
-use kifu_usi::usi_position::*;
 use lib_sub::*;
 use object_rpm::cassette_deck::*;
 use shogi_ban::game_player::*;
@@ -65,10 +62,12 @@ pub fn main_loop() {
     // The application contains all immutable content.
     let app = Application::new();
 
-    // Record.
-    let mut deck = CassetteDeck::new_empty(&app);
+    // Position.
+    let mut position = Position::new_honshogi_origin();
 
-    let mut position = Position::default();
+    // Deck.
+    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+
     let mut best_move_picker = BestMovePicker::default();
 
     loop {
@@ -214,40 +213,7 @@ pub fn main_loop() {
         // #####
         } else if line.starts_with("position") {
             // 相手が指したあとの局面まで進める。
-            let mut urecord_opt = None;
-            let mut start = 0;
-
-            //comm.println("#Lib: 'position' command(1).");
-            if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
-                urecord_opt = UsiPosition::parse_usi_line_moves(
-                    &app.comm,
-                    &line,
-                    &mut start,
-                    position.get_board_size(),
-                );
-            }
-            //comm.println("#Position parse end1.");
-            //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
-
-            // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
-            // TODO できれば USI -> RPM 変換したい。
-            // comm.println("#Lib: TODO 'position' command(2).");
-            {
-                //comm.println("#Lib: 'position' command(2).");
-                let mut start = 0;
-                if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
-                    //comm.println("#Position parsed.");
-                }
-
-                if let Some(urecord) = urecord_opt {
-                    // 差し替え。
-                    deck.change(None, position.get_board_size(), &app);
-                    UsiConverter::play_out_usi_tape(&mut position, &urecord, &mut deck, &app);
-                }
-                //comm.println("#Record converted1.");
-                //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
-                //comm.println("#Record converted2.");
-            }
+            LibSub::position(line, &mut position, &mut deck, &app);
 
         // #####
         // # Q #

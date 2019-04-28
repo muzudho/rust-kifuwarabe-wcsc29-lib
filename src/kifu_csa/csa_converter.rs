@@ -17,7 +17,7 @@ impl CsaConverter {
             .println(&format!("ConvCSA : input_path: {}", input_path));
 
         // Model.
-        let mut position = Position::default();
+        let mut position = Position::new_honshogi_origin();
         let ctape = CsaTape::load(&input_path, &app.comm);
 
         // Play.
@@ -25,15 +25,7 @@ impl CsaConverter {
         // HumanInterface::bo(&comm, &rrecord.body.operation_track, &position);
 
         // Save. (Append)
-        /*
-        let output_tapefrag_path = deck.recording_cassette_tape.
-            CassetteDeck::create_file_full_path(".tapefrag", &app.kw29_conf);
-         */
         deck.write_tape_fragment(position.get_board_size(), &app);
-        //.write_cassette_tape_box(position.get_board_size(), &app);
-        // deck.write_cassette_tape_box(position.get_board_size(), &app);
-
-        // comm.println("Finished.");
     }
 
     /// 変換には、初期局面が必要。

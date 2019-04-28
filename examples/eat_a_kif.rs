@@ -5,6 +5,7 @@ use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
 use std::env;
 
 #[derive(Debug)]
@@ -37,8 +38,11 @@ pub fn main() {
     let path = args.path.unwrap();
     app.comm.println(&format!("args.path = '{}'.", path));
 
-    // Record.
-    let mut deck = CassetteDeck::new_empty(&app);
+    // Position.
+    let position = Position::new_honshogi_origin();
+
+    // Deck.
+    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
     KifConverter::convert_kif_tape_fragment(&path, &mut deck, &app);
 }

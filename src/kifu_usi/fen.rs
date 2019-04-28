@@ -13,20 +13,6 @@ use std::*;
 /// フォーサイス エドワーズ記法
 pub struct Fen {}
 impl Fen {
-    pub fn play_startpos(
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) -> bool {
-        // 大橋流を始めるところまでリセット。
-        deck.change(None, position.get_board_size(), &app);
-        position.reset_origin_position();
-
-        // 大橋流で初期局面まで指す☆（＾～＾）
-        GamePlayer::play_ohashi_starting(position, deck, &app);
-        true
-    }
-
     pub fn do_sfen(line: &str, start: &mut usize, position: &mut Position) -> bool {
         // ゲームに使う駒がまだ決まっていないところから始めます。
         position.reset_empty_position();
@@ -66,7 +52,7 @@ impl Fen {
         true
     }
 
-    // 初期局面解析。
+    // 本将棋のオリジン局面から、初期局面解析。
     pub fn parse_initial_position(
         line: &str,
         start: &mut usize,
@@ -77,7 +63,8 @@ impl Fen {
         match UsiPosition::parse_startpos_test(line, start, &app.comm) {
             Some(is_startpos) => {
                 if is_startpos {
-                    Fen::play_startpos(position, deck, &app)
+                    GamePlayer::play_startpos(position, deck, &app);
+                    true
                 } else {
                     Fen::do_sfen(line, start, position)
                 }

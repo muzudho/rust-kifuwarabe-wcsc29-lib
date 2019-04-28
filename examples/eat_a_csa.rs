@@ -40,11 +40,12 @@ pub fn main() {
     let path = args.path.unwrap();
     app.comm.println(&format!("args.path = '{}'.", path));
 
-    // Record.
-    let mut deck = CassetteDeck::new_empty(&app);
+    // Position.
+    let mut position = Position::new_honshogi_origin();
 
-    // Model.
-    let mut position = Position::default();
+    // Deck.
+    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+
     let crecord = CsaTape::load(&path, &app.comm);
 
     // Play out.

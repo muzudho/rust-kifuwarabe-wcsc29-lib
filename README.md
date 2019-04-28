@@ -125,6 +125,8 @@ cargo run --example eat_a_csa -- --path C:/muzudho/kifuwarabe-wcsc29-learn/csa-r
 cargo run --example eat_a_csa -- --path C:/shogi-record/formation-go/wcsc28_kifu/WCSC_F1_APR_MCB.csa
 
 cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/eating-go/WCSC28_F4_DGK_TNK.csa
+
+cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/formation-go$%wcsc28_kifu$%WCSC28_F4_HNW_PAL.csa
 ```
 
 Output.

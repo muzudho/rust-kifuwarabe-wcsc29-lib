@@ -91,6 +91,23 @@ impl GamePlayer {
         }
     }
 
+    // 大橋流を指せるように、クリアーするぜ☆（＾～＾）
+    pub fn clear_to_honshogi_origin(
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        // オリジン局面に戻す☆（＾～＾）
+        deck.change(None, position.get_board_size(), &app);
+        position.reset_origin_position();
+    }
+
+    // 大橋流で初期局面まで指す☆（＾～＾）
+    pub fn play_startpos(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+        // 大橋流で初期局面まで指す☆（＾～＾）
+        GamePlayer::play_ohashi_starting(position, deck, &app);
+    }
+
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_1note_ope(

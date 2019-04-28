@@ -47,10 +47,19 @@ pub struct CassetteDeck {
     pub slots: [CassetteSlot; 2],
 }
 impl CassetteDeck {
-    pub fn new_empty(app: &Application) -> Self {
-        CassetteDeck {
+    /// 新規作成と、カセットの交換☆（＾～＾）
+    pub fn new_change(
+        training_tape_box_opt: Option<CassetteTapeBox>,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> Self {
+        let mut brandnew = CassetteDeck {
             slots: [CassetteSlot::new_t(), CassetteSlot::new_l(&app)],
-        }
+        };
+
+        brandnew.change(training_tape_box_opt, board_size, &app);
+
+        brandnew
     }
 
     /// トレーニング・テープを交換するぜ☆（＾～＾）

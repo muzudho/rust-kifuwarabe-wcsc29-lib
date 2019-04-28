@@ -15,7 +15,7 @@ impl KifConverter {
         // comm.println(&format!("input_path: {}", input_path));
 
         // Model.
-        let mut position = Position::default();
+        let mut position = Position::new_honshogi_origin();
         let ktape = KifTape::load(&input_path);
 
         // Play.

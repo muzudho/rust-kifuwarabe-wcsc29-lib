@@ -57,8 +57,8 @@ pub struct Position {
     pub sky: Option<Sky>,
 }
 impl Position {
-    pub fn default() -> Position {
-        //println!("#Position: default.");
+    /// 本将棋用に初期化します。駒を並べる前の局面です。
+    pub fn new_honshogi_origin() -> Position {
         // このあと すぐリセットする。
         let mut instance = Position {
             phase: Phase::First,
@@ -232,7 +232,7 @@ impl Position {
         }
     }
 
-    /// ゲームに使う駒がまだ決まっていないところから始めます。
+    /// ゲームに使う駒がまだ決まっていないところから始めます。自由初期局面用。
     pub fn reset_empty_position(&mut self) {
         //println!("#Position: reset_empty_position.");
         self.phase = Phase::First;
@@ -664,9 +664,14 @@ impl Position {
         }
     }
 
-    /// 持ち駒の１行表示
-    pub fn to_hand_text(&self, phase_opt: Option<Phase>) -> String {
-        let mut text = String::new();
+    /// 空行が多くなるものの、持ち駒を４行表示。
+    /// １行に１０駒入れれば、４行で４０駒全部入る。
+    /// 横幅は７０文字としておく。
+    pub fn to_hand_4lines(&self, phase_opt: Option<Phase>) -> (String, String, String, String) {
+        let mut line0 = String::new();
+        let mut line1 = String::new();
+        let mut line2 = String::new();
+        let mut line3 = String::new();
 
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
@@ -680,14 +685,74 @@ impl Position {
             [K3, R3, B3, G3, S3, N3, L3, P3]
         };
 
+        // まず駒を集める。
+        let mut gather = Vec::new();
         for piece in &array {
             let hand_index_obj = HandIndex::from_piece(*piece);
             for id_piece in self.hands[hand_index_obj.get_index()].iter() {
-                text = format!("{} {}", text, id_piece.to_human_presentable())
+                gather.push(id_piece);
             }
         }
 
-        text
+        // ４０個の駒があるつもりで、文字列を作成する。
+        for i in 0..40 {
+            let piece_display = if i < gather.len() {
+                gather[i].to_human_presentable()
+            } else {
+                "".to_string()
+            };
+
+            if i < 10 {
+                line0 = format!(
+                    "{} {}",
+                    line0,
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                );
+            } else if i < 20 {
+                line1 = format!(
+                    "{} {}",
+                    line1,
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
+            } else if i < 30 {
+                line2 = format!(
+                    "{} {}",
+                    line2,
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
+            } else {
+                line3 = format!(
+                    "{} {}",
+                    line3,
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
+            }
+        }
+
+        // 全角が混ざっているので、桁数では横幅調整できない。
+        // ちょっとだけマージンを調整する。
+        (
+            format!(" {}", line0).to_string(),
+            format!(" {}", line1).to_string(),
+            format!(" {}", line2).to_string(),
+            format!(" {}", line3).to_string(),
+        )
     }
 
     /// Point of symmetory.
@@ -695,11 +760,12 @@ impl Position {
         use piece_etc::Phase::*;
         let mut content = String::new();
 
-        // First phase hand-pieces.
-        Parser::appendln(
-            &mut content,
-            &format!("                {}", self.to_hand_text(Some(Phase::First))),
-        );
+        // 先手の持ち駒。４行表示。
+        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::First));
+        Parser::appendln(&mut content, &format!(">{}", line0));
+        Parser::appendln(&mut content, &format!(">{}", line1));
+        Parser::appendln(&mut content, &format!(">{}", line2));
+        Parser::appendln(&mut content, &format!(">{}", line3));
 
         match phase {
             First => {
@@ -859,11 +925,12 @@ impl Position {
             &"               1    2    3    4    5    6    7    8    9".to_string(),
         );
 
-        // Second phase hand.
-        Parser::appendln(
-            &mut content,
-            &format!("                {}", self.to_hand_text(Some(Phase::Second))),
-        );
+        // 後手の持ち駒。４行表示。
+        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::Second));
+        Parser::appendln(&mut content, &format!(">{}", line0));
+        Parser::appendln(&mut content, &format!(">{}", line1));
+        Parser::appendln(&mut content, &format!(">{}", line2));
+        Parser::appendln(&mut content, &format!(">{}", line3));
 
         content
     }

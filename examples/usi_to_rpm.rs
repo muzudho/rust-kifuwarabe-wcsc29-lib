@@ -40,15 +40,16 @@ pub fn main() {
     let path = args.path.unwrap();
     app.comm.println(&format!("args.path = '{}'.", path));
 
-    let mut position = Position::default();
+    // Position.
+    let mut position = Position::new_honshogi_origin();
 
     let line = UsiTape::read_first_line(&app.comm, &path);
 
     app.comm.println(&format!("Parse line: `{}`.", line));
     let mut utape = UsiTape::default();
 
-    // Record.
-    let mut deck = CassetteDeck::new_empty(&app);
+    // Deck.
+    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
     let mut start = 0;
     if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {

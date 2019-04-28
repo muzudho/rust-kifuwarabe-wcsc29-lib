@@ -1,7 +1,9 @@
 use application::*;
 use board_size::*;
 use human::human_interface::*;
+use kifu_usi::fen::*;
 use kifu_usi::usi_converter::*;
+use kifu_usi::usi_position::*;
 use object_rpm::cassette_deck::*;
 use piece_etc::*;
 use shogi_ban::game_player::*;
@@ -163,15 +165,73 @@ impl LibSub {
 
     pub fn hand1(position: &Position, app: &Application) {
         // TODO 先手の持ち駒を表示。
-        app.comm.println(&position.to_hand_text(Some(Phase::First)));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(Phase::First));
+        app.comm.println(&line0);
+        app.comm.println(&line1);
+        app.comm.println(&line2);
+        app.comm.println(&line3);
     }
     pub fn hand2(position: &Position, app: &Application) {
         // TODO 後手の持ち駒を表示。
-        app.comm
-            .println(&position.to_hand_text(Some(Phase::Second)));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(Phase::Second));
+        app.comm.println(&line0);
+        app.comm.println(&line1);
+        app.comm.println(&line2);
+        app.comm.println(&line3);
     }
     pub fn hand3(position: &Position, app: &Application) {
         // TODO 使っていない駒を表示。
-        app.comm.println(&position.to_hand_text(None));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(None);
+        app.comm.println(&line0);
+        app.comm.println(&line1);
+        app.comm.println(&line2);
+        app.comm.println(&line3);
+    }
+
+    pub fn position(
+        line: String,
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        // 相手が指したあとの局面まで進める。
+        let mut urecord_opt = None;
+        let mut start = 0;
+
+        // 大橋流を指せるところまで、局面を戻す。
+        GamePlayer::clear_to_honshogi_origin(position, deck, &app);
+        if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
+            urecord_opt = UsiPosition::parse_usi_line_moves(
+                &app.comm,
+                &line,
+                &mut start,
+                position.get_board_size(),
+            );
+        }
+        //comm.println("#Position parse end1.");
+        //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
+
+        // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
+        // TODO できれば USI -> RPM 変換したい。
+        // comm.println("#Lib: TODO 'position' command(2).");
+        {
+            //comm.println("#Lib: 'position' command(2).");
+            let mut start = 0;
+
+            // 大橋流を指せるところまで、局面を戻す。
+            GamePlayer::clear_to_honshogi_origin(position, deck, &app);
+            if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
+                //comm.println("#Position parsed.");
+            }
+
+            if let Some(urecord) = urecord_opt {
+                // 差し替え。
+                deck.change(None, position.get_board_size(), &app);
+                UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
+            }
+            //comm.println("#Record converted1.");
+            //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
+            //comm.println("#Record converted2.");
+        }
     }
 }
