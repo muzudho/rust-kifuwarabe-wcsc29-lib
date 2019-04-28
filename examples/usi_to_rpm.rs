@@ -7,9 +7,8 @@ use kifuwarabe_wcsc29_lib::kifu_usi::fen::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_converter::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_position::*;
 use kifuwarabe_wcsc29_lib::kifu_usi::usi_tape::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
-use kifuwarabe_wcsc29_lib::position::*;
+use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
 use std::env;
 
 #[derive(Debug)]
@@ -49,18 +48,10 @@ pub fn main() {
     let mut utape = UsiTape::default();
 
     // Record.
-    let mut deck = CassetteDeck::new_empty();
-    deck.choice_box_manually("sheet.txt");
+    let mut deck = CassetteDeck::new_empty(&app);
 
     let mut start = 0;
-    if Fen::parse_initial_position(
-        &line,
-        &mut start,
-        &mut position,
-        &mut deck,
-        &mut recorder,
-        &app.comm,
-    ) {
+    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
         app.comm.println("Position parsed.");
 
         if let Some(parsed_utape) = UsiPosition::parse_usi_line_moves(
@@ -77,29 +68,11 @@ pub fn main() {
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_initial_position(
-        &line,
-        &mut start,
-        &mut position,
-        &mut deck,
-        &mut recorder,
-        &app.comm,
-    ) {
+    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
         app.comm.println("Position parsed.");
     }
 
     deck.change(None, position.get_board_size(), &app);
-    UsiConverter::play_out_usi_tape(
-        &mut position,
-        &utape,
-        &mut deck,
-        &mut recorder,
-        &app.comm,
-    );
-    HumanInterface::bo(
-        &app.comm,
-        &deck.recording_cassette_tape,
-        recorder.ply,
-        &position,
-    );
+    UsiConverter::play_out_usi_tape(&mut position, &utape, &mut deck, &app);
+    HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
 }

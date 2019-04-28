@@ -2,7 +2,7 @@ use application::Application;
 use communication::*;
 use object_rpm::cassette_deck::CassetteDeck;
 use object_rpm::cassette_deck::Slot;
-use object_rpm::cassette_tape::CassetteTape;
+use object_rpm::cassette_tape_box::CassetteTapeBox;
 use shogi_ban::position::*;
 use std::*;
 
@@ -22,7 +22,7 @@ impl HumanInterface {
         HumanInterface::show_position(&app.comm, deck.slots[slot as usize].ply, position);
 
         // 棋譜。
-        if let Some(tape_box) = deck.slots[slot as usize].tape_box {
+        if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
             let (_numbers, operations) =
                 &tape_box.get_sign_of_current_tape(position.get_board_size());
             app.comm.println(&format!("Score: {}", operations));
@@ -32,12 +32,17 @@ impl HumanInterface {
     }
 
     /// 局面と、テープ中の棋譜　の表示。
-    pub fn bo_with_tape(tape: &CassetteTape, ply: i16, position: &Position, app: &Application) {
+    pub fn bo_with_tape(
+        tape_box: &CassetteTapeBox,
+        ply: i16,
+        position: &Position,
+        app: &Application,
+    ) {
         // 局面。
         HumanInterface::show_position(&app.comm, ply, position);
 
         // 棋譜。
-        let (_numbers, operations) = &tape.to_sign(position.get_board_size());
+        let (_numbers, operations) = &tape_box.get_sign_of_current_tape(position.get_board_size());
         app.comm.println(&format!("TAPE: {}", operations));
     }
 }

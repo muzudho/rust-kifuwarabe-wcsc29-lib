@@ -185,7 +185,7 @@ impl GamePlayer {
             app.comm.println("Illegal, go opponent forcely!");
             tape_box.turn_caret_to_opponent();
             GamePlayer::read_tape_for_n_notes_forcely(
-                &mut tape_box,
+                tape_box,
                 forwarding_count,
                 position,
                 ply,

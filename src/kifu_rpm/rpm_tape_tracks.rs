@@ -62,10 +62,10 @@ impl RpmTapeTracks {
                 ShogiNoteOpe::parse_1ope(&ope_element, &mut caret, board_size, &app.comm);
 
             if let Some(note_ope) = note_ope_opt {
-                notes.push(ShogiNote {
-                    identify: PieceIdentify::from_number(id),
-                    operation: note_ope,
-                });
+                notes.push(ShogiNote::from_id_ope(
+                    PieceIdentify::from_number(id),
+                    note_ope,
+                ));
             } else {
                 panic!("Note_ope none.")
             }

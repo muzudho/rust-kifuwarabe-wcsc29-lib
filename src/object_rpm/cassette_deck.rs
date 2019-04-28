@@ -7,6 +7,7 @@ use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::ShogiNote;
 use shogi_ban::position::*;
 
+#[derive(Clone, Copy)]
 pub enum Slot {
     /// トレーニング。
     Training,
@@ -65,7 +66,8 @@ impl CassetteDeck {
         self.slots[Slot::Training as usize].tape_box = training_tape_box_opt;
         self.slots[Slot::Training as usize].ply = 1;
 
-        if let Some(learning_box) = self.slots[Slot::Learning as usize].tape_box {
+        let mut full = false;
+        if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
             // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
             let file_name = learning_box.get_file_name();
             learning_box
@@ -74,15 +76,19 @@ impl CassetteDeck {
 
             if 499 < learning_box.len() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
-                self.slots[Slot::Learning as usize].tape_box =
-                    Some(CassetteTapeBox::new_empty(&app));
+                full = true;
             }
         } else {
             panic!("Get l_box none.")
         }
 
+        if full {
+            // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
+            self.slots[Slot::Learning as usize].tape_box = Some(CassetteTapeBox::new_empty(&app));
+        }
+
         // 新しいラーニング・テープに差し替える。
-        if let Some(learning_box) = self.slots[Slot::Learning as usize].tape_box {
+        if let Some(ref mut learning_box) = self.slots[Slot::Learning as usize].tape_box {
             learning_box.change(&app);
             self.slots[Slot::Learning as usize].ply = 1;
         } else {
@@ -90,17 +96,9 @@ impl CassetteDeck {
         }
     }
 
-    pub fn get_mut_tape(&mut self, slot: Slot, app: &Application) -> &mut CassetteTape {
-        if let Some(ref mut tape_box) = self.slots[slot as usize].tape_box {
-            &mut tape_box.get_current_tape()
-        } else {
-            panic!("t_tape none.");
-        }
-    }
-
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）
     pub fn write_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
-        if let Some(tape_box) = self.slots[Slot::Learning as usize].tape_box {
+        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
             tape_box.write_tape_fragment_of_current_tape(board_size, &app);
         } else {
             panic!("tape box none.");
@@ -108,7 +106,7 @@ impl CassetteDeck {
     }
 
     pub fn write_tape_box(&mut self, board_size: BoardSize, app: &Application) {
-        if let Some(tape_box) = self.slots[Slot::Learning as usize].tape_box {
+        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
             tape_box.write_tape_box(board_size, &app);
         } else {
             panic!("tape box none.");
@@ -122,15 +120,20 @@ impl CassetteDeck {
         board_size: BoardSize,
         app: &Application,
     ) -> (String, String) {
-        self.get_mut_tape(slot, &app).to_sign(board_size)
+        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
+            tape_box.get_sign_of_current_tape(board_size)
+        } else {
+            panic!("tape box none.");
+        }
     }
 
     pub fn get_ply(&self, slot: Slot) -> i16 {
         self.slots[slot as usize].ply
     }
 
-    pub fn turn_caret_to_opponent(&self, slot: Slot) {
-        if let Some(tape_box) = self.slots[slot as usize].tape_box {
+    pub fn turn_caret_to_opponent(&mut self, slot: Slot) {
+        let cassette_slot = &mut self.slots[slot as usize];
+        if let Some(ref mut tape_box) = cassette_slot.tape_box {
             tape_box.turn_caret_to_opponent();
         } else {
             panic!("tape box none.");
@@ -149,52 +152,44 @@ impl CassetteDeck {
 
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
-        if let Some(tape_box) = self.slots[slot as usize].tape_box {
-            let (is_positive, index) = tape_box.get_current_tape().caret.to_index();
+        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
+            let (is_positive, index) = tape_box.get_caret_index_of_current_tape();
 
             if is_positive {
                 // 正のテープ。
                 // 最先端かどうか判断。
-                if tape_box.get_current_tape().is_positive_peak()
-                    && !tape_box.get_current_tape().caret.is_facing_left()
+                if tape_box.is_positive_peak_of_current_tape()
+                    && !tape_box.is_facing_left_of_current_tape()
                 {
                     // 正の絶対値が大きい方の新しい要素を追加しようとしている。
-                    if let Some(tape_box) = self.slots[slot as usize].tape_box {
-                        tape_box.push_note_to_positive_of_current_tape(note);
-                        tape_box.go_caret_to_next(&app);
-                    }
+                    tape_box.push_note_to_positive_of_current_tape(note);
+                    tape_box.go_caret_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    if let Some(tape_box) = self.slots[slot as usize].tape_box {
-                        tape_box.set_note_to_positive_of_current_tape(index, note);
-                        tape_box.go_caret_to_next(&app);
+                    tape_box.set_note_to_positive_of_current_tape(index, note);
+                    tape_box.go_caret_to_next(&app);
 
-                        // 仮のおわり を更新。
-                        let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
-                        tape_box.truncate_positive_of_current_tape(index);
-                    }
+                    // 仮のおわり を更新。
+                    let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
+                    tape_box.truncate_positive_of_current_tape(index);
                 }
             } else {
                 // 負のテープ。
                 // 最先端かどうか判断。
-                if tape_box.get_current_tape().is_negative_peak()
-                    && tape_box.get_current_tape().caret.is_facing_left()
+                if tape_box.is_negative_peak_of_current_tape()
+                    && tape_box.is_facing_left_of_current_tape()
                 {
                     // 負の絶対値が大きい方の新しい要素を追加しようとしている。
-                    if let Some(tape_box) = self.slots[slot as usize].tape_box {
-                        tape_box.push_note_to_negative_of_current_tape(note);
-                        tape_box.go_caret_to_next(&app);
-                    }
+                    tape_box.push_note_to_negative_of_current_tape(note);
+                    tape_box.go_caret_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    if let Some(tape_box) = self.slots[slot as usize].tape_box {
-                        tape_box.set_note_to_negative_of_current_tape(index, note);
-                        tape_box.go_caret_to_next(&app);
+                    tape_box.set_note_to_negative_of_current_tape(index, note);
+                    tape_box.go_caret_to_next(&app);
 
-                        // 仮のおわり を更新。
-                        let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
-                        tape_box.truncate_negative_of_current_tape(index);
-                    }
+                    // 仮のおわり を更新。
+                    let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
+                    tape_box.truncate_negative_of_current_tape(index);
                 }
             }
         } else {
@@ -207,7 +202,8 @@ impl CassetteDeck {
     ///
     /// 削除したノート。
     pub fn delete_1note(&mut self, slot: Slot, app: &Application) -> Option<ShogiNote> {
-        if let Some(tape_box) = self.slots[slot as usize].tape_box {
+        let cassette_slot = &mut self.slots[slot as usize];
+        if let Some(ref mut tape_box) = cassette_slot.tape_box {
             tape_box.delete_1note(&app)
         } else {
             None

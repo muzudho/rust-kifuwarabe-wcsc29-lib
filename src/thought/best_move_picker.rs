@@ -188,17 +188,19 @@ impl BestMovePicker {
                             deck.turn_caret_to_opponent(Slot::Learning);
                             app.comm
                                 .println(&format!("Tried, go opponent {} move!", record_count,));
-                            let learning_slot = deck.slots[Slot::Learning as usize];
-                            if let Some(mut tape_box) = learning_slot.tape_box {
-                                GamePlayer::read_tape_for_n_moves_forcely(
-                                    &mut tape_box,
-                                    record_count,
-                                    position,
-                                    learning_slot.ply,
-                                    &app,
-                                );
-                            } else {
-                                panic!("Tape box none.");
+                            {
+                                let learning_slot = &mut deck.slots[Slot::Learning as usize];
+                                if let Some(ref mut tape_box) = learning_slot.tape_box {
+                                    GamePlayer::read_tape_for_n_moves_forcely(
+                                        tape_box,
+                                        record_count,
+                                        position,
+                                        learning_slot.ply,
+                                        &app,
+                                    );
+                                } else {
+                                    panic!("Tape box none.");
+                                }
                             }
                             deck.turn_caret_to_opponent(Slot::Learning);
                             app.comm.println("Backed.");
@@ -391,8 +393,10 @@ impl BestMovePicker {
                 //recorder.reset_caret();
                 let mut ply_2 = 1;
                 let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
-                let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
-                cassette_tape_box_2.change_with_training_tape(cassette_tape_2, &app);
+                {
+                    let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
+                    cassette_tape_box_2.change_with_training_tape(cassette_tape_2, &app);
+                }
                 /*
                 println!(
                     "BMP: This move rtape: {}.",
@@ -413,7 +417,7 @@ impl BestMovePicker {
                         subject_pid.to_human_presentable(),
                         &rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo_with_tape(&cassette_tape_2, ply_2, &position, &app);
+                    HumanInterface::bo_with_tape(&cassette_tape_box_2, ply_2, &position, &app);
                     (Some(rmove), false)
                 } else {
                     // 非合法タッチ。（自動で戻されています）
@@ -421,7 +425,7 @@ impl BestMovePicker {
                         "Canceled: {}.",
                         rmove.to_human_presentable(position.get_board_size())
                     ));
-                    HumanInterface::bo_with_tape(&cassette_tape_2, ply_2, &position, &app);
+                    HumanInterface::bo_with_tape(&cassette_tape_box_2, ply_2, &position, &app);
                     (None, false)
                 }
             } else {

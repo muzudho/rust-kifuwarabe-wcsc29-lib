@@ -32,18 +32,6 @@ impl fmt::Display for ShogiNote {
     }
 }
 impl ShogiNote {
-    /// For log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
-        format!(
-            "'{}'{}",
-            match self.identify {
-                Some(pid) => pid.to_human_presentable(),
-                None => "--".to_string(),
-            },
-            self.operation.to_human_presentable(board_size)
-        )
-    }
-
     pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: ShogiNoteOpe) -> ShogiNote {
         ShogiNote {
             identify: pid,
@@ -122,6 +110,18 @@ impl ShogiNote {
             first_used_caret,
             last_used_caret,
             Some(ShogiNote::from_id_ope(pid_opt, note_ope)),
+        )
+    }
+
+    /// For log.
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        format!(
+            "'{}'{}",
+            match self.identify {
+                Some(pid) => pid.to_human_presentable(),
+                None => "--".to_string(),
+            },
+            self.operation.to_human_presentable(board_size)
         )
     }
 }

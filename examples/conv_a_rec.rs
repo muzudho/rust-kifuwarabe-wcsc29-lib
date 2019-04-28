@@ -1,17 +1,17 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 
+use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
 use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::CsaConverter;
 use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_editor::*;
 use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box::*;
+use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
 use kifuwarabe_wcsc29_lib::*;
+use std::env;
 use std::ffi::OsStr;
 use std::path::Path;
-
-use getopts::Options;
-use std::env;
 
 #[derive(Debug)]
 pub struct Arguments {
@@ -50,10 +50,20 @@ fn main() {
     // The application contains all immutable content.
     let app = Application::new();
 
+    // Model.
+    let position = Position::default();
+
     // Record.
-    let mut tape_box_conveyer = CassetteDeck::new_empty();
-    tape_box_conveyer.choice_box_manually(&tape_box_file_for_write);
-    let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
+    let mut deck = CassetteDeck::new_empty(&app);
+    deck.change(
+        Some(CassetteTapeBox::from_file(
+            tape_box_file_for_write,
+            position.get_board_size(),
+            &app,
+        )),
+        position.get_board_size(),
+        &app,
+    );
 
     if !in_file.is_empty() {
         // 棋譜解析。
@@ -63,20 +73,10 @@ fn main() {
 
         match ext.as_str() {
             "KIF" => {
-                KifConverter::convert_kif_tape_fragment(
-                    &in_file,
-                    &mut tape_box_conveyer,
-                    &mut recorder,
-                    &app,
-                );
+                KifConverter::convert_kif_tape_fragment(&in_file, &mut deck, &app);
             }
             "CSA" => {
-                CsaConverter::convert_csa_tape_fragment(
-                    &in_file,
-                    &mut tape_box_conveyer,
-                    &mut recorder,
-                    &app,
-                );
+                CsaConverter::convert_csa_tape_fragment(&in_file, &mut deck, &app);
             }
             _ => print!("Pass extension: {}", ext),
         }

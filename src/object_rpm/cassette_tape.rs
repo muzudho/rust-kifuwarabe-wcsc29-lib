@@ -34,11 +34,11 @@ impl CassetteTapeLabel {
 
     pub fn to_rpm(&self) -> RpmTapeLabel {
         RpmTapeLabel {
-            date: self.date,
-            event: self.event,
-            player1: self.player1,
-            player2: self.player2,
-            source_file: self.source_file,
+            date: self.date.to_string(),
+            event: self.event.to_string(),
+            player1: self.player1.to_string(),
+            player2: self.player2.to_string(),
+            source_file: self.source_file.to_string(),
         }
     }
 }
@@ -140,6 +140,10 @@ impl CassetteTape {
     }
     pub fn get_negative_peak_caret(&self) -> i16 {
         -(self.tracks.len_negative() as i16) - 1
+    }
+
+    pub fn is_facing_left_of_caret(&self) -> bool {
+        self.caret.is_facing_left()
     }
 
     pub fn is_positive_peak(&self) -> bool {

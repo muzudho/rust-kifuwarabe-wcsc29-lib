@@ -18,12 +18,17 @@ pub struct CassetteTapeBox {
 }
 impl CassetteTapeBox {
     /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
-    pub fn new_empty(app: &Application) -> CassetteTapeBox {
+    pub fn new_empty(app: &Application) -> Self {
         CassetteTapeBox {
             file: RpmTapeBox::create_file_full_name(&app.kw29_conf),
             tapes: Vec::new(),
             tape_index: 0,
         }
+    }
+
+    pub fn from_file(file_name: String, board_size: BoardSize, app: &Application) -> Self {
+        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name);
+        rpm_tape_box.to_object(board_size, &app)
     }
 
     pub fn go_1note_forcely(&mut self, app: &Application) -> Option<ShogiNote> {
@@ -43,26 +48,17 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// 削除したノート。
-    pub fn delete_1note(&mut self, app: &Application) -> Option<ShogiNote> {
-        let caret = &self.tapes[self.tape_index].caret;
+    pub fn delete_1note(&mut self, _app: &Application) -> Option<ShogiNote> {
+        let tape = &mut self.tapes[self.tape_index];
 
-        let (new_tape, removed_note_opt) =
-            self.tapes[self.tape_index].tracks.new_truncated_tape(caret);
-        self.tapes[self.tape_index].tracks = new_tape;
+        let (new_tape, removed_note_opt) = tape.tracks.new_truncated_tape(&tape.caret);
+        tape.tracks = new_tape;
 
         if let Some(removed_note) = removed_note_opt {
             Some(removed_note)
         } else {
             None
         }
-    }
-
-    pub fn get_current_tape(&self) -> CassetteTape {
-        if self.tapes.is_empty() {
-            panic!("Tape box is empty.");
-        }
-
-        self.tapes[self.tape_index]
     }
 
     pub fn push_note_to_positive_of_current_tape(&mut self, note: ShogiNote) {
@@ -92,6 +88,21 @@ impl CassetteTapeBox {
             .truncate(len);
     }
 
+    pub fn is_facing_left_of_current_tape(&self) -> bool {
+        self.tapes[self.tape_index].caret.is_facing_left()
+    }
+
+    pub fn is_positive_peak_of_current_tape(&self) -> bool {
+        self.tapes[self.tape_index]
+            .caret
+            .equals(self.tapes[self.tape_index].get_positive_peak_caret())
+    }
+    pub fn is_negative_peak_of_current_tape(&self) -> bool {
+        self.tapes[self.tape_index]
+            .caret
+            .equals(self.tapes[self.tape_index].get_negative_peak_caret())
+    }
+
     pub fn get_caret_index_of_current_tape(&self) -> (bool, usize) {
         self.tapes[self.tape_index].caret.to_index()
     }
@@ -105,26 +116,32 @@ impl CassetteTapeBox {
     }
 
     pub fn get_file_name(&self) -> String {
-        self.file
+        self.file.to_string()
     }
 
     /// トレーニング・テープを交換し、新しいラーニング・テープを追加するぜ☆（＾ｑ＾）
-    pub fn change(&mut self, app: &Application) -> CassetteTape {
+    pub fn change(&mut self, app: &Application) {
         let brandnew = CassetteTape::new_facing_right(&app);
         self.tapes.push(brandnew);
         self.tape_index = self.tapes.len() - 1;
-        brandnew
     }
 
+    /// トレーニング・テープを交換するぜ☆（＾～＾）
     pub fn change_with_training_tape(&mut self, training_tape: CassetteTape, app: &Application) {
         self.tapes.push(training_tape);
         self.tape_index = self.tapes.len() - 1;
     }
 
-    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
-        let rbox = RpmTapeBox::new();
+    /// トレーニング、ラーニングに関わらず、テープを追加するぜ☆（＾～＾）
+    pub fn push_tape(&mut self, tape: CassetteTape) {
+        self.tapes.push(tape);
+        self.tape_index = self.tapes.len() - 1;
+    }
 
-        for tape in self.tapes {
+    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
+        let mut rbox = RpmTapeBox::new();
+
+        for tape in &self.tapes {
             rbox.push(tape.to_rpm(board_size));
         }
 
@@ -147,6 +164,6 @@ impl CassetteTapeBox {
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
-        rpm_tape_box.write(self.file, board_size, &app.comm);
+        rpm_tape_box.write(self.file.to_string(), board_size, &app.comm);
     }
 }

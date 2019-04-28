@@ -1,9 +1,10 @@
 extern crate rand;
+use application::Application;
 use board_size::*;
 use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use kifu_rpm::rpm_tape::*;
-use object_rpm::cassette_tape::*;
+use object_rpm::cassette_tape_box::*;
 use rand::Rng;
 use serde::*;
 use std::fs;
@@ -97,5 +98,16 @@ impl RpmTapeBox {
         }
 
         // comm.println("#Sheet saved.");
+    }
+
+    pub fn to_object(&self, board_size: BoardSize, app: &Application) -> CassetteTapeBox {
+        let mut tape_box = CassetteTapeBox::new_empty(&app);
+
+        for tape_j in &self.tape_box {
+            let tape = tape_j.to_object(board_size, &app);
+            tape_box.push_tape(tape);
+        }
+
+        tape_box
     }
 }
