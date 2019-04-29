@@ -68,6 +68,11 @@ impl ShogiMove {
         // TODO 毎回スプリットするのはもったいない☆（＾～＾）
         let id_vec: Vec<&str> = cassette_tape_j.tracks.id.split(' ').collect();
 
+        if note_caret.is_greater_than_or_equal_to(ope_vec.len() as i16) {
+            // キャレットが既にピーク。
+            return (0, None);
+        }
+
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
             if note_caret.is_greater_than_or_equal_to(note_size as i16) {

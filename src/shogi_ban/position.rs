@@ -702,7 +702,16 @@ impl Position {
                 "".to_string()
             };
 
-            if i < 10 {
+            if i == 0 {
+                line0 = format!(
+                    "{}",
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                );
+            } else if i < 10 {
                 line0 = format!(
                     "{} {}",
                     line0,
@@ -712,6 +721,15 @@ impl Position {
                         "    ".to_string()
                     }
                 );
+            } else if i == 10 {
+                line1 = format!(
+                    "{}",
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
             } else if i < 20 {
                 line1 = format!(
                     "{} {}",
@@ -722,10 +740,28 @@ impl Position {
                         "    ".to_string()
                     }
                 )
+            } else if i == 20 {
+                line2 = format!(
+                    "{}",
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
             } else if i < 30 {
                 line2 = format!(
                     "{} {}",
                     line2,
+                    if i < gather.len() {
+                        piece_display
+                    } else {
+                        "    ".to_string()
+                    }
+                )
+            } else if i == 30 {
+                line3 = format!(
+                    "{}",
                     if i < gather.len() {
                         piece_display
                     } else {
@@ -746,12 +782,16 @@ impl Position {
         }
 
         // 全角が混ざっているので、桁数では横幅調整できない。
-        // ちょっとだけマージンを調整する。
+        // 73列を使い、74列目に縦線を引きたい。
+        //
+        // 左端に装飾2列 ＋ 要素が最大１０個 × 1要素は横幅4列分 ＋ 隙間の半角スペースが9個 ＋ 右に22個マージン。
+        //
+        // 装飾を付けたりして、ちょっとだけマージンを調整する。
         (
-            format!(" {}", line0).to_string(),
-            format!(" {}", line1).to_string(),
-            format!(" {}", line2).to_string(),
-            format!(" {}", line3).to_string(),
+            format!("> {}                      ", line0).to_string(),
+            format!("> {}                      ", line1).to_string(),
+            format!("> {}                      ", line2).to_string(),
+            format!("> {}                      ", line3).to_string(),
         )
     }
 
@@ -762,23 +802,25 @@ impl Position {
 
         // 先手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::First));
-        Parser::appendln(&mut content, &format!(">{}", line0));
-        Parser::appendln(&mut content, &format!(">{}", line1));
-        Parser::appendln(&mut content, &format!(">{}", line2));
-        Parser::appendln(&mut content, &format!(">{}", line3));
+        Parser::appendln(&mut content, &format!("{}|", line0));
+        Parser::appendln(&mut content, &format!("{}|", line1));
+        Parser::appendln(&mut content, &format!("{}|", line2));
+        Parser::appendln(&mut content, &format!("{}|", line3));
 
         match phase {
             First => {
                 // hand-graphic.
                 Parser::appendln(
                     &mut content,
-                    &"|         |   +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"|         |   +----+----+----+----+----+----+----+----+----+             |"
+                        .to_string(),
                 );
             }
             Second => {
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"              +----+----+----+----+----+----+----+----+----+             |"
+                        .to_string(),
                 );
             }
         }
@@ -819,7 +861,6 @@ impl Position {
                     &mut content,
                     &format!(
                         // 全角文字が混ざると、文字数では横幅調整できない。
-                        // "{0}|{1:<4}{2:<4}{3:<4}{4:<4}{5:<4}{6:<4}{7:<4}{8:<4}{9:<4}",
                         "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|",
                         rank, // Parser::i8_to_rank_char(rank),
                         self.get_cell_display_by_address(Address::from_cell(
@@ -878,23 +919,25 @@ impl Position {
 
             // Second player finger.
             match phase {
-                First => {}
+                First => Parser::append(&mut content, &"             |".to_string()),
                 Second => {
                     match row {
-                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {}
+                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
+                            Parser::append(&mut content, &"             |".to_string())
+                        }
                         11 => Parser::append(
                             &mut content,
                             &format!(
-                                "  {}",
+                                "  {}    |",
                                 self.get_cell_display_by_address(Address::from_sky())
                                     .to_sky_display(board_size)
                             ),
                         ),
-                        12 => Parser::append(&mut content, &" +-+ +-+".to_string()),
-                        13 => Parser::append(&mut content, &" | | | |".to_string()),
-                        14 => Parser::append(&mut content, &" | | | |".to_string()),
-                        15 => Parser::append(&mut content, &" | +-+ +---+".to_string()),
-                        16 => Parser::append(&mut content, &" |         |".to_string()),
+                        12 => Parser::append(&mut content, &" +-+ +-+     |".to_string()),
+                        13 => Parser::append(&mut content, &" | | | |     |".to_string()),
+                        14 => Parser::append(&mut content, &" | | | |     |".to_string()),
+                        15 => Parser::append(&mut content, &" | +-+ +---+ |".to_string()),
+                        16 => Parser::append(&mut content, &" |         | |".to_string()),
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
@@ -907,14 +950,15 @@ impl Position {
             First => {
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+".to_string(),
+                    &"              +----+----+----+----+----+----+----+----+----+             |"
+                        .to_string(),
                 );
             }
             Second => {
                 // hand.
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+ |         |"
+                    &"              +----+----+----+----+----+----+----+----+----+ |         | |"
                         .to_string(),
                 );
             }
@@ -922,15 +966,16 @@ impl Position {
 
         Parser::appendln(
             &mut content,
-            &"               1    2    3    4    5    6    7    8    9".to_string(),
+            &"               1    2    3    4    5    6    7    8    9                 |"
+                .to_string(),
         );
 
         // 後手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::Second));
-        Parser::appendln(&mut content, &format!(">{}", line0));
-        Parser::appendln(&mut content, &format!(">{}", line1));
-        Parser::appendln(&mut content, &format!(">{}", line2));
-        Parser::appendln(&mut content, &format!(">{}", line3));
+        Parser::appendln(&mut content, &format!("{}|", line0));
+        Parser::appendln(&mut content, &format!("{}|", line1));
+        Parser::appendln(&mut content, &format!("{}|", line2));
+        Parser::appendln(&mut content, &format!("{}|", line3));
 
         content
     }
