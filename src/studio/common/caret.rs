@@ -1,5 +1,5 @@
-use common::closed_interval::ClosedInterval;
-use communication::*;
+use studio::common::closed_interval::ClosedInterval;
+use studio::communication::*;
 
 pub struct Caret {
     facing_left: bool,

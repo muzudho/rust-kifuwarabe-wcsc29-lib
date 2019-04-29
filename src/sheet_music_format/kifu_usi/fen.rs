@@ -1,13 +1,13 @@
-use address::*;
-use application::Application;
-use board_size::*;
-use communication::*;
 use instrument::game_player::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
-use piece_etc::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_position::*;
 use std::*;
+use studio::address::*;
+use studio::application::Application;
+use studio::board_size::*;
+use studio::communication::*;
 use video_recorder::cassette_deck::*;
 
 /// フォーサイス エドワーズ記法
@@ -111,7 +111,7 @@ impl Fen {
 
 // フォーサイス エドワーズ記法に出てくる駒１つ分の読み込み。1～2文字。
 pub fn parse_sign_line_to_piece(line: &str, start: &mut usize) -> Option<Piece> {
-    use piece_etc::Piece::*;
+    use instrument::piece_etc::Piece::*;
 
     // スタートが文字列の終端を読み終わっていれば、結果は空。
     if line.len() <= *start as usize {

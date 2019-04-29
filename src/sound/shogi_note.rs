@@ -1,15 +1,15 @@
-use board_size::*;
-use common::caret::*;
+use studio::board_size::*;
+use studio::common::caret::*;
 ///
 /// Rpm棋譜のノート。
 ///
 /// 局面から独立しています。
 ///
-use common::closed_interval::ClosedInterval;
-use communication::*;
+use studio::common::closed_interval::ClosedInterval;
+use studio::communication::*;
 // use kifu_rpm::rpm_tape::*;
-use video_recorder::shogi_note_operation::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
+use sound::shogi_note_operation::*;
 use std::fmt;
 
 //#[derive(Debug)]
@@ -59,8 +59,8 @@ impl ShogiNote {
     /// (closed_interval, note_opt)
     pub fn parse_1note(
         comm: &Communication,
-        ope_vec: &Vec<&str>,
-        id_vec: &Vec<&str>,
+        ope_vec: &[&str],
+        id_vec: &[&str],
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (ClosedInterval, Option<ShogiNote>) {

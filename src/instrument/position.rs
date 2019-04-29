@@ -1,11 +1,11 @@
-use address::*;
-use board_size::*;
-use communication::*;
-use video_recorder::cassette_deck::Slot;
-use video_recorder::shogi_note_operation::*;
-use parser::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
+use sound::shogi_note_operation::*;
 use std::*;
+use studio::address::*;
+use studio::board_size::*;
+use studio::communication::*;
+use studio::parser::*;
+use video_recorder::cassette_deck::Slot;
 
 pub const BOARD_START: usize = 0;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as usize;
@@ -131,10 +131,10 @@ impl Position {
             Vec::new(),
         ];
 
-        use piece_etc::IdentifiedPiece;
-        use piece_etc::Phase::*;
-        use piece_etc::Piece::*;
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::IdentifiedPiece;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::Piece::*;
+        use instrument::piece_etc::PieceIdentify::*;
         // きふわらべは 駒台の駒をスタック構造と捉えて後ろから取っていくので、
         // 大橋流の順に並べるために、逆順に駒台に追加してください。
         // 玉2枚。
@@ -268,10 +268,10 @@ impl Position {
             Vec::new(),
         ];
 
-        use piece_etc::IdentifiedPiece;
-        use piece_etc::Phase::*;
-        use piece_etc::Piece::*;
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::IdentifiedPiece;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::Piece::*;
+        use instrument::piece_etc::PieceIdentify::*;
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K3).get_index()];
@@ -501,8 +501,9 @@ impl Position {
         &mut self,
         rpm_operation_note: &ShogiNoteOpe,
         comm: &Communication,
-        board_size: BoardSize,
     ) -> (bool, Option<IdentifiedPiece>) {
+        let board_size = self.get_board_size();
+
         match rpm_operation_note.address {
             Some(address) => {
                 // どこかを指定した。
@@ -610,7 +611,7 @@ impl Position {
                 // 盤上や駒台の、どこも指していない。
                 if rpm_operation_note.is_phase_change() {
                     // 合法。 phase change.
-                    use piece_etc::Phase::*;
+                    use instrument::piece_etc::Phase::*;
                     self.phase = match self.phase {
                         First => Second,
                         Second => First,
@@ -676,8 +677,8 @@ impl Position {
         let mut line2 = String::new();
         let mut line3 = String::new();
 
-        use piece_etc::Phase::*;
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::Piece::*;
 
         let array = if let Some(phase) = phase_opt {
             match phase {
@@ -706,14 +707,11 @@ impl Position {
             };
 
             if i == 0 {
-                line0 = format!(
-                    "{}",
-                    if i < gather.len() {
-                        piece_display
-                    } else {
-                        "    ".to_string()
-                    }
-                );
+                line0 = if i < gather.len() {
+                    piece_display
+                } else {
+                    "    ".to_string()
+                };
             } else if i < 10 {
                 line0 = format!(
                     "{} {}",
@@ -725,14 +723,11 @@ impl Position {
                     }
                 );
             } else if i == 10 {
-                line1 = format!(
-                    "{}",
-                    if i < gather.len() {
-                        piece_display
-                    } else {
-                        "    ".to_string()
-                    }
-                )
+                line1 = if i < gather.len() {
+                    piece_display
+                } else {
+                    "    ".to_string()
+                };
             } else if i < 20 {
                 line1 = format!(
                     "{} {}",
@@ -742,16 +737,13 @@ impl Position {
                     } else {
                         "    ".to_string()
                     }
-                )
+                );
             } else if i == 20 {
-                line2 = format!(
-                    "{}",
-                    if i < gather.len() {
-                        piece_display
-                    } else {
-                        "    ".to_string()
-                    }
-                )
+                line2 = if i < gather.len() {
+                    piece_display
+                } else {
+                    "    ".to_string()
+                };
             } else if i < 30 {
                 line2 = format!(
                     "{} {}",
@@ -761,16 +753,13 @@ impl Position {
                     } else {
                         "    ".to_string()
                     }
-                )
+                );
             } else if i == 30 {
-                line3 = format!(
-                    "{}",
-                    if i < gather.len() {
-                        piece_display
-                    } else {
-                        "    ".to_string()
-                    }
-                )
+                line3 = if i < gather.len() {
+                    piece_display
+                } else {
+                    "    ".to_string()
+                };
             } else {
                 line3 = format!(
                     "{} {}",
@@ -780,7 +769,7 @@ impl Position {
                     } else {
                         "    ".to_string()
                     }
-                )
+                );
             }
         }
 
@@ -814,7 +803,7 @@ impl Position {
         }
         .to_string();
 
-        use piece_etc::Phase::*;
+        use instrument::piece_etc::Phase::*;
         let mut content = String::new();
 
         // 先手の持ち駒。４行表示。

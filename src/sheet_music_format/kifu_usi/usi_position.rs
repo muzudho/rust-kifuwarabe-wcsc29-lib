@@ -1,8 +1,8 @@
-use board_size::*;
-use communication::*;
-use parser::*;
 use sheet_music_format::kifu_usi::usi_tape::*;
 use std::*;
+use studio::board_size::*;
+use studio::communication::*;
+use studio::parser::*;
 
 pub struct UsiPosition {}
 impl UsiPosition {

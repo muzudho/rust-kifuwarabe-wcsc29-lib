@@ -1,7 +1,4 @@
 extern crate rand;
-use application::Application;
-use board_size::*;
-use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use rand::Rng;
 use serde::*;
@@ -11,6 +8,9 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
+use studio::application::Application;
+use studio::board_size::*;
+use studio::communication::*;
 use video_recorder::cassette_tape_box::*;
 
 /// -rbox.json ファイルに対応。
@@ -127,7 +127,7 @@ impl RpmTapeBox {
 
         for tape_j in &self.tape_box {
             let tape = tape_j.to_object(board_size, &app);
-            tape_box.push_tape(tape);
+            tape_box.change_with_tape(tape);
         }
 
         tape_box

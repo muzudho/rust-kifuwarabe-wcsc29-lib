@@ -10,6 +10,9 @@ use std::path::Path;
 pub struct KifuwarabeWcsc29LibConfig {
     /// 統一設定ファイルへのパス。
     pub kifuwarabe_wcsc29_config_path: String,
+
+    /// ログ・ファイルへのパス。
+    pub log_file_name: String,
 }
 impl KifuwarabeWcsc29LibConfig {
     /// 設定ファイル読込。

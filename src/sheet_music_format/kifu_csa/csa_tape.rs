@@ -1,10 +1,10 @@
-use communication::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
-use piece_etc::*;
 use sheet_music_format::kifu_csa::csa_move::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
+use studio::communication::*;
 
 #[derive(Default)]
 pub struct CsaTape {

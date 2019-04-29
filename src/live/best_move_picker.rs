@@ -1,17 +1,17 @@
-use address::Address;
-use application::Application;
-use common::caret::*;
 use human::human_interface::*;
 use instrument::game_player::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
 use musician::best_thread::*;
-use piece_etc::*;
 use sheet_music_format::kifu_usi::usi_move::*;
+use sound::shogi_move::*;
 use std::collections::HashMap;
 use std::fs;
+use studio::address::Address;
+use studio::application::Application;
+use studio::common::caret::*;
 use video_recorder::cassette_deck::*;
 use video_recorder::cassette_tape_box::*;
-use video_recorder::shogi_move::*;
 
 pub struct BestMovePicker {
     best_thread_map: HashMap<i8, BestThread>,
@@ -50,7 +50,7 @@ impl BestMovePicker {
         max
     }
 
-    /// TODO 学習ファイルをもとに動く。
+    /// 最善手を返す。
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
@@ -70,12 +70,20 @@ impl BestMovePicker {
         // TODO とりあえず rbox.json ファイルを１個読む。
         'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
             let tape_box_file_name = tape_box_file.unwrap().path().display().to_string();
+            let mut training_tape_box =
+                CassetteTapeBox::from_file(&tape_box_file_name, position.get_board_size(), &app);
+
+            // トレーニング・テープ・ボックスを１箱選択。
+            app.comm.println(&format!(
+                "#Tape-box: {}. Phase: {:?}.",
+                training_tape_box.to_human_presentable(),
+                position.get_phase()
+            ));
 
             /*
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
-                comm.println(&format!("info tape_box_file_name: {}, Phase: {:?}.", tape_box_file_name, position.get_phase()));
                 HumanInterface::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
@@ -102,15 +110,13 @@ impl BestMovePicker {
             }
             */
 
-            let mut training_tape_box =
-                CassetteTapeBox::from_file(&tape_box_file_name, position.get_board_size(), &app);
-
-            //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
             // テープをセット☆（＾～＾）
             while training_tape_box.change_next_if_it_exists(&app) {
+                // テープを１本選択☆（＾～＾）
                 app.comm.println(&format!(
-                    "Tape: {}",
-                    training_tape_box.to_human_presentable()
+                    "#Tape: {}",
+                    training_tape_box
+                        .to_human_presentable_of_current_tape(position.get_board_size())
                 ));
 
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
@@ -408,7 +414,7 @@ impl BestMovePicker {
                 let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                 {
                     let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
-                    cassette_tape_box_2.change_with_training_tape(cassette_tape_2);
+                    cassette_tape_box_2.change_with_tape(cassette_tape_2);
                 }
                 */
                 /*

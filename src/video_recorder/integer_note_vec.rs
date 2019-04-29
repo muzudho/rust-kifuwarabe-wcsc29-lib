@@ -1,9 +1,9 @@
-use board_size::*;
-use common::caret::*;
-use communication::*;
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::*;
+use sound::shogi_note::*;
 use std::*;
-use video_recorder::shogi_note::*;
+use studio::board_size::*;
+use studio::common::caret::*;
+use studio::communication::*;
 
 const NONE_VALUE: i8 = -1;
 

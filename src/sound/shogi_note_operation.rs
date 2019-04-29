@@ -1,16 +1,16 @@
+use instrument::piece_etc::{PhysicalSign, PieceType};
+use std::fmt;
 ///
 /// Rpm棋譜のノートの操作属性。
 ///
 /// 局面から独立しています。
 ///
-use address::{Address, Cell};
-use board_size::BoardSize;
-use common::caret::*;
-use common::closed_interval::*;
-use communication::Communication;
-use parser::Parser;
-use piece_etc::{PhysicalSign, PieceType};
-use std::fmt;
+use studio::address::{Address, Cell};
+use studio::board_size::BoardSize;
+use studio::common::caret::*;
+use studio::common::closed_interval::*;
+use studio::communication::Communication;
+use studio::parser::Parser;
 
 /// Vector に入れるときコピーする。
 //#[derive(Debug)]

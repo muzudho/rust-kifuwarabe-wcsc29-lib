@@ -1,7 +1,7 @@
-use application::Application;
-use communication::*;
 use instrument::position::*;
 use std::*;
+use studio::application::Application;
+use studio::communication::*;
 use video_recorder::cassette_deck::CassetteDeck;
 use video_recorder::cassette_deck::Slot;
 use video_recorder::cassette_tape_box::CassetteTapeBox;

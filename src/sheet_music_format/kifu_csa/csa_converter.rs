@@ -1,13 +1,14 @@
-use address::*;
-use application::Application;
-use communication::*;
 use instrument::game_player::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
-use piece_etc::*;
+use live::ohashi_player::*;
 use sheet_music_format::kifu_csa::csa_move::*;
 use sheet_music_format::kifu_csa::csa_tape::*;
+use sound::shogi_note_operation::*;
+use studio::address::*;
+use studio::application::Application;
+use studio::communication::*;
 use video_recorder::cassette_deck::*;
-use video_recorder::shogi_note_operation::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
@@ -19,7 +20,7 @@ impl CsaConverter {
         app: &Application,
     ) {
         // 大橋流を指すところから☆（*＾～＾*）
-        GamePlayer::play_ohashi_starting(position, deck, app);
+        OhashiPlayer::play_ohashi_starting(position, deck, app);
 
         let mut ply = 1;
         for cmove in &crecord.items {

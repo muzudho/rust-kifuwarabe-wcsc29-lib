@@ -1,7 +1,7 @@
-use address::*;
-use communication::*;
-use parser::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
+use studio::address::*;
+use studio::communication::*;
+use studio::parser::*;
 
 pub struct CsaMove {
     pub phase: Phase,
@@ -74,7 +74,7 @@ impl CsaMove {
     }
 
     pub fn koma_to_piece_type(koma: &str) -> Option<PieceType> {
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceType::*;
         match koma {
             "FU" => Some(P),
             "KY" => Some(L),

@@ -1,8 +1,8 @@
-use application::Application;
-use board_size::*;
-use common::caret::*;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::RpmTapeTracks;
+use studio::application::Application;
+use studio::board_size::*;
+use studio::common::caret::*;
 use video_recorder::cassette_tape::*;
 use video_recorder::integer_note_vec::*;
 

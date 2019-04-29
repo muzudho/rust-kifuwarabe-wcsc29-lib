@@ -1,9 +1,9 @@
-use application::Application;
-use board_size::BoardSize;
 use human::human_interface::*;
 use instrument::position::*;
+use sound::shogi_note::ShogiNote;
+use studio::application::Application;
+use studio::board_size::BoardSize;
 use video_recorder::cassette_tape_box::*;
-use video_recorder::shogi_note::ShogiNote;
 
 #[derive(Clone, Copy)]
 pub enum Slot {
@@ -230,9 +230,8 @@ impl CassetteDeck {
         HumanInterface::show_position(slot, &app.comm, -1, position);
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
-            let board_size = position.get_board_size();
             let (_is_legal_touch, _piece_identify_opt) =
-                position.touch_beautiful_1note(&rpm_note.get_ope(), &app.comm, board_size);
+                position.touch_beautiful_1note(&rpm_note.get_ope(), &app.comm);
             Some(rpm_note)
         } else {
             None

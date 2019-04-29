@@ -1,11 +1,11 @@
-use application::Application;
-use board_size::*;
-use common::caret::*;
-use common::closed_interval::*;
+use instrument::piece_etc::*;
 use musician::best_move::*;
-use piece_etc::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use std::fmt;
+use studio::application::Application;
+use studio::board_size::*;
+use studio::common::caret::*;
+use studio::common::closed_interval::*;
 use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 /// カセット・テープ上の閉区間（１手分）。

@@ -1,8 +1,8 @@
-use address::*;
-use board_size::*;
 use instrument::position::*;
 use std::fmt;
 use std::slice::Iter;
+use studio::address::*;
+use studio::board_size::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Phase {
@@ -14,7 +14,7 @@ pub enum Phase {
 impl Phase {
     /// Human presentalbe.
     pub fn to_log(self) -> String {
-        use piece_etc::Phase::*;
+        use instrument::piece_etc::Phase::*;
         match self {
             First => "▼",
             Second => "△",
@@ -23,7 +23,7 @@ impl Phase {
     }
 
     pub fn to_sign(self) -> String {
-        use piece_etc::Phase::*;
+        use instrument::piece_etc::Phase::*;
         match self {
             First => "b",
             Second => "w",
@@ -84,7 +84,7 @@ impl fmt::Display for PieceIdentify {
 }
 impl PieceIdentify {
     pub fn iterator() -> Iter<'static, PieceIdentify> {
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceIdentify::*;
         static PIECE_IDENTIFIES: [PieceIdentify; 40] = [
             K00, K01, G02, G03, G04, G05, S06, S07, S08, S09, N10, N11, N12, N13, L14, L15, L16,
             L17, B18, B19, R20, R21, P22, P23, P24, P25, P26, P27, P28, P29, P30, P31, P32, P33,
@@ -94,7 +94,7 @@ impl PieceIdentify {
     }
 
     pub fn from_number(number: i8) -> Option<PieceIdentify> {
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceIdentify::*;
         match number {
             0 => Some(K00),
             1 => Some(K01),
@@ -141,7 +141,7 @@ impl PieceIdentify {
     }
 
     pub fn get_number(self) -> i8 {
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceIdentify::*;
         match self {
             K00 => 0,
             K01 => 1,
@@ -188,8 +188,8 @@ impl PieceIdentify {
 
     /// 背番号からは、先後は分からない。
     pub fn get_piece_type(self) -> PieceType {
-        use piece_etc::PieceIdentify::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceType::*;
         match self {
             K00 | K01 => K,
             R20 | R21 => R,
@@ -204,7 +204,7 @@ impl PieceIdentify {
     }
 
     pub fn to_human_presentable(self) -> String {
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceIdentify::*;
         match self {
             K00 => "王00",
             K01 => "玉01",
@@ -383,7 +383,7 @@ impl IdentifiedPiece {
     }
 
     pub fn rotate(&mut self) {
-        use piece_etc::Phase::*;
+        use instrument::piece_etc::Phase::*;
         if let Some(phase) = self.phase {
             self.phase = match phase {
                 First => Some(Second),
@@ -414,8 +414,8 @@ impl IdentifiedPiece {
     }
 
     pub fn get_type(self) -> PieceType {
-        use piece_etc::PieceIdentify::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::PieceType::*;
         if self.promoted {
             match self.id {
                 K00 | K01 => PK,
@@ -444,8 +444,8 @@ impl IdentifiedPiece {
     }
 
     pub fn to_human_presentable(self) -> String {
-        use piece_etc::Phase::*;
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
                 First => {
@@ -700,8 +700,8 @@ impl IdentifiedPiece {
 
     /// 成り玉とかあって、USI としては使えない。
     pub fn to_extended_usi_text(self) -> String {
-        use piece_etc::Phase::*;
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
                 First => {
@@ -771,8 +771,8 @@ impl IdentifiedPiece {
     }
 
     pub fn to_usi_sign(self) -> String {
-        use piece_etc::Phase::*;
-        use piece_etc::PieceIdentify::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
                 First => {
@@ -926,9 +926,9 @@ impl Piece {
     }
 
     pub fn from_ph_pt(phase_opt: Option<Phase>, piece_type: PieceType) -> Self {
-        use piece_etc::Phase::*;
-        use piece_etc::Piece::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::Piece::*;
+        use instrument::piece_etc::PieceType::*;
         match phase_opt {
             Some(phase) => match phase {
                 First => match piece_type {
@@ -1011,7 +1011,7 @@ impl Piece {
     }
 
     pub fn to_disactivate(self) -> Self {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             K1 | K2 | K3 => K3,
             PK1 | PK2 | PK3 => PK3,
@@ -1040,7 +1040,7 @@ impl Piece {
     }
 
     pub fn promote(self) -> Self {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             K1 => PK1,
             K2 => PK2,
@@ -1101,7 +1101,7 @@ impl Piece {
     }
 
     pub fn rotate(self) -> Self {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             // K
             K1 => K2,
@@ -1164,7 +1164,7 @@ impl Piece {
     }
 
     pub fn get_phase(self) -> Option<Phase> {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1
             | PP1 => Some(Phase::First),
@@ -1176,8 +1176,8 @@ impl Piece {
     }
 
     pub fn get_type(self) -> PieceType {
-        use piece_etc::Piece::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::Piece::*;
+        use instrument::piece_etc::PieceType::*;
         match self {
             K1 | K2 | K3 => K,
             PK1 | PK2 | PK3 => PK,
@@ -1200,7 +1200,7 @@ impl Piece {
 
     // Human presentable.
     pub fn to_human_presentable(self) -> String {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             K1 => "▼玉",
             K2 => "△玉",
@@ -1263,7 +1263,7 @@ impl Piece {
 
     // Computer readable.
     pub fn to_sign(self) -> String {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self {
             K1 => "K",
             K2 => "k",
@@ -1411,8 +1411,8 @@ pub enum PieceType {
 }
 impl PieceType {
     pub fn from_piece(piece: Piece) -> PieceType {
-        use piece_etc::Piece::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::Piece::*;
+        use instrument::piece_etc::PieceType::*;
         match piece {
             K1 => K,
             K2 => K,
@@ -1473,8 +1473,8 @@ impl PieceType {
     }
 
     pub fn from_jsa_piece_type(jsa_pt: JsaPieceType) -> PieceType {
-        use piece_etc::JsaPieceType;
-        use piece_etc::PieceType;
+        use instrument::piece_etc::JsaPieceType;
+        use instrument::piece_etc::PieceType;
         match jsa_pt {
             JsaPieceType::K => PieceType::K,
 
@@ -1501,7 +1501,7 @@ impl PieceType {
     }
 
     pub fn to_sign(self) -> String {
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceType::*;
         match self {
             K => "K",
             PK => "K",
@@ -1532,8 +1532,8 @@ impl PieceType {
 }
 
 pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
-    use piece_etc::Phase::*;
-    use piece_etc::PieceIdentify::*;
+    use instrument::piece_etc::Phase::*;
+    use instrument::piece_etc::PieceIdentify::*;
     if let Some(phase) = id_piece.phase {
         match phase {
             First => match id_piece.get_id() {
@@ -1605,8 +1605,8 @@ pub enum HandIndex {
 }
 impl HandIndex {
     pub fn from_piece(piece: Piece) -> HandIndex {
-        use piece_etc::HandIndex::*;
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::HandIndex::*;
+        use instrument::piece_etc::Piece::*;
         match piece {
             K1 | PK1 => HndK1,
             K2 | PK2 => HndK2,
@@ -1656,7 +1656,7 @@ impl PhysicalSign {
     }
 
     pub fn to_piece(&self) -> Piece {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self.text.as_str() {
             // 成りごまの場合は頭に半角のＰ、ｐ、ナを付ける。
             // Ｋｉｎｇ，オウ．
@@ -1727,7 +1727,7 @@ impl PhysicalSign {
     }
 
     pub fn to_piece_type(&self) -> PieceType {
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceType::*;
         match self.text.as_str() {
             "K" | "k" => K,
             "R" | "r" => R,
@@ -1767,7 +1767,7 @@ pub fn rotate_piece(piece_opt: Option<Piece>) -> Option<Piece> {
 */
 pub fn is_promoted_piece(piece_opt: Option<Piece>) -> bool {
     if let Some(piece) = piece_opt {
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match piece {
             PK1 | PR1 | PB1 | PG1 | PS1 | PN1 | PL1 | PP1 | PK2 | PR2 | PB2 | PG2 | PS2 | PN2
             | PL2 | PP2 | PK3 | PR3 | PB3 | PG3 | PS3 | PN3 | PL3 | PP3 => true,
@@ -1779,7 +1779,7 @@ pub fn is_promoted_piece(piece_opt: Option<Piece>) -> bool {
 }
 pub fn is_promoted_piece_type(piece_type_opt: Option<PieceType>) -> bool {
     if let Some(piece_type) = piece_type_opt {
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::PieceType::*;
         match piece_type {
             PK | PR | PB | PG | PS | PN | PL | PP => true,
             _ => false,
@@ -1796,7 +1796,7 @@ pub fn jsa_piece_type_to_perfect(jsa_pt_opt: Option<JsaPieceType>) -> Option<Pie
     }
 }
 pub fn jsa_piece_type_to_sign(piece_type_opt: Option<JsaPieceType>) -> String {
-    use piece_etc::JsaPieceType::*;
+    use instrument::piece_etc::JsaPieceType::*;
     match piece_type_opt {
         Some(piece_type) => match piece_type {
             K => "K",
@@ -1827,7 +1827,7 @@ pub fn jsa_piece_type_to_sign(piece_type_opt: Option<JsaPieceType>) -> String {
 }
 
 pub fn parse_sign_to_drop(line: &str, start: &mut usize) -> Option<PieceType> {
-    use piece_etc::PieceType::*;
+    use instrument::piece_etc::PieceType::*;
 
     if line.len() < *start + 2 {
         return None;

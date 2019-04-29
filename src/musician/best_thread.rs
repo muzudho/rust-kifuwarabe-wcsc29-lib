@@ -1,6 +1,6 @@
-use application::Application;
-use board_size::BoardSize;
 use musician::best_move::*;
+use studio::application::Application;
+use studio::board_size::BoardSize;
 use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 /// シーケンスな手筋１個分。読み筋。

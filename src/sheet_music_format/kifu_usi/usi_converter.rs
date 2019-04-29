@@ -1,11 +1,11 @@
-use address::*;
-use application::Application;
 use instrument::game_player::*;
 use instrument::position::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_tape::*;
+use sound::shogi_note_operation::*;
+use studio::address::*;
+use studio::application::Application;
 use video_recorder::cassette_deck::*;
-use video_recorder::shogi_note_operation::*;
 
 pub struct UsiConverter {}
 impl UsiConverter {

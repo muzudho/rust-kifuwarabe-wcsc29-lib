@@ -1,13 +1,13 @@
-use application::*;
-use board_size::*;
 use human::human_interface::*;
 use instrument::game_player::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
-use musician::best_move_picker::*;
-use piece_etc::*;
+use live::best_move_picker::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
 use sheet_music_format::kifu_usi::usi_position::*;
+use studio::application::*;
+use studio::board_size::*;
 use video_recorder::cassette_deck::*;
 
 pub struct LibSub {}

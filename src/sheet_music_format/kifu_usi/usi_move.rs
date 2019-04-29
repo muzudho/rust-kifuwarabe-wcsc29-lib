@@ -1,7 +1,7 @@
-use address::*;
-use board_size::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
 use std::*;
+use studio::address::*;
+use studio::board_size::*;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct UsiMove {

@@ -1,14 +1,14 @@
-use address::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
 use regex::Regex;
+use studio::address::*;
 
 pub struct KifMove {
-    pub destination : Option<Cell>,
-    pub is_same : bool,
-    pub piece : Option<JsaPieceType>,
-    pub is_promote : bool,
-    pub is_drop : bool,
-    pub source : Option<Cell>,
+    pub destination: Option<Cell>,
+    pub is_same: bool,
+    pub piece: Option<JsaPieceType>,
+    pub is_promote: bool,
+    pub is_drop: bool,
+    pub source: Option<Cell>,
 }
 impl KifMove {
     pub fn to_sign(&self) -> String {
@@ -32,29 +32,29 @@ impl KifMove {
         sign
     }
 
-    pub fn parse(line:&str) -> Option<KifMove> {
+    pub fn parse(line: &str) -> Option<KifMove> {
         let re = Regex::new(r"\s*\d+ ((.*))*\([ 0-9:/]+\)").unwrap();
         let caps = re.captures(line).unwrap();
         let sign = caps.get(1).map_or("", |m| m.as_str());
 
         let mut mv = KifMove {
-            destination : None,
-            is_same : false,
-            piece : None,
-            is_promote : false,
-            is_drop : false,
-            source : None,
+            destination: None,
+            is_same: false,
+            piece: None,
+            is_promote: false,
+            is_drop: false,
+            source: None,
         };
 
         /*
-Phase   0  1   2   3   4   5  6   7  8  9
-       筋  段  同  駒  成  打  (  筋  段  )
-       --  --  --  --  --  --  -  -  -  -
-       ６  五      歩          (   6  6  )
-       ７  七      角  成      (   3  3  )
-               同　桂          (   8  9  )
-       ６  六      角      打
-         */
+        Phase   0  1   2   3   4   5  6   7  8  9
+               筋  段  同  駒  成  打  (  筋  段  )
+               --  --  --  --  --  --  -  -  -  -
+               ６  五      歩          (   6  6  )
+               ７  七      角  成      (   3  3  )
+                       同　桂          (   8  9  )
+               ６  六      角      打
+                 */
         let mut nth = 0;
 
         let dfile = if 0 < sign.len() - nth {
@@ -71,7 +71,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 "７" => Some(7),
                 "８" => Some(8),
                 "９" => Some(9),
-                _ => {nth -= 1; None},
+                _ => {
+                    nth -= 1;
+                    None
+                }
             }
         } else {
             None
@@ -91,7 +94,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 "七" => Some(Cell::from_file_rank(dfile.unwrap(), 7)),
                 "八" => Some(Cell::from_file_rank(dfile.unwrap(), 8)),
                 "九" => Some(Cell::from_file_rank(dfile.unwrap(), 9)),
-                _ => {nth -= 1; None},
+                _ => {
+                    nth -= 1;
+                    None
+                }
             }
         } else {
             None
@@ -109,8 +115,11 @@ Phase   0  1   2   3   4   5  6   7  8  9
                         "　" => true,
                         _ => panic!("Unexpected same ch: '{}'.", ch),
                     }
-                },
-                _ => {nth -= 1; false},
+                }
+                _ => {
+                    nth -= 1;
+                    false
+                }
             };
         }
 
@@ -118,7 +127,7 @@ Phase   0  1   2   3   4   5  6   7  8  9
             // Phase 3.
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
-            use piece_etc::JsaPieceType::*;
+            use instrument::piece_etc::JsaPieceType::*;
             mv.piece = match ch.as_str() {
                 "歩" => Some(P),
                 "香" => Some(L),
@@ -140,8 +149,11 @@ Phase   0  1   2   3   4   5  6   7  8  9
                         "銀" => Some(PS),
                         _ => panic!("Unexpected promoted ch: '{}'.", ch),
                     }
-                },
-                _ => {nth -= 1; None},
+                }
+                _ => {
+                    nth -= 1;
+                    None
+                }
             };
         }
 
@@ -151,7 +163,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
             nth += 1;
             mv.is_promote = match ch.as_str() {
                 "成" => true,
-                _ => {nth -= 1; false},
+                _ => {
+                    nth -= 1;
+                    false
+                }
             };
         }
 
@@ -161,7 +176,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
             nth += 1;
             mv.is_drop = match ch.as_str() {
                 "打" => true,
-                _ => {nth -= 1; false},
+                _ => {
+                    nth -= 1;
+                    false
+                }
             };
         }
 
@@ -170,8 +188,8 @@ Phase   0  1   2   3   4   5  6   7  8  9
             let ch = sign.chars().nth(nth).unwrap().to_string();
             nth += 1;
             match ch.as_str() {
-                "(" => {},
-                _ => {nth -= 1},
+                "(" => {}
+                _ => nth -= 1,
             };
         }
 
@@ -189,7 +207,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 "7" => Some(7),
                 "8" => Some(8),
                 "9" => Some(9),
-                _ => {nth -= 1; None},
+                _ => {
+                    nth -= 1;
+                    None
+                }
             }
         } else {
             None
@@ -209,7 +230,10 @@ Phase   0  1   2   3   4   5  6   7  8  9
                 "7" => Some(Cell::from_file_rank(sfile.unwrap(), 7)),
                 "8" => Some(Cell::from_file_rank(sfile.unwrap(), 8)),
                 "9" => Some(Cell::from_file_rank(sfile.unwrap(), 9)),
-                _ => {/*nth -= 1;*/ None},
+                _ => {
+                    /*nth -= 1;*/
+                    None
+                }
             }
         } else {
             None

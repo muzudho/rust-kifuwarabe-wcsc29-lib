@@ -1,18 +1,18 @@
 extern crate rand;
-use application::Application;
-use board_size::*;
-use common::caret::*;
-use communication::*;
 use conf::kifuwarabe_wcsc29_config::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
+use sound::shogi_note::*;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
 use std::*;
+use studio::application::Application;
+use studio::board_size::*;
+use studio::common::caret::*;
+use studio::communication::*;
 use video_recorder::integer_note_vec::*;
-use video_recorder::shogi_note::*;
 
 /// 対局情報。
 pub struct CassetteTapeLabel {

@@ -1,97 +1,19 @@
-use address::*;
-use application::Application;
-use board_size::*;
-use common::caret::*;
 use human::human_interface::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
-use piece_etc::*;
+use live::ohashi_player::*;
+use sound::shogi_move::ShogiMove;
+use sound::shogi_note::*;
+use sound::shogi_note_operation::*;
 use std::*;
+use studio::application::Application;
+use studio::common::caret::*;
 use video_recorder::cassette_deck::CassetteDeck;
 use video_recorder::cassette_deck::*;
 use video_recorder::cassette_tape_box::CassetteTapeBox;
-use video_recorder::shogi_move::ShogiMove;
-use video_recorder::shogi_note::*;
-use video_recorder::shogi_note_operation::*;
 
 pub struct GamePlayer {}
 impl GamePlayer {
-    /// 初期化に使う。
-    fn init_note(
-        ply: i16,
-        ph: Phase,
-        file: i8,
-        rank: i8,
-        pid: PieceIdentify,
-        bs: BoardSize,
-    ) -> (ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe) {
-        (
-            ShogiNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(Some(ph), pid))),
-            ShogiNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs)),
-            ShogiNoteOpe::change_phase(ply),
-        )
-    }
-
-    /// オリジン・ポジションから、平手初期局面に進めます。
-    pub fn play_ohashi_starting(pos: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        use piece_etc::Phase::*;
-        use piece_etc::PieceIdentify::*;
-
-        // 大橋流の順序にしてください。
-        // しかし きふわらべ は駒台から逆順に駒を取っていくので（スタック構造のポップ）、
-        // 局面作成の時点で、駒台の駒は　背番号の逆順に追加しておいてください。
-        let bs = pos.get_board_size();
-        let array: [(ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe); 40] = [
-            GamePlayer::init_note(-39, Second, 5, 1, K00, bs),
-            GamePlayer::init_note(-38, First, 5, 9, K01, bs),
-            GamePlayer::init_note(-37, Second, 4, 1, G02, bs),
-            GamePlayer::init_note(-36, First, 6, 9, G03, bs),
-            GamePlayer::init_note(-35, Second, 6, 1, G04, bs),
-            GamePlayer::init_note(-34, First, 4, 9, G05, bs),
-            GamePlayer::init_note(-33, Second, 3, 1, S06, bs),
-            GamePlayer::init_note(-32, First, 7, 9, S07, bs),
-            GamePlayer::init_note(-31, Second, 7, 1, S08, bs),
-            GamePlayer::init_note(-30, First, 3, 9, S09, bs),
-            GamePlayer::init_note(-29, Second, 2, 1, N10, bs),
-            GamePlayer::init_note(-28, First, 8, 9, N11, bs),
-            GamePlayer::init_note(-27, Second, 8, 1, N12, bs),
-            GamePlayer::init_note(-26, First, 2, 9, N13, bs),
-            GamePlayer::init_note(-25, Second, 1, 1, L14, bs),
-            GamePlayer::init_note(-24, First, 9, 9, L15, bs),
-            GamePlayer::init_note(-23, Second, 9, 1, L16, bs),
-            GamePlayer::init_note(-22, First, 1, 9, L17, bs),
-            GamePlayer::init_note(-21, Second, 2, 2, B18, bs),
-            GamePlayer::init_note(-20, First, 8, 8, B19, bs),
-            GamePlayer::init_note(-19, Second, 8, 2, R20, bs),
-            GamePlayer::init_note(-18, First, 2, 8, R21, bs),
-            GamePlayer::init_note(-17, Second, 5, 3, P22, bs),
-            GamePlayer::init_note(-16, First, 5, 7, P23, bs),
-            GamePlayer::init_note(-15, Second, 4, 3, P24, bs),
-            GamePlayer::init_note(-14, First, 6, 7, P25, bs),
-            GamePlayer::init_note(-13, Second, 6, 3, P26, bs),
-            GamePlayer::init_note(-12, First, 4, 7, P27, bs),
-            GamePlayer::init_note(-11, Second, 3, 3, P28, bs),
-            GamePlayer::init_note(-10, First, 7, 7, P29, bs),
-            GamePlayer::init_note(-9, Second, 7, 3, P30, bs),
-            GamePlayer::init_note(-8, First, 3, 7, P31, bs),
-            GamePlayer::init_note(-7, Second, 2, 3, P32, bs),
-            GamePlayer::init_note(-6, First, 8, 7, P33, bs),
-            GamePlayer::init_note(-5, Second, 8, 3, P34, bs),
-            GamePlayer::init_note(-4, First, 2, 7, P35, bs),
-            GamePlayer::init_note(-3, Second, 1, 3, P36, bs),
-            GamePlayer::init_note(-2, First, 9, 7, P37, bs),
-            GamePlayer::init_note(-1, Second, 9, 3, P38, bs),
-            GamePlayer::init_note(0, First, 1, 7, P39, bs),
-        ];
-
-        for element in array.iter() {
-            app.comm
-                .println("rpm_move_player.rs:play_ohashi_starting: touch_1note_ope");
-            GamePlayer::touch_1note_ope(&element.0, pos, deck, &app);
-            GamePlayer::touch_1note_ope(&element.1, pos, deck, &app);
-            GamePlayer::touch_1note_ope(&element.2, pos, deck, &app);
-        }
-    }
-
     // 大橋流を指せるように、クリアーするぜ☆（＾～＾）
     pub fn clear_to_honshogi_origin(
         position: &mut Position,
@@ -106,7 +28,7 @@ impl GamePlayer {
     // 大橋流で初期局面まで指す☆（＾～＾）
     pub fn play_startpos(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         // 大橋流で初期局面まで指す☆（＾～＾）
-        GamePlayer::play_ohashi_starting(position, deck, &app);
+        OhashiPlayer::play_ohashi_starting(position, deck, &app);
     }
 
     /// 棋譜を作る☆（＾～＾）
@@ -123,29 +45,45 @@ impl GamePlayer {
             rnote_ope.to_human_presentable(position.get_board_size())
         ));
 
-        let board_size = position.get_board_size();
-        let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
-            position.touch_beautiful_1note(&rnote_ope, &app.comm, board_size)
-        {
-            PieceIdentify::from_number(piece_identify.get_id().get_number())
-        } else {
-            None
-        };
+        GamePlayer::touch_1note_ope_no_log(&rnote_ope, position, deck, &app);
 
-        HumanInterface::show_position(
-            Slot::Learning,
-            &app.comm,
-            deck.get_ply(Slot::Learning),
-            position,
-        );
-        let rnote = ShogiNote::from_id_ope(pid_opt, *rnote_ope);
         /*
         comm.println(&format!(
             "End     :touch_1note_ope. Rnote: {}.",
             rnote.to_human_presentable(board_size)
         ));
          */
-        deck.put_1note(Slot::Learning, rnote, app);
+        HumanInterface::show_position(
+            Slot::Learning,
+            &app.comm,
+            deck.get_ply(Slot::Learning),
+            position,
+        );
+    }
+
+    /// 棋譜を作る☆（＾～＾）
+    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    pub fn touch_1note_ope_no_log(
+        // ノートの中に Ply もある☆（＾～＾）
+        rnote_ope: &ShogiNoteOpe,
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        deck.put_1note(
+            Slot::Learning,
+            ShogiNote::from_id_ope(
+                if let (_is_legal_touch, Some(piece_identify)) =
+                    position.touch_beautiful_1note(&rnote_ope, &app.comm)
+                {
+                    PieceIdentify::from_number(piece_identify.get_id().get_number())
+                } else {
+                    None
+                },
+                *rnote_ope,
+            ),
+            app,
+        );
     }
 
     /// go_1noteなんとかメソッドと一緒に使う。
@@ -163,14 +101,12 @@ impl GamePlayer {
         ply: i16,
         app: &Application,
     ) -> bool {
-        let board_size = position.get_board_size();
-
         app.comm.println(&format!(
             "[Try 1note on 1note:{}]",
-            rnote.to_human_presentable(board_size)
+            rnote.to_human_presentable(position.get_board_size())
         ));
         let (is_legal_touch, _piece_identify_opt) =
-            position.touch_beautiful_1note(&rnote.get_ope(), &app.comm, board_size);
+            position.touch_beautiful_1note(&rnote.get_ope(), &app.comm);
         HumanInterface::show_position(Slot::Learning, &app.comm, ply, position);
 
         is_legal_touch

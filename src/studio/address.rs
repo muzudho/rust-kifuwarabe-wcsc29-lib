@@ -1,6 +1,6 @@
-use board_size::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
 use std::fmt;
+use studio::board_size::*;
 
 /// TODO 暫定。
 pub const SKY_ADDRESS: usize = 81;
@@ -75,8 +75,8 @@ impl Address {
     }
 
     pub fn from_hand_ph_pt(phase_opt: Option<Phase>, pt: PieceType) -> Self {
-        use piece_etc::Phase::*;
-        use piece_etc::PieceType::*;
+        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::PieceType::*;
 
         let index_num = match phase_opt {
             Some(phase) => match phase {
@@ -169,7 +169,7 @@ impl Address {
     pub fn get_hand_piece(self) -> Option<Piece> {
         // 持ち駒
         // TODO マジックナンバーを解消したい。
-        use piece_etc::Piece::*;
+        use instrument::piece_etc::Piece::*;
         match self.index {
             82 => Some(K1),
             83 => Some(R1),

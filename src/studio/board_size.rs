@@ -1,4 +1,4 @@
-use address::*;
+use studio::address::*;
 
 pub const DEFAULT_FILE_LEN: usize = 9;
 pub const DEFAULT_RANK_LEN: usize = 9;
@@ -16,14 +16,14 @@ impl BoardSize {
         }
     }
 
-    pub fn cell_to_address(self, cell:Cell) -> usize {
-        ((cell.get_rank()-1)*self.file_len + (cell.get_file()-1)) as usize
+    pub fn cell_to_address(self, cell: Cell) -> usize {
+        ((cell.get_rank() - 1) * self.file_len + (cell.get_file() - 1)) as usize
     }
 
-    pub fn address_to_cell(self, address:usize) -> Cell {
+    pub fn address_to_cell(self, address: usize) -> Cell {
         Cell::from_file_rank(
-            (address%self.file_len as usize) as i8 + 1,
-            (address/self.file_len as usize) as i8 + 1
+            (address % self.file_len as usize) as i8 + 1,
+            (address / self.file_len as usize) as i8 + 1,
         )
     }
     pub fn len(self) -> usize {

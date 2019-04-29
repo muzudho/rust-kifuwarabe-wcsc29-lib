@@ -1,6 +1,6 @@
-use communication::Communication;
 use conf::kifuwarabe_wcsc29_config::KifuwarabeWcsc29Config;
 use conf::kifuwarabe_wcsc29_lib_config::KifuwarabeWcsc29LibConfig;
+use studio::communication::Communication;
 
 pub struct Application {
     // Logging.
@@ -14,7 +14,7 @@ impl Application {
         let my_config = KifuwarabeWcsc29LibConfig::load();
         let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
         Application {
-            comm: Communication::new(),
+            comm: Communication::from_file(&my_config.log_file_name),
             my_conf: my_config,
             kw29_conf: kw29_config,
         }

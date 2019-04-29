@@ -1,8 +1,8 @@
-use address::*;
-use application::Application;
-use board_size::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
 use sheet_music_format::kifu_usi::usi_move::*;
+use studio::address::*;
+use studio::application::Application;
+use studio::board_size::*;
 use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)

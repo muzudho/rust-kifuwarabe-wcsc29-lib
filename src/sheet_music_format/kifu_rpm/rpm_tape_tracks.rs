@@ -1,10 +1,10 @@
-use application::*;
-use board_size::*;
-use common::caret::*;
-use piece_etc::*;
+use instrument::piece_etc::*;
 use serde::*;
-use video_recorder::shogi_note::ShogiNote;
-use video_recorder::shogi_note_operation::ShogiNoteOpe;
+use sound::shogi_note::ShogiNote;
+use sound::shogi_note_operation::ShogiNoteOpe;
+use studio::application::*;
+use studio::board_size::*;
+use studio::common::caret::*;
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
