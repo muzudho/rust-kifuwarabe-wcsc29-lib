@@ -63,6 +63,11 @@ impl ShogiMove {
         //comm.print(&format!("Parse 1move: note_caret: {}, size: {}.", *note_caret, size));
         let mut is_first = true;
 
+        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
+        let ope_vec: Vec<&str> = cassette_tape_j.tracks.ope.split(' ').collect();
+        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
+        let id_vec: Vec<&str> = cassette_tape_j.tracks.id.split(' ').collect();
+
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
             if note_caret.is_greater_than_or_equal_to(note_size as i16) {
@@ -73,8 +78,25 @@ impl ShogiMove {
 
             //comm.print(&format!("Scanning: note_caret: {}.", note_caret));
 
+            /*
+            let size = cassette_tape_j.tracks.ope.len();
+            if note_caret.is_greater_than_or_equal_to(size as i16) {
+                // パースできるノートが無かった。
+                //comm.print("Break: None.");
+                break 'j_loop;
+                /*
+                // 範囲外はエラーで落とす。
+                panic!(
+                    "Out of bounds exception: size: {}, caret: {}.",
+                    size,
+                    note_caret.to_human_presentable()
+                );
+                */
+            }
+            */
+
             if let (sub_first_used_caret, sub_last_used_caret, Some(note)) =
-                ShogiNote::parse_1note(comm, cassette_tape_j, note_caret, board_size)
+                ShogiNote::parse_1note(comm, &ope_vec, &id_vec, note_caret, board_size)
             {
                 parsed_note_count += 1;
 
@@ -96,6 +118,11 @@ impl ShogiMove {
                 //comm.print("Break: None.");
                 break 'j_loop;
             };
+
+            if note_caret.is_greater_than_or_equal_to(ope_vec.len() as i16) {
+                // キャレットがピーク。
+                break 'j_loop;
+            }
 
             is_first = false;
         }

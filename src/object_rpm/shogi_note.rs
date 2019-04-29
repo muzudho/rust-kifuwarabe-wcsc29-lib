@@ -6,7 +6,7 @@
 use board_size::*;
 use common::caret::*;
 use communication::*;
-use kifu_rpm::rpm_tape::*;
+// use kifu_rpm::rpm_tape::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
 use std::fmt;
@@ -58,26 +58,13 @@ impl ShogiNote {
     /// (first_used_caret, last_used_caret, note_opt)
     pub fn parse_1note(
         comm: &Communication,
-        cassette_tape_j: &RpmTape,
+        ope_vec: &Vec<&str>,
+        id_vec: &Vec<&str>,
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (i16, i16, Option<ShogiNote>) {
-        let size = cassette_tape_j.tracks.ope.len();
-
-        if note_caret.is_greater_than_or_equal_to(size as i16) {
-            // 範囲外はエラーで落とす。
-            panic!(
-                "Out of bounds exception: size: {}, caret: {}.",
-                size,
-                note_caret.to_human_presentable()
-            );
-        }
-
-        // カウントアップ。
+        // 数字を返却してから、キャレットを移動。
         let first_used_caret = note_caret.go_next(comm);
-
-        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
-        let ope_vec: Vec<&str> = cassette_tape_j.tracks.ope.split(' ').collect();
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
@@ -94,9 +81,6 @@ impl ShogiNote {
                 ope_vec[first_used_caret as usize]
             )
         };
-
-        // TODO 毎回スプリットするのはもったいない☆（＾～＾）
-        let id_vec: Vec<&str> = cassette_tape_j.tracks.id.split(' ').collect();
 
         let pnum: i8 = id_vec[first_used_caret as usize].parse().unwrap();
         let pid_opt = if pnum == -1 {

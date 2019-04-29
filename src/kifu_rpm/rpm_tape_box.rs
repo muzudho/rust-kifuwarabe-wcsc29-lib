@@ -43,6 +43,7 @@ impl RpmTapeBox {
                     Err(err) => panic!("File open error. {:?}", err),
                 };
 
+                // 空っぽのファイルを読み込んでしまって、JSONのパースエラーになってしまうことがある☆（＾～＾）
                 app.comm.println(&format!("Contents: '{}'.", contents));
 
                 match serde_json::from_str(&contents) {
