@@ -74,7 +74,7 @@ impl GamePlayer {
             Slot::Learning,
             ShogiNote::from_id_ope(
                 if let (_is_legal_touch, Some(piece_identify)) =
-                    position.touch_beautiful_1note(&rnote_ope, &app.comm)
+                    position.try_beautiful_touch_no_log(&rnote_ope, &app.comm)
                 {
                     PieceIdentify::from_number(piece_identify.get_id().get_number())
                 } else {
@@ -86,37 +86,13 @@ impl GamePlayer {
         );
     }
 
-    /// go_1noteなんとかメソッドと一緒に使う。
+    /// 1手分進める。（非合法タッチは自動で戻します）
     ///
-    /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
-    /// Next も Back も違いはない。キャレットは使わない。
-    /// 動かせなかったなら、Noneを返す。
-    ///
-    /// # Returns
-    ///
-    /// (合法タッチか否か)
-    pub fn try_touch_1note(
-        rnote: &ShogiNote,
-        position: &mut Position,
-        ply: i16,
-        app: &Application,
-    ) -> bool {
-        app.comm.println(&format!(
-            "[Try 1note on 1note:{}]",
-            rnote.to_human_presentable(position.get_board_size())
-        ));
-        let (is_legal_touch, _piece_identify_opt) =
-            position.touch_beautiful_1note(&rnote.get_ope(), &app.comm);
-        HumanInterface::show_position(Slot::Learning, &app.comm, ply, position);
-
-        is_legal_touch
-    }
-
-    /// 1手進める。（非合法タッチは自動で戻します）
+    /// 結果は、未着手か、１手　のどちらかです。
     ///
     /// # Return
     ///
-    /// 合法タッチか否か。
+    /// (指した１手分)
     pub fn try_read_tape_for_1move(
         tape_box: &mut CassetteTapeBox,
         position: &mut Position,
@@ -137,14 +113,14 @@ impl GamePlayer {
 
         let mut is_first = true;
         // フェーズ切り替えするまで、強制的に１ノート進め続けるぜ☆（＾～＾）。
-        while let Some(rnote) = tape_box.go_1note_forcely(&app) {
+        while let (_caret_number, Some(rnote)) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
                 "[LOOP try_read_tape_for_1move:{}:{}]",
                 tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
 
-            is_legal_touch = GamePlayer::try_touch_1note(&rnote, position, ply, &app);
+            is_legal_touch = position.try_beautiful_touch(&rnote, ply, &app);
 
             if !is_first && !is_legal_touch {
                 break;
@@ -214,13 +190,13 @@ impl GamePlayer {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let Some(rnote) = tape_box.go_1note_forcely(&app) {
+        while let (_caret_number, Some(rnote)) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
                 "<LOOP read_tape_for_1move_forcely:{}:{}>",
                 tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
-            is_legal_touch = GamePlayer::try_touch_1note(&rnote, position, ply, &app);
+            is_legal_touch = position.try_beautiful_touch(&rnote, ply, &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -254,10 +230,12 @@ impl GamePlayer {
         app: &Application,
     ) {
         for i in 0..repeat {
-            if let Some(rnote) = tape_box.go_1note_forcely(&app) {
+            if let (_caret_number, Some(rnote)) = tape_box.go_1note_forcely(&app) {
                 app.comm
                     .println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
-                GamePlayer::try_touch_1note(&rnote, position, ply, &app);
+                if !position.try_beautiful_touch(&rnote, ply, &app) {
+                    panic!("Touch fail forcely.");
+                }
             } else {
                 panic!("<Go forcely fail:{}/{} None>", i, repeat);
             }

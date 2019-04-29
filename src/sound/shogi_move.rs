@@ -52,14 +52,15 @@ impl ShogiMove {
                 break 'j_loop;
             }
 
-            let note =
-                if let Some(note) = tape_box.go_1note_forcely_with_othre_caret(caret, &app.comm) {
-                    note
-                } else {
-                    // パースできるノートが無かった。
-                    //comm.print("Break: None.");
-                    break 'j_loop;
-                };
+            let note = if let (_caret_number, Some(note)) =
+                tape_box.go_1note_forcely_with_othre_caret(caret, &app.comm)
+            {
+                note
+            } else {
+                // パースできるノートが無かった。
+                //comm.print("Break: None.");
+                break 'j_loop;
+            };
 
             if note.is_phase_change() && !is_first {
                 // フェーズの変わり目で終わり。
@@ -149,12 +150,13 @@ impl ShogiMove {
         let mut caret =
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
 
-        let mut note =
-            if let Some(note) = tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm) {
-                note
-            } else {
-                panic!("Note fail.")
-            };
+        let mut note = if let (_caret_number, Some(note)) =
+            tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
+        {
+            note
+        } else {
+            panic!("Note fail.")
+        };
 
         // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
         if let Some(address) = note.get_ope().address {
@@ -165,7 +167,7 @@ impl ShogiMove {
                 drop_opt = Some(PieceType::from_piece(piece));
 
                 // 次は置くだけ。
-                note = if let Some(note) =
+                note = if let (_caret_number, Some(note)) =
                     tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                 {
                     note
@@ -192,7 +194,7 @@ impl ShogiMove {
                 src_opt = Some(board_size.address_to_cell(address.get_index()));
 
                 // 次。
-                note = if let Some(note) =
+                note = if let (_caret_number, Some(note)) =
                     tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                 {
                     note
@@ -205,7 +207,7 @@ impl ShogiMove {
                     subject_promotion = true;
 
                     // 次。
-                    note = if let Some(note) =
+                    note = if let (_caret_number, Some(note)) =
                         tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                     {
                         note
@@ -225,7 +227,7 @@ impl ShogiMove {
                     subject_promotion = false;
 
                     // 次。
-                    note = if let Some(note) =
+                    note = if let (_caret_number, Some(note)) =
                         tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                     {
                         note
@@ -236,7 +238,7 @@ impl ShogiMove {
                     // 自分の駒台に置く動き。
                     if let Some(_address) = note.get_ope().address {
                         // 次は、盤上の自駒を触る。
-                        note = if let Some(note) =
+                        note = if let (_caret_number, Some(note)) =
                             tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                         {
                             note
@@ -249,7 +251,7 @@ impl ShogiMove {
                             subject_address_opt = Some(address);
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
                             // 次。
-                            note = if let Some(note) =
+                            note = if let (_caret_number, Some(note)) =
                                 tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                             {
                                 note
@@ -272,7 +274,7 @@ impl ShogiMove {
                     subject_promotion = true;
 
                     // 次。
-                    note = if let Some(note) =
+                    note = if let (_caret_number, Some(note)) =
                         tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
                     {
                         note
@@ -343,7 +345,9 @@ impl ShogiMove {
 
         let mut text = String::new();
         while caret.while_to(&self.caret_closed_interval) {
-            if let Some(note) = tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm) {
+            if let (_caret_number, Some(note)) =
+                tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
+            {
                 text = format!("{} {}", text, &note.get_ope().to_sign(board_size));
             } else {
                 break;
@@ -359,7 +363,9 @@ impl ShogiMove {
 
         let mut text = String::new();
         while caret.while_to(&self.caret_closed_interval) {
-            if let Some(note) = tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm) {
+            if let (_caret_number, Some(note)) =
+                tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
+            {
                 text = format!(
                     "{} {}",
                     text,
@@ -388,7 +394,9 @@ impl ShogiMove {
 
         let mut text = String::new();
         while caret.while_to(&self.caret_closed_interval) {
-            if let Some(note) = tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm) {
+            if let (_caret_number, Some(note)) =
+                tape_box.go_1note_forcely_with_othre_caret(&mut caret, &app.comm)
+            {
                 text = format!("{} {}", text, note.to_human_presentable(board_size))
             } else {
                 break;

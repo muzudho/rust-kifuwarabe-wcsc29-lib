@@ -1,7 +1,10 @@
+use human::human_interface::*;
 use instrument::piece_etc::*;
+use sound::shogi_note::*;
 use sound::shogi_note_operation::*;
 use std::*;
 use studio::address::*;
+use studio::application::*;
 use studio::board_size::*;
 use studio::communication::*;
 use studio::parser::*;
@@ -496,6 +499,27 @@ impl Position {
         }
     }
 
+    /// go_1noteなんとかメソッドと一緒に使う。
+    ///
+    /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
+    /// Next も Back も違いはない。キャレットは使わない。
+    /// 動かせなかったなら、Noneを返す。
+    ///
+    /// # Returns
+    ///
+    /// (合法タッチか否か)
+    pub fn try_beautiful_touch(&mut self, rnote: &ShogiNote, ply: i16, app: &Application) -> bool {
+        app.comm.println(&format!(
+            "[Touch:{}]",
+            rnote.to_human_presentable(self.get_board_size())
+        ));
+        let (is_legal_touch, _piece_identify_opt) =
+            self.try_beautiful_touch_no_log(&rnote.get_ope(), &app.comm);
+        HumanInterface::show_position(Slot::Learning, &app.comm, ply, self);
+
+        is_legal_touch
+    }
+
     /// 盤、駒台（Ａ）と、スカイ升（Ｂ）の間で駒を移動する。
     /// ＡとＢは、両方空っぽか、片方だけ駒があるかの　どちらかとする。両方に駒があるケースはないものとする。
     ///
@@ -507,7 +531,7 @@ impl Position {
     /// # Returns
     ///
     /// (conplete, Identified piece)
-    pub fn touch_beautiful_1note(
+    pub fn try_beautiful_touch_no_log(
         &mut self,
         rpm_operation_note: &ShogiNoteOpe,
         comm: &Communication,

@@ -164,8 +164,10 @@ impl CassetteTape {
             .append_tape_to_left(&mut cassette_tape_to_empty.tracks);
     }
 
-    /// 現在の要素を返してから、キャレットを動かします。
-    pub fn go_1note_forcely(&mut self, comm: &Communication) -> Option<ShogiNote> {
+    /// # Returns
+    ///
+    /// (キャレット番地, 1ノート)
+    pub fn go_1note_forcely(&mut self, comm: &Communication) -> (i16, Option<ShogiNote>) {
         self.tracks.go_1note_forcely(&mut self.caret, comm)
     }
 
@@ -174,7 +176,7 @@ impl CassetteTape {
         &self,
         caret: &mut Caret,
         comm: &Communication,
-    ) -> Option<ShogiNote> {
+    ) -> (i16, Option<ShogiNote>) {
         self.tracks.go_1note_forcely(caret, &comm)
     }
 

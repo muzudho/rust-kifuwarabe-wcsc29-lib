@@ -105,40 +105,60 @@ impl IntegerNoteVec {
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_1note_forcely(&self, caret: &mut Caret, comm: &Communication) -> Option<ShogiNote> {
-        let (is_positive, index, _caret_number) = caret.to_index();
+    /// 0 は、正の数とします。（マイナスゼロは無いです）
+    ///
+    /// # Returns
+    ///
+    /// (キャレット番地, 1ノート)
+    pub fn go_1note_forcely(
+        &self,
+        caret: &mut Caret,
+        comm: &Communication,
+    ) -> (i16, Option<ShogiNote>) {
+        // とりあえず、キャレットを１つ進める。
+        let caret_number = caret.go_next(comm);
+
+        //let (is_positive, index, _caret_number) = caret.to_index();
 
         if caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
-            if !is_positive {
-                if self.negative_notes.len() <= index {
+            if caret_number < 0 {
+                if self.negative_notes.len() <= (-caret_number + MINUS_ZERO_LEN) as usize {
                     // 負の先端要素を超えたら。
-                    None
+                    (caret_number, None)
                 } else {
                     // 負。
-                    caret.go_next(comm);
-                    Some(self.negative_notes[index as usize])
+                    (
+                        caret_number,
+                        Some(self.negative_notes[-caret_number as usize]),
+                    )
                 }
             } else {
                 // 正。
-                caret.go_next(comm);
-                Some(self.positive_notes[index as usize])
+                (
+                    caret_number,
+                    Some(self.positive_notes[-caret_number as usize]),
+                )
             }
         } else {
             // 正の無限大の方に向いているとき。
-            if is_positive {
-                if self.positive_notes.len() <= index {
+            if -1 < caret_number {
+                if self.positive_notes.len() <= caret_number as usize {
                     // 正の先端要素を超えたら。
-                    None
+                    (caret_number, None)
                 } else {
                     // 正。
-                    caret.go_next(comm);
-                    Some(self.positive_notes[index as usize])
+                    (
+                        caret_number,
+                        Some(self.positive_notes[caret_number as usize]),
+                    )
                 }
             } else {
                 // 負。
-                caret.go_next(comm);
-                Some(self.negative_notes[index as usize])
+                (
+                    caret_number,
+                    Some(self.negative_notes[caret_number as usize]),
+                )
             }
         }
     }

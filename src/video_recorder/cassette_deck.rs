@@ -231,7 +231,7 @@ impl CassetteDeck {
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
-                position.touch_beautiful_1note(&rpm_note.get_ope(), &app.comm);
+                position.try_beautiful_touch_no_log(&rpm_note.get_ope(), &app.comm);
             Some(rpm_note)
         } else {
             None

@@ -1,6 +1,9 @@
 use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
 
+/// 負の方のキャレット番地を１引く補正をするのに使う☆（＾～＾）
+pub const MINUS_ZERO_LEN: i16 = 1;
+
 pub struct Caret {
     facing_left: bool,
     number: i16,
@@ -30,6 +33,19 @@ impl Caret {
     /// TODO リセットは 0 に戻るでいいのか☆（＾～＾）？
     pub fn reset(&mut self) {
         self.number = 0;
+    }
+
+    /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
+    pub fn go_next(&mut self, _comm: &Communication) -> i16 {
+        let old = self.number;
+
+        if self.facing_left {
+            self.number -= 1;
+        } else {
+            self.number += 1;
+        }
+
+        old
     }
 
     pub fn turn_to_negative(&mut self) {
@@ -68,22 +84,11 @@ impl Caret {
         }
     }
 
-    /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
-    pub fn go_next(&mut self, _comm: &Communication) -> i16 {
-        let old = self.number;
-
-        if self.facing_left {
-            self.number -= 1;
-        } else {
-            self.number += 1;
-        }
-
-        old
-    }
-
     /// マイナスゼロが無いので、負の配列ではインデックスを１小さくします。
     pub const NEGATIVE_ZERO_LEN: i16 = 1;
 
+    /// TODO このメソッドは廃止したい。
+    ///
     /// 配列のインデックスに変換します。
     /// 負の配列では 数を 0 側に 1 つ寄せます。
     ///
