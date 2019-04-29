@@ -2,11 +2,9 @@ use address::*;
 use application::Application;
 use board_size::*;
 use common::caret::*;
-//use communication::*;
 use human::human_interface::*;
 use object_rpm::cassette_deck::CassetteDeck;
 use object_rpm::cassette_deck::*;
-//use object_rpm::cassette_tape::*;
 use object_rpm::cassette_tape_box::CassetteTapeBox;
 use object_rpm::shogi_note::*;
 use object_rpm::shogi_note_operation::*;
@@ -38,6 +36,8 @@ impl GamePlayer {
         use piece_etc::PieceIdentify::*;
 
         // 大橋流の順序にしてください。
+        // しかし きふわらべ は駒台から逆順に駒を取っていくので（スタック構造のポップ）、
+        // 局面作成の時点で、駒台の駒は　背番号の逆順に追加しておいてください。
         let bs = pos.get_board_size();
         let array: [(ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe); 40] = [
             GamePlayer::init_note(-39, Second, 5, 1, K00, bs),
@@ -117,6 +117,11 @@ impl GamePlayer {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
+        app.comm.println(&format!(
+            "[Touch 1note ope:{}]",
+            rnote_ope.to_human_presentable(position.get_board_size())
+        ));
+
         let board_size = position.get_board_size();
         let pid_opt = if let (_is_legal_touch, Some(piece_identify)) =
             position.touch_beautiful_1note(&rnote_ope, &app.comm, board_size)
@@ -126,7 +131,12 @@ impl GamePlayer {
             None
         };
 
-        HumanInterface::show_position(&app.comm, deck.get_ply(Slot::Learning), position);
+        HumanInterface::show_position(
+            Slot::Learning,
+            &app.comm,
+            deck.get_ply(Slot::Learning),
+            position,
+        );
         let rnote = ShogiNote::from_id_ope(pid_opt, *rnote_ope);
         /*
         comm.println(&format!(
@@ -153,12 +163,12 @@ impl GamePlayer {
         let board_size = position.get_board_size();
 
         app.comm.println(&format!(
-            "<NXn:{}>",
-            rnote.to_human_presentable(board_size) //rnote.get_ope().to_human_presentable(board_size)
+            "[Try 1note on 1note:{}]",
+            rnote.to_human_presentable(board_size)
         ));
         let (is_legal_touch, _piece_identify_opt) =
             position.touch_beautiful_1note(&rnote.get_ope(), &app.comm, board_size);
-        HumanInterface::show_position(&app.comm, ply, position);
+        HumanInterface::show_position(Slot::Learning, &app.comm, ply, position);
 
         is_legal_touch
     }
@@ -174,13 +184,18 @@ impl GamePlayer {
         ply: i16,
         app: &Application,
     ) -> bool {
+        app.comm.println(&format!(
+            "[try_read_tape_for_1move:{}]",
+            tape_box.to_human_presentable(),
+        ));
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
 
-        // 最後尾に達していたのなら終了。
+        // 強制的に１ノート進める。
         while let Some(rnote) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
-                "<NXm1:{}>",
+                "[LOOP try_read_tape_for_1move:{}:{}]",
+                tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
             is_legal_touch = GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
@@ -236,13 +251,19 @@ impl GamePlayer {
         ply: i16,
         app: &Application,
     ) {
+        app.comm.println(&format!(
+            "[read_tape_for_1move_forcely:{}]",
+            tape_box.to_human_presentable(),
+        ));
+
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
         while let Some(rnote) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
-                "<NXm1:{}>",
+                "<LOOP read_tape_for_1move_forcely:{}:{}>",
+                tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
             is_legal_touch = GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);

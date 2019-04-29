@@ -32,7 +32,7 @@ impl RpmTapeBox {
     ///
     /// * `box_file` - ファイル名。存在しないファイルの場合、新規作成。
     pub fn from_box_file(box_file: &str, app: &Application) -> Self {
-        app.comm.println(&format!("Box file name: '{}'.", box_file));
+        // app.comm.println(&format!("Box file name: '{}'.", box_file));
 
         let path = Path::new(box_file);
         match File::open(path) {
@@ -43,8 +43,8 @@ impl RpmTapeBox {
                     Err(err) => panic!("File open error. {:?}", err),
                 };
 
-                // 空っぽのファイルを読み込んでしまって、JSONのパースエラーになってしまうことがある☆（＾～＾）
-                app.comm.println(&format!("Contents: '{}'.", contents));
+                // TODO 空っぽのファイルを読み込んでしまって、JSONのパースエラーになってしまうことがある☆（＾～＾）
+                // app.comm.println(&format!("Contents: '{}'.", contents));
 
                 match serde_json::from_str(&contents) {
                     Ok(x) => x,
@@ -55,16 +55,6 @@ impl RpmTapeBox {
             }
             Err(_err) => {
                 // 存在しないファイルの場合。
-                /*
-                // 新規作成。
-                let file_obj = OpenOptions::new()
-                    .create(true)
-                    .write(true)
-                    .read(true)
-                    .open(path)
-                    .unwrap();
-                */
-
                 // ダミーの内容を書いておきたい☆（＾～＾）
                 let rpm_tape_box = RpmTapeBox::new();
                 rpm_tape_box.write(box_file, &app.comm);

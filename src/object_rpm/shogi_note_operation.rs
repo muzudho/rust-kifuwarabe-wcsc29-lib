@@ -6,6 +6,7 @@
 use address::{Address, Cell};
 use board_size::BoardSize;
 use common::caret::*;
+use common::closed_interval::*;
 use communication::Communication;
 use parser::Parser;
 use piece_etc::{PhysicalSign, PieceType};
@@ -188,11 +189,15 @@ impl ShogiNoteOpe {
         caret: &mut Caret,
         board_size: BoardSize,
         comm: &Communication,
-    ) -> (i16, Option<ShogiNoteOpe>) {
+    ) -> (ClosedInterval, Option<ShogiNoteOpe>) {
+        let mut closed_interval = ClosedInterval::new();
+
         let mut n0 = caret.go_next(comm) as usize;
+        closed_interval.intersect(n0 as i16);
+
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
-            ' ' => (n0 as i16, None),
+            ' ' => (closed_interval, None),
             '0' => {
                 // 駒台。
                 let mut n1 = caret.go_next(comm) as usize;
@@ -218,14 +223,16 @@ impl ShogiNoteOpe {
                 let address =
                     Address::from_hand_ph_pt(piece.get_phase(), PieceType::from_piece(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
-                (n1 as i16, Some(ShogiNoteOpe::from_address(address)))
+
+                closed_interval.intersect(n1 as i16);
+                (closed_interval, Some(ShogiNoteOpe::from_address(address)))
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
                 let mut n1 = caret.go_next(comm) as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
-                comm.print(&format!("Parse1Op: '{}', '{}'.", ch0, ch1));
+                // comm.print(&format!("Parse1Op: '{}', '{}'.", ch0, ch1));
                 let address = Address::from_cell(
                     Cell::from_file_rank(
                         Parser::file_char_to_i8(ch0),
@@ -233,21 +240,23 @@ impl ShogiNoteOpe {
                     ),
                     board_size,
                 );
-                (n1 as i16, Some(ShogiNoteOpe::from_address(address)))
+
+                closed_interval.intersect(n1 as i16);
+                (closed_interval, Some(ShogiNoteOpe::from_address(address)))
             }
             '+' => {
                 // 成り。
                 //comm.print(&ch1.to_string());
-                (n0 as i16, Some(ShogiNoteOpe::turn_over()))
+                (closed_interval, Some(ShogiNoteOpe::turn_over()))
             }
             '-' => {
                 // １８０°回転。
                 //comm.print(&ch1.to_string());
-                (n0 as i16, Some(ShogiNoteOpe::rotate()))
+                (closed_interval, Some(ShogiNoteOpe::rotate()))
             }
             '|' => {
                 // フェーズ交代。Ply は分からない。
-                (n0 as i16, Some(ShogiNoteOpe::change_phase(-1)))
+                (closed_interval, Some(ShogiNoteOpe::change_phase(-1)))
             }
             '[' => {
                 // フェーズ交代。 ']' まで読み飛ばす。
@@ -259,6 +268,7 @@ impl ShogiNoteOpe {
 
                     n0 = caret.go_next(comm) as usize;
                     ch0 = line[n0..=n0].chars().nth(0).unwrap();
+                    closed_interval.intersect(n0 as i16);
 
                     if ch0 == ']' {
                         break;
@@ -269,7 +279,7 @@ impl ShogiNoteOpe {
                     ply *= 10;
                     ply += num;
                 }
-                (n0 as i16, Some(ShogiNoteOpe::change_phase(ply)))
+                (closed_interval, Some(ShogiNoteOpe::change_phase(ply)))
             }
             _ => {
                 let last = line.len();

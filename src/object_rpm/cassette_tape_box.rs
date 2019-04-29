@@ -4,7 +4,6 @@ use board_size::*;
 use kifu_rpm::rpm_tape_box::*;
 use object_rpm::cassette_tape::*;
 use object_rpm::shogi_note::ShogiNote;
-//use std::io::prelude::*;
 use std::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
@@ -162,5 +161,15 @@ impl CassetteTapeBox {
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
         rpm_tape_box.write(&self.file, &app.comm);
+    }
+
+    /// デバッグ調査用の表示。
+    pub fn to_human_presentable(&self) -> String {
+        format!(
+            "TpIx{}:Cu{}",
+            self.tape_index,
+            self.tapes[self.tape_index].caret.to_human_presentable()
+        )
+        .to_string()
     }
 }

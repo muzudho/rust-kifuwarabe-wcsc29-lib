@@ -42,14 +42,6 @@ impl Caret {
         self.facing_left = !self.facing_left;
     }
 
-    pub fn to_human_presentable(&self) -> String {
-        if self.is_facing_left() {
-            format!("[<--{}]", self.number).to_string()
-        } else {
-            format!("[{}-->]", self.number).to_string()
-        }
-    }
-
     pub fn is_facing_left(&self) -> bool {
         self.facing_left
     }
@@ -106,6 +98,15 @@ impl Caret {
                 // 0未満の右隣は負。
                 (false, (-self.number) as usize)
             }
+        }
+    }
+
+    /// デバッグ表示用。
+    pub fn to_human_presentable(&self) -> String {
+        if self.is_facing_left() {
+            format!("[<--{}]", self.number).to_string()
+        } else {
+            format!("[{}-->]", self.number).to_string()
         }
     }
 }

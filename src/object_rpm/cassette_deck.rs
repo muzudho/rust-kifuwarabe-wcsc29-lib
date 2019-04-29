@@ -223,7 +223,7 @@ impl CassetteDeck {
         position: &mut Position,
         app: &Application,
     ) -> Option<ShogiNote> {
-        HumanInterface::show_position(&app.comm, -1, position);
+        HumanInterface::show_position(slot, &app.comm, -1, position);
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
             let board_size = position.get_board_size();

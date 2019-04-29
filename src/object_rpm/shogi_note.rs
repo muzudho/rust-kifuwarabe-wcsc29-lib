@@ -1,10 +1,11 @@
+use board_size::*;
+use common::caret::*;
 ///
 /// Rpm棋譜のノート。
 ///
 /// 局面から独立しています。
 ///
-use board_size::*;
-use common::caret::*;
+use common::closed_interval::ClosedInterval;
 use communication::*;
 // use kifu_rpm::rpm_tape::*;
 use object_rpm::shogi_note_operation::*;
@@ -55,34 +56,29 @@ impl ShogiNote {
     ///
     /// # Returns
     ///
-    /// (first_used_caret, last_used_caret, note_opt)
+    /// (closed_interval, note_opt)
     pub fn parse_1note(
         comm: &Communication,
         ope_vec: &Vec<&str>,
         id_vec: &Vec<&str>,
         note_caret: &mut Caret,
         board_size: BoardSize,
-    ) -> (i16, i16, Option<ShogiNote>) {
+    ) -> (ClosedInterval, Option<ShogiNote>) {
+        let mut closed_interval = ClosedInterval::new();
+
         // 数字を返却してから、キャレットを移動。
-        let first_used_caret = note_caret.go_next(comm);
+        let n0 = note_caret.go_next(comm);
 
         let mut token_caret = Caret::new_facing_right_caret();
-        let (last_used_caret, note_ope) = if let (sub_last_used_caret, Some(note_ope)) =
-            ShogiNoteOpe::parse_1ope(
-                &ope_vec[first_used_caret as usize],
-                &mut token_caret,
-                board_size,
-                &comm,
-            ) {
-            (sub_last_used_caret, note_ope)
+        let (sub_closed_interval, note_ope) = if let (sub_closed_interval, Some(note_ope)) =
+            ShogiNoteOpe::parse_1ope(&ope_vec[n0 as usize], &mut token_caret, board_size, &comm)
+        {
+            (sub_closed_interval, note_ope)
         } else {
-            panic!(
-                "Unexpected operation note token. {}",
-                ope_vec[first_used_caret as usize]
-            )
+            panic!("Unexpected operation note token. {}", ope_vec[n0 as usize])
         };
 
-        let pnum: i8 = id_vec[first_used_caret as usize].parse().unwrap();
+        let pnum: i8 = id_vec[n0 as usize].parse().unwrap();
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None
@@ -90,9 +86,12 @@ impl ShogiNote {
             PieceIdentify::from_number(pnum)
         };
 
+        closed_interval.intersect(n0);
+        closed_interval.intersect(sub_closed_interval.get_minimum());
+        closed_interval.intersect(sub_closed_interval.get_maximum());
+
         (
-            first_used_caret,
-            last_used_caret,
+            closed_interval,
             Some(ShogiNote::from_id_ope(pid_opt, note_ope)),
         )
     }

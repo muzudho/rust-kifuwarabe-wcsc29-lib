@@ -168,16 +168,6 @@ impl CassetteTape {
         self.tracks.go_1note_forcely(&mut self.caret, comm)
     }
 
-    /// Human presentable large log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
-        format!(
-            "{} {}",
-            self.caret.to_human_presentable(),
-            self.tracks.to_human_presentable(board_size)
-        )
-        .to_string()
-    }
-
     /// コマンドライン入力形式。
     ///
     /// # Returns
@@ -228,5 +218,15 @@ impl CassetteTape {
             label: self.label.to_rpm(),
             tracks: self.tracks.to_rpm_tracks(board_size),
         }
+    }
+
+    /// Human presentable large log.
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        format!(
+            "{} {}",
+            self.caret.to_human_presentable(),
+            self.tracks.to_human_presentable(board_size)
+        )
+        .to_string()
     }
 }

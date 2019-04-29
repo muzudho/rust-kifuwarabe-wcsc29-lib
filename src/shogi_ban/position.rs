@@ -1,6 +1,7 @@
 use address::*;
 use board_size::*;
 use communication::*;
+use object_rpm::cassette_deck::Slot;
 use object_rpm::shogi_note_operation::*;
 use parser::*;
 use piece_etc::*;
@@ -134,6 +135,8 @@ impl Position {
         use piece_etc::Phase::*;
         use piece_etc::Piece::*;
         use piece_etc::PieceIdentify::*;
+        // きふわらべは 駒台の駒をスタック構造と捉えて後ろから取っていくので、
+        // 大橋流の順に並べるために、逆順に駒台に追加してください。
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K2).get_index()];
@@ -161,74 +164,74 @@ impl Position {
             let vec = &mut self.hands[HandIndex::from_piece(B1).get_index()];
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, B19));
         }
-        // 金4枚。
+        // 金4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(G2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G02));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G04));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, G02));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(G1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G03));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G05));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, G03));
         }
-        // 銀4枚。
+        // 銀4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(S2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S06));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S08));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, S06));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(S1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S07));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S09));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, S07));
         }
-        // 桂4枚。
+        // 桂4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(N2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N10));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N12));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, N10));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(N1).get_index()];
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N11));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, N13));
         }
-        // 香4枚。
+        // 香4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(L2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L14));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L16));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, L14));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(L1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L15));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L17));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, L15));
         }
-        // 歩18枚。
+        // 歩18枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(P2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P22));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P24));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P26));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P28));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P30));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P32));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P34));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P36));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P38));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P36));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P34));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P32));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P30));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P28));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P26));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P24));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(Second), false, P22));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(P1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P23));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P25));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P27));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P29));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P31));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P33));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P35));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P37));
             vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P39));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P37));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P35));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P33));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P31));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P29));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P27));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P25));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Some(First), false, P23));
         }
     }
 
@@ -795,31 +798,45 @@ impl Position {
         )
     }
 
-    /// Point of symmetory.
-    pub fn to_text(&self, _comm: &Communication, phase: Phase, board_size: BoardSize) -> String {
+    /// 将棋盤１個分の表示。
+    /// 右端の縦線が 点線（コロン）ならトレーニング、実践（パイプ）ならラーニング。
+    pub fn to_text(
+        &self,
+        slot: Slot,
+        _comm: &Communication,
+        phase: Phase,
+        board_size: BoardSize,
+    ) -> String {
+        use object_rpm::cassette_deck::Slot::*;
+        let right_border = match slot {
+            Training => ":",
+            Learning => "|",
+        }
+        .to_string();
+
         use piece_etc::Phase::*;
         let mut content = String::new();
 
         // 先手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::First));
-        Parser::appendln(&mut content, &format!("{}|", line0));
-        Parser::appendln(&mut content, &format!("{}|", line1));
-        Parser::appendln(&mut content, &format!("{}|", line2));
-        Parser::appendln(&mut content, &format!("{}|", line3));
+        Parser::appendln(&mut content, &format!("{}{}", line0, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line1, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line2, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line3, right_border));
 
         match phase {
             First => {
                 // hand-graphic.
                 Parser::appendln(
                     &mut content,
-                    &"|         |   +----+----+----+----+----+----+----+----+----+             |"
+                    &format!("|         |   +----+----+----+----+----+----+----+----+----+             {}",right_border)
                         .to_string(),
                 );
             }
             Second => {
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+             |"
+                    &format!("              +----+----+----+----+----+----+----+----+----+             {}",right_border)
                         .to_string(),
                 );
             }
@@ -919,25 +936,45 @@ impl Position {
 
             // Second player finger.
             match phase {
-                First => Parser::append(&mut content, &"             |".to_string()),
+                First => Parser::append(
+                    &mut content,
+                    &format!("             {}", right_border).to_string(),
+                ),
                 Second => {
                     match row {
-                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
-                            Parser::append(&mut content, &"             |".to_string())
-                        }
+                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => Parser::append(
+                            &mut content,
+                            &format!("             {}", right_border).to_string(),
+                        ),
                         11 => Parser::append(
                             &mut content,
                             &format!(
-                                "  {}    |",
+                                "  {}    {}",
                                 self.get_cell_display_by_address(Address::from_sky())
-                                    .to_sky_display(board_size)
+                                    .to_sky_display(board_size),
+                                right_border
                             ),
                         ),
-                        12 => Parser::append(&mut content, &" +-+ +-+     |".to_string()),
-                        13 => Parser::append(&mut content, &" | | | |     |".to_string()),
-                        14 => Parser::append(&mut content, &" | | | |     |".to_string()),
-                        15 => Parser::append(&mut content, &" | +-+ +---+ |".to_string()),
-                        16 => Parser::append(&mut content, &" |         | |".to_string()),
+                        12 => Parser::append(
+                            &mut content,
+                            &format!(" +-+ +-+     {}", right_border).to_string(),
+                        ),
+                        13 => Parser::append(
+                            &mut content,
+                            &format!(" | | | |     {}", right_border).to_string(),
+                        ),
+                        14 => Parser::append(
+                            &mut content,
+                            &format!(" | | | |     {}", right_border).to_string(),
+                        ),
+                        15 => Parser::append(
+                            &mut content,
+                            &format!(" | +-+ +---+ {}", right_border).to_string(),
+                        ),
+                        16 => Parser::append(
+                            &mut content,
+                            &format!(" |         | {}", right_border).to_string(),
+                        ),
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
@@ -950,7 +987,7 @@ impl Position {
             First => {
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+             |"
+                    &format!("              +----+----+----+----+----+----+----+----+----+             {}",right_border)
                         .to_string(),
                 );
             }
@@ -958,7 +995,7 @@ impl Position {
                 // hand.
                 Parser::appendln(
                     &mut content,
-                    &"              +----+----+----+----+----+----+----+----+----+ |         | |"
+                    &format!("              +----+----+----+----+----+----+----+----+----+ |         | {}",right_border)
                         .to_string(),
                 );
             }
@@ -966,16 +1003,19 @@ impl Position {
 
         Parser::appendln(
             &mut content,
-            &"               1    2    3    4    5    6    7    8    9                 |"
-                .to_string(),
+            &format!(
+                "               1    2    3    4    5    6    7    8    9                 {}",
+                right_border
+            )
+            .to_string(),
         );
 
         // 後手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::Second));
-        Parser::appendln(&mut content, &format!("{}|", line0));
-        Parser::appendln(&mut content, &format!("{}|", line1));
-        Parser::appendln(&mut content, &format!("{}|", line2));
-        Parser::appendln(&mut content, &format!("{}|", line3));
+        Parser::appendln(&mut content, &format!("{}{}", line0, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line1, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line2, right_border));
+        Parser::appendln(&mut content, &format!("{}{}", line3, right_border));
 
         content
     }

@@ -6,6 +6,7 @@
 use address::*;
 use board_size::*;
 use common::caret::*;
+use common::closed_interval::*;
 use communication::*;
 use kifu_rpm::rpm_tape::*;
 use kifu_usi::usi_move::*;
@@ -19,8 +20,7 @@ pub struct ShogiMove {
     pub notes: Vec<ShogiNote>,
 
     // 動作確認用。
-    pub start: usize,
-    pub end: usize,
+    pub caret_closed_interval: ClosedInterval,
 }
 impl fmt::Display for ShogiMove {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -30,7 +30,12 @@ impl fmt::Display for ShogiMove {
             text = format!("{} {}", text, note).to_string()
         }
 
-        write!(f, "({}:{}){}", self.start, self.end, text)
+        write!(
+            f,
+            "({}){}",
+            self.caret_closed_interval.to_human_presentable(),
+            text
+        )
     }
 }
 impl ShogiMove {
@@ -47,10 +52,10 @@ impl ShogiMove {
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (usize, Option<ShogiMove>) {
+        let mut closed_interval = ClosedInterval::new();
+
         let mut parsed_note_count = 0;
         let mut notes_buffer = Vec::new();
-        let mut first_used_caret = 0;
-        let mut last_used_caret = 0;
 
         let note_size = cassette_tape_j.tracks.ope.len();
         if note_size == 1 {
@@ -100,7 +105,7 @@ impl ShogiMove {
             }
             */
 
-            if let (sub_first_used_caret, sub_last_used_caret, Some(note)) =
+            if let (sub_closed_interval, Some(note)) =
                 ShogiNote::parse_1note(comm, &ope_vec, &id_vec, note_caret, board_size)
             {
                 parsed_note_count += 1;
@@ -116,8 +121,8 @@ impl ShogiMove {
 
                 //comm.print(&format!("Push: {:?}.", note));
                 notes_buffer.push(note);
-                first_used_caret = sub_first_used_caret;
-                last_used_caret = sub_last_used_caret;
+
+                closed_interval.intersect_closed_interval(sub_closed_interval);
             } else {
                 // パースできるノートが無かった。
                 //comm.print("Break: None.");
@@ -144,8 +149,7 @@ impl ShogiMove {
                 parsed_note_count,
                 Some(ShogiMove {
                     notes: notes_buffer,
-                    start: first_used_caret as usize,
-                    end: last_used_caret as usize,
+                    caret_closed_interval: closed_interval,
                 }),
             )
         }
@@ -460,10 +464,16 @@ impl ShogiMove {
     pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
         let mut text = String::new();
 
+        // 全てのノートを連結。
         for note in &self.notes {
             text = format!("{} {}", text, note.to_human_presentable(board_size))
         }
 
-        format!("({}:{}){}", self.start, self.end, text)
+        // TODO スタートが181で、エンドが1だったりするのはなんでだぜ☆（＾～＾）？
+        format!(
+            "{}{}",
+            self.caret_closed_interval.to_human_presentable(),
+            text
+        )
     }
 }
