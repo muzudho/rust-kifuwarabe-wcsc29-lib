@@ -12,19 +12,19 @@ pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as u
 pub const HANDS_LEN: usize = 3 * 8;
 
 /// 指先。
-pub struct Sky {
+pub struct Fingertip {
     id_piece: IdentifiedPiece,
     previous_address: Address,
 }
-impl Sky {
+impl Fingertip {
     pub fn from_idp_prev(idp: IdentifiedPiece, prev: Address) -> Self {
-        Sky {
+        Fingertip {
             id_piece: idp,
             previous_address: prev,
         }
     }
 
-    pub fn set_sky(&mut self, id_piece_opt: IdentifiedPiece, previous_address_opt: Address) {
+    pub fn set_fingertip(&mut self, id_piece_opt: IdentifiedPiece, previous_address_opt: Address) {
         self.id_piece = id_piece_opt;
         self.previous_address = previous_address_opt;
     }
@@ -37,7 +37,7 @@ impl Sky {
         self.id_piece.rotate();
     }
 
-    pub fn get_sky(&self) -> (IdentifiedPiece, Address) {
+    pub fn get_fingertip(&self) -> (IdentifiedPiece, Address) {
         (self.id_piece, self.previous_address)
     }
 
@@ -55,7 +55,7 @@ pub struct Position {
     board_size: BoardSize,
     pub board: [Option<IdentifiedPiece>; DEFAULT_BOARD_SIZE],
     pub hands: [Vec<IdentifiedPiece>; HANDS_LEN],
-    pub sky: Option<Sky>,
+    pub fingertip: Option<Fingertip>,
 }
 impl Position {
     /// 本将棋用に初期化します。駒を並べる前の局面です。
@@ -91,7 +91,7 @@ impl Position {
                 Vec::new(),
                 Vec::new(),
             ],
-            sky: None,
+            fingertip: None,
         };
 
         instance.reset_origin_position();
@@ -364,35 +364,44 @@ impl Position {
     }
 
     pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
-        if address.is_sky() {
-            // Sky升に表示するもの。
-            if let Some(prev) = self.get_sky_prev() {
+        if address.is_fingertip() {
+            // Fingertip升に表示するもの。
+            if let Some(prev) = self.get_fingertip_prev() {
                 // 持っている駒を表示。
-                CellDisplay::from_idp_prev(self.get_sky_idp(), prev)
+                CellDisplay::from_idp_prev(self.get_fingertip_idp(), prev)
             } else {
-                CellDisplay::from_empty_sky()
+                CellDisplay::from_empty_fingertip()
             }
         } else {
             CellDisplay::from_idp(self.board[address.get_index()])
         }
     }
 
-    pub fn move_hand_to_finger(
+    /// 駒台の駒を、指へ☆（＾～＾）
+    pub fn try_move_hand_to_fingertip(
         &mut self,
         address: Address,
         comm: &Communication,
         board_size: BoardSize,
-    ) {
-        let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
-        if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
-            self.sky = Some(Sky::from_idp_prev(id_piece, address));
-        } else {
-            let msg = format!(
-                "駒台の駒が足りない！{}",
+    ) -> bool {
+        if let Some(ref _fingertip) = self.fingertip {
+            comm.println(&format!(
+                "既に何かをつかんでいた☆（＾～＾）！鳩ノ巣原理は使えない☆（＾～＾）！{}",
                 address.to_human_presentable(board_size)
-            );
-            comm.println(&msg);
-            panic!(msg);
+            ));
+            false
+        } else {
+            let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
+            if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
+                self.fingertip = Some(Fingertip::from_idp_prev(id_piece, address));
+                true
+            } else {
+                comm.println(&format!(
+                    "駒台に置いてない駒をつかもうとした☆（＾～＾）！{}",
+                    address.to_human_presentable(board_size)
+                ));
+                false
+            }
         }
     }
 
@@ -470,18 +479,18 @@ impl Position {
     }
 
     /// 指先の何か。
-    pub fn get_sky_idp(&self) -> Option<IdentifiedPiece> {
-        if let Some(ref sky) = self.sky {
-            Some(sky.get_idp())
+    pub fn get_fingertip_idp(&self) -> Option<IdentifiedPiece> {
+        if let Some(ref fingertip) = self.fingertip {
+            Some(fingertip.get_idp())
         } else {
             None
         }
     }
 
     /// 指先の何かが元有った場所。
-    pub fn get_sky_prev(&self) -> Option<Address> {
-        if let Some(ref sky) = self.sky {
-            Some(sky.get_prev())
+    pub fn get_fingertip_prev(&self) -> Option<Address> {
+        if let Some(ref fingertip) = self.fingertip {
+            Some(fingertip.get_prev())
         } else {
             None
         }
@@ -493,10 +502,11 @@ impl Position {
     /// 棋譜には記録しない。
     ///
     /// トグルと考えてよい。もう一度実行すると、前の状態に戻ります。
+    /// 操作が完遂できなかった場合、何もしなかった状態に戻し、偽を返す。完遂か、未着手の二者一択。
     ///
     /// # Returns
     ///
-    /// Is legal touch, Identified piece.
+    /// (conplete, Identified piece)
     pub fn touch_beautiful_1note(
         &mut self,
         rpm_operation_note: &ShogiNoteOpe,
@@ -513,18 +523,16 @@ impl Position {
                         Some(board_id_piece) => {
                             // 盤上の駒と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
 
-                            let tuple = if let Some(ref sky) = self.sky {
+                            let tuple = if let Some(ref fingertip) = self.fingertip {
                                 comm.println(&format!(
                                     "<IL-駒重なり{}>",
                                     address.to_human_presentable(board_size)
                                 ));
 
-                                // 違法。指に既に何か持ってた。
-                                // 指に持っている駒を優先します。
-                                (false, Some(sky.get_idp()))
+                                // （未着手）指に既に何か持ってた。指に持っている駒を優先します。
+                                (false, Some(fingertip.get_idp()))
                             } else {
-                                // 合法。指が空いてたので駒をつかむ。
-                                // 盤上の駒の方を優先します。
+                                // （完遂）指が空いてたので駒をつかむ。盤上の駒の方を優先します。
                                 (true, Some(board_id_piece))
                             };
 
@@ -532,14 +540,15 @@ impl Position {
                             // 盤上の何かを退避。
                             let tmp_board_idp_opt = self.board[address.get_index()];
                             // 盤上にスカイの何かを置く。
-                            self.board[address.get_index()] = if let Some(ref sky) = self.sky {
-                                Some(sky.id_piece)
-                            } else {
-                                None
-                            };
+                            self.board[address.get_index()] =
+                                if let Some(ref fingertip) = self.fingertip {
+                                    Some(fingertip.id_piece)
+                                } else {
+                                    None
+                                };
                             // スカイに盤上の何かを置く。
-                            self.sky = if let Some(tmp_board_idp) = tmp_board_idp_opt {
-                                Some(Sky::from_idp_prev(tmp_board_idp, address))
+                            self.fingertip = if let Some(tmp_board_idp) = tmp_board_idp_opt {
+                                Some(Fingertip::from_idp_prev(tmp_board_idp, address))
                             } else {
                                 None
                             };
@@ -548,17 +557,15 @@ impl Position {
                         }
                         None => {
                             // 盤上の None と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
-                            let tuple = if let Some(ref sky) = self.sky {
-                                // 駒を指につまんでいた。
-                                // 合法。指につまんでいる駒を置く。
-                                (true, Some(sky.get_idp()))
+                            let tuple = if let Some(ref fingertip) = self.fingertip {
+                                // （完遂）駒を指につまんでいた。指につまんでいる駒を置く。
+                                (true, Some(fingertip.get_idp()))
                             } else {
                                 comm.println(&format!(
                                     "<IL-ほこり取り{}>",
                                     address.to_human_presentable(board_size)
                                 ));
-                                // ほこりを取る。
-                                // 一応、違法。
+                                // （未着手）ほこりを取る。一応、違法。
                                 (false, None)
                             };
 
@@ -566,14 +573,15 @@ impl Position {
                             // 盤上の何かを退避。
                             let tmp_board_idp_opt = self.board[address.get_index()];
                             // 盤上にスカイの何かを置く。
-                            self.board[address.get_index()] = if let Some(ref sky) = self.sky {
-                                Some(sky.id_piece)
-                            } else {
-                                None
-                            };
+                            self.board[address.get_index()] =
+                                if let Some(ref fingertip) = self.fingertip {
+                                    Some(fingertip.id_piece)
+                                } else {
+                                    None
+                                };
                             // スカイに盤上の何かを置く。
-                            self.sky = if let Some(tmp_board_idp) = tmp_board_idp_opt {
-                                Some(Sky::from_idp_prev(tmp_board_idp, address))
+                            self.fingertip = if let Some(tmp_board_idp) = tmp_board_idp_opt {
+                                Some(Fingertip::from_idp_prev(tmp_board_idp, address))
                             } else {
                                 None
                             };
@@ -582,27 +590,30 @@ impl Position {
                         }
                     }
                 // 駒台。
-                } else if let Some(sky_idp) = self.get_sky_idp() {
-                    // 指に何か持っていた。
-                    // 合法。駒台に置く。
-                    let id_piece_opt = Some(sky_idp);
+                } else if let Some(fingertip_idp) = self.get_fingertip_idp() {
+                    let id_piece_opt = Some(fingertip_idp);
                     // comm.println(&format!("hand_index = {}.", address.get_hand_index()));
                     self.add_hand(id_piece_opt);
-                    self.sky = None;
+                    self.fingertip = None;
 
-                    (true, Some(sky_idp))
+                    // （完遂）指に何か持っていた。合法。駒台に置く。
+                    (true, Some(fingertip_idp))
                 } else {
                     // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
-                    self.move_hand_to_finger(address, comm, board_size);
-                    if let Some(ref sky) = self.sky {
-                        // 合法。掴んだ駒を返す。
-                        (true, Some(sky.get_idp()))
+                    if self.try_move_hand_to_fingertip(address, comm, board_size) {
+                        if let Some(ref fingertip) = self.fingertip {
+                            // 合法。掴んだ駒を返す。
+                            (true, Some(fingertip.get_idp()))
+                        } else {
+                            comm.println(&format!(
+                                "<IL-駒台ほこり取り{}>",
+                                address.to_human_presentable(board_size)
+                            ));
+                            // （未着手）駒台のほこりを取った。
+                            (false, None)
+                        }
                     } else {
-                        comm.println(&format!(
-                            "<IL-駒台ほこり取り{}>",
-                            address.to_human_presentable(board_size)
-                        ));
-                        // 違法。駒台のほこりを取った。
+                        // （未着手）そんなことは、できなかった☆（＾～＾）
                         (false, None)
                     }
                 }
@@ -610,27 +621,26 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rpm_operation_note.is_phase_change() {
-                    // 合法。 phase change.
                     use instrument::piece_etc::Phase::*;
                     self.phase = match self.phase {
                         First => Second,
                         Second => First,
                     };
+                    // （完遂） phase change.
                     (true, None)
-                } else if let Some(ref mut sky) = self.sky {
+                } else if let Some(ref mut fingertip) = self.fingertip {
                     // 指に何か持っている。
-                    if rpm_operation_note.sky_turn {
-                        // 合法。成りの操作。
-                        sky.turn_over();
-                    } else if rpm_operation_note.sky_rotate {
-                        // 合法。先後入れ替えの操作。
-                        sky.rotate();
+                    if rpm_operation_note.fingertip_turn {
+                        // （完遂）成りの操作。
+                        fingertip.turn_over();
+                    } else if rpm_operation_note.fingertip_rotate {
+                        // （完遂）先後入れ替えの操作。
+                        fingertip.rotate();
                     };
-                    (true, Some(sky.get_idp()))
+                    (true, Some(fingertip.get_idp()))
                 } else {
-                    comm.println("<IL-使っていない空間ほこり取り>");
-                    // TODO 未定義の操作。投了とか？
-                    // 一応、違法。
+                    comm.println("<未定義-使っていない空間ほこり取り>");
+                    // （未着手）TODO 未定義の操作。投了とか？一応、違法。
                     (false, None)
                 }
             }
@@ -849,8 +859,8 @@ impl Position {
                             &mut content,
                             &format!(
                                 "     {} ",
-                                self.get_cell_display_by_address(Address::from_sky())
-                                    .to_sky_display(board_size)
+                                self.get_cell_display_by_address(Address::from_fingertip())
+                                    .to_fingertip_display(board_size)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -939,8 +949,8 @@ impl Position {
                             &mut content,
                             &format!(
                                 "  {}    {}",
-                                self.get_cell_display_by_address(Address::from_sky())
-                                    .to_sky_display(board_size),
+                                self.get_cell_display_by_address(Address::from_fingertip())
+                                    .to_fingertip_display(board_size),
                                 right_border
                             ),
                         ),

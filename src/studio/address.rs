@@ -2,8 +2,8 @@ use instrument::piece_etc::*;
 use std::fmt;
 use studio::board_size::*;
 
-/// TODO 暫定。
-pub const SKY_ADDRESS: usize = 81;
+/// TODO 指先マス。暫定。
+pub const FINGERTIP_ADDRESS: usize = 81;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct Cell {
@@ -66,8 +66,10 @@ impl Address {
         }
     }
 
-    pub fn from_sky() -> Self {
-        Address { index: SKY_ADDRESS }
+    pub fn from_fingertip() -> Self {
+        Address {
+            index: FINGERTIP_ADDRESS,
+        }
     }
 
     pub fn from_hand_pi(pi: Piece) -> Self {
@@ -145,8 +147,8 @@ impl Address {
         82 <= self.index && self.index <= 105
     }
 
-    pub fn is_sky(self) -> bool {
-        SKY_ADDRESS == self.index
+    pub fn is_fingertip(self) -> bool {
+        FINGERTIP_ADDRESS == self.index
     }
 
     /// 盤上であれば、セル番地へ変換。それ以外は None。
@@ -163,7 +165,7 @@ impl Address {
     }
 
     pub fn get_hand_index(self) -> usize {
-        self.index - SKY_ADDRESS - 1
+        self.index - FINGERTIP_ADDRESS - 1
     }
 
     pub fn get_hand_piece(self) -> Option<Piece> {
@@ -202,12 +204,12 @@ impl Address {
         }
     }
 
-    /// 基本2桁、Sky 3桁。
+    /// 基本2桁、Sky 3桁。（指先のことを Sky と表示する仕様）
     pub fn to_physical_sign(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             let cell = board_size.address_to_cell(self.index);
             cell.to_scalar().to_string()
-        } else if self.is_sky() {
+        } else if self.is_fingertip() {
             "Sky".to_string()
         } else if self.is_hand() {
             if let Some(piece) = self.get_hand_piece() {

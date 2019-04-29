@@ -69,9 +69,12 @@ impl BestMovePicker {
 
         // TODO とりあえず rbox.json ファイルを１個読む。
         'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
-            let tape_box_file_name = tape_box_file.unwrap().path().display().to_string();
-            let mut training_tape_box =
-                CassetteTapeBox::from_file(&tape_box_file_name, position.get_board_size(), &app);
+            // JSONファイルを元にオブジェクト化☆（＾～＾）
+            let mut training_tape_box = CassetteTapeBox::from_file(
+                &tape_box_file.unwrap().path().display().to_string(),
+                position.get_board_size(),
+                &app,
+            );
 
             // トレーニング・テープ・ボックスを１箱選択。
             app.comm.println(&format!(

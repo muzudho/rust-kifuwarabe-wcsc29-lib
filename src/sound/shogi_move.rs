@@ -200,7 +200,7 @@ impl ShogiMove {
                     panic!("Note fail.")
                 };
 
-                if note.get_ope().sky_turn {
+                if note.get_ope().fingertip_turn {
                     // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
                     subject_promotion = true;
 
@@ -214,7 +214,7 @@ impl ShogiMove {
                     };
                 }
 
-                if note.get_ope().sky_rotate {
+                if note.get_ope().fingertip_rotate {
                     // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
                     object_pid_opt = subject_pid_opt;
                     object_address_opt = subject_address_opt;
@@ -267,7 +267,7 @@ impl ShogiMove {
                     // 盤上の自駒を触ったのだと確定した。
                 }
 
-                if note.get_ope().sky_turn {
+                if note.get_ope().fingertip_turn {
                     // +。盤上の自駒が成った。
                     subject_promotion = true;
 

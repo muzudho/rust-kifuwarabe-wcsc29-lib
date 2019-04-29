@@ -33,6 +33,11 @@ impl CassetteTapeBox {
         rpm_tape_box.to_object(file_name, board_size, &app)
     }
 
+    /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
+    pub fn eject(&mut self) {
+        self.listening_tape_index = None;
+    }
+
     /// 次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）
     ///
@@ -50,17 +55,6 @@ impl CassetteTapeBox {
             true
         }
     }
-
-    /*
-    /// 次のテープを利用するぜ☆（＾～＾）
-    /// 次のテープが無ければ、新品のテープを追加するぜ☆（＾ｑ＾）
-    pub fn change_next_create(&mut self, app: &Application) {
-        self.tape_index += 1;
-        if self.tapes.len() <= self.tape_index {
-            self.change_brandnew(&app);
-        }
-    }
-    */
 
     /// ピークに、新品の空テープを追加してそれを聴くぜ☆（＾ｑ＾）
     pub fn change_brandnew(&mut self, app: &Application) {

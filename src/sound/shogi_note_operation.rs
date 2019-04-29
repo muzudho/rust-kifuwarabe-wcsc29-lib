@@ -18,9 +18,9 @@ use studio::parser::Parser;
 pub struct ShogiNoteOpe {
     pub address: Option<Address>,
     /// +
-    pub sky_turn: bool,
+    pub fingertip_turn: bool,
     /// -
-    pub sky_rotate: bool,
+    pub fingertip_rotate: bool,
     /// フェーズ・チェンジなら Ply、数が省略されている場合は -1。フェーズ・チェンジでないなら None。
     phase_change: Option<i16>,
     resign: bool,
@@ -30,9 +30,9 @@ impl fmt::Display for ShogiNoteOpe {
         match self.address {
             Some(address) => write!(f, "{}", address.get_index()),
             None => {
-                if self.sky_turn {
+                if self.fingertip_turn {
                     write!(f, "+")
-                } else if self.sky_rotate {
+                } else if self.fingertip_rotate {
                     write!(f, "-")
                 } else if let Some(ply) = self.phase_change {
                     if ply > -1 {
@@ -53,8 +53,8 @@ impl ShogiNoteOpe {
     pub fn from_address(address: Address) -> Self {
         ShogiNoteOpe {
             address: Some(address),
-            sky_turn: false,
-            sky_rotate: false,
+            fingertip_turn: false,
+            fingertip_rotate: false,
             phase_change: None,
             resign: false,
         }
@@ -63,8 +63,8 @@ impl ShogiNoteOpe {
     pub fn turn_over() -> Self {
         ShogiNoteOpe {
             address: None,
-            sky_turn: true,
-            sky_rotate: false,
+            fingertip_turn: true,
+            fingertip_rotate: false,
             phase_change: None,
             resign: false,
         }
@@ -73,8 +73,8 @@ impl ShogiNoteOpe {
     pub fn rotate() -> Self {
         ShogiNoteOpe {
             address: None,
-            sky_turn: false,
-            sky_rotate: true,
+            fingertip_turn: false,
+            fingertip_rotate: true,
             phase_change: None,
             resign: false,
         }
@@ -83,8 +83,8 @@ impl ShogiNoteOpe {
     pub fn change_phase(ply: i16) -> Self {
         ShogiNoteOpe {
             address: None,
-            sky_turn: false,
-            sky_rotate: false,
+            fingertip_turn: false,
+            fingertip_rotate: false,
             phase_change: Some(ply),
             resign: false,
         }
@@ -93,8 +93,8 @@ impl ShogiNoteOpe {
     pub fn resign() -> Self {
         ShogiNoteOpe {
             address: None,
-            sky_turn: false,
-            sky_rotate: false,
+            fingertip_turn: false,
+            fingertip_rotate: false,
             phase_change: None,
             resign: true,
         }
@@ -117,7 +117,7 @@ impl ShogiNoteOpe {
         match self.address {
             Some(address) => {
                 // 人に読みやすいセル表記にします。
-                if address.is_sky() {
+                if address.is_fingertip() {
                     "SK".to_string()
                 } else if address.is_on_board(board_size) {
                     board_size
@@ -133,9 +133,9 @@ impl ShogiNoteOpe {
                 }
             }
             None => {
-                if self.sky_turn {
+                if self.fingertip_turn {
                     "+".to_string()
-                } else if self.sky_rotate {
+                } else if self.fingertip_rotate {
                     "-".to_string()
                 } else if let Some(ply) = self.phase_change {
                     if ply > -1 {
@@ -156,9 +156,9 @@ impl ShogiNoteOpe {
         match self.address {
             Some(address) => address.to_physical_sign(board_size),
             None => {
-                if self.sky_turn {
+                if self.fingertip_turn {
                     "+".to_string()
-                } else if self.sky_rotate {
+                } else if self.fingertip_rotate {
                     "-".to_string()
                 } else if let Some(ply) = self.phase_change {
                     if ply > -1 {

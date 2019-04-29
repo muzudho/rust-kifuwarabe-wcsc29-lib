@@ -130,6 +130,9 @@ impl RpmTapeBox {
             tape_box.change_with_tape(tape);
         }
 
+        // カーソルが進んでしまっているので戻すぜ☆（＾～＾）
+        tape_box.eject();
+
         tape_box
     }
 }

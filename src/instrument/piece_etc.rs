@@ -296,7 +296,7 @@ impl PieceIdentify {
 /// For cell display.
 pub struct CellDisplay {
     id_piece_opt: Option<IdentifiedPiece>,
-    // Sky用。
+    // 指先に、どこから取った駒か覚えておく。
     previous_address: Option<Address>,
 }
 impl CellDisplay {
@@ -314,7 +314,7 @@ impl CellDisplay {
         }
     }
 
-    pub fn from_empty_sky() -> CellDisplay {
+    pub fn from_empty_fingertip() -> CellDisplay {
         CellDisplay {
             id_piece_opt: None,
             previous_address: None,
@@ -333,7 +333,7 @@ impl CellDisplay {
     }
 
     /// 3桁追加して 7桁に揃える。
-    pub fn to_sky_display(&self, board_size: BoardSize) -> String {
+    pub fn to_fingertip_display(&self, board_size: BoardSize) -> String {
         if let Some(prev) = self.previous_address {
             // 駒のIDの方は桁数指定すると、ずれるからしてない。
             format!(
