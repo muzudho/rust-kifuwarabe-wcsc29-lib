@@ -1,6 +1,6 @@
 use address::*;
 use board_size::*;
-use shogi_ban::position::*;
+use instrument::position::*;
 use std::fmt;
 use std::slice::Iter;
 

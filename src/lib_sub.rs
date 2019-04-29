@@ -1,14 +1,14 @@
 use application::*;
 use board_size::*;
 use human::human_interface::*;
-use kifu_usi::fen::*;
-use kifu_usi::usi_converter::*;
-use kifu_usi::usi_position::*;
-use object_rpm::cassette_deck::*;
+use instrument::game_player::*;
+use instrument::position::*;
+use musician::best_move_picker::*;
 use piece_etc::*;
-use shogi_ban::game_player::*;
-use shogi_ban::position::*;
-use thought::best_move_picker::*;
+use sheet_music_format::kifu_usi::fen::*;
+use sheet_music_format::kifu_usi::usi_converter::*;
+use sheet_music_format::kifu_usi::usi_position::*;
+use video_recorder::cassette_deck::*;
 
 pub struct LibSub {}
 impl LibSub {

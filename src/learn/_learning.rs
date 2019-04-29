@@ -40,7 +40,7 @@ impl Learning {
     pub fn save(&self) {
         // 学習用のファイルを新規作成、または上書き。
         for number in 0..40 {
-            let path = format!("thought/N{:02}.rpm_learn", number);
+            let path = format!("musician/N{:02}.rpm_learn", number);
 
             let mut file = OpenOptions::new()
             .create(true)

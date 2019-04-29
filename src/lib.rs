@@ -38,25 +38,22 @@ pub mod common;
 pub mod communication;
 pub mod conf;
 pub mod human;
-pub mod kifu_csa;
-pub mod kifu_kif;
-pub mod kifu_rpm;
-pub mod kifu_usi;
+pub mod instrument;
 pub mod learn;
 pub mod lib_sub;
-pub mod object_rpm;
+pub mod musician;
 pub mod parser;
 pub mod piece_etc;
-pub mod shogi_ban;
-pub mod thought;
+pub mod sheet_music_format;
+pub mod video_recorder;
 use application::*;
 use human::human_interface::*;
+use instrument::game_player::*;
+use instrument::position::*;
 use lib_sub::*;
-use object_rpm::cassette_deck::*;
-use shogi_ban::game_player::*;
-use shogi_ban::position::*;
+use musician::best_move_picker::*;
 use std::io;
-use thought::best_move_picker::*;
+use video_recorder::cassette_deck::*;
 
 pub fn main_loop() {
     // The application contains all immutable content.

@@ -17,7 +17,7 @@ impl RpmLearnFile {
 
     /// TODO ファイルを読み込む。
     pub fn read(&mut self) {
-        let path = format!("thought/N{:02}.rpm_learn", self.number);
+        let path = format!("musician/N{:02}.rpm_learn", self.number);
         let mut file = match File::open(path) {
             Ok(n) => n,
             Err(err) => panic!("File open error. {:?}", err),

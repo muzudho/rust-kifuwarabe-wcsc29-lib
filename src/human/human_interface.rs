@@ -1,10 +1,10 @@
 use application::Application;
 use communication::*;
-use object_rpm::cassette_deck::CassetteDeck;
-use object_rpm::cassette_deck::Slot;
-use object_rpm::cassette_tape_box::CassetteTapeBox;
-use shogi_ban::position::*;
+use instrument::position::*;
 use std::*;
+use video_recorder::cassette_deck::CassetteDeck;
+use video_recorder::cassette_deck::Slot;
+use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 pub struct HumanInterface {}
 impl HumanInterface {
@@ -24,7 +24,7 @@ impl HumanInterface {
     /// トレーニング局面と、棋譜　の表示。
     pub fn bo(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         /*
-        use object_rpm::cassette_deck::Slot::*;
+        use video_recorder::cassette_deck::Slot::*;
         match slot {
             Training => {
                 app.comm.println("<TRAINING>");

@@ -3,13 +3,13 @@ extern crate kifuwarabe_wcsc29_lib;
 
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::application::*;
-use kifuwarabe_wcsc29_lib::kifu_csa::csa_converter::CsaConverter;
-use kifuwarabe_wcsc29_lib::kifu_csa::csa_tape::*;
-use kifuwarabe_wcsc29_lib::kifu_kif::kif_converter::KifConverter;
-use kifuwarabe_wcsc29_lib::kifu_kif::kif_tape::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_deck::*;
-use kifuwarabe_wcsc29_lib::object_rpm::cassette_tape_box::*;
-use kifuwarabe_wcsc29_lib::shogi_ban::position::*;
+use kifuwarabe_wcsc29_lib::instrument::position::*;
+use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_converter::CsaConverter;
+use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_tape::*;
+use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::KifConverter;
+use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_tape::*;
+use kifuwarabe_wcsc29_lib::video_recorder::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::video_recorder::cassette_tape_box::*;
 use kifuwarabe_wcsc29_lib::*;
 use std::env;
 use std::ffi::OsStr;
@@ -58,7 +58,7 @@ fn main() {
     // Deck.
     let mut deck = CassetteDeck::new_change(
         Some(CassetteTapeBox::from_file(
-            tape_box_file_for_write,
+            &tape_box_file_for_write,
             position.get_board_size(),
             &app,
         )),
