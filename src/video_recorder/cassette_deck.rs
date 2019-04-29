@@ -167,11 +167,11 @@ impl CassetteDeck {
                 {
                     // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_positive_of_current_tape(note);
-                    tape_box.go_caret_to_next(&app);
+                    tape_box.go_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
                     tape_box.set_note_to_positive_of_current_tape(index, note);
-                    tape_box.go_caret_to_next(&app);
+                    tape_box.go_to_next(&app);
 
                     // 仮のおわり を更新。
                     let (_is_positive, index, _caret_number) =
@@ -186,11 +186,11 @@ impl CassetteDeck {
                 {
                     // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_negative_of_current_tape(note);
-                    tape_box.go_caret_to_next(&app);
+                    tape_box.go_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
                     tape_box.set_note_to_negative_of_current_tape(index, note);
-                    tape_box.go_caret_to_next(&app);
+                    tape_box.go_to_next(&app);
 
                     // 仮のおわり を更新。
                     let (_is_positive, index, _caret_number) =

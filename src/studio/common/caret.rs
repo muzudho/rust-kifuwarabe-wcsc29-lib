@@ -39,6 +39,7 @@ impl Caret {
     }
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
+    /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
     pub fn go_next(&mut self, _comm: &Communication) -> i16 {
         let old = self.number;
 

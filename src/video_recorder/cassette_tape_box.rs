@@ -5,7 +5,6 @@ use std::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::Caret;
-use studio::communication::Communication;
 use video_recorder::cassette_tape::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
@@ -73,9 +72,22 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_1note_forcely(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+    pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].go_1note_forcely(&app.comm)
+        } else {
+            panic!("Please choice listening tape.");
+        }
+    }
+
+    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    pub fn go_to_next_with_othre_caret(
+        &self,
+        caret: &mut Caret,
+        app: &Application,
+    ) -> (i16, Option<ShogiNote>) {
+        if let Some(tape_index) = self.listening_tape_index {
+            self.tapes[tape_index].go_1note_forcely_with_othre_caret(caret, &app.comm)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -222,27 +234,6 @@ impl CassetteTapeBox {
     pub fn get_sign_of_current_tape(&self, board_size: BoardSize) -> (String, String) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].to_sign(board_size)
-        } else {
-            panic!("Please choice listening tape.");
-        }
-    }
-
-    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_1note_forcely_with_othre_caret(
-        &self,
-        caret: &mut Caret,
-        comm: &Communication,
-    ) -> (i16, Option<ShogiNote>) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1note_forcely_with_othre_caret(caret, &comm)
-        } else {
-            panic!("Please choice listening tape.");
-        }
-    }
-
-    pub fn go_caret_to_next(&mut self, app: &Application) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.go_next(&app.comm);
         } else {
             panic!("Please choice listening tape.");
         }

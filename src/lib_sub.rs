@@ -17,7 +17,7 @@ impl LibSub {
 
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.turn_caret_to_negative();
-            if let (_caret_number, Some(rnote)) = tape_box.go_1note_forcely(&app) {
+            if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
                 if !position.try_beautiful_touch(&rnote, ply, &app) {
                     app.comm.println("Touch fail.");
                 }
@@ -77,7 +77,7 @@ impl LibSub {
 
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.turn_caret_to_positive();
-            if let (_caret_number, Some(rnote)) = tape_box.go_1note_forcely(&app) {
+            if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
                 if !position.try_beautiful_touch(&rnote, ply, &app) {
                     app.comm.println("Touch fail.");
                 }
