@@ -1,30 +1,53 @@
-/// 閉区間。両端を含む。方向は持たない。
+/// 閉区間。両端を含む。
+/// 向きは 基本的に正の方向（昇順）。
+/// キャレット番号を入れる。（インデックスではない）
 pub struct ClosedInterval {
     minimum: i16,
     maximum: i16,
+    facing_left: bool,
 }
 impl ClosedInterval {
-    pub fn new() -> Self {
+    pub fn new_facing_right() -> Self {
         ClosedInterval {
             minimum: std::i16::MAX,
             maximum: std::i16::MIN,
+            facing_left: false,
         }
     }
 
-    pub fn get_minimum(&self) -> i16 {
+    pub fn get_minimum_caret_number(&self) -> i16 {
         self.minimum
     }
-    pub fn get_maximum(&self) -> i16 {
+    pub fn get_maximum_caret_number(&self) -> i16 {
         self.maximum
     }
 
-    pub fn intersect(&mut self, value: i16) {
-        if value < self.minimum {
-            self.minimum = value;
+    pub fn is_facing_left(&self) -> bool {
+        self.facing_left
+    }
+
+    pub fn get_start(&self) -> i16 {
+        if self.is_facing_left() {
+            self.maximum
+        } else {
+            self.minimum
+        }
+    }
+    pub fn get_end(&self) -> i16 {
+        if self.is_facing_left() {
+            self.minimum
+        } else {
+            self.maximum
+        }
+    }
+
+    pub fn intersect_caret_number(&mut self, caret_number: i16) {
+        if caret_number < self.minimum {
+            self.minimum = caret_number;
         }
 
-        if self.maximum < value {
-            self.maximum = value;
+        if self.maximum < caret_number {
+            self.maximum = caret_number;
         }
     }
 
@@ -40,5 +63,17 @@ impl ClosedInterval {
 
     pub fn to_human_presentable(&self) -> String {
         format!("{}:{}", self.minimum, self.maximum).to_string()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.minimum < self.maximum
+    }
+
+    pub fn len(&self) -> usize {
+        if self.is_empty() {
+            0
+        } else {
+            (self.maximum - self.minimum + 1) as usize
+        }
     }
 }

@@ -81,7 +81,7 @@ impl CassetteDeck {
             let file_name = learning_box.get_file_name();
             learning_box.to_rpm(board_size).write(&file_name, &app.comm);
 
-            if 499 < learning_box.len() {
+            if 499 < learning_box.len_tapes() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
                 full = true;
             }
@@ -96,7 +96,7 @@ impl CassetteDeck {
 
         // 新しいラーニング・テープに差し替える。
         if let Some(ref mut learning_box) = self.slots[Slot::Learning as usize].tape_box {
-            learning_box.change(&app);
+            learning_box.change_brandnew(&app);
             self.slots[Slot::Learning as usize].ply = 1;
         } else {
             panic!("Get l_box none.")
@@ -132,15 +132,18 @@ impl CassetteDeck {
         self.slots[slot as usize].ply
     }
 
+    /// 指定のスロットの テープボックスの中の、現在のテープの、キャレットの向きを反対にします。
     pub fn turn_caret_to_opponent(&mut self, slot: Slot) {
         let cassette_slot = &mut self.slots[slot as usize];
         if let Some(ref mut tape_box) = cassette_slot.tape_box {
             tape_box.turn_caret_to_opponent();
         } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none.");
         }
     }
 
+    /*
     pub fn put_1move(&mut self, slot: Slot, rmove: &ShogiMove, app: &Application) {
         for note in rmove.notes.iter() {
             self.put_1note(slot, *note, app);
@@ -150,11 +153,12 @@ impl CassetteDeck {
             }
         }
     }
+    */
 
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            let (is_positive, index) = tape_box.get_caret_index_of_current_tape();
+            let (is_positive, index, _caret_number) = tape_box.get_caret_index_of_current_tape();
 
             if is_positive {
                 // 正のテープ。
@@ -171,7 +175,8 @@ impl CassetteDeck {
                     tape_box.go_caret_to_next(&app);
 
                     // 仮のおわり を更新。
-                    let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
+                    let (_is_positive, index, _caret_number) =
+                        tape_box.get_caret_index_of_current_tape();
                     tape_box.truncate_positive_of_current_tape(index);
                 }
             } else {
@@ -189,7 +194,8 @@ impl CassetteDeck {
                     tape_box.go_caret_to_next(&app);
 
                     // 仮のおわり を更新。
-                    let (_is_positive, index) = tape_box.get_caret_index_of_current_tape();
+                    let (_is_positive, index, _caret_number) =
+                        tape_box.get_caret_index_of_current_tape();
                     tape_box.truncate_negative_of_current_tape(index);
                 }
             }

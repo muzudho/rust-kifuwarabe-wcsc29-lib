@@ -1,3 +1,4 @@
+use common::closed_interval::ClosedInterval;
 use communication::*;
 
 pub struct Caret {
@@ -6,9 +7,13 @@ pub struct Caret {
 }
 impl Caret {
     pub fn new_facing_right_caret() -> Self {
+        Caret::new_facing_right_caret_with_number(0)
+    }
+
+    pub fn new_facing_right_caret_with_number(init_num: i16) -> Self {
         let mut brandnew = Caret {
             facing_left: false,
-            number: 0,
+            number: init_num,
         };
 
         // Human care.
@@ -22,6 +27,7 @@ impl Caret {
         self.number = 0;
     }
 
+    /// TODO リセットは 0 に戻るでいいのか☆（＾～＾）？
     pub fn reset(&mut self) {
         self.number = 0;
     }
@@ -54,6 +60,13 @@ impl Caret {
     pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
         target <= self.number
     }
+    pub fn while_to(&self, target: &ClosedInterval) -> bool {
+        if self.is_facing_left() {
+            target.get_minimum_caret_number() < self.number
+        } else {
+            self.number < target.get_maximum_caret_number()
+        }
+    }
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     pub fn go_next(&mut self, _comm: &Communication) -> i16 {
@@ -74,29 +87,36 @@ impl Caret {
     /// 配列のインデックスに変換します。
     /// 負の配列では 数を 0 側に 1 つ寄せます。
     ///
-    /// キャレットが 0 のとき２つのケースがあるので注意。
-    ///
     /// # Returns
     ///
-    /// (is_positive, index)
-    pub fn to_index(&self) -> (bool, usize) {
+    /// (is_positive, index, caret)
+    pub fn to_index(&self) -> (bool, usize, i16) {
+        // 正と負で、0 の扱い方が異なることに注意。
         if self.is_facing_left() {
             // 負の無限大の方を向いているとき。
             if self.number <= 0 {
                 // 0以下の左隣は負。負の配列では-1します。
-                (false, (-self.number - Caret::NEGATIVE_ZERO_LEN) as usize)
+                (
+                    false,
+                    (-self.number - Caret::NEGATIVE_ZERO_LEN) as usize,
+                    self.number,
+                )
             } else {
                 // 1以上の左隣は正。
-                (true, (self.number - Caret::NEGATIVE_ZERO_LEN) as usize)
+                (
+                    true,
+                    (self.number - Caret::NEGATIVE_ZERO_LEN) as usize,
+                    self.number,
+                )
             }
         } else {
             // 正の無限大の方を向いているとき。
             if self.number >= 0 {
                 // 0以上の右隣は正。
-                (true, self.number as usize)
+                (true, self.number as usize, self.number)
             } else {
                 // 0未満の右隣は負。
-                (false, (-self.number) as usize)
+                (false, (-self.number) as usize, self.number)
             }
         }
     }

@@ -116,7 +116,13 @@ impl RpmTapeBox {
         // comm.println("#Sheet saved.");
     }
 
-    pub fn to_object(&self, board_size: BoardSize, app: &Application) -> CassetteTapeBox {
+    /// JSONを、オブジェクトに変換します。
+    pub fn to_object(
+        &self,
+        file_name: &str,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> CassetteTapeBox {
         let mut tape_box = CassetteTapeBox::new_empty(&app);
 
         for tape_j in &self.tape_box {

@@ -190,10 +190,10 @@ impl ShogiNoteOpe {
         board_size: BoardSize,
         comm: &Communication,
     ) -> (ClosedInterval, Option<ShogiNoteOpe>) {
-        let mut closed_interval = ClosedInterval::new();
+        let mut closed_interval = ClosedInterval::new_facing_right();
 
         let mut n0 = caret.go_next(comm) as usize;
-        closed_interval.intersect(n0 as i16);
+        closed_interval.intersect_caret_number(n0 as i16);
 
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
         match ch0 {
@@ -224,7 +224,7 @@ impl ShogiNoteOpe {
                     Address::from_hand_ph_pt(piece.get_phase(), PieceType::from_piece(piece));
                 //comm.println(&format!("address index = {}.", address.get_index()));
 
-                closed_interval.intersect(n1 as i16);
+                closed_interval.intersect_caret_number(n1 as i16);
                 (closed_interval, Some(ShogiNoteOpe::from_address(address)))
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
@@ -241,7 +241,7 @@ impl ShogiNoteOpe {
                     board_size,
                 );
 
-                closed_interval.intersect(n1 as i16);
+                closed_interval.intersect_caret_number(n1 as i16);
                 (closed_interval, Some(ShogiNoteOpe::from_address(address)))
             }
             '+' => {
@@ -268,7 +268,7 @@ impl ShogiNoteOpe {
 
                     n0 = caret.go_next(comm) as usize;
                     ch0 = line[n0..=n0].chars().nth(0).unwrap();
-                    closed_interval.intersect(n0 as i16);
+                    closed_interval.intersect_caret_number(n0 as i16);
 
                     if ch0 == ']' {
                         break;

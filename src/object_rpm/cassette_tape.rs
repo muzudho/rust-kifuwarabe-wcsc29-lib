@@ -92,6 +92,7 @@ impl CassetteTape {
         }
     }
 
+    /*
     /// 指し手１つから、テープを作るぜ☆（＾～＾）
     pub fn from_1_move(rmove: &ShogiMove, app: &Application) -> Self {
         CassetteTape {
@@ -107,6 +108,7 @@ impl CassetteTape {
             tracks: IntegerNoteVec::from_1_move(rmove),
         }
     }
+    */
 
     /// 新品の状態に戻します。
     pub fn clear(&mut self) {
@@ -166,6 +168,15 @@ impl CassetteTape {
     /// 現在の要素を返してから、キャレットを動かします。
     pub fn go_1note_forcely(&mut self, comm: &Communication) -> Option<ShogiNote> {
         self.tracks.go_1note_forcely(&mut self.caret, comm)
+    }
+
+    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    pub fn go_1note_forcely_with_othre_caret(
+        &self,
+        caret: &mut Caret,
+        comm: &Communication,
+    ) -> Option<ShogiNote> {
+        self.tracks.go_1note_forcely(caret, &comm)
     }
 
     /// コマンドライン入力形式。

@@ -1,4 +1,6 @@
+use application::Application;
 use board_size::BoardSize;
+use object_rpm::cassette_tape_box::CassetteTapeBox;
 use object_rpm::shogi_move::*;
 
 /// シーケンスな手筋１個分。
@@ -24,11 +26,20 @@ impl ShogiThread {
     }
 
     /// Human presentable.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(
+        &self,
+        tape_box: &CassetteTapeBox,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
         let mut text = String::new();
 
         for rmove in &self.moves {
-            text = format!("{} {}", text, rmove.to_human_presentable(board_size))
+            text = format!(
+                "{} {}",
+                text,
+                rmove.to_human_presentable(&tape_box, board_size, &app)
+            )
         }
 
         text.to_string()

@@ -6,6 +6,7 @@ use human::human_interface::*;
 use object_rpm::cassette_deck::CassetteDeck;
 use object_rpm::cassette_deck::*;
 use object_rpm::cassette_tape_box::CassetteTapeBox;
+use object_rpm::shogi_move::ShogiMove;
 use object_rpm::shogi_note::*;
 use object_rpm::shogi_note_operation::*;
 use piece_etc::*;
@@ -147,14 +148,16 @@ impl GamePlayer {
         deck.put_1note(Slot::Learning, rnote, app);
     }
 
+    /// go_1noteなんとかメソッドと一緒に使う。
+    ///
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
     /// Next も Back も違いはない。キャレットは使わない。
     /// 動かせなかったなら、Noneを返す。
     ///
-    /// # Return
+    /// # Returns
     ///
-    /// 合法タッチか否か。
-    pub fn try_1note_on_1note(
+    /// (合法タッチか否か)
+    pub fn try_touch_1note(
         rnote: &ShogiNote,
         position: &mut Position,
         ply: i16,
@@ -183,33 +186,41 @@ impl GamePlayer {
         position: &mut Position,
         ply: i16,
         app: &Application,
-    ) -> bool {
+    ) -> Option<ShogiMove> {
+        let (is_positive, index, caret_number) = tape_box.get_caret_index_of_current_tape();
+        let rmove = ShogiMove::new_facing_right_move();
+        rmove
+            .caret_closed_interval
+            .intersect_caret_number(caret_number);
+
         app.comm.println(&format!(
             "[try_read_tape_for_1move:{}]",
             tape_box.to_human_presentable(),
         ));
         let mut is_legal_touch = true;
-        let mut forwarding_count = 0;
 
-        // 強制的に１ノート進める。
+        let mut is_first = true;
+        // フェーズ切り替えするまで、強制的に１ノート進め続けるぜ☆（＾～＾）。
         while let Some(rnote) = tape_box.go_1note_forcely(&app) {
             app.comm.println(&format!(
                 "[LOOP try_read_tape_for_1move:{}:{}]",
                 tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
-            is_legal_touch = GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
-            forwarding_count += 1;
 
-            if !is_legal_touch {
+            is_legal_touch = GamePlayer::try_touch_1note(&rnote, position, ply, &app);
+
+            if !is_first && !is_legal_touch {
                 break;
             }
 
-            if forwarding_count != 1 && rnote.is_phase_change() {
+            if !is_first && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
-                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                print!("<NXm1End {}>", rnote);
                 break;
             }
+
+            is_first = false;
         }
 
         if !is_legal_touch {
@@ -218,18 +229,25 @@ impl GamePlayer {
             tape_box.turn_caret_to_opponent();
             GamePlayer::read_tape_for_n_notes_forcely(
                 tape_box,
-                forwarding_count,
+                rmove.len() as u16,
                 position,
                 ply,
                 &app,
             );
             tape_box.turn_caret_to_opponent();
 
-            return false;
+            return None;
         }
 
         // 1つ以上読んでいれば合法。
-        forwarding_count > 0
+        /*
+        if rmove.len() > 0 {
+            rmove
+        } else {
+            None
+        }
+        */
+        rmove
     }
 
     pub fn read_tape_for_n_moves_forcely(
@@ -266,7 +284,7 @@ impl GamePlayer {
                 tape_box.to_human_presentable(),
                 rnote.to_human_presentable(position.get_board_size())
             ));
-            is_legal_touch = GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
+            is_legal_touch = GamePlayer::try_touch_1note(&rnote, position, ply, &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -294,7 +312,7 @@ impl GamePlayer {
     /// 非合法手はない前提で、強制的にテープを進めます。
     pub fn read_tape_for_n_notes_forcely(
         tape_box: &mut CassetteTapeBox,
-        repeat: u8,
+        repeat: u16,
         position: &mut Position,
         ply: i16,
         app: &Application,
@@ -303,7 +321,7 @@ impl GamePlayer {
             if let Some(rnote) = tape_box.go_1note_forcely(&app) {
                 app.comm
                     .println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
-                GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
+                GamePlayer::try_touch_1note(&rnote, position, ply, &app);
             } else {
                 panic!("<Go forcely fail:{}/{} None>", i, repeat);
             }

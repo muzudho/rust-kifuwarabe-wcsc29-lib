@@ -40,6 +40,7 @@ impl IntegerNoteVec {
         }
     }
 
+    /*
     pub fn from_1_move(removable_rmove: &ShogiMove) -> Self {
         let mut pnotes = Vec::new();
 
@@ -51,6 +52,7 @@ impl IntegerNoteVec {
             negative_notes: Vec::new(),
         }
     }
+    */
 
     pub fn clear(&mut self) {
         self.positive_notes.clear();
@@ -104,14 +106,10 @@ impl IntegerNoteVec {
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_1note_forcely(
-        &self,
-        note_caret: &mut Caret,
-        comm: &Communication,
-    ) -> Option<ShogiNote> {
-        let (is_positive, index) = note_caret.to_index();
+    pub fn go_1note_forcely(&self, caret: &mut Caret, comm: &Communication) -> Option<ShogiNote> {
+        let (is_positive, index, _caret_number) = caret.to_index();
 
-        if note_caret.is_facing_left() {
+        if caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
             if !is_positive {
                 if self.negative_notes.len() <= index {
@@ -119,12 +117,12 @@ impl IntegerNoteVec {
                     None
                 } else {
                     // 負。
-                    note_caret.go_next(comm);
+                    caret.go_next(comm);
                     Some(self.negative_notes[index as usize])
                 }
             } else {
                 // 正。
-                note_caret.go_next(comm);
+                caret.go_next(comm);
                 Some(self.positive_notes[index as usize])
             }
         } else {
@@ -135,12 +133,12 @@ impl IntegerNoteVec {
                     None
                 } else {
                     // 正。
-                    note_caret.go_next(comm);
+                    caret.go_next(comm);
                     Some(self.positive_notes[index as usize])
                 }
             } else {
                 // 負。
-                note_caret.go_next(comm);
+                caret.go_next(comm);
                 Some(self.negative_notes[index as usize])
             }
         }
@@ -177,8 +175,8 @@ impl IntegerNoteVec {
     }
 
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn overwrite_note(&self, note_caret: Caret, note: ShogiNote) -> Self {
-        let (is_positive, index) = note_caret.to_index();
+    pub fn overwrite_note(&self, caret: Caret, note: ShogiNote) -> Self {
+        let (is_positive, index, _caret_number) = caret.to_index();
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -220,11 +218,11 @@ impl IntegerNoteVec {
     /// # Returns
     ///
     /// (RpmTape, Removed note)
-    pub fn new_truncated_tape(&self, note_caret: &Caret) -> (Self, Option<ShogiNote>) {
+    pub fn new_truncated_tape(&self, caret: &Caret) -> (Self, Option<ShogiNote>) {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        let (is_positive, index) = note_caret.to_index();
+        let (is_positive, index, _caret_number) = caret.to_index();
 
         if index == 0 {
             (IntegerNoteVec::from_vector(posi_v, nega_v), None)

@@ -1,6 +1,8 @@
 extern crate rand;
 use application::Application;
 use board_size::*;
+use common::caret::Caret;
+use communication::Communication;
 use kifu_rpm::rpm_tape_box::*;
 use object_rpm::cassette_tape::*;
 use object_rpm::shogi_note::ShogiNote;
@@ -9,7 +11,10 @@ use std::*;
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {
     file: String,
-    tapes: Vec<CassetteTape>,
+
+    /// イテレーターを使いたいので public にしてある。
+    pub tapes: Vec<CassetteTape>,
+
     tape_index: usize,
 }
 impl CassetteTapeBox {
@@ -22,9 +27,48 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn from_file(file_name: String, board_size: BoardSize, app: &Application) -> Self {
+    pub fn from_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
         let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
-        rpm_tape_box.to_object(board_size, &app)
+        rpm_tape_box.to_object(file_name, board_size, &app)
+    }
+
+    /// 次のテープを利用するぜ☆（＾～＾）
+    /// 次のテープが無ければ、おわり☆（＾ｑ＾）
+    ///
+    /// # Returns
+    ///
+    /// (成功)
+    pub fn change_next_if_it_exists(&mut self, app: &Application) -> bool {
+        self.tape_index += 1;
+        if self.tape_index < self.tapes.len() {
+            true
+        } else {
+            false
+        }
+    }
+
+    /*
+    /// 次のテープを利用するぜ☆（＾～＾）
+    /// 次のテープが無ければ、新品のテープを追加するぜ☆（＾ｑ＾）
+    pub fn change_next_create(&mut self, app: &Application) {
+        self.tape_index += 1;
+        if self.tapes.len() <= self.tape_index {
+            self.change_brandnew(&app);
+        }
+    }
+    */
+
+    /// 新品のテープを追加するぜ☆（＾ｑ＾）
+    pub fn change_brandnew(&mut self, app: &Application) {
+        let brandnew = CassetteTape::new_facing_right(&app);
+        self.tapes.push(brandnew);
+        self.tape_index = self.tapes.len() - 1;
+    }
+
+    /// テープを追加するぜ☆（＾～＾）　トレーニング・テープで使うと思うぜ☆（＾～＾）
+    pub fn change_with_training_tape(&mut self, training_tape: CassetteTape) {
+        self.tapes.push(training_tape);
+        self.tape_index = self.tapes.len() - 1;
     }
 
     pub fn go_1note_forcely(&mut self, app: &Application) -> Option<ShogiNote> {
@@ -88,6 +132,14 @@ impl CassetteTapeBox {
         self.tapes[self.tape_index].caret.is_facing_left()
     }
 
+    pub fn is_peak_of_current_tape(&self) -> bool {
+        if self.is_facing_left_of_current_tape() {
+            self.is_negative_peak_of_current_tape()
+        } else {
+            self.is_positive_peak_of_current_tape()
+        }
+    }
+
     pub fn is_positive_peak_of_current_tape(&self) -> bool {
         self.tapes[self.tape_index]
             .caret
@@ -99,12 +151,27 @@ impl CassetteTapeBox {
             .equals(self.tapes[self.tape_index].get_negative_peak_caret())
     }
 
-    pub fn get_caret_index_of_current_tape(&self) -> (bool, usize) {
+    /// 配列のインデックスに変換します。
+    /// 負の配列では 数を 0 側に 1 つ寄せます。
+    ///
+    /// # Returns
+    ///
+    /// (is_positive, index, caret_number)
+    pub fn get_caret_index_of_current_tape(&self) -> (bool, usize, i16) {
         self.tapes[self.tape_index].caret.to_index()
     }
 
     pub fn get_sign_of_current_tape(&self, board_size: BoardSize) -> (String, String) {
         self.tapes[self.tape_index].to_sign(board_size)
+    }
+
+    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    pub fn go_1note_forcely_with_othre_caret(
+        &self,
+        caret: &mut Caret,
+        comm: &Communication,
+    ) -> Option<ShogiNote> {
+        self.tapes[self.tape_index].go_1note_forcely_with_othre_caret(caret, &comm)
     }
 
     pub fn go_caret_to_next(&mut self, app: &Application) {
@@ -113,19 +180,6 @@ impl CassetteTapeBox {
 
     pub fn get_file_name(&self) -> String {
         self.file.to_string()
-    }
-
-    /// トレーニング・テープを交換し、新しいラーニング・テープを追加するぜ☆（＾ｑ＾）
-    pub fn change(&mut self, app: &Application) {
-        let brandnew = CassetteTape::new_facing_right(&app);
-        self.tapes.push(brandnew);
-        self.tape_index = self.tapes.len() - 1;
-    }
-
-    /// トレーニング・テープを交換するぜ☆（＾～＾）
-    pub fn change_with_training_tape(&mut self, training_tape: CassetteTape) {
-        self.tapes.push(training_tape);
-        self.tape_index = self.tapes.len() - 1;
     }
 
     /// トレーニング、ラーニングに関わらず、テープを追加するぜ☆（＾～＾）
@@ -144,11 +198,11 @@ impl CassetteTapeBox {
         rbox
     }
 
-    pub fn len(&self) -> usize {
+    pub fn len_tapes(&self) -> usize {
         self.tapes.len()
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty_tapes(&self) -> bool {
         self.tapes.is_empty()
     }
 

@@ -64,7 +64,7 @@ impl ShogiNote {
         note_caret: &mut Caret,
         board_size: BoardSize,
     ) -> (ClosedInterval, Option<ShogiNote>) {
-        let mut closed_interval = ClosedInterval::new();
+        let mut closed_interval = ClosedInterval::new_facing_right();
 
         // 数字を返却してから、キャレットを移動。
         let n0 = note_caret.go_next(comm);
@@ -86,9 +86,9 @@ impl ShogiNote {
             PieceIdentify::from_number(pnum)
         };
 
-        closed_interval.intersect(n0);
-        closed_interval.intersect(sub_closed_interval.get_minimum());
-        closed_interval.intersect(sub_closed_interval.get_maximum());
+        closed_interval.intersect_caret_number(n0);
+        closed_interval.intersect_caret_number(sub_closed_interval.get_minimum_caret_number());
+        closed_interval.intersect_caret_number(sub_closed_interval.get_maximum_caret_number());
 
         (
             closed_interval,

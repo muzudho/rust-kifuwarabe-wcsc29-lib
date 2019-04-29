@@ -5,6 +5,7 @@ use communication::*;
 use human::human_interface::*;
 use kifu_rpm::rpm_tape::*;
 use kifu_rpm::rpm_tape_box::*;
+use kifu_rpm::rpm_tape_box::*;
 use kifu_usi::usi_move::*;
 use object_rpm::cassette_deck::*;
 use object_rpm::cassette_tape::*;
@@ -58,6 +59,7 @@ impl BestMovePicker {
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
+        ply: i16,
         deck: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
@@ -70,15 +72,15 @@ impl BestMovePicker {
             position.get_phase()
         );
 
-        // TODO とりあえず -rbox.json ファイルを１個読む。
-        'path_loop: for path in fs::read_dir(&app.kw29_conf.training).unwrap() {
-            let file = path.unwrap().path().display().to_string();
+        // TODO とりあえず rbox.json ファイルを１個読む。
+        'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
+            let tape_box_file_name = tape_box_file.unwrap().path().display().to_string();
 
             /*
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
-                comm.println(&format!("info file: {}, Phase: {:?}.", file, position.get_phase()));
+                comm.println(&format!("info tape_box_file_name: {}, Phase: {:?}.", tape_box_file_name, position.get_phase()));
                 HumanInterface::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
@@ -105,116 +107,121 @@ impl BestMovePicker {
             }
             */
 
-            let cassette_tape_box_j = RpmTapeBox::from_box_file(&file, &app);
+            let training_tape_box =
+                CassetteTapeBox::from_file(&tape_box_file_name, position.get_board_size(), &app);
 
-            // ファイルの中身をすこし見てみる。
             //comm.println(&format!("file: {}, Book len: {}.", file, cassette_tape_box_j.book.len() ));
-            if !cassette_tape_box_j.tape_box.is_empty() {
-                //comm.println(&format!("Ope len: {}, Num len: {}.", cassette_tape_box_j.book[0].body.operation.len(), cassette_tape_box_j.book[0].body.piece_number.len() ));
+            // TODO テープ・ボックスの中のインデックスを進める必要がある☆（＾～＾）独自実装☆（＾～＾）
+            while training_tape_box.change_next_if_it_exists(&app) {
+                app.comm.println(&format!(
+                    "Tape: {}",
+                    training_tape_box.to_human_presentable()
+                ));
 
-                let mut record_index = -1;
+                // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
+                // 'piece_loop:
+                let mut debug_count = 0;
+                for my_piece_id in PieceIdentify::iterator() {
+                    if 3 < debug_count {
+                        app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
+                        break;
+                    }
 
-                // カセット・テープがいっぱいある。
-                for cassette_tape_j in cassette_tape_box_j.tape_box {
-                    record_index += 1;
-                    app.comm.println(&format!(
-                        "Tape index: {}. Json: {}",
-                        record_index,
-                        cassette_tape_j.to_human_presentable()
-                    ));
+                    // 現局面の盤上の自駒の番地。
+                    if let Some((my_idp, my_addr_obj)) =
+                        position.find_wild(Some(position.get_phase()), *my_piece_id)
+                    {
+                        // Display.
+                        HumanInterface::bo(deck, Slot::Learning, &position, &app);
 
-                    // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
-                    // 'piece_loop:
-                    for my_piece_id in PieceIdentify::iterator() {
-                        // 現局面の盤上の自駒の番地。
-                        if let Some((my_idp, my_addr_obj)) =
-                            position.find_wild(Some(position.get_phase()), *my_piece_id)
+                        app.comm.println(&format!(
+                            "[{}] Find: {}'{}'{}.",
+                            deck.get_ply(Slot::Training),
+                            position.get_phase().to_log(),
+                            my_idp.to_human_presentable(),
+                            my_addr_obj.to_physical_sign(position.get_board_size())
+                        ));
+
+                        // ノートをスキャン。
+                        // TODO 次方向と、前方向がある。
+                        let mut note_caret = Caret::new_facing_right_caret();
+                        let mut record_count = 0;
+                        loop {
+                            // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
+                            let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
+                                &mut training_tape_box,
+                                position,
+                                ply,
+                                *my_piece_id,
+                                my_addr_obj,
+                                &mut note_caret,
+                                &app,
+                            );
+
+                            if is_end_of_tape {
+                                // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
+                                break;
+                            } else if let Some(rmove) = rmove_opt {
+                                // ヒットしたようだぜ☆（＾～＾）
+                                record_count += 1;
+                                app.comm.println(&format!(
+                                    "{} hit! Rmove: {}.",
+                                    record_count,
+                                    rmove.to_human_presentable(
+                                        &training_tape_box,
+                                        position.get_board_size(),
+                                        &app
+                                    )
+                                ));
+                                // thread.push_move(rmove);
+                                // とりあえず抜ける☆（＾～＾）
+                                break;
+                            } else {
+                                // 一致しなかった☆（＾～＾）
+                                // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
+                            }
+                        }
+
+                        // let mut thread = ShogiThread::new();
+                        // let thread_len = thread.len() as i16;
+                        // let thread_to_human_presentable =
+                        //    thread.to_human_presentable(position.get_board_size());
+                        // self.thread_by_piece_id
+                        //    .insert(my_piece_id.get_number(), thread);
+
+                        // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
+                        // TODO それを逆順にすれば　指し手だぜ☆（＾～＾）
+                        deck.turn_caret_to_opponent(Slot::Training);
+                        app.comm
+                            .println(&format!("Tried, go opponent {} move!", record_count,));
                         {
-                            // Display.
-                            HumanInterface::bo(deck, Slot::Learning, &position, &app);
-
-                            app.comm.println(&format!(
-                                "[{}] Find: {}'{}'{}.",
-                                deck.get_ply(Slot::Training),
-                                position.get_phase().to_log(),
-                                my_idp.to_human_presentable(),
-                                my_addr_obj.to_physical_sign(position.get_board_size())
-                            ));
-
-                            // ノートをスキャン。
-                            // TODO 次方向と、前方向がある。
-                            let mut note_caret = Caret::new_facing_right_caret();
-                            let mut record_count = 0;
-                            loop {
-                                // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
-                                let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
+                            let learning_slot = &mut deck.slots[Slot::Training as usize];
+                            if let Some(ref mut tape_box) = learning_slot.tape_box {
+                                GamePlayer::read_tape_for_n_moves_forcely(
+                                    tape_box,
+                                    record_count,
                                     position,
-                                    &cassette_tape_j,
-                                    *my_piece_id,
-                                    my_addr_obj,
-                                    &mut note_caret,
+                                    learning_slot.ply,
                                     &app,
                                 );
-
-                                if is_end_of_tape {
-                                    // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
-                                    break;
-                                } else if let Some(rmove) = rmove_opt {
-                                    // ヒットしたようだぜ☆（＾～＾）
-                                    record_count += 1;
-                                    app.comm.println(&format!(
-                                        "{} hit! Rmove: {}.",
-                                        record_count,
-                                        rmove.to_human_presentable(position.get_board_size())
-                                    ));
-                                    // thread.push_move(rmove);
-                                    // とりあえず抜ける☆（＾～＾）
-                                    break;
-                                } else {
-                                    // 一致しなかった☆（＾～＾）
-                                    // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
-                                }
+                            } else {
+                                panic!("Tape box none.");
                             }
-
-                            // let mut thread = ShogiThread::new();
-                            // let thread_len = thread.len() as i16;
-                            // let thread_to_human_presentable =
-                            //    thread.to_human_presentable(position.get_board_size());
-                            // self.thread_by_piece_id
-                            //    .insert(my_piece_id.get_number(), thread);
-
-                            // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
-                            // それを逆順にすれば　指し手だぜ☆（＾～＾）
-                            deck.turn_caret_to_opponent(Slot::Learning);
-                            app.comm
-                                .println(&format!("Tried, go opponent {} move!", record_count,));
-                            {
-                                let learning_slot = &mut deck.slots[Slot::Learning as usize];
-                                if let Some(ref mut tape_box) = learning_slot.tape_box {
-                                    GamePlayer::read_tape_for_n_moves_forcely(
-                                        tape_box,
-                                        record_count,
-                                        position,
-                                        learning_slot.ply,
-                                        &app,
-                                    );
-                                } else {
-                                    panic!("Tape box none.");
-                                }
-                            }
-                            deck.turn_caret_to_opponent(Slot::Learning);
-                            app.comm.println("Backed.");
                         }
+                        deck.turn_caret_to_opponent(Slot::Training);
+                        app.comm.println("Backed.");
                     }
 
-                    // いくつか読み取れれば打ち止め。
-                    if self.get_max_note_len() > 4 {
-                        println!("#Break. Exit piece count = {}.", self.get_max_note_len());
-                        break 'path_loop;
-                    }
-                } // record_loop
-            } // book
-        } // path_loop
+                    debug_count += 1;
+                }
+
+                // いくつか読み取れれば打ち止め。
+                if self.get_max_note_len() > 4 {
+                    println!("#Break. Exit piece count = {}.", self.get_max_note_len());
+                    break 'path_loop;
+                }
+            } // テープのループ。
+        } // トレーニング・ディレクトリー内のループ。
 
         //println!("#match_thread loop end.");
 
@@ -251,7 +258,7 @@ impl BestMovePicker {
 
         if let Some(best_rpm_move) = best_rpm_move_opt {
             let (umove, _subject_pid, _subject_address, _object_pid_opt, _object_address_opt) =
-                best_rpm_move.to_usi_move(position.get_board_size());
+                best_rpm_move.to_usi_move(position.get_board_size(), &app);
             umove
         } else {
             UsiMove::create_resign()
@@ -261,7 +268,7 @@ impl BestMovePicker {
     /// 現局面が一致しているか判定。
     pub fn position_match(
         &mut self,
-        _comm: &Communication,
+        training_tape_box: &mut CassetteTapeBox,
         position: &mut Position,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
@@ -269,6 +276,7 @@ impl BestMovePicker {
         subject_pid: PieceIdentify,
         subject_address: Address,
         object_address_opt: Option<Address>,
+        app: &Application,
     ) -> bool {
         // パターンマッチから外れたら抜けていく。
         if my_piece_id.get_number() != subject_pid.get_number()
@@ -308,7 +316,7 @@ impl BestMovePicker {
                 // プログラムの不具合。
                 panic!(
                     "#IL-盤上以外の駒を取った(1)。{}",
-                    rmove.to_human_presentable(position.get_board_size())
+                    rmove.to_human_presentable(&training_tape_box, position.get_board_size(), &app)
                 );
             }
         } else {
@@ -328,8 +336,9 @@ impl BestMovePicker {
     /// (move_opt, is_end_of_tape)
     pub fn pattern_match_and_go(
         &mut self,
+        training_tape_box: &mut CassetteTapeBox,
         position: &mut Position,
-        cassette_tape_j: &RpmTape,
+        ply: i16,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
         note_caret: &mut Caret,
@@ -341,22 +350,19 @@ impl BestMovePicker {
             note_caret.to_human_presentable()
         ));
         */
-        // とりあえず 1手分をパースします。
-        if let (_parsed_note_count, Some(rmove)) = ShogiMove::parse_1move(
-            &app.comm,
-            &cassette_tape_j,
-            note_caret,
-            position.get_board_size(),
-        ) {
+        // とりあえず 1手分をパースします。（非合法タッチは自動で戻ります）
+        if let Some(rmove) =
+            GamePlayer::try_read_tape_for_1move(training_tape_box, position, ply, &app)
+        {
             // どの駒が動いた１手なのか、またその番地。
             // 取った駒があるのなら、それも欲しい。
             let (subject_pid, subject_address, opject_pid_opt, object_address_opt) =
-                rmove.to_first_touch_piece_id(position.get_board_size());
+                rmove.to_first_touch_piece_id(training_tape_box, position.get_board_size(), &app);
 
             app.comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
                 note_caret.to_human_presentable(),
-                rmove.to_human_presentable(position.get_board_size()),
+                rmove.to_human_presentable(training_tape_box, position.get_board_size(), &app),
                 subject_pid.to_human_presentable(),
                 subject_address.to_human_presentable(position.get_board_size()),
                 if let Some(object_pid) = opject_pid_opt {
@@ -374,7 +380,7 @@ impl BestMovePicker {
             ));
 
             if self.position_match(
-                &app.comm,
+                training_tape_box,
                 position,
                 my_piece_id,
                 my_addr_obj,
@@ -382,6 +388,7 @@ impl BestMovePicker {
                 subject_pid,
                 subject_address,
                 object_address_opt,
+                &app,
             ) {
                 // 局面と一致。
                 // TODO 現局面で この手を指せるか試してみる。
@@ -391,12 +398,14 @@ impl BestMovePicker {
                 //let mut recorder = CassetteTapeEditor::new_cassette_tape_editor();
                 //recorder.put_1note(&rmove, comm);
                 //recorder.reset_caret();
+                /*
                 let mut ply_2 = 1;
                 let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                 {
                     let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
                     cassette_tape_box_2.change_with_training_tape(cassette_tape_2);
                 }
+                */
                 /*
                 println!(
                     "BMP: This move rtape: {}.",
@@ -405,27 +414,46 @@ impl BestMovePicker {
                  */
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
-                if GamePlayer::try_read_tape_for_1move(
-                    &mut cassette_tape_box_2,
+                if let Some(rmove) = GamePlayer::try_read_tape_for_1move(
+                    &mut training_tape_box, //cassette_tape_box_2,
                     position,
-                    ply_2,
+                    ply, //ply_2,
                     &app,
                 ) {
                     // 合法タッチ。戻さず抜けます。
                     app.comm.println(&format!(
                         "Hit and go! ({}) {}",
                         subject_pid.to_human_presentable(),
-                        &rmove.to_human_presentable(position.get_board_size())
+                        &rmove.to_human_presentable(
+                            training_tape_box,
+                            position.get_board_size(),
+                            &app
+                        )
                     ));
-                    HumanInterface::bo_with_tape(&cassette_tape_box_2, ply_2, &position, &app);
+                    HumanInterface::bo_with_tape(
+                        &training_tape_box, //&cassette_tape_box_2,
+                        ply,                //ply_2,
+                        &position,
+                        &app,
+                    );
                     (Some(rmove), false)
                 } else {
                     // 非合法タッチ。（自動で戻されています）
                     app.comm.println(&format!(
                         "Canceled: {}.",
-                        rmove.to_human_presentable(position.get_board_size())
+                        rmove.to_human_presentable(
+                            training_tape_box,
+                            position.get_board_size(),
+                            &app
+                        )
                     ));
-                    HumanInterface::bo_with_tape(&cassette_tape_box_2, ply_2, &position, &app);
+                    HumanInterface::bo_with_tape(
+                        &training_tape_box,
+                        //&cassette_tape_box_2,
+                        ply, // ply_2,
+                        &position,
+                        &app,
+                    );
                     (None, false)
                 }
             } else {

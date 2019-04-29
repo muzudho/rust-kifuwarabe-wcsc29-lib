@@ -18,7 +18,7 @@ impl LibSub {
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.turn_caret_to_negative();
             if let Some(rnote) = tape_box.go_1note_forcely(&app) {
-                GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
+                GamePlayer::try_touch_1note(&rnote, position, ply, &app);
             }
         } else {
             panic!("Tape box none.");
@@ -76,7 +76,7 @@ impl LibSub {
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.turn_caret_to_positive();
             if let Some(rnote) = tape_box.go_1note_forcely(&app) {
-                GamePlayer::try_1note_on_1note(&rnote, position, ply, &app);
+                GamePlayer::try_touch_1note(&rnote, position, ply, &app);
             }
         } else {
             panic!("Tape box none.");
@@ -141,7 +141,12 @@ impl LibSub {
             panic!("Tape box none.");
         }
 
-        let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
+        let best_umove = best_move_picker.get_mut_best_move(
+            position,
+            deck.slots[Slot::Learning as usize].ply,
+            deck,
+            &app,
+        );
         // Examples.
         // println!("bestmove 7g7f");
         // println!("bestmove win");
