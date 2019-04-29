@@ -1,8 +1,11 @@
 use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
 
-/// 負の方のキャレット番地を１引く補正をするのに使う☆（＾～＾）
-pub const MINUS_ZERO_LEN: i16 = 1;
+/// 負の方のキャレット番地を符号を反転して１引いて配列のインデックスを作る補正に使う☆（＾～＾）
+pub const MINUS_ZERO_LEN: usize = 1;
+pub fn get_index_of_negative_numbers(caret_number: i16) -> usize {
+    -caret_number as usize + MINUS_ZERO_LEN
+}
 
 pub struct Caret {
     facing_left: bool,
@@ -95,7 +98,7 @@ impl Caret {
     /// # Returns
     ///
     /// (is_positive, index, caret)
-    pub fn to_index(&self) -> (bool, usize, i16) {
+    pub fn to_index_obsoluted(&self) -> (bool, usize, i16) {
         // 正と負で、0 の扱い方が異なることに注意。
         if self.is_facing_left() {
             // 負の無限大の方を向いているとき。

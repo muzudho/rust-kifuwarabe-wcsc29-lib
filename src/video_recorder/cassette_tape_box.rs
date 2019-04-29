@@ -203,15 +203,17 @@ impl CassetteTapeBox {
         }
     }
 
+    /// TODO このメソッドは廃止したい。
+    ///
     /// 配列のインデックスに変換します。
     /// 負の配列では 数を 0 側に 1 つ寄せます。
     ///
     /// # Returns
     ///
     /// (is_positive, index, caret_number)
-    pub fn get_caret_index_of_current_tape(&self) -> (bool, usize, i16) {
+    pub fn get_caret_index_of_current_tape_obsoluted(&self) -> (bool, usize, i16) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.to_index()
+            self.tapes[tape_index].caret.to_index_obsoluted()
         } else {
             panic!("Please choice listening tape.");
         }

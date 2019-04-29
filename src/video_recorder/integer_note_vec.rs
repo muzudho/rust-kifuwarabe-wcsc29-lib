@@ -1,6 +1,7 @@
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::*;
 use sound::shogi_note::*;
 use std::*;
+use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 use studio::communication::*;
@@ -118,26 +119,28 @@ impl IntegerNoteVec {
         // とりあえず、キャレットを１つ進める。
         let caret_number = caret.go_next(comm);
 
-        //let (is_positive, index, _caret_number) = caret.to_index();
-
         if caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
             if caret_number < 0 {
-                if self.negative_notes.len() <= (-caret_number + MINUS_ZERO_LEN) as usize {
+                if self.negative_notes.len() <= get_index_of_negative_numbers(caret_number) as usize
+                {
                     // 負の先端要素を超えたら。
                     (caret_number, None)
                 } else {
                     // 負。
                     (
                         caret_number,
-                        Some(self.negative_notes[-caret_number as usize]),
+                        Some(
+                            self.negative_notes
+                                [get_index_of_negative_numbers(caret_number) as usize],
+                        ),
                     )
                 }
             } else {
                 // 正。
                 (
                     caret_number,
-                    Some(self.positive_notes[-caret_number as usize]),
+                    Some(self.positive_notes[get_index_of_negative_numbers(caret_number) as usize]),
                 )
             }
         } else {
@@ -194,20 +197,21 @@ impl IntegerNoteVec {
     }
 
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn overwrite_note(&self, caret: Caret, note: ShogiNote) -> Self {
-        let (is_positive, index, _caret_number) = caret.to_index();
+    pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
+        // とりあえず、キャレットを進めてみる。
+        let caret_number = caret.go_next(&app.comm);
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        if is_positive {
+        if -1 < caret_number {
             // 正のテープ。
             // こりゃカンタンだ☆（＾～＾）
             nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, index as i16));
+            posi_v.extend_from_slice(&self.slice(0, caret_number));
             posi_v.push(note);
-            if index < self.len_positive() as usize {
-                posi_v.extend_from_slice(&self.slice(index as i16 + 1, self.len_positive() as i16));
+            if caret_number < self.len_positive() as i16 {
+                posi_v.extend_from_slice(&self.slice(caret_number + 1, self.len_positive() as i16));
             }
         } else {
             // 負のテープだけ。
@@ -216,10 +220,15 @@ impl IntegerNoteVec {
             // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
 
             // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, index as i16));
+            nega_v.extend_from_slice(
+                &self.slice(0, get_index_of_negative_numbers(caret_number) as i16),
+            );
             nega_v.push(note);
-            if index < self.len_negative() as usize {
-                nega_v.extend_from_slice(&self.slice(index as i16 + 1, self.len_negative() as i16));
+            if get_index_of_negative_numbers(caret_number) < self.len_negative() as usize {
+                nega_v.extend_from_slice(&self.slice(
+                    get_index_of_negative_numbers(caret_number) as i16 + 1,
+                    self.len_negative() as i16,
+                ));
             }
             posi_v.extend_from_slice(&self.positive_notes[..]);
         }
@@ -241,7 +250,7 @@ impl IntegerNoteVec {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        let (is_positive, index, _caret_number) = caret.to_index();
+        let (is_positive, index, _caret_number) = caret.to_index_obsoluted();
 
         if index == 0 {
             (IntegerNoteVec::from_vector(posi_v, nega_v), None)

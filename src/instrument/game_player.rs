@@ -99,7 +99,8 @@ impl GamePlayer {
         ply: i16,
         app: &Application,
     ) -> Option<ShogiMove> {
-        let (_is_positive, _index, caret_number) = tape_box.get_caret_index_of_current_tape();
+        let (_is_positive, _index, caret_number) =
+            tape_box.get_caret_index_of_current_tape_obsoluted();
         let mut rmove = ShogiMove::new_facing_right_move();
         rmove
             .caret_closed_interval

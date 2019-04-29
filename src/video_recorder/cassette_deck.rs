@@ -156,7 +156,8 @@ impl CassetteDeck {
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            let (is_positive, index, _caret_number) = tape_box.get_caret_index_of_current_tape();
+            let (is_positive, index, _caret_number) =
+                tape_box.get_caret_index_of_current_tape_obsoluted();
 
             if is_positive {
                 // 正のテープ。
@@ -174,7 +175,7 @@ impl CassetteDeck {
 
                     // 仮のおわり を更新。
                     let (_is_positive, index, _caret_number) =
-                        tape_box.get_caret_index_of_current_tape();
+                        tape_box.get_caret_index_of_current_tape_obsoluted();
                     tape_box.truncate_positive_of_current_tape(index);
                 }
             } else {
@@ -193,7 +194,7 @@ impl CassetteDeck {
 
                     // 仮のおわり を更新。
                     let (_is_positive, index, _caret_number) =
-                        tape_box.get_caret_index_of_current_tape();
+                        tape_box.get_caret_index_of_current_tape_obsoluted();
                     tape_box.truncate_negative_of_current_tape(index);
                 }
             }
