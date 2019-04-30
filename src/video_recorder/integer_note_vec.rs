@@ -78,17 +78,43 @@ impl IntegerNoteVec {
         self.positive_notes.len() as i16 - 1
     }
 
-    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    ///
+    /// # Returns
+    ///
+    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move_forcely(&self, caret: &mut Caret, app: &Application) -> (i16, ClosedInterval) {
+        let mut closed_interval = ClosedInterval::from_all(
+            caret.step_in(&app.comm),
+            caret.step_in(&app.comm),
+            caret.is_facing_left(),
+        );
+
+        loop {
+            match self.go_to_next(caret, &app) {
+                (caret_number, Some(note)) => {
+                    if note.is_phase_change() {
+                        closed_interval.intersect_caret_number(caret_number);
+                        return (caret_number, closed_interval);
+                    }
+
+                    // ループを続行。
+                }
+                (caret_number, None) => {
+                    return (caret_number, closed_interval);
+                }
+            }
+        }
+    }
+
+    /// 正負の両端の先端要素を超えたら、Noneを返します。
+    /// キャレットは必ず１つ進みます。
     /// 0 は、正の数とします。（マイナスゼロは無いです）
     ///
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_1note_forcely(
-        &self,
-        caret: &mut Caret,
-        app: &Application,
-    ) -> (i16, Option<ShogiNote>) {
+    pub fn go_to_next(&self, caret: &mut Caret, app: &Application) -> (i16, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
         let caret_number = caret.go_to_next(&app);
 

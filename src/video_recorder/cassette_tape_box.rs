@@ -6,6 +6,7 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Caret;
+use studio::common::closed_interval::ClosedInterval;
 use video_recorder::cassette_deck::Slot;
 use video_recorder::cassette_tape::*;
 
@@ -78,12 +79,25 @@ impl CassetteTapeBox {
         self.tapes.push(tape);
     }
 
+    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    ///
+    /// # Returns
+    ///
+    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move_forcely(&mut self, app: &Application) -> (i16, ClosedInterval) {
+        if let Some(tape_index) = self.listening_tape_index {
+            self.tapes[tape_index].go_1move_forcely(&app)
+        } else {
+            panic!("Please choice listening tape.");
+        }
+    }
+
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
     pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1note_forcely(&app)
+            self.tapes[tape_index].go_to_next(&app)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -96,7 +110,7 @@ impl CassetteTapeBox {
         app: &Application,
     ) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1note_forcely_with_othre_caret(caret, &app)
+            self.tapes[tape_index].go_to_next_with_othre_caret(caret, &app)
         } else {
             panic!("Please choice listening tape.");
         }

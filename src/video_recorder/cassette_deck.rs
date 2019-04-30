@@ -4,6 +4,7 @@ use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
+use studio::common::closed_interval::ClosedInterval;
 use video_recorder::cassette_tape_box::*;
 
 #[derive(Clone, Copy, Debug)]
@@ -182,6 +183,20 @@ impl CassetteDeck {
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in go to next. Slot: {:?}.", slot);
+        }
+    }
+
+    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    ///
+    /// # Returns
+    ///
+    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move_forcely(&mut self, slot: Slot, app: &Application) -> (i16, ClosedInterval) {
+        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
+            tape_box.go_1move_forcely(&app)
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box none in go 1move forcely. Slot: {:?}.", slot);
         }
     }
 

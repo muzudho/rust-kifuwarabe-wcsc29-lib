@@ -208,20 +208,29 @@ impl CassetteTape {
             .append_tape_to_left(&mut cassette_tape_to_empty.tracks);
     }
 
+    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    ///
+    /// # Returns
+    ///
+    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move_forcely(&mut self, app: &Application) -> (i16, ClosedInterval) {
+        self.tracks.go_1move_forcely(&mut self.caret, &app)
+    }
+
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_1note_forcely(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_1note_forcely(&mut self.caret, &app)
+    pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+        self.tracks.go_to_next(&mut self.caret, &app)
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_1note_forcely_with_othre_caret(
+    pub fn go_to_next_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
     ) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_1note_forcely(caret, &app)
+        self.tracks.go_to_next(caret, &app)
     }
 
     /// コマンドライン入力形式の棋譜。

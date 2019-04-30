@@ -35,60 +35,61 @@ impl GamePlayer {
         let mut is_rollback = false;
         let mut is_phase_change = false;
 
-        // とりあえず、フェーズ切り替えするまで、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-        while let (caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
-            // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
+        'caret_loop: loop {
+            // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
+            match deck.go_to_next(slot, &app) {
+                (caret_number, Some(rnote)) => {
+                    if position.try_beautiful_touch(&rnote, ply, &app) {
+                        // ここに来たら、着手は成立☆（*＾～＾*）
+                        // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
+                        rmove
+                            .caret_closed_interval
+                            .intersect_caret_number(caret_number);
+                        app.comm.println(&format!(
+                            "[{} note advanced! Note:{}, Move:{}]",
+                            rmove.len(),
+                            rnote.to_human_presentable(position.get_board_size()),
+                            rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                        ));
 
-            app.comm.println(&format!(
-                "[{} note advanced! Note:{}, Move:{}]",
-                rmove.len(),
-                rnote.to_human_presentable(position.get_board_size()),
-                rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-            ));
-
-            if !position.try_beautiful_touch(&rnote, ply, &app) {
-                // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
-                is_rollback = true;
-                break;
-            }
-
-            // ここに来たら、着手は成立☆（*＾～＾*）
-
-            rmove
-                .caret_closed_interval
-                .intersect_caret_number(caret_number);
-
-            if 1 < rmove.len() && rnote.is_phase_change() {
-                // フェーズ切り替えしたら終了。（ただし、初回除く）
-                print!("[Phase-change-break try_read_1move:{}]", rnote);
-                is_phase_change = true;
-                break;
+                        if 1 < rmove.len() && rnote.is_phase_change() {
+                            // フェーズ切り替えしたら終了。（ただし、初回除く）
+                            print!("[Phase-change-break try_read_1move:{}]", rnote);
+                            is_phase_change = true;
+                            break 'caret_loop;
+                        }
+                    } else {
+                        // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
+                        app.comm.println("[$Untouched. Back a caret]");
+                        // 成立しないタッチを読んだキャレットを無かったことにする。（局面を戻すのとは別）
+                        deck.turn_caret_to_opponent(slot);
+                        deck.go_to_next(slot, &app);
+                        deck.turn_caret_to_opponent(slot);
+                        is_rollback = true;
+                        break 'caret_loop;
+                    }
+                }
+                (_caret_number, None) => {
+                    // トラックの終わり。
+                    app.comm.println("[End of track out of loop. Back a caret]");
+                    // トラックの終わりを読んだキャレットを無かったことにする。（局面を戻すのとは別）
+                    deck.turn_caret_to_opponent(slot);
+                    deck.go_to_next(slot, &app);
+                    deck.turn_caret_to_opponent(slot);
+                    return (true, None);
+                }
             }
         }
 
         // ここに来た時、ムーブの長さ＋１　分だけキャレットは進んでいる☆（＾～＾）
 
-        if rmove.is_empty() {
-            // ループに入らなかったのなら トラックの終わり。キャレットを１戻す。
-            deck.turn_caret_to_opponent(slot);
-            deck.go_to_next(slot, &app);
-            deck.turn_caret_to_opponent(slot);
-            return (true, None);
-        }
-
         if is_rollback {
-            // 非合法タッチを自動で戻す。
-            app.comm.println("[Try_read_1move: Rollback!]");
+            // 局面を戻す。（キャレットを戻すのとは別）
+            let repeats = rmove.len() as u16;
+            app.comm
+                .println(&format!("[Try_read_1move: Rollback {} note!]", repeats));
             deck.turn_caret_to_opponent(slot);
-            GamePlayer::read_tape_for_n_notes_forcely(
-                deck,
-                slot,
-                // ムーブの長さの１つ多めに戻すぜ☆（＾～＾）
-                rmove.len() as u16 + 1,
-                position,
-                ply,
-                &app,
-            );
+            GamePlayer::read_tape_for_n_notes_forcely(deck, slot, repeats, position, ply, &app);
             deck.turn_caret_to_opponent(slot);
 
             return (false, None);
@@ -98,7 +99,7 @@ impl GamePlayer {
             // 1手分。
             (false, Some(rmove))
         } else {
-            // 最後の1手分。
+            // 最後の1手なのでフェーズ・チェンジが無かったと考える。
             (true, Some(rmove))
         }
     }

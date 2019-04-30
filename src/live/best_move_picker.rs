@@ -4,10 +4,8 @@ use instrument::piece_etc::*;
 use instrument::position::*;
 use musician::best_thread::*;
 use sheet_music_format::kifu_usi::usi_move::*;
-use sound::shogi_move::*;
 use std::collections::HashMap;
 use std::fs;
-use studio::address::Address;
 use studio::application::Application;
 use video_recorder::cassette_deck::*;
 
@@ -167,33 +165,24 @@ impl BestMovePicker {
                                 ),
                             ));
 
-                            // 以下の３択☆（＾～＾）
-                            // （１）テープの終わり。
-                            // （２）一致して続行。
-                            // （３）一致しなくて続行。
-                            match self.try_read_training_tape_for_1move(
+                            // 以下の４択☆（＾～＾）
+                            // （１）最後の１手分。局面もキャレットも進んでいる。
+                            // （２）最後ではない１手分。局面もキャレットも進んでいる。
+                            // （３）テープ終わっていた。キャレットを戻す。
+                            // （４）実現しない操作だった。局面とキャレットを戻す。
+                            match GamePlayer::try_read_tape_for_1move(
                                 deck,
+                                Slot::Training,
                                 position,
                                 ply,
-                                *my_piece_id,
-                                my_addr_obj,
                                 &app,
                             ) {
-                                (true, _) => {
-                                    // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
-                                    app.comm.println(&format!(
-                                        "[End of tape of Piece loop: Caret: {}]",
-                                        deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
-                                            &app
-                                        ),
-                                    ));
-                                    break 'note_scan;
-                                }
-                                (false, Some(rmove)) => {
+                                (is_end_of_tape, Some(rmove)) => {
                                     // ヒットしたようだぜ☆（＾～＾）
                                     forwarding_note_count += 1;
                                     app.comm.println(&format!(
-                                        "[After pattern match: Hit {}th note! Caret: {}, Rmove: {}]",
+                                        "[After pattern match: is_end_of_tape: {}, Hit {}th note! Caret: {}, Rmove: {}]",
+                                        is_end_of_tape,
                                         forwarding_note_count,
                                         deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
                                             &app
@@ -205,6 +194,7 @@ impl BestMovePicker {
                                             &app
                                     )));
 
+                                    // ベストムーブを作って追加しようぜ☆（＾～＾）
                                     let best_move = rmove.to_best_move(
                                         deck,
                                         Slot::Training,
@@ -215,10 +205,25 @@ impl BestMovePicker {
                                     // とりあえず抜ける☆（＾～＾）
                                     break 'note_scan;
                                 }
+                                (true, None) => {
+                                    // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
+                                    app.comm.println(&format!(
+                                        "[End of tape of Piece loop: Caret: {}]",
+                                        deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
+                                            &app
+                                        ),
+                                    ));
+                                    break 'note_scan;
+                                }
                                 (false, None) => {
                                     // 一致しなかった☆（＾～＾）
                                     // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
-                                    app.comm.println("[Continue tape.]");
+                                    app.comm.println("[Continue tape]");
+
+                                    // 今のままだと　現状回帰してしまったので無限ループしてしまう☆（＾～＾）
+                                    // キャレットを１手分、ごそっと進めようぜ☆（*＾～＾*）
+                                    app.comm.println("[Increase caret forcely]");
+                                    deck.go_1move_forcely(Slot::Training, &app);
                                 }
                             }
                         }
@@ -310,77 +315,8 @@ impl BestMovePicker {
         }
     }
 
-    /// 現局面が一致しているか判定。
-    pub fn position_match(
-        &mut self,
-        deck: &mut CassetteDeck,
-        slot: Slot,
-        position: &mut Position,
-        my_piece_id: PieceIdentify,
-        my_addr_obj: Address,
-        rmove: &ShogiMove,
-        subject_pid: PieceIdentify,
-        subject_address: Address,
-        object_address_opt: Option<Address>,
-        app: &Application,
-    ) -> bool {
-        // パターンマッチから外れたら抜けていく。
-        if my_piece_id.get_number() != subject_pid.get_number()
-            || subject_address.get_index() != my_addr_obj.get_index() as usize
-        {
-            // No match. 背番号と、アドレスが不一致なら何もしない。
-            /*
-            comm.println(
-                "#No-match. 背番号と、アドレスが不一致なら、何もせずループを続行。",
-            );
-            */
-            return false; // continue 'track_scan;
-        }
-
-        // TODO 番地を指定して、そこにある駒が　相手の駒か判定。合法手だけを残す。
-        if let Some(addr) = object_address_opt {
-            if let Some(cell) = addr.to_cell(position.get_board_size()) {
-                if let Some(idp) = position.get_id_piece(cell) {
-                    if let Some(_is_opponent) = idp.is_opponent(position) {
-                        // 相手の駒を取った合法手。
-                    } else {
-                        /*
-                        comm.println(&format!(
-                            "#IL-味方の駒を取ってしまうなら、何もせずループを続行。{}",
-                            rmove.to_human_presentable(
-                                position.get_board_size()
-                            )
-                        ));
-                            */
-                        return false; // continue 'track_scan;
-                    }
-                } else {
-                    // 現局面では、取ろうとした駒がなかった。
-                    return false; // continue 'track_scan;
-                }
-            } else {
-                // プログラムの不具合。
-                panic!(
-                    "#IL-盤上以外の駒を取った(1)。{}",
-                    rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-                );
-            }
-        } else {
-            // 駒を取らなかった合法手。
-        };
-
-        // パターンがマッチした。
-        //comm.println(&format!("matched address. address={}.", my_addr_obj.get_index()));
-        true
-    }
-
+    /*
     /// 指し手単位での、パターン・マッチ。
-    /// 以下の３択☆（＾～＾）
-    /// （１）テープの終わり。（EOT）
-    /// （２）一致したら、１手指します。（完遂）
-    /// （３）一致しなかったら、この手を指さなかった状態に戻します。（未着手）
-    ///
-    ///
     ///
     /// # Returns
     ///
@@ -408,10 +344,8 @@ impl BestMovePicker {
         /// （４）実現しない操作だった。局面とキャレットを戻す。
         match GamePlayer::try_read_tape_for_1move(deck, Slot::Training, position, ply, &app) {
             (is_end_of_tape, Some(rmove)) => {
-                // ここに来たら、キャレットが１手分進んでるぜ☆（＾～＾）
-                // どの駒が動いた１手なのか、またその番地。
-                // 取った駒があるのなら、それも欲しい。
-                // (subject_pid, subject_address, opject_pid_opt, object_address_opt)
+                // テープの通りに、局面をタッチしてみて１手分は　なるほど進んだようだぜ☆（＾～＾）
+                // USI に変換してみようぜ☆（＾～＾）
                 let bmove =
                     rmove.to_best_move(deck, Slot::Training, position.get_board_size(), &app);
 
@@ -450,9 +384,7 @@ impl BestMovePicker {
                     my_piece_id,
                     my_addr_obj,
                     &rmove,
-                    bmove.subject_pid,
-                    bmove.subject_addr,
-                    bmove.capture_addr,
+                    &bmove,
                     &app,
                 ) {
                     // 局面と一致。
@@ -550,4 +482,68 @@ impl BestMovePicker {
             }
         }
     }
+                */
+
+    /*
+    /// 現局面が一致しているか判定。
+    pub fn position_match(
+        &mut self,
+        deck: &mut CassetteDeck,
+        slot: Slot,
+        position: &mut Position,
+        my_piece_id: PieceIdentify,
+        my_addr_obj: Address,
+        rmove: &ShogiMove,
+        bmove: &BestMove,
+        app: &Application,
+    ) -> bool {
+        // パターンマッチから外れたら抜けていく。
+        if my_piece_id.get_number() != bmove.subject_pid.get_number()
+            || bmove.subject_addr.get_index() != my_addr_obj.get_index() as usize
+        {
+            // No match. 背番号と、アドレスが不一致なら何もしない。
+            app.comm.println(
+                "#[No-match: 背番号と、アドレスが不一致なら、何もせずループを続行]",
+            );
+            return false;
+        }
+
+        // 番地を指定して、そこにある駒が　相手の駒か判定。合法手だけを残す。
+        if let Some(addr) = bmove.capture_addr {
+            if let Some(cell) = addr.to_cell(position.get_board_size()) {
+                if let Some(idp) = position.get_id_piece(cell) {
+                    if let Some(_is_opponent) = idp.is_opponent(position) {
+                        // 相手の駒を取った合法手。
+                    } else {
+                        app.comm.println(&format!(
+                            "#[No-match: 味方の駒を取ってしまう。{}]",
+                            rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                        ));
+                        return false;
+                    }
+                } else {
+                    // 現局面では、取ろうとした駒がなかった。
+                    app.comm.println(&format!(
+                        "#[No-match: 現局面では、取ろうとした駒がなかった。{}]",
+                        rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                    ));
+                    return false;
+                }
+            } else {
+                // プログラムの不具合。
+                panic!(
+                    "#[IL-盤上以外の駒を取った(1)。{}]",
+                    rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                );
+            }
+        } else {
+            // 駒を取らなかった合法手。
+        };
+
+        // パターンがマッチした。
+        app.comm
+            .println(&format!("#[Matched: address={}]", my_addr_obj.get_index()));
+        true
+    }
+    */
 }
