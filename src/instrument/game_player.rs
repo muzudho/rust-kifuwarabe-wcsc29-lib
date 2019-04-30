@@ -13,22 +13,27 @@ pub struct GamePlayer {}
 impl GamePlayer {
     /// 1手分進める。（非合法タッチは自動で戻します）
     ///
-    /// 結果は、未着手か、１手　のどちらかです。
+    /// 結果は次の４つだぜ☆（＾～＾）
+    /// （１）最後の１手分。局面もキャレットも進んでいる。
+    /// （２）最後ではない１手分。局面もキャレットも進んでいる。
+    /// （３）テープ終わっていた。キャレットを戻す。
+    /// （４）実現しない操作だった。局面とキャレットを戻す。
     ///
     /// # Return
     ///
-    /// (指した１手分)
+    /// (is_end_of_tape, 指した１手分)
     pub fn try_read_tape_for_1move(
         deck: &mut CassetteDeck,
         slot: Slot,
         position: &mut Position,
         ply: i16,
         app: &Application,
-    ) -> Option<ShogiMove> {
+    ) -> (bool, Option<ShogiMove>) {
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
 
         let mut is_rollback = false;
+        let mut is_phase_change = false;
 
         // とりあえず、フェーズ切り替えするまで、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
         while let (caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
@@ -56,12 +61,19 @@ impl GamePlayer {
             if 1 < rmove.len() && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 print!("[Phase-change-break try_read_1move:{}]", rnote);
+                is_phase_change = true;
                 break;
             }
         }
 
+        // ここに来た時、ムーブの長さ＋１　分だけキャレットは進んでいる☆（＾～＾）
+
         if rmove.is_empty() {
-            return None;
+            // ループに入らなかったのなら トラックの終わり。キャレットを１戻す。
+            deck.turn_caret_to_opponent(slot);
+            deck.go_to_next(slot, &app);
+            deck.turn_caret_to_opponent(slot);
+            return (true, None);
         }
 
         if is_rollback {
@@ -71,18 +83,24 @@ impl GamePlayer {
             GamePlayer::read_tape_for_n_notes_forcely(
                 deck,
                 slot,
-                rmove.len() as u16,
+                // ムーブの長さの１つ多めに戻すぜ☆（＾～＾）
+                rmove.len() as u16 + 1,
                 position,
                 ply,
                 &app,
             );
             deck.turn_caret_to_opponent(slot);
 
-            return None;
+            return (false, None);
         }
 
-        // 1つ以上読んでいれば合法。
-        Some(rmove)
+        if is_phase_change {
+            // 1手分。
+            (false, Some(rmove))
+        } else {
+            // 最後の1手分。
+            (true, Some(rmove))
+        }
     }
 
     pub fn read_tape_for_n_moves_forcely(

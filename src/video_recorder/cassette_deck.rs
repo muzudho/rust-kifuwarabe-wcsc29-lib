@@ -185,6 +185,11 @@ impl CassetteDeck {
         }
     }
 
+    /// 結果は３つ☆（＾～＾）
+    ///
+    /// （１）１ノート進んだ。ついでに拾ったノートを返す。
+    /// （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
+    /// （３）スロットにテープがささっていなかったので強制終了。
     pub fn go_to_next(&mut self, slot: Slot, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             tape_box.go_to_next(&app)
