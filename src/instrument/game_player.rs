@@ -107,8 +107,8 @@ impl GamePlayer {
                 .intersect_caret_number(caret_number);
 
             app.comm.println(&format!(
-                "[try_read_tape_for_1move:{}]",
-                tape_box.to_human_presentable(),
+                "[try_read_1move:{}]",
+                tape_box.to_human_presentable_of_current_tape(position.get_board_size()),
             ));
             let mut is_legal_touch = true;
 
@@ -116,7 +116,7 @@ impl GamePlayer {
             // フェーズ切り替えするまで、強制的に１ノート進め続けるぜ☆（＾～＾）。
             while let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
                 app.comm.println(&format!(
-                    "[LOOP try_read_tape_for_1move:{}:{}]",
+                    "[LOOP try_read_1move:{}:{}]",
                     tape_box.to_human_presentable(),
                     rnote.to_human_presentable(position.get_board_size())
                 ));
@@ -129,7 +129,7 @@ impl GamePlayer {
 
                 if !is_first && rnote.is_phase_change() {
                     // フェーズ切り替えしたら終了。（ただし、初回除く）
-                    print!("<NXm1End {}>", rnote);
+                    print!("[End try_read_1move:{}]", rnote);
                     break;
                 }
 
@@ -138,7 +138,8 @@ impl GamePlayer {
 
             if !is_legal_touch {
                 // 非合法タッチを自動で戻す。
-                app.comm.println("Illegal, go opponent forcely!");
+                app.comm
+                    .println("[End try_read_1move:Illegal, go opponent forcely!]");
                 tape_box.turn_caret_to_opponent();
                 GamePlayer::read_tape_for_n_notes_forcely(
                     tape_box,

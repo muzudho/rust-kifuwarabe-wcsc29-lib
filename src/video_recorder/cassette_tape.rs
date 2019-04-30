@@ -11,6 +11,7 @@ use std::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
+use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
 use video_recorder::integer_note_vec::*;
 
@@ -136,22 +137,75 @@ impl CassetteTape {
             .to_string()
     }
 
-    pub fn get_positive_peak_caret(&self) -> i16 {
-        self.tracks.len_positive() as i16
-    }
-    pub fn get_negative_peak_caret(&self) -> i16 {
-        -(self.tracks.len_negative() as i16) - 1
-    }
-
+    /// キャレットが左を向いているか☆（＾～＾）
     pub fn is_facing_left_of_caret(&self) -> bool {
         self.caret.is_facing_left()
     }
 
-    pub fn is_positive_peak(&self) -> bool {
-        self.caret.equals(self.get_positive_peak_caret())
+    /// 範囲はキャレット番地で示す☆（＾～＾）
+    /// ０に背を向けた２つのキャレットがあると仮定し、両端はピークを指すキャレット☆（＾～＾）
+    pub fn get_span_caret_facing_outward(&self) -> ClosedInterval {
+        let span = self.tracks.get_span_caret_facing_outward();
+        ClosedInterval::from_all(
+            span.get_minimum_caret_number(),
+            span.get_maximum_caret_number(),
+            self.is_facing_left_of_caret(),
+        )
     }
-    pub fn is_negative_peak(&self) -> bool {
-        self.caret.equals(self.get_negative_peak_caret())
+
+    pub fn get_negative_peak_caret_facing_outward(&self) -> i16 {
+        self.tracks.get_negative_peak_caret_facing_outward()
+    }
+
+    pub fn get_positive_peak_caret_facing_outward(&self) -> i16 {
+        self.tracks.get_positive_peak_caret_facing_outward()
+    }
+
+    // キャレットがピークを指しているか☆（＾～＾）
+    pub fn is_peak(&self, app: &Application) -> bool {
+        let old = self.caret.step_in(&app.comm);
+        if -1 < old {
+            // 正の数の方で動く☆（＾～＾）
+            if self.caret.is_facing_left() {
+                // 0 の方を向いている☆（＾～＾）
+                self.get_positive_peak_caret_facing_outward() + 1 == old
+            } else {
+                // 0 に背を向けている☆（＾～＾）
+                self.get_positive_peak_caret_facing_outward() == old
+            }
+        } else {
+            // 負の数の方で動く☆（＾～＾）
+            if self.caret.is_facing_left() {
+                // 0 に背を向けている☆（＾～＾）
+                self.get_negative_peak_caret_facing_outward() == old
+            } else {
+                // 0 の方を向いている☆（＾～＾）
+                self.get_negative_peak_caret_facing_outward() - 1 == old
+            }
+        }
+    }
+    // キャレットが次、オーバーフローするか☆（＾～＾）
+    pub fn is_before_caret_overflow(&self, app: &Application) -> bool {
+        let old = self.caret.step_in(&app.comm);
+        if -1 < old {
+            // 正の数の方で動く☆（＾～＾）
+            if self.caret.is_facing_left() {
+                // 0 の方を向いている☆（＾～＾）
+                self.get_positive_peak_caret_facing_outward() + 1 < old
+            } else {
+                // 0 に背を向けている☆（＾～＾）
+                self.get_positive_peak_caret_facing_outward() < old
+            }
+        } else {
+            // 負の数の方で動く☆（＾～＾）
+            if self.caret.is_facing_left() {
+                // 0 に背を向けている☆（＾～＾）
+                self.get_negative_peak_caret_facing_outward() > old
+            } else {
+                // 0 の方を向いている☆（＾～＾）
+                self.get_negative_peak_caret_facing_outward() - 1 > old
+            }
+        }
     }
 
     /// 連結。

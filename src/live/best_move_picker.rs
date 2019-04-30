@@ -126,7 +126,7 @@ impl BestMovePicker {
                 // 'piece_loop:
                 let mut debug_count = 0;
                 for my_piece_id in PieceIdentify::iterator() {
-                    if 3 < debug_count {
+                    if 0 < debug_count {
                         app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
                         break;
                     }

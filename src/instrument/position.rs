@@ -533,12 +533,12 @@ impl Position {
     /// (conplete, Identified piece)
     pub fn try_beautiful_touch_no_log(
         &mut self,
-        rpm_operation_note: &ShogiNoteOpe,
+        rnote_ope: &ShogiNoteOpe,
         comm: &Communication,
     ) -> (bool, Option<IdentifiedPiece>) {
         let board_size = self.get_board_size();
 
-        match rpm_operation_note.address {
+        match rnote_ope.address {
             Some(address) => {
                 // どこかを指定した。
                 if address.is_on_board(self.board_size) {
@@ -644,7 +644,7 @@ impl Position {
             }
             None => {
                 // 盤上や駒台の、どこも指していない。
-                if rpm_operation_note.is_phase_change() {
+                if rnote_ope.is_phase_change() {
                     use instrument::piece_etc::Phase::*;
                     self.phase = match self.phase {
                         First => Second,
@@ -654,14 +654,18 @@ impl Position {
                     (true, None)
                 } else if let Some(ref mut fingertip) = self.fingertip {
                     // 指に何か持っている。
-                    if rpm_operation_note.fingertip_turn {
+                    if rnote_ope.fingertip_turn {
                         // （完遂）成りの操作。
                         fingertip.turn_over();
-                    } else if rpm_operation_note.fingertip_rotate {
+                    } else if rnote_ope.fingertip_rotate {
                         // （完遂）先後入れ替えの操作。
                         fingertip.rotate();
                     };
                     (true, Some(fingertip.get_idp()))
+                } else if rnote_ope.is_resign() {
+                    // 投了☆
+                    comm.println("<投了>");
+                    (true, None)
                 } else {
                     comm.println("<未定義-使っていない空間ほこり取り>");
                     // （未着手）TODO 未定義の操作。投了とか？一応、違法。

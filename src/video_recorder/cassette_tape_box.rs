@@ -4,6 +4,7 @@ use sound::shogi_note::ShogiNote;
 use std::*;
 use studio::application::Application;
 use studio::board_size::*;
+use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Caret;
 use video_recorder::cassette_tape::*;
 
@@ -150,16 +151,14 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn set_note_to_positive_of_current_tape(&mut self, index: usize, note: ShogiNote) {
+    pub fn set_note_to_current_tape(&mut self, caret_number: i16, note: ShogiNote) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.positive_notes[index] = note;
-        } else {
-            panic!("Please choice listening tape.");
-        }
-    }
-    pub fn set_note_to_negative_of_current_tape(&mut self, index: usize, note: ShogiNote) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.negative_notes[index] = note;
+            if -1 < caret_number {
+                self.tapes[tape_index].tracks.positive_notes[caret_number as usize] = note;
+            } else {
+                self.tapes[tape_index].tracks.negative_notes
+                    [get_index_from_caret_numbers(caret_number)] = note;
+            }
         } else {
             panic!("Please choice listening tape.");
         }
@@ -188,44 +187,18 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn is_peak_of_current_tape(&self) -> bool {
-        if self.is_facing_left_of_current_tape() {
-            self.is_negative_peak_of_current_tape()
-        } else {
-            self.is_positive_peak_of_current_tape()
-        }
-    }
-
-    pub fn is_positive_peak_of_current_tape(&self) -> bool {
+    // キャレットがピークを指しているか☆（＾～＾）
+    pub fn is_peak(&self, app: &Application) -> bool {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index]
-                .caret
-                .equals(self.tapes[tape_index].get_positive_peak_caret())
+            self.tapes[tape_index].is_peak(&app)
         } else {
             panic!("Please choice listening tape.");
         }
     }
-    pub fn is_negative_peak_of_current_tape(&self) -> bool {
+    // キャレットが次、オーバーフローするか☆（＾～＾）
+    pub fn is_before_caret_overflow(&self, app: &Application) -> bool {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index]
-                .caret
-                .equals(self.tapes[tape_index].get_negative_peak_caret())
-        } else {
-            panic!("Please choice listening tape.");
-        }
-    }
-
-    /// TODO このメソッドは廃止したい。
-    ///
-    /// 配列のインデックスに変換します。
-    /// 負の配列では 数を 0 側に 1 つ寄せます。
-    ///
-    /// # Returns
-    ///
-    /// (is_positive, index, caret_number)
-    pub fn get_caret_index_of_current_tape_obsoluted(&self) -> (bool, usize, i16) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.to_index_obsoluted()
+            self.tapes[tape_index].is_before_caret_overflow(&app)
         } else {
             panic!("Please choice listening tape.");
         }

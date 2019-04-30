@@ -4,6 +4,7 @@ use std::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
+use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
 
 const NONE_VALUE: i8 = -1;
@@ -98,11 +99,23 @@ impl IntegerNoteVec {
         dump
     }
 
-    pub fn len_positive(&self) -> u16 {
-        self.positive_notes.len() as u16
+    /// 範囲はキャレット番地で示す☆（＾～＾）
+    /// ０に背を向けた２つのキャレットがあると仮定し、両端はピークを指すキャレット☆（＾～＾）
+    /// 向きは取れない☆（＾～＾）
+    pub fn get_span_caret_facing_outward(&self) -> ClosedInterval {
+        ClosedInterval::from_all(
+            self.get_positive_peak_caret_facing_outward(),
+            self.get_positive_peak_caret_facing_outward(),
+            true,
+        )
     }
-    pub fn len_negative(&self) -> u16 {
-        self.negative_notes.len() as u16
+
+    pub fn get_negative_peak_caret_facing_outward(&self) -> i16 {
+        self.negative_notes.len() as i16 + MINUS_ZERO_LEN as i16 + 1
+    }
+
+    pub fn get_positive_peak_caret_facing_outward(&self) -> i16 {
+        self.positive_notes.len() as i16 - 1
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
@@ -117,30 +130,26 @@ impl IntegerNoteVec {
         comm: &Communication,
     ) -> (i16, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
-        let caret_number = caret.go_next(comm);
+        let caret_number = caret.go_to_next(comm);
 
         if caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
             if caret_number < 0 {
-                if self.negative_notes.len() <= get_index_of_negative_numbers(caret_number) as usize
-                {
+                if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
                     // 負の先端要素を超えたら。
                     (caret_number, None)
                 } else {
                     // 負。
                     (
                         caret_number,
-                        Some(
-                            self.negative_notes
-                                [get_index_of_negative_numbers(caret_number) as usize],
-                        ),
+                        Some(self.negative_notes[get_index_from_caret_numbers(caret_number)]),
                     )
                 }
             } else {
                 // 正。
                 (
                     caret_number,
-                    Some(self.positive_notes[get_index_of_negative_numbers(caret_number) as usize]),
+                    Some(self.positive_notes[get_index_from_caret_numbers(caret_number)]),
                 )
             }
         } else {
@@ -199,7 +208,7 @@ impl IntegerNoteVec {
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
     pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
         // とりあえず、キャレットを進めてみる。
-        let caret_number = caret.go_next(&app.comm);
+        let caret_number = caret.go_to_next(&app.comm);
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -210,8 +219,10 @@ impl IntegerNoteVec {
             nega_v.extend_from_slice(&self.negative_notes[..]);
             posi_v.extend_from_slice(&self.slice(0, caret_number));
             posi_v.push(note);
-            if caret_number < self.len_positive() as i16 {
-                posi_v.extend_from_slice(&self.slice(caret_number + 1, self.len_positive() as i16));
+            if caret_number < self.positive_notes.len() as i16 {
+                posi_v.extend_from_slice(
+                    &self.slice(caret_number + 1, self.positive_notes.len() as i16),
+                );
             }
         } else {
             // 負のテープだけ。
@@ -221,13 +232,13 @@ impl IntegerNoteVec {
 
             // Endは含めず、Startは含めます。
             nega_v.extend_from_slice(
-                &self.slice(0, get_index_of_negative_numbers(caret_number) as i16),
+                &self.slice(0, get_index_from_caret_numbers(caret_number) as i16),
             );
             nega_v.push(note);
-            if get_index_of_negative_numbers(caret_number) < self.len_negative() as usize {
+            if get_index_from_caret_numbers(caret_number) < self.negative_notes.len() as usize {
                 nega_v.extend_from_slice(&self.slice(
-                    get_index_of_negative_numbers(caret_number) as i16 + 1,
-                    self.len_negative() as i16,
+                    get_index_from_caret_numbers(caret_number) as i16 + 1,
+                    self.negative_notes.len() as i16,
                 ));
             }
             posi_v.extend_from_slice(&self.positive_notes[..]);
@@ -250,7 +261,7 @@ impl IntegerNoteVec {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        let (is_positive, index, _caret_number) = caret.to_index_obsoluted();
+        let (is_positive, index) = caret.to_index_for_truncation();
 
         if index == 0 {
             (IntegerNoteVec::from_vector(posi_v, nega_v), None)

@@ -108,6 +108,11 @@ impl ShogiNoteOpe {
         }
     }
 
+    /// Position に変更を与えずに行える動作☆（＾～＾）
+    pub fn is_resign(&self) -> bool {
+        self.resign
+    }
+
     pub fn get_phase_change(&self) -> Option<i16> {
         self.phase_change
     }
@@ -192,7 +197,7 @@ impl ShogiNoteOpe {
     ) -> (ClosedInterval, Option<ShogiNoteOpe>) {
         let mut closed_interval = ClosedInterval::new_facing_right();
 
-        let mut n0 = caret.go_next(comm) as usize;
+        let mut n0 = caret.go_to_next(comm) as usize;
         closed_interval.intersect_caret_number(n0 as i16);
 
         let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
@@ -200,7 +205,7 @@ impl ShogiNoteOpe {
             ' ' => (closed_interval, None),
             '0' => {
                 // 駒台。
-                let mut n1 = caret.go_next(comm) as usize;
+                let mut n1 = caret.go_to_next(comm) as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 if 2 < line.len() {
@@ -209,7 +214,7 @@ impl ShogiNoteOpe {
                             // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
                             // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
-                            n1 = caret.go_next(comm) as usize;
+                            n1 = caret.go_to_next(comm) as usize;
                             ch1 = line[n1..=n1].chars().nth(0).unwrap();
                         }
                         _ => {}
@@ -229,7 +234,7 @@ impl ShogiNoteOpe {
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
-                let mut n1 = caret.go_next(comm) as usize;
+                let mut n1 = caret.go_to_next(comm) as usize;
                 let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
 
                 // comm.print(&format!("Parse1Op: '{}', '{}'.", ch0, ch1));
@@ -266,7 +271,7 @@ impl ShogiNoteOpe {
                         break;
                     }
 
-                    n0 = caret.go_next(comm) as usize;
+                    n0 = caret.go_to_next(comm) as usize;
                     ch0 = line[n0..=n0].chars().nth(0).unwrap();
                     closed_interval.intersect_caret_number(n0 as i16);
 

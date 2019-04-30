@@ -15,6 +15,14 @@ impl ClosedInterval {
         }
     }
 
+    pub fn from_all(min: i16, max: i16, facing_left_flag: bool) -> Self {
+        ClosedInterval {
+            minimum: min,
+            maximum: max,
+            facing_left: facing_left_flag,
+        }
+    }
+
     pub fn get_minimum_caret_number(&self) -> i16 {
         self.minimum
     }

@@ -3,6 +3,7 @@ use instrument::position::*;
 use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
+use studio::common::caret::get_index_from_caret_numbers;
 use video_recorder::cassette_tape_box::*;
 
 #[derive(Clone, Copy)]
@@ -156,46 +157,46 @@ impl CassetteDeck {
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            let (is_positive, index, _caret_number) =
-                tape_box.get_caret_index_of_current_tape_obsoluted();
-
-            if is_positive {
-                // 正のテープ。
-                // 最先端かどうか判断。
-                if tape_box.is_positive_peak_of_current_tape()
-                    && !tape_box.is_facing_left_of_current_tape()
-                {
+            // とりあえず、キャレットを進めようぜ☆（＾～＾）
+            let (caret_number, _) = tape_box.go_to_next(&app);
+            if -1 < caret_number {
+                // ０、または 正のテープ。
+                // 次にオーバーフローするか判断。
+                if tape_box.is_before_caret_overflow(&app) {
                     // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_positive_of_current_tape(note);
                     tape_box.go_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    tape_box.set_note_to_positive_of_current_tape(index, note);
-                    tape_box.go_to_next(&app);
+                    tape_box.set_note_to_current_tape(caret_number, note);
 
-                    // 仮のおわり を更新。
-                    let (_is_positive, index, _caret_number) =
-                        tape_box.get_caret_index_of_current_tape_obsoluted();
-                    tape_box.truncate_positive_of_current_tape(index);
+                    if let (caret_number, Some(_note)) = tape_box.go_to_next(&app) {
+                        // 仮のおわり を更新。
+                        tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
+                            caret_number,
+                        ));
+                    } else {
+
+                    }
                 }
             } else {
                 // 負のテープ。
                 // 最先端かどうか判断。
-                if tape_box.is_negative_peak_of_current_tape()
-                    && tape_box.is_facing_left_of_current_tape()
-                {
+                if tape_box.is_before_caret_overflow(&app) {
                     // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_negative_of_current_tape(note);
                     tape_box.go_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    tape_box.set_note_to_negative_of_current_tape(index, note);
-                    tape_box.go_to_next(&app);
+                    tape_box.set_note_to_current_tape(caret_number, note);
+                    if let (caret_number, Some(_note)) = tape_box.go_to_next(&app) {
+                        // 仮のおわり を更新。
+                        tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
+                            caret_number,
+                        ));
+                    } else {
 
-                    // 仮のおわり を更新。
-                    let (_is_positive, index, _caret_number) =
-                        tape_box.get_caret_index_of_current_tape_obsoluted();
-                    tape_box.truncate_negative_of_current_tape(index);
+                    }
                 }
             }
         } else {

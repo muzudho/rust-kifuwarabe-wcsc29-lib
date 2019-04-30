@@ -3,8 +3,12 @@ use studio::communication::*;
 
 /// 負の方のキャレット番地を符号を反転して１引いて配列のインデックスを作る補正に使う☆（＾～＾）
 pub const MINUS_ZERO_LEN: usize = 1;
-pub fn get_index_of_negative_numbers(caret_number: i16) -> usize {
-    -caret_number as usize + MINUS_ZERO_LEN
+pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
+    if -1 < caret_number {
+        caret_number as usize
+    } else {
+        -caret_number as usize + MINUS_ZERO_LEN
+    }
 }
 
 pub struct Caret {
@@ -40,7 +44,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_next(&mut self, _comm: &Communication) -> i16 {
+    pub fn go_to_next(&mut self, _comm: &Communication) -> i16 {
         let old = self.number;
 
         if self.facing_left {
@@ -50,6 +54,30 @@ impl Caret {
         }
 
         old
+    }
+
+    /// 足踏みする☆（＾～＾）
+    /// ミュータブルにしたくない場合だけ使う☆（＾～＾）なるべく go_to_next を使えだぜ☆（＾～＾）
+    pub fn step_in(&self, _comm: &Communication) -> i16 {
+        self.number
+    }
+
+    /// ちょっと戻りたいときに☆（＾～＾）
+    pub fn go_back(&mut self, _comm: &Communication) -> i16 {
+        let old = self.number;
+
+        if self.facing_left {
+            self.number += 1;
+        } else {
+            self.number -= 1;
+        }
+
+        old
+    }
+
+    pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {
+        closed_interval.get_minimum_caret_number() <= self.number
+            && self.number <= closed_interval.get_maximum_caret_number()
     }
 
     pub fn turn_to_negative(&mut self) {
@@ -91,41 +119,33 @@ impl Caret {
     /// マイナスゼロが無いので、負の配列ではインデックスを１小さくします。
     pub const NEGATIVE_ZERO_LEN: i16 = 1;
 
-    /// TODO このメソッドは廃止したい。
+    /// トランケート用に使う。
     ///
-    /// 配列のインデックスに変換します。
-    /// 負の配列では 数を 0 側に 1 つ寄せます。
+    /// 向いている方向に関わらず、正か負かを返します。
+    /// インデックスを返します。負の配列では 数を 0 側に 1 つ寄せます。
     ///
     /// # Returns
     ///
-    /// (is_positive, index, caret)
-    pub fn to_index_obsoluted(&self) -> (bool, usize, i16) {
+    /// (is_positive, index)
+    pub fn to_index_for_truncation(&self) -> (bool, usize) {
         // 正と負で、0 の扱い方が異なることに注意。
         if self.is_facing_left() {
             // 負の無限大の方を向いているとき。
             if self.number <= 0 {
-                // 0以下の左隣は負。負の配列では-1します。
-                (
-                    false,
-                    (-self.number - Caret::NEGATIVE_ZERO_LEN) as usize,
-                    self.number,
-                )
+                // 0以下の左隣は負
+                (false, get_index_from_caret_numbers(self.number))
             } else {
                 // 1以上の左隣は正。
-                (
-                    true,
-                    (self.number - Caret::NEGATIVE_ZERO_LEN) as usize,
-                    self.number,
-                )
+                (true, get_index_from_caret_numbers(self.number))
             }
         } else {
             // 正の無限大の方を向いているとき。
             if self.number >= 0 {
                 // 0以上の右隣は正。
-                (true, self.number as usize, self.number)
+                (true, get_index_from_caret_numbers(self.number))
             } else {
                 // 0未満の右隣は負。
-                (false, (-self.number) as usize, self.number)
+                (false, get_index_from_caret_numbers(self.number))
             }
         }
     }

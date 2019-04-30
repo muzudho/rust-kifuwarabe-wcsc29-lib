@@ -67,7 +67,7 @@ impl ShogiNote {
         let mut closed_interval = ClosedInterval::new_facing_right();
 
         // 数字を返却してから、キャレットを移動。
-        let n0 = note_caret.go_next(comm);
+        let n0 = note_caret.go_to_next(comm);
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (sub_closed_interval, note_ope) = if let (sub_closed_interval, Some(note_ope)) =

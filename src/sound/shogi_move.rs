@@ -46,7 +46,7 @@ impl ShogiMove {
 
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
-            if tape_box.is_peak_of_current_tape() {
+            if tape_box.is_before_caret_overflow(&app) {
                 // トラックの終わり。
                 //comm.print("Break: End of track.");
                 break 'j_loop;
