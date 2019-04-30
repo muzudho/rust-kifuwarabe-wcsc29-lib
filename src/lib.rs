@@ -49,6 +49,7 @@ use lib_sub::*;
 use live::best_move_picker::*;
 use std::io;
 use studio::application::*;
+use studio::common::closed_interval::*;
 use video_recorder::cassette_deck::*;
 
 pub fn main_loop() {
@@ -180,6 +181,26 @@ pub fn main_loop() {
             LibSub::hand2(&position, &app);
         } else if line == "hand3" {
             LibSub::hand3(&position, &app);
+        } else if line == "heikukan" {
+            // 閉区間のテスト☆（＾～＾）
+            let mut v: Vec<(i16, i16, i16)> = Vec::new();
+            // min, max, expected len.
+            v.push((0, 0, 1));
+            v.push((-1, 0, 2));
+            v.push((0, 1, 2));
+            v.push((0, -1, 0));
+            for e in v {
+                let ans = ClosedInterval::from_all(e.0, e.1, true);
+                app.comm.println(&format!(
+                    "min {:>2}, max {:>2}. len {:>2}, empty {:>5}, expected {:>2}. msg: {}.",
+                    e.0,
+                    e.1,
+                    ans.len(),
+                    ans.is_empty(),
+                    e.2,
+                    ans.to_human_presentable()
+                ));
+            }
 
         // #####
         // # I #
