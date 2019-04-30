@@ -127,7 +127,7 @@ impl RpmTapeBox {
         }
 
         // カーソルが進んでしまっているので戻すぜ☆（＾～＾）
-        tape_box.eject();
+        tape_box.eject(&app);
 
         tape_box
     }

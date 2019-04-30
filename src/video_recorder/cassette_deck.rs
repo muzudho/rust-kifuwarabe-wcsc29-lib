@@ -6,7 +6,7 @@ use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
 use video_recorder::cassette_tape_box::*;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Slot {
     /// トレーニング。
     Training,
@@ -15,6 +15,9 @@ pub enum Slot {
 }
 
 pub struct CassetteSlot {
+    /// このスロットの役割。デバッグ表示用。
+    slot_as_role: Slot,
+
     /// 何も指していない状態で 1。
     /// TODO 本将棋の大橋流の最初の玉は Ply=-39 にしたい。
     /// トレーニング・テープの 手目。
@@ -27,6 +30,7 @@ pub struct CassetteSlot {
 impl CassetteSlot {
     pub fn new_t() -> Self {
         CassetteSlot {
+            slot_as_role: Slot::Training,
             ply: 1,
             tape_box: None,
         }
@@ -34,9 +38,24 @@ impl CassetteSlot {
 
     pub fn new_as_learning(app: &Application) -> Self {
         CassetteSlot {
+            slot_as_role: Slot::Learning,
             ply: 1,
             tape_box: Some(CassetteTapeBox::new_empty(Slot::Learning, &app)),
         }
+    }
+
+    pub fn to_human_presentable(&self) -> String {
+        format!(
+            "[Slot: {:?}, Ply: {}, Exists: {}]",
+            self.slot_as_role,
+            self.ply,
+            if let Some(ref _tape_box) = self.tape_box {
+                "Exists"
+            } else {
+                "None"
+            }
+            .to_string()
+        )
     }
 }
 
@@ -59,6 +78,17 @@ impl CassetteDeck {
         brandnew.change(training_tape_box_opt, board_size, &app);
 
         brandnew
+    }
+
+    // JSONファイルを元に トレーニング・テープをオブジェクト化して、デッキに差し込むぜ☆（＾～＾）
+    pub fn change_with_tape_box_file(
+        &mut self,
+        file_name: &str,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        let training_tape_box = CassetteTapeBox::from_training_file(&file_name, board_size, &app);
+        self.change(Some(training_tape_box), board_size, &app);
     }
 
     /// トレーニング・テープを交換するぜ☆（＾～＾）
@@ -103,6 +133,20 @@ impl CassetteDeck {
         }
     }
 
+    /// 次のテープを利用するぜ☆（＾～＾）
+    /// 次のテープが無ければ、おわり☆（＾ｑ＾）
+    ///
+    /// # Returns
+    ///
+    /// (成功)
+    pub fn change_next_if_training_tape_exists(&mut self, app: &Application) -> bool {
+        if let Some(ref mut training_tape_box) = &mut self.slots[Slot::Training as usize].tape_box {
+            training_tape_box.change_next_if_it_exists(&app)
+        } else {
+            false
+        }
+    }
+
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）
     pub fn write_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
         if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
@@ -132,14 +176,49 @@ impl CassetteDeck {
         self.slots[slot as usize].ply
     }
 
+    pub fn get_sign_of_current_tape(&self, slot: Slot, board_size: BoardSize) -> (String, String) {
+        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
+            tape_box.get_sign_of_current_tape(board_size)
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box none in go to next. Slot: {:?}.", slot);
+        }
+    }
+
+    pub fn go_to_next(&mut self, slot: Slot, app: &Application) -> (i16, Option<ShogiNote>) {
+        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
+            tape_box.go_to_next(&app)
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box none in go to next. Slot: {:?}.", slot);
+        }
+    }
+
     /// 指定のスロットの テープボックスの中の、現在のテープの、キャレットの向きを反対にします。
     pub fn turn_caret_to_opponent(&mut self, slot: Slot) {
-        let cassette_slot = &mut self.slots[slot as usize];
-        if let Some(ref mut tape_box) = cassette_slot.tape_box {
+        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             tape_box.turn_caret_to_opponent();
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none.");
+            panic!("tape box none in turn caret to opponent. Slot: {:?}.", slot);
+        }
+    }
+    pub fn turn_caret_to_positive(&mut self, slot: Slot) {
+        let cassette_slot = &mut self.slots[slot as usize];
+        if let Some(ref mut tape_box) = cassette_slot.tape_box {
+            tape_box.turn_caret_to_positive();
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box none in turn caret to positive. Slot: {:?}.", slot);
+        }
+    }
+    pub fn turn_caret_to_negative(&mut self, slot: Slot) {
+        let cassette_slot = &mut self.slots[slot as usize];
+        if let Some(ref mut tape_box) = cassette_slot.tape_box {
+            tape_box.turn_caret_to_negative();
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box none in turn caret to negative. Slot: {:?}.", slot);
         }
     }
 
@@ -256,5 +335,43 @@ impl CassetteDeck {
             // それ以外は繰り返す。
             count += 1;
         }
+    }
+
+    pub fn to_human_presentable_of_current_tape_of_training_box(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
+        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
+            training_tape_box.to_human_presentable_of_current_tape(board_size, &app)
+        } else {
+            "None-t-tape-box".to_string()
+        }
+    }
+    pub fn to_human_presentable_of_caret_of_current_tape_of_training_box(
+        &self,
+        app: &Application,
+    ) -> String {
+        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
+            training_tape_box.to_human_presentable_of_caret_of_current_tape(&app)
+        } else {
+            "None-t-tape-box".to_string()
+        }
+    }
+    pub fn to_human_presentable_of_training_tape_box(&self) -> String {
+        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
+            training_tape_box.to_human_presentable()
+        } else {
+            "None-t-tape-box".to_string()
+        }
+    }
+    pub fn to_human_presentable(&self) -> String {
+        let mut text = String::new();
+
+        for slot in &self.slots {
+            text = format!("{}{}", text, slot.to_human_presentable())
+        }
+
+        text
     }
 }

@@ -19,7 +19,8 @@ impl GamePlayer {
     ///
     /// (指した１手分)
     pub fn try_read_tape_for_1move(
-        tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
+        slot: Slot,
         position: &mut Position,
         ply: i16,
         app: &Application,
@@ -30,17 +31,14 @@ impl GamePlayer {
         let mut is_rollback = false;
 
         // とりあえず、フェーズ切り替えするまで、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-        while let (caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
+        while let (caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
             // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
-            rmove
-                .caret_closed_interval
-                .intersect_caret_number(caret_number);
 
             app.comm.println(&format!(
                 "[{} note advanced! Note:{}, Move:{}]",
                 rmove.len(),
                 rnote.to_human_presentable(position.get_board_size()),
-                rmove.to_human_presentable(&tape_box, position.get_board_size(), &app)
+                rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
             ));
 
             if !position.try_beautiful_touch(&rnote, ply, &app) {
@@ -48,6 +46,12 @@ impl GamePlayer {
                 is_rollback = true;
                 break;
             }
+
+            // ここに来たら、着手は成立☆（*＾～＾*）
+
+            rmove
+                .caret_closed_interval
+                .intersect_caret_number(caret_number);
 
             if 1 < rmove.len() && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
@@ -63,15 +67,16 @@ impl GamePlayer {
         if is_rollback {
             // 非合法タッチを自動で戻す。
             app.comm.println("[Try_read_1move: Rollback!]");
-            tape_box.turn_caret_to_opponent();
+            deck.turn_caret_to_opponent(slot);
             GamePlayer::read_tape_for_n_notes_forcely(
-                tape_box,
+                deck,
+                slot,
                 rmove.len() as u16,
                 position,
                 ply,
                 &app,
             );
-            tape_box.turn_caret_to_opponent();
+            deck.turn_caret_to_opponent(slot);
 
             return None;
         }
@@ -141,14 +146,15 @@ impl GamePlayer {
 
     /// 非合法手はない前提で、強制的にテープを進めます。
     pub fn read_tape_for_n_notes_forcely(
-        tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
+        slot: Slot,
         repeat: u16,
         position: &mut Position,
         ply: i16,
         app: &Application,
     ) {
         for i in 0..repeat {
-            if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
+            if let (_caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
                 app.comm
                     .println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
                 if !position.try_beautiful_touch(&rnote, ply, &app) {

@@ -31,105 +31,63 @@ impl LibSub {
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_negative();
-            GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-        } else {
-            panic!("Tape box none.");
-        }
-
+        deck.turn_caret_to_negative(Slot::Learning);
+        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_negative();
-            for _i in 0..10 {
-                GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-            }
-        } else {
-            panic!("Tape box none.");
+        deck.turn_caret_to_negative(Slot::Learning);
+        for _i in 0..10 {
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         }
-
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_negative();
-            for _i in 0..400 {
-                GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-            }
-        } else {
-            panic!("Tape box none.");
+        deck.turn_caret_to_negative(Slot::Learning);
+        for _i in 0..400 {
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         }
-
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_positive();
-            if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
-                if !position.try_beautiful_touch(&rnote, ply, &app) {
-                    app.comm.println("Touch fail.");
-                }
+        deck.turn_caret_to_positive(Slot::Learning);
+        if let (_caret_number, Some(rnote)) = deck.go_to_next(Slot::Learning, &app) {
+            if !position.try_beautiful_touch(&rnote, ply, &app) {
+                app.comm.println("Touch fail.");
             }
-        } else {
-            panic!("Tape box none.");
         }
-
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
         // 非合法タッチは自動で戻します。
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_positive();
-            GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-        } else {
-            panic!("Tape box none.");
-        }
-
+        deck.turn_caret_to_positive(Slot::Learning);
+        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_positive();
-            for _i in 0..10 {
-                GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-            }
-        } else {
-            panic!("Tape box none.");
+        deck.turn_caret_to_positive(Slot::Learning);
+        for _i in 0..10 {
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         }
-
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let ply = deck.get_ply(Slot::Learning);
-
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.turn_caret_to_positive();
-            for _i in 0..400 {
-                GamePlayer::try_read_tape_for_1move(tape_box, position, ply, &app);
-            }
-        } else {
-            panic!("Tape box none.");
+        deck.turn_caret_to_positive(Slot::Learning);
+        for _i in 0..400 {
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
         }
-
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
@@ -225,7 +183,7 @@ impl LibSub {
         // comm.println("#Lib: TODO 'position' command(2).");
         {
             //comm.println("#Lib: 'position' command(2).");
-            let mut start = 0;
+            //let mut start = 0;
 
             /*
             // 大橋流を指せるところまで、局面を戻す。

@@ -40,7 +40,9 @@ impl CassetteTapeBox {
     }
 
     /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
-    pub fn eject(&mut self) {
+    pub fn eject(&mut self, app: &Application) {
+        app.comm
+            .println(&format!("[Eject: {:?}]", self.role_as_slot));
         self.listening_tape_index = None;
     }
 

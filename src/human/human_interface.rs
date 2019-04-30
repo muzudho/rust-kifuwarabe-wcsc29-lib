@@ -4,7 +4,6 @@ use studio::application::Application;
 use studio::communication::*;
 use video_recorder::cassette_deck::CassetteDeck;
 use video_recorder::cassette_deck::Slot;
-use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 pub struct HumanInterface {}
 impl HumanInterface {
@@ -51,7 +50,8 @@ impl HumanInterface {
     /// 局面と、テープ中の棋譜　の表示。
     /// トレーニング用。
     pub fn bo_with_tape(
-        tape_box: &CassetteTapeBox,
+        deck: &CassetteDeck,
+        slot: Slot,
         ply: i16,
         position: &Position,
         app: &Application,
@@ -60,7 +60,7 @@ impl HumanInterface {
         HumanInterface::show_position(Slot::Training, &app.comm, ply, position);
 
         // 棋譜。
-        let (_numbers, operations) = &tape_box.get_sign_of_current_tape(position.get_board_size());
+        let (_numbers, operations) = deck.get_sign_of_current_tape(slot, position.get_board_size());
         app.comm.println(&format!("TAPE: {}", operations));
     }
 }

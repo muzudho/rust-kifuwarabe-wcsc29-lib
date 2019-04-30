@@ -10,7 +10,6 @@ use std::fs;
 use studio::address::Address;
 use studio::application::Application;
 use video_recorder::cassette_deck::*;
-use video_recorder::cassette_tape_box::*;
 
 pub struct BestMovePicker {
     best_thread_map: HashMap<i8, BestThread>,
@@ -69,7 +68,7 @@ impl BestMovePicker {
         // TODO とりあえず rbox.json ファイルを１個読む。
         'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
-            let mut training_tape_box = CassetteTapeBox::from_training_file(
+            deck.change_with_tape_box_file(
                 &tape_box_file.unwrap().path().display().to_string(),
                 position.get_board_size(),
                 &app,
@@ -78,7 +77,7 @@ impl BestMovePicker {
             // トレーニング・テープ・ボックスを１箱選択。
             app.comm.println(&format!(
                 "#Tape-box: {}. Phase: {:?}.",
-                training_tape_box.to_human_presentable(),
+                deck.to_human_presentable_of_training_tape_box(),
                 position.get_phase()
             ));
 
@@ -113,12 +112,14 @@ impl BestMovePicker {
             */
 
             // テープをセット☆（＾～＾）
-            while training_tape_box.change_next_if_it_exists(&app) {
+            while deck.change_next_if_training_tape_exists(&app) {
                 // テープを１本選択☆（＾～＾）
                 app.comm.println(&format!(
                     "#Tape: {}",
-                    training_tape_box
-                        .to_human_presentable_of_current_tape(position.get_board_size(), &app)
+                    deck.to_human_presentable_of_current_tape_of_training_box(
+                        position.get_board_size(),
+                        &app
+                    )
                 ));
 
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
@@ -159,24 +160,27 @@ impl BestMovePicker {
                         loop {
                             app.comm.println(&format!(
                                 "[Before pattern match: Caret: {}]",
-                                training_tape_box
-                                    .to_human_presentable_of_caret_of_current_tape(&app),
+                                deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
+                                    &app
+                                ),
                             ));
 
                             // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
-                            let (rmove_opt, is_end_of_tape) = self.try_read_pattern_match(
-                                &mut training_tape_box,
-                                position,
-                                ply,
-                                *my_piece_id,
-                                my_addr_obj,
-                                &app,
-                            );
+                            let (rmove_opt, is_end_of_tape) = self
+                                .try_read_training_tape_pattern_match(
+                                    deck,
+                                    position,
+                                    ply,
+                                    *my_piece_id,
+                                    my_addr_obj,
+                                    &app,
+                                );
 
                             app.comm.println(&format!(
                                 "[After pattern match: Caret: {}]",
-                                training_tape_box
-                                    .to_human_presentable_of_caret_of_current_tape(&app),
+                                deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
+                                    &app
+                                ),
                             ));
 
                             if is_end_of_tape {
@@ -190,14 +194,16 @@ impl BestMovePicker {
                                     "{} hit! Rmove: {}.",
                                     record_count,
                                     rmove.to_human_presentable(
-                                        &training_tape_box,
+                                        deck,
+                                        Slot::Training,
                                         position.get_board_size(),
                                         &app
                                     )
                                 ));
 
                                 let best_move = rmove.to_best_move(
-                                    &training_tape_box,
+                                    deck,
+                                    Slot::Training,
                                     position.get_board_size(),
                                     &app,
                                 );
@@ -219,9 +225,14 @@ impl BestMovePicker {
 
                         // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
                         // TODO それを逆順にすれば　指し手だぜ☆（＾～＾）
+                        app.comm.println(&format!(
+                            "Tried, go opponent {} move! Training deck box: {}. Deck: {}.",
+                            record_count,
+                            deck.to_human_presentable_of_training_tape_box(),
+                            deck.to_human_presentable()
+                        ));
+                        // TODO ここでテープボックスが無くなっているのは　なぜなのか☆（＾～＾）？
                         deck.turn_caret_to_opponent(Slot::Training);
-                        app.comm
-                            .println(&format!("Tried, go opponent {} move!", record_count,));
                         {
                             let learning_slot = &mut deck.slots[Slot::Training as usize];
                             if let Some(ref mut tape_box) = learning_slot.tape_box {
@@ -233,7 +244,7 @@ impl BestMovePicker {
                                     &app,
                                 );
                             } else {
-                                panic!("Tape box none.");
+                                panic!("Tape box none in backward.");
                             }
                         }
                         deck.turn_caret_to_opponent(Slot::Training);
@@ -294,7 +305,8 @@ impl BestMovePicker {
     /// 現局面が一致しているか判定。
     pub fn position_match(
         &mut self,
-        training_tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
+        slot: Slot,
         position: &mut Position,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
@@ -342,7 +354,7 @@ impl BestMovePicker {
                 // プログラムの不具合。
                 panic!(
                     "#IL-盤上以外の駒を取った(1)。{}",
-                    rmove.to_human_presentable(&training_tape_box, position.get_board_size(), &app)
+                    rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
                 );
             }
         } else {
@@ -363,9 +375,9 @@ impl BestMovePicker {
     /// # Returns
     ///
     /// (move_opt, is_end_of_tape)
-    pub fn try_read_pattern_match(
+    pub fn try_read_training_tape_pattern_match(
         &mut self,
-        training_tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
         position: &mut Position,
         ply: i16,
         my_piece_id: PieceIdentify,
@@ -380,18 +392,18 @@ impl BestMovePicker {
         */
         // とりあえず 1手分ごそっと動かそうぜ☆（＾～＾）
         if let Some(rmove) =
-            GamePlayer::try_read_tape_for_1move(training_tape_box, position, ply, &app)
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Training, position, ply, &app)
         {
             // ここに来たら、キャレットが１手分進んでるぜ☆（＾～＾）
             // どの駒が動いた１手なのか、またその番地。
             // 取った駒があるのなら、それも欲しい。
             // (subject_pid, subject_address, opject_pid_opt, object_address_opt)
-            let bmove = rmove.to_best_move(training_tape_box, position.get_board_size(), &app);
+            let bmove = rmove.to_best_move(deck, Slot::Training, position.get_board_size(), &app);
 
             app.comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
-                training_tape_box.to_human_presentable_of_caret_of_current_tape(&app),
-                rmove.to_human_presentable(training_tape_box, position.get_board_size(), &app),
+                deck.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                rmove.to_human_presentable(deck, Slot::Training, position.get_board_size(), &app),
                 bmove.subject_pid.to_human_presentable(),
                 bmove
                     .subject_addr
@@ -412,7 +424,8 @@ impl BestMovePicker {
             ));
 
             if self.position_match(
-                training_tape_box,
+                deck,
+                Slot::Training,
                 position,
                 my_piece_id,
                 my_addr_obj,
@@ -447,7 +460,8 @@ impl BestMovePicker {
 
                 // 試しに1手進めます。（非合法タッチは自動で戻します）
                 if let Some(rmove) = GamePlayer::try_read_tape_for_1move(
-                    training_tape_box, //cassette_tape_box_2,
+                    deck,
+                    Slot::Training,
                     position,
                     ply, //ply_2,
                     &app,
@@ -457,14 +471,16 @@ impl BestMovePicker {
                         "Hit and go! ({}) {}",
                         bmove.subject_pid.to_human_presentable(),
                         &rmove.to_human_presentable(
-                            training_tape_box,
+                            deck,
+                            Slot::Training,
                             position.get_board_size(),
                             &app
                         )
                     ));
                     HumanInterface::bo_with_tape(
-                        &training_tape_box, //&cassette_tape_box_2,
-                        ply,                //ply_2,
+                        deck,
+                        Slot::Training,
+                        ply, //ply_2,
                         &position,
                         &app,
                     );
@@ -474,14 +490,15 @@ impl BestMovePicker {
                     app.comm.println(&format!(
                         "Canceled: {}.",
                         rmove.to_human_presentable(
-                            training_tape_box,
+                            deck,
+                            Slot::Training,
                             position.get_board_size(),
                             &app
                         )
                     ));
                     HumanInterface::bo_with_tape(
-                        &training_tape_box,
-                        //&cassette_tape_box_2,
+                        deck,
+                        Slot::Training,
                         ply, // ply_2,
                         &position,
                         &app,
