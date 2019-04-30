@@ -1,4 +1,3 @@
-use instrument::game_player::*;
 use instrument::position::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_tape::*;
@@ -26,7 +25,7 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
+                position.touch_1note_ope(&rnote_ope, deck, &app);
             }
 
             ply += 1;

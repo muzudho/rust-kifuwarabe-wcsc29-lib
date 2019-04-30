@@ -1,4 +1,3 @@
-use instrument::game_player::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
@@ -27,7 +26,7 @@ impl KifConverter {
             let rnote_opes = KifConverter::convert_move(&app.comm, kmove, position, ply);
 
             for rnote_ope in rnote_opes {
-                GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
+                position.touch_1note_ope(&rnote_ope, deck, &app);
             }
 
             ply += 1;

@@ -1,4 +1,3 @@
-use instrument::game_player::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use sound::shogi_note_operation::*;
@@ -11,6 +10,17 @@ use video_recorder::cassette_deck::CassetteDeck;
 /// 大橋流だけ指してくれるプレイヤー。
 pub struct OhashiPlayer {}
 impl OhashiPlayer {
+    /// 大橋流を指せるように、クリアーするぜ☆（＾～＾）
+    pub fn clear_to_honshogi_origin(
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        // オリジン局面に戻す☆（＾～＾）
+        deck.change(None, position.get_board_size(), &app);
+        position.reset_origin_position();
+    }
+
     /// 初期化に使う。
     fn init_note(
         ply: i16,
@@ -28,6 +38,7 @@ impl OhashiPlayer {
     }
 
     /// オリジン・ポジションから、平手初期局面に進めます。
+    /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
     pub fn play_ohashi_starting(pos: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         use instrument::piece_etc::Phase::*;
         use instrument::piece_etc::PieceIdentify::*;
@@ -81,9 +92,10 @@ impl OhashiPlayer {
 
         for element in array.iter() {
             // 大橋流で指しているところはログを省略☆（＾～＾）
-            GamePlayer::touch_1note_ope_no_log(&element.0, pos, deck, &app);
-            GamePlayer::touch_1note_ope_no_log(&element.1, pos, deck, &app);
-            GamePlayer::touch_1note_ope_no_log(&element.2, pos, deck, &app);
+
+            pos.touch_1note_ope_no_log(&element.0, deck, &app);
+            pos.touch_1note_ope_no_log(&element.1, deck, &app);
+            pos.touch_1note_ope_no_log(&element.2, deck, &app);
         }
     }
 }

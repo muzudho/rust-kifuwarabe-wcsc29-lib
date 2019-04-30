@@ -32,10 +32,10 @@ impl CassetteSlot {
         }
     }
 
-    pub fn new_l(app: &Application) -> Self {
+    pub fn new_as_learning(app: &Application) -> Self {
         CassetteSlot {
             ply: 1,
-            tape_box: Some(CassetteTapeBox::new_empty(&app)),
+            tape_box: Some(CassetteTapeBox::new_empty(Slot::Learning, &app)),
         }
     }
 }
@@ -46,14 +46,14 @@ pub struct CassetteDeck {
     pub slots: [CassetteSlot; 2],
 }
 impl CassetteDeck {
-    /// 新規作成と、カセットの交換☆（＾～＾）
+    /// 新規作成と、ラーニング・テープの交換☆（＾～＾）
     pub fn new_change(
         training_tape_box_opt: Option<CassetteTapeBox>,
         board_size: BoardSize,
         app: &Application,
     ) -> Self {
         let mut brandnew = CassetteDeck {
-            slots: [CassetteSlot::new_t(), CassetteSlot::new_l(&app)],
+            slots: [CassetteSlot::new_t(), CassetteSlot::new_as_learning(&app)],
         };
 
         brandnew.change(training_tape_box_opt, board_size, &app);
@@ -90,7 +90,8 @@ impl CassetteDeck {
 
         if full {
             // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
-            self.slots[Slot::Learning as usize].tape_box = Some(CassetteTapeBox::new_empty(&app));
+            self.slots[Slot::Learning as usize].tape_box =
+                Some(CassetteTapeBox::new_empty(Slot::Learning, &app));
         }
 
         // 新しいラーニング・テープに差し替える。

@@ -45,6 +45,8 @@ fn main() {
     // Command line arguments.
     let args = Arguments::parse();
     let in_file = args.input_file.unwrap();
+
+    // トレーニング・テープと想定☆（＾～＾）
     let tape_box_file_for_write = args.output_file.unwrap();
 
     // The application contains all immutable content.
@@ -55,7 +57,7 @@ fn main() {
 
     // Deck.
     let mut deck = CassetteDeck::new_change(
-        Some(CassetteTapeBox::from_file(
+        Some(CassetteTapeBox::from_training_file(
             &tape_box_file_for_write.to_string(),
             position.get_board_size(),
             &app,

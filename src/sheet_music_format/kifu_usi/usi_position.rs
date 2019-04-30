@@ -25,6 +25,7 @@ impl UsiPosition {
         }
     }
 
+    /// USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は動かさない☆（＾～＾）
     pub fn parse_usi_line_moves(
         comm: &Communication,
         line: &str,

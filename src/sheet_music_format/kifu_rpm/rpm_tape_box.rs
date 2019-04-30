@@ -11,6 +11,7 @@ use std::path::Path;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::communication::*;
+use video_recorder::cassette_deck::Slot;
 use video_recorder::cassette_tape_box::*;
 
 /// -rbox.json ファイルに対応。
@@ -116,14 +117,9 @@ impl RpmTapeBox {
         // comm.println("#Sheet saved.");
     }
 
-    /// JSONを、オブジェクトに変換します。
-    pub fn to_object(
-        &self,
-        _file_name: &str,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> CassetteTapeBox {
-        let mut tape_box = CassetteTapeBox::new_empty(&app);
+    /// JSONを、オブジェクトに変換します。（トレーニング・テープを想定☆（＾～＾））
+    pub fn to_training_object(&self, board_size: BoardSize, app: &Application) -> CassetteTapeBox {
+        let mut tape_box = CassetteTapeBox::new_empty(Slot::Training, &app);
 
         for tape_j in &self.tape_box {
             let tape = tape_j.to_object(board_size, &app);

@@ -163,7 +163,7 @@ impl LibSub {
             UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning));
         for rnote_ope in rnote_opes {
             app.comm.println("lib.rs:go: touch_1note_ope");
-            GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
+            position.touch_1note_ope(&rnote_ope, deck, &app);
         }
     }
 
@@ -207,9 +207,8 @@ impl LibSub {
         let mut urecord_opt = None;
         let mut start = 0;
 
-        // 大橋流を指せるところまで、局面を戻す。
-        GamePlayer::clear_to_honshogi_origin(position, deck, &app);
         if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
+            // USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は動かさない☆（＾～＾）
             urecord_opt = UsiPosition::parse_usi_line_moves(
                 &app.comm,
                 &line,
@@ -227,11 +226,13 @@ impl LibSub {
             //comm.println("#Lib: 'position' command(2).");
             let mut start = 0;
 
+            /*
             // 大橋流を指せるところまで、局面を戻す。
             GamePlayer::clear_to_honshogi_origin(position, deck, &app);
             if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
                 //comm.println("#Position parsed.");
             }
+            */
 
             if let Some(urecord) = urecord_opt {
                 // 差し替え。

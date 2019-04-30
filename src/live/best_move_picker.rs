@@ -9,7 +9,6 @@ use std::collections::HashMap;
 use std::fs;
 use studio::address::Address;
 use studio::application::Application;
-use studio::common::caret::*;
 use video_recorder::cassette_deck::*;
 use video_recorder::cassette_tape_box::*;
 
@@ -70,7 +69,7 @@ impl BestMovePicker {
         // TODO とりあえず rbox.json ファイルを１個読む。
         'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
-            let mut training_tape_box = CassetteTapeBox::from_file(
+            let mut training_tape_box = CassetteTapeBox::from_training_file(
                 &tape_box_file.unwrap().path().display().to_string(),
                 position.get_board_size(),
                 &app,
@@ -126,7 +125,7 @@ impl BestMovePicker {
                 // 'piece_loop:
                 let mut debug_count = 0;
                 for my_piece_id in PieceIdentify::iterator() {
-                    if 0 <= debug_count && debug_count <= 10 {
+                    if 0 <= debug_count && debug_count <= 3 {
                         // ここだけテストするぜ☆（＾～＾）
                     } else {
                         // それ以外は無視。
@@ -135,19 +134,14 @@ impl BestMovePicker {
                     }
 
                     // 駒を１つ選択☆（＾～＾）
-                    app.comm.println(&format!(
-                        "#Piece: {}",
-                        training_tape_box
-                            .to_human_presentable_of_current_tape(position.get_board_size(), &app)
-                    ));
+                    app.comm
+                        .println(&format!("#Piece: {}", my_piece_id.to_human_presentable()));
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
                         position.find_wild(Some(position.get_phase()), *my_piece_id)
                     {
                         // Display.
-                        HumanInterface::bo(deck, Slot::Learning, &position, &app);
-
                         app.comm.println(&format!(
                             "[{}] Find: {}'{}'{}.",
                             deck.get_ply(Slot::Training),
@@ -155,27 +149,39 @@ impl BestMovePicker {
                             my_idp.to_human_presentable(),
                             my_addr_obj.to_physical_sign(position.get_board_size())
                         ));
+                        HumanInterface::bo(deck, Slot::Learning, &position, &app);
 
                         let mut best_thread = BestThread::new();
 
                         // ノートをスキャン。
-                        // TODO 次方向と、前方向がある。
-                        let mut note_caret = Caret::new_facing_right_caret();
+                        // TODO 次方向と、前方向の両方へスキャンしたい。
                         let mut record_count = 0;
                         loop {
+                            app.comm.println(&format!(
+                                "[Before pattern match: Caret: {}]",
+                                training_tape_box
+                                    .to_human_presentable_of_caret_of_current_tape(&app),
+                            ));
+
                             // 一致して続行か、一致しなくて続行か、一致せずテープの終わりだったかの３択☆（＾～＾）
-                            let (rmove_opt, is_end_of_tape) = self.pattern_match_and_go(
+                            let (rmove_opt, is_end_of_tape) = self.try_read_pattern_match(
                                 &mut training_tape_box,
                                 position,
                                 ply,
                                 *my_piece_id,
                                 my_addr_obj,
-                                &mut note_caret,
                                 &app,
                             );
 
+                            app.comm.println(&format!(
+                                "[After pattern match: Caret: {}]",
+                                training_tape_box
+                                    .to_human_presentable_of_caret_of_current_tape(&app),
+                            ));
+
                             if is_end_of_tape {
                                 // テープの終わりなら仕方ない☆（＾～＾）終わりだぜ☆（＾～＾）
+                                app.comm.println("[End of tape]");
                                 break;
                             } else if let Some(rmove) = rmove_opt {
                                 // ヒットしたようだぜ☆（＾～＾）
@@ -198,10 +204,9 @@ impl BestMovePicker {
                                 best_thread.push_move(best_move);
                                 // とりあえず抜ける☆（＾～＾）
                                 break;
-                            } else {
-                                // 一致しなかった☆（＾～＾）
-                                // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
                             }
+                            // 一致しなかった☆（＾～＾）
+                            // 見つかるか、テープの終わりまで、続行して探せだぜ☆（＾～＾）
                         }
 
                         // let thread_len = best_thread.len() as i16;
@@ -350,19 +355,21 @@ impl BestMovePicker {
     }
 
     /// 指し手単位での、パターン・マッチ。
-    /// 一致したか、一致しなかったか、一致せずテープの終わりだったかの３択☆（＾～＾）
+    /// 以下の３択☆（＾～＾）
+    /// （完遂）一致したら、１手指します。
+    /// （未着手）一致しなかったら、この手を指さなかった状態に戻します。
+    /// （EOT）テープの終わり。
     ///
     /// # Returns
     ///
     /// (move_opt, is_end_of_tape)
-    pub fn pattern_match_and_go(
+    pub fn try_read_pattern_match(
         &mut self,
         training_tape_box: &mut CassetteTapeBox,
         position: &mut Position,
         ply: i16,
         my_piece_id: PieceIdentify,
         my_addr_obj: Address,
-        note_caret: &mut Caret,
         app: &Application,
     ) -> (Option<ShogiMove>, bool) {
         /*
@@ -382,7 +389,7 @@ impl BestMovePicker {
 
             app.comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
-                note_caret.to_human_presentable(&app),
+                training_tape_box.to_human_presentable_of_caret_of_current_tape(&app),
                 rmove.to_human_presentable(training_tape_box, position.get_board_size(), &app),
                 bmove.subject_pid.to_human_presentable(),
                 bmove
@@ -482,11 +489,12 @@ impl BestMovePicker {
                 }
             } else {
                 // パターン不一致。
+                app.comm.println("[No match.]");
                 (None, false)
             }
         } else {
             // テープの終わり。
-            app.comm.println("Break: End of tape.");
+            app.comm.println("[Break: End of tape.]");
             (None, true)
         }
     }

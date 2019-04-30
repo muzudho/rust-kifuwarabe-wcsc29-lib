@@ -1,9 +1,6 @@
 use human::human_interface::*;
-use instrument::piece_etc::*;
 use instrument::position::*;
-use live::ohashi_player::*;
 use sound::shogi_move::ShogiMove;
-use sound::shogi_note::*;
 use sound::shogi_note_operation::*;
 use std::*;
 use studio::application::Application;
@@ -14,78 +11,6 @@ use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 pub struct GamePlayer {}
 impl GamePlayer {
-    // 大橋流を指せるように、クリアーするぜ☆（＾～＾）
-    pub fn clear_to_honshogi_origin(
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) {
-        // オリジン局面に戻す☆（＾～＾）
-        deck.change(None, position.get_board_size(), &app);
-        position.reset_origin_position();
-    }
-
-    // 大橋流で初期局面まで指す☆（＾～＾）
-    pub fn play_startpos(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        // 大橋流で初期局面まで指す☆（＾～＾）
-        OhashiPlayer::play_ohashi_starting(position, deck, &app);
-    }
-
-    /// 棋譜を作る☆（＾～＾）
-    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_1note_ope(
-        // ノートの中に Ply もある☆（＾～＾）
-        rnote_ope: &ShogiNoteOpe,
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) {
-        app.comm.println(&format!(
-            "[Touch 1note ope:{}]",
-            rnote_ope.to_human_presentable(position.get_board_size())
-        ));
-
-        GamePlayer::touch_1note_ope_no_log(&rnote_ope, position, deck, &app);
-
-        /*
-        comm.println(&format!(
-            "End     :touch_1note_ope. Rnote: {}.",
-            rnote.to_human_presentable(board_size)
-        ));
-         */
-        HumanInterface::show_position(
-            Slot::Learning,
-            &app.comm,
-            deck.get_ply(Slot::Learning),
-            position,
-        );
-    }
-
-    /// 棋譜を作る☆（＾～＾）
-    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_1note_ope_no_log(
-        // ノートの中に Ply もある☆（＾～＾）
-        rnote_ope: &ShogiNoteOpe,
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) {
-        deck.put_1note(
-            Slot::Learning,
-            ShogiNote::from_id_ope(
-                if let (_is_legal_touch, Some(piece_identify)) =
-                    position.try_beautiful_touch_no_log(&rnote_ope, &app.comm)
-                {
-                    PieceIdentify::from_number(piece_identify.get_id().get_number())
-                } else {
-                    None
-                },
-                *rnote_ope,
-            ),
-            app,
-        );
-    }
-
     /// 1手分進める。（非合法タッチは自動で戻します）
     ///
     /// 結果は、未着手か、１手　のどちらかです。
@@ -106,10 +31,12 @@ impl GamePlayer {
                 .caret_closed_interval
                 .intersect_caret_number(caret_number);
 
+            /*
             app.comm.println(&format!(
                 "[try_read_1move:{}]",
                 tape_box.to_human_presentable_of_current_tape(position.get_board_size(), &app),
             ));
+            */
             let mut is_legal_touch = true;
 
             let mut is_first = true;
@@ -267,7 +194,7 @@ impl GamePlayer {
             if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 app.comm
                     .println("rpm_cassette_tape_editor.rs:read_ope_track: touch_1note_ope");
-                GamePlayer::touch_1note_ope(&rnote_ope, position, deck, &app);
+                position.touch_1note_ope(&rnote_ope, deck, &app);
 
                 HumanInterface::bo(deck, Slot::Learning, &position, &app);
             }

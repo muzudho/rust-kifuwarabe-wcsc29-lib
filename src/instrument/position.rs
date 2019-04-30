@@ -8,6 +8,7 @@ use studio::application::*;
 use studio::board_size::*;
 use studio::communication::*;
 use studio::parser::*;
+use video_recorder::cassette_deck::CassetteDeck;
 use video_recorder::cassette_deck::Slot;
 
 pub const BOARD_START: usize = 0;
@@ -497,6 +498,61 @@ impl Position {
         } else {
             None
         }
+    }
+
+    /// 棋譜を作る☆（＾～＾）
+    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    pub fn touch_1note_ope(
+        &mut self,
+        // ノートの中に Ply もある☆（＾～＾）
+        rnote_ope: &ShogiNoteOpe,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        app.comm.println(&format!(
+            "[Touch 1note ope:{}]",
+            rnote_ope.to_human_presentable(self.get_board_size())
+        ));
+
+        self.touch_1note_ope_no_log(&rnote_ope, deck, &app);
+
+        /*
+        comm.println(&format!(
+            "End     :touch_1note_ope. Rnote: {}.",
+            rnote.to_human_presentable(board_size)
+        ));
+         */
+        HumanInterface::show_position(
+            Slot::Learning,
+            &app.comm,
+            deck.get_ply(Slot::Learning),
+            self,
+        );
+    }
+
+    /// 棋譜を作る☆（＾～＾）
+    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    pub fn touch_1note_ope_no_log(
+        &mut self,
+        // ノートの中に Ply もある☆（＾～＾）
+        rnote_ope: &ShogiNoteOpe,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        deck.put_1note(
+            Slot::Learning,
+            ShogiNote::from_id_ope(
+                if let (_is_legal_touch, Some(piece_identify)) =
+                    self.try_beautiful_touch_no_log(&rnote_ope, &app.comm)
+                {
+                    PieceIdentify::from_number(piece_identify.get_id().get_number())
+                } else {
+                    None
+                },
+                *rnote_ope,
+            ),
+            app,
+        );
     }
 
     /// go_1noteなんとかメソッドと一緒に使う。

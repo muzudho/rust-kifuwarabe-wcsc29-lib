@@ -18,7 +18,7 @@ impl UsiTape {
         UsiTape { moves: Vec::new() }
     }
 
-    ///
+    /// USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は動かさない☆（＾～＾）
     pub fn parse_usi_all_moves(
         comm: &Communication,
         line: &str,

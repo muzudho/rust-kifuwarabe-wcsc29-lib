@@ -6,10 +6,14 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Caret;
+use video_recorder::cassette_deck::Slot;
 use video_recorder::cassette_tape::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {
+    // このテープボックスの役割。
+    role_as_slot: Slot,
+
     file: String,
 
     /// イテレーターを使いたいので public にしてある。
@@ -20,17 +24,19 @@ pub struct CassetteTapeBox {
 }
 impl CassetteTapeBox {
     /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
-    pub fn new_empty(app: &Application) -> Self {
+    pub fn new_empty(slot: Slot, app: &Application) -> Self {
         CassetteTapeBox {
+            role_as_slot: slot,
             file: RpmTapeBox::create_file_full_name(&app.kw29_conf),
             tapes: Vec::new(),
             listening_tape_index: None,
         }
     }
 
-    pub fn from_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
+    /// トレーニング・テープを作成します。
+    pub fn from_training_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
         let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
-        rpm_tape_box.to_object(file_name, board_size, &app)
+        rpm_tape_box.to_training_object(board_size, &app)
     }
 
     /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
@@ -252,8 +258,14 @@ impl CassetteTapeBox {
     /// このテープ・ボックスのデバッグ情報表示。人間向け。
     pub fn to_human_presentable(&self) -> String {
         if let Some(tape_index) = self.listening_tape_index {
+            use video_recorder::cassette_deck::Slot::*;
             format!(
-                "[Box: File: '{}', Tapes: {}, Tape index: {}]",
+                "[{}-Box: File: '{}', Tapes: {}, Tape index: {}]",
+                match self.role_as_slot {
+                    Training => "T",
+                    Learning => "Learnig",
+                }
+                .to_string(),
                 self.file,
                 self.tapes.len(),
                 tape_index
@@ -271,10 +283,29 @@ impl CassetteTapeBox {
         app: &Application,
     ) -> String {
         if let Some(tape_index) = self.listening_tape_index {
+            use video_recorder::cassette_deck::Slot::*;
             format!(
-                "[Box: Tape index: {}, Tape: {}]",
+                "[{}-Box: Tape index: {}, Tape: {}]",
+                match self.role_as_slot {
+                    Training => "T",
+                    Learning => "Learnig",
+                }
+                .to_string(),
                 tape_index,
                 self.tapes[tape_index].to_human_presentable(board_size, &app)
+            )
+            .to_string()
+        } else {
+            "[Box: I have not selected a tape]".to_string()
+        }
+    }
+
+    /// 現在聴いているテープのキャレットのデバッグ情報表示。人間向け。
+    pub fn to_human_presentable_of_caret_of_current_tape(&self, app: &Application) -> String {
+        if let Some(tape_index) = self.listening_tape_index {
+            format!(
+                "[Box: Caret: {}]",
+                self.tapes[tape_index].caret.to_human_presentable(&app)
             )
             .to_string()
         } else {
