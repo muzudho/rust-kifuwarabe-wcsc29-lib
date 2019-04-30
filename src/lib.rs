@@ -1,4 +1,3 @@
-extern crate getopts;
 /// My name is Kifuwarabe.
 /// I am a computer shogi engine.
 /// I will go to WCSC29 this year.
@@ -24,9 +23,11 @@ extern crate getopts;
 ///
 /// Execution file.
 /// C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29/target/release/rust-kifuwarabe-wcsc29.exe
-
+///
 /// extern crate は main.rs か lib.rs に入れる。
 /// 参考: https://github.com/serde-rs/json |シリアライズ、デシリアライズ。
+extern crate chrono;
+extern crate getopts;
 extern crate rand;
 extern crate regex;
 extern crate serde;

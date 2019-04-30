@@ -108,7 +108,7 @@ impl GamePlayer {
 
             app.comm.println(&format!(
                 "[try_read_1move:{}]",
-                tape_box.to_human_presentable_of_current_tape(position.get_board_size()),
+                tape_box.to_human_presentable_of_current_tape(position.get_board_size(), &app),
             ));
             let mut is_legal_touch = true;
 

@@ -1,3 +1,4 @@
+use studio::application::Application;
 use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
 
@@ -151,11 +152,11 @@ impl Caret {
     }
 
     /// デバッグ表示用。
-    pub fn to_human_presentable(&self) -> String {
+    pub fn to_human_presentable(&self, app: &Application) -> String {
         if self.is_facing_left() {
-            format!("[<--{}]", self.number).to_string()
+            format!("[Caret: {}:<--{}]", self.step_in(&app.comm), self.number).to_string()
         } else {
-            format!("[{}-->]", self.number).to_string()
+            format!("[Caret: {}:{}-->]", self.step_in(&app.comm), self.number).to_string()
         }
     }
 }

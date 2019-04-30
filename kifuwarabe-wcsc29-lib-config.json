@@ -1,4 +1,8 @@
 {
     "kifuwarabe_wcsc29_config_path": "C:/muzudho/config/kifuwarabe-wcsc29.json",
-    "log_file_name": "C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib/kw29-lib.log"
+	"logging":{
+		"directory": "C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib",
+		"file_base_name": "kw29-lib",
+		"file_extension": ".log"
+	}
 }

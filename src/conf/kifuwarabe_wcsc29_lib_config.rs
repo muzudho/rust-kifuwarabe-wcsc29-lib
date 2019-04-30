@@ -4,15 +4,24 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
+#[derive(Deserialize)]
+#[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
+pub struct Logging {
+    // ログ・ファイルを入れておくディレクトリー。
+    pub directory: String,
+    pub file_base_name: String,
+    pub file_extension: String,
+}
+
 /// このライブラリの設定。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct KifuwarabeWcsc29LibConfig {
-    /// 統一設定ファイルへのパス。
+    // 統一設定ファイルへのパス。
     pub kifuwarabe_wcsc29_config_path: String,
 
-    /// ログ・ファイルへのパス。
-    pub log_file_name: String,
+    // ログ・ファイル。
+    pub logging: Logging,
 }
 impl KifuwarabeWcsc29LibConfig {
     /// 設定ファイル読込。

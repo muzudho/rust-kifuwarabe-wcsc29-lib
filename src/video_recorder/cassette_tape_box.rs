@@ -253,29 +253,32 @@ impl CassetteTapeBox {
     pub fn to_human_presentable(&self) -> String {
         if let Some(tape_index) = self.listening_tape_index {
             format!(
-                "File: '{}', Tapes: {}, Tape index: {}.",
+                "[Box: File: '{}', Tapes: {}, Tape index: {}]",
                 self.file,
                 self.tapes.len(),
                 tape_index
             )
             .to_string()
         } else {
-            format!("File: '{}', I have not selected a tape.", self.file).to_string()
+            format!("[Box: File: '{}', I have not selected a tape]", self.file).to_string()
         }
     }
 
     /// 現在聴いているテープのデバッグ情報表示。人間向け。
-    pub fn to_human_presentable_of_current_tape(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable_of_current_tape(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
         if let Some(tape_index) = self.listening_tape_index {
             format!(
-                "File: '{}', Tape index: {}, Tape: {}.",
-                self.file,
+                "[Box: Tape index: {}, Tape: {}]",
                 tape_index,
-                self.tapes[tape_index].to_human_presentable(board_size)
+                self.tapes[tape_index].to_human_presentable(board_size, &app)
             )
             .to_string()
         } else {
-            format!("File: '{}', I have not selected a tape.", self.file).to_string()
+            "[Box: I have not selected a tape]".to_string()
         }
     }
 }

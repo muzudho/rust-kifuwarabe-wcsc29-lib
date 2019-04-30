@@ -51,16 +51,6 @@ pub struct CassetteTape {
     pub label: CassetteTapeLabel,
     pub tracks: IntegerNoteVec,
 }
-impl fmt::Display for CassetteTape {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Caret: {} {}",
-            self.caret.to_human_presentable(),
-            self.tracks
-        )
-    }
-}
 impl CassetteTape {
     pub fn new_facing_right(app: &Application) -> Self {
         CassetteTape {
@@ -287,10 +277,10 @@ impl CassetteTape {
     }
 
     /// Human presentable large log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         format!(
-            "{} {}",
-            self.caret.to_human_presentable(),
+            "[Tape: {} {}]",
+            self.caret.to_human_presentable(&app),
             self.tracks.to_human_presentable(board_size)
         )
         .to_string()

@@ -119,17 +119,27 @@ impl BestMovePicker {
                 app.comm.println(&format!(
                     "#Tape: {}",
                     training_tape_box
-                        .to_human_presentable_of_current_tape(position.get_board_size())
+                        .to_human_presentable_of_current_tape(position.get_board_size(), &app)
                 ));
 
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                 // 'piece_loop:
                 let mut debug_count = 0;
                 for my_piece_id in PieceIdentify::iterator() {
-                    if 0 < debug_count {
+                    if 0 <= debug_count && debug_count <= 10 {
+                        // ここだけテストするぜ☆（＾～＾）
+                    } else {
+                        // それ以外は無視。
                         app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
-                        break;
+                        continue;
                     }
+
+                    // 駒を１つ選択☆（＾～＾）
+                    app.comm.println(&format!(
+                        "#Piece: {}",
+                        training_tape_box
+                            .to_human_presentable_of_current_tape(position.get_board_size(), &app)
+                    ));
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
@@ -372,7 +382,7 @@ impl BestMovePicker {
 
             app.comm.println(&format!(
                 "#{}Rmove:{}. subject('{}'{}){}",
-                note_caret.to_human_presentable(),
+                note_caret.to_human_presentable(&app),
                 rmove.to_human_presentable(training_tape_box, position.get_board_size(), &app),
                 bmove.subject_pid.to_human_presentable(),
                 bmove

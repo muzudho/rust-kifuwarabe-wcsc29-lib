@@ -3,6 +3,7 @@ use std::io::prelude::*;
 
 #[derive(Default)]
 pub struct Communication {
+    /// logger, logging, log file.
     pub log_file_name: String,
 }
 impl Communication {
