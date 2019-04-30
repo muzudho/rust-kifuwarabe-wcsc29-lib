@@ -30,26 +30,23 @@ impl LibSub {
     }
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.turn_caret_to_negative(Slot::Learning);
-        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.turn_caret_to_negative(Slot::Learning);
         for _i in 0..10 {
-            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.turn_caret_to_negative(Slot::Learning);
         for _i in 0..400 {
-            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
@@ -66,27 +63,24 @@ impl LibSub {
     }
 
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         // 非合法タッチは自動で戻します。
         deck.turn_caret_to_positive(Slot::Learning);
-        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+        GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.turn_caret_to_positive(Slot::Learning);
         for _i in 0..10 {
-            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
 
     pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.turn_caret_to_positive(Slot::Learning);
         for _i in 0..400 {
-            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, ply, &app);
+            GamePlayer::try_read_tape_for_1move(deck, Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, Slot::Learning, &position, &app);
     }
@@ -103,12 +97,7 @@ impl LibSub {
             panic!("Tape box none.");
         }
 
-        let best_umove = best_move_picker.get_mut_best_move(
-            position,
-            deck.slots[Slot::Learning as usize].ply,
-            deck,
-            &app,
-        );
+        let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
         // Examples.
         // println!("bestmove 7g7f");
         // println!("bestmove win");

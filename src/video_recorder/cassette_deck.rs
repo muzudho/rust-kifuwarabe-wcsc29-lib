@@ -378,9 +378,9 @@ impl CassetteDeck {
             "None-t-tape-box".to_string()
         }
     }
-    pub fn to_human_presentable_of_training_tape_box(&self) -> String {
-        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.to_human_presentable()
+    pub fn to_human_presentable_of_tape_box(&self, slot: Slot) -> String {
+        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
+            tape_box.to_human_presentable()
         } else {
             "None-t-tape-box".to_string()
         }

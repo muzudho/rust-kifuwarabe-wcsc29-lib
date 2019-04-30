@@ -7,7 +7,6 @@ use studio::application::Application;
 use studio::common::caret::*;
 use video_recorder::cassette_deck::CassetteDeck;
 use video_recorder::cassette_deck::*;
-use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 pub struct GamePlayer {}
 impl GamePlayer {
@@ -26,7 +25,6 @@ impl GamePlayer {
         deck: &mut CassetteDeck,
         slot: Slot,
         position: &mut Position,
-        ply: i16,
         app: &Application,
     ) -> (bool, Option<ShogiMove>) {
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
@@ -39,7 +37,7 @@ impl GamePlayer {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match deck.go_to_next(slot, &app) {
                 (caret_number, Some(rnote)) => {
-                    if position.try_beautiful_touch(&rnote, ply, &app) {
+                    if position.try_beautiful_touch(&rnote, deck.get_ply(slot), &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
                         // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
                         rmove
@@ -89,7 +87,7 @@ impl GamePlayer {
             app.comm
                 .println(&format!("[Try_read_1move: Rollback {} note!]", repeats));
             deck.turn_caret_to_opponent(slot);
-            GamePlayer::read_tape_for_n_notes_forcely(deck, slot, repeats, position, ply, &app);
+            GamePlayer::read_tape_for_n_notes_forcely(deck, slot, repeats, position, &app);
             deck.turn_caret_to_opponent(slot);
 
             return (false, None);
@@ -105,40 +103,42 @@ impl GamePlayer {
     }
 
     pub fn read_tape_for_n_moves_forcely(
-        tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
+        slot: Slot,
         repeats: usize,
         position: &mut Position,
-        ply: i16,
         app: &Application,
     ) {
         for _i in 0..repeats {
-            GamePlayer::read_tape_for_1move_forcely(tape_box, position, ply, &app);
+            GamePlayer::read_tape_for_1move_forcely(deck, slot, position, &app);
         }
     }
 
     /// 必ず1手進める。（非合法タッチがあれば強制終了）
     pub fn read_tape_for_1move_forcely(
-        tape_box: &mut CassetteTapeBox,
+        deck: &mut CassetteDeck,
+        slot: Slot,
         position: &mut Position,
-        ply: i16,
         app: &Application,
     ) {
         app.comm.println(&format!(
-            "[read_tape_for_1move_forcely:{}]",
-            tape_box.to_human_presentable(),
+            "[TOP read_tape_for_1move_forcely:{}:{}]",
+            deck.to_human_presentable_of_tape_box(slot),
+            deck.to_human_presentable_of_caret_of_current_tape_of_training_box(&app)
         ));
 
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
+        while let (_caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
             app.comm.println(&format!(
-                "<LOOP read_tape_for_1move_forcely:{}:{}>",
-                tape_box.to_human_presentable(),
+                "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
+                deck.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                deck.to_human_presentable_of_tape_box(slot),
                 rnote.to_human_presentable(position.get_board_size())
             ));
-            is_legal_touch = position.try_beautiful_touch(&rnote, ply, &app);
+            is_legal_touch = position.try_beautiful_touch(&rnote, deck.get_ply(slot), &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -169,14 +169,13 @@ impl GamePlayer {
         slot: Slot,
         repeat: u16,
         position: &mut Position,
-        ply: i16,
         app: &Application,
     ) {
         for i in 0..repeat {
             if let (_caret_number, Some(rnote)) = deck.go_to_next(slot, &app) {
                 app.comm
                     .println(&format!("<Go-force:{}/{} {}>", i, repeat, rnote));
-                if !position.try_beautiful_touch(&rnote, ply, &app) {
+                if !position.try_beautiful_touch(&rnote, deck.get_ply(slot), &app) {
                     panic!("Touch fail forcely.");
                 }
             } else {

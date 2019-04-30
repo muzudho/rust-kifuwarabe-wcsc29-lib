@@ -50,7 +50,6 @@ impl BestMovePicker {
     pub fn get_mut_best_move(
         &mut self,
         position: &mut Position,
-        ply: i16,
         deck: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
@@ -75,7 +74,7 @@ impl BestMovePicker {
             // トレーニング・テープ・ボックスを１箱選択。
             app.comm.println(&format!(
                 "#Tape-box: {}. Phase: {:?}.",
-                deck.to_human_presentable_of_training_tape_box(),
+                deck.to_human_presentable_of_tape_box(Slot::Training),
                 position.get_phase()
             ));
 
@@ -174,7 +173,6 @@ impl BestMovePicker {
                                 deck,
                                 Slot::Training,
                                 position,
-                                ply,
                                 &app,
                             ) {
                                 (is_end_of_tape, Some(rmove)) => {
@@ -241,24 +239,19 @@ impl BestMovePicker {
                         app.comm.println(&format!(
                             "Tried! Then go to opponent {}th note of move! Training deck box: {}. Deck: {}.",
                             forwarding_note_count,
-                            deck.to_human_presentable_of_training_tape_box(),
+                            deck.to_human_presentable_of_tape_box(Slot::Training),
                             deck.to_human_presentable()
                         ));
                         // TODO ここでテープボックスが無くなっているのは　なぜなのか☆（＾～＾）？
                         deck.turn_caret_to_opponent(Slot::Training);
                         {
-                            let learning_slot = &mut deck.slots[Slot::Training as usize];
-                            if let Some(ref mut tape_box) = learning_slot.tape_box {
-                                GamePlayer::read_tape_for_n_moves_forcely(
-                                    tape_box,
-                                    forwarding_note_count,
-                                    position,
-                                    learning_slot.ply,
-                                    &app,
-                                );
-                            } else {
-                                panic!("Tape box none in backward.");
-                            }
+                            GamePlayer::read_tape_for_n_moves_forcely(
+                                deck,
+                                Slot::Training,
+                                forwarding_note_count,
+                                position,
+                                &app,
+                            );
                         }
                         deck.turn_caret_to_opponent(Slot::Training);
                         app.comm.println("Backed.");
