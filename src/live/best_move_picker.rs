@@ -179,7 +179,7 @@ impl BestMovePicker {
                             ) {
                                 (is_end_of_tape, Some(rmove)) => {
                                     // ヒットしたようだぜ☆（＾～＾）
-                                    forwarding_note_count += 1;
+                                    forwarding_note_count += rmove.len();
                                     app.comm.println(&format!(
                                         "[After pattern match: is_end_of_tape: {}, Hit {}th note! Caret: {}, Rmove: {}]",
                                         is_end_of_tape,
@@ -239,7 +239,7 @@ impl BestMovePicker {
                         // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
                         // TODO それを逆順にすれば　指し手だぜ☆（＾～＾）
                         app.comm.println(&format!(
-                            "Tried, go opponent {}th note of move! Training deck box: {}. Deck: {}.",
+                            "Tried! Then go to opponent {}th note of move! Training deck box: {}. Deck: {}.",
                             forwarding_note_count,
                             deck.to_human_presentable_of_training_tape_box(),
                             deck.to_human_presentable()

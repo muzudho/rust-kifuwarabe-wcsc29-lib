@@ -106,7 +106,7 @@ impl GamePlayer {
 
     pub fn read_tape_for_n_moves_forcely(
         tape_box: &mut CassetteTapeBox,
-        repeats: i16,
+        repeats: usize,
         position: &mut Position,
         ply: i16,
         app: &Application,
