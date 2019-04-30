@@ -6,6 +6,7 @@ use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
 use video_recorder::cassette_deck::CassetteDeck;
+use video_recorder::cassette_deck::Slot;
 
 /// 大橋流だけ指してくれるプレイヤー。
 pub struct OhashiPlayer {}
@@ -91,11 +92,38 @@ impl OhashiPlayer {
         ];
 
         for element in array.iter() {
-            // 大橋流で指しているところはログを省略☆（＾～＾）
+            // 大橋流で指しているところはログを省略☆（＾～＾）１手に３ノート使う☆（＾～＾）
 
-            pos.touch_1note_ope_no_log(&element.0, deck, &app);
-            pos.touch_1note_ope_no_log(&element.1, deck, &app);
-            pos.touch_1note_ope_no_log(&element.2, deck, &app);
+            // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
+            {
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                pos.touch_1note_ope_no_log(&element.0, deck, &app);
+            }
+
+            {
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                pos.touch_1note_ope_no_log(&element.1, deck, &app);
+            }
+
+            {
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
+                    tape_box.go_to_next(&app);
+                }
+                pos.touch_1note_ope_no_log(&element.2, deck, &app);
+            }
         }
     }
 }

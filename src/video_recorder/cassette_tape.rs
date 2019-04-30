@@ -211,20 +211,20 @@ impl CassetteTape {
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_1note_forcely(&mut self, comm: &Communication) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_1note_forcely(&mut self.caret, comm)
+    pub fn go_1note_forcely(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+        self.tracks.go_1note_forcely(&mut self.caret, &app)
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
     pub fn go_1note_forcely_with_othre_caret(
         &self,
         caret: &mut Caret,
-        comm: &Communication,
+        app: &Application,
     ) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_1note_forcely(caret, &comm)
+        self.tracks.go_1note_forcely(caret, &app)
     }
 
-    /// コマンドライン入力形式。
+    /// コマンドライン入力形式の棋譜。
     ///
     /// # Returns
     ///

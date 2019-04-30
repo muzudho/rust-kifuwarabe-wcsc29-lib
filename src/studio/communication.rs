@@ -18,7 +18,7 @@ impl Communication {
 
     /// Write.
     pub fn print(&self, line: &str) {
-        println!("{}", line);
+        print!("{}", line);
 
         let mut file = OpenOptions::new()
             .create(true)

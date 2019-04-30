@@ -59,7 +59,7 @@ impl RpmTapeTracks {
 
             let mut caret = Caret::new_facing_right_caret();
             let (_last_caret, note_ope_opt) =
-                ShogiNoteOpe::parse_1ope(&ope_element, &mut caret, board_size, &app.comm);
+                ShogiNoteOpe::parse_1ope(&ope_element, &mut caret, board_size, &app);
 
             if let Some(note_ope) = note_ope_opt {
                 notes.push(ShogiNote::from_id_ope(

@@ -24,74 +24,60 @@ impl GamePlayer {
         ply: i16,
         app: &Application,
     ) -> Option<ShogiMove> {
-        // とりあえず、キャレットを進めてみる☆（*＾～＾*）
-        if let (caret_number, Some(_note)) = tape_box.go_to_next(&app) {
-            let mut rmove = ShogiMove::new_facing_right_move();
+        // 指し手（実際のところ、テープ上の範囲を示したもの）。
+        let mut rmove = ShogiMove::new_facing_right_move();
+
+        let mut is_rollback = false;
+
+        // とりあえず、フェーズ切り替えするまで、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
+        while let (caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
+            // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
             rmove
                 .caret_closed_interval
                 .intersect_caret_number(caret_number);
 
-            /*
             app.comm.println(&format!(
-                "[try_read_1move:{}]",
-                tape_box.to_human_presentable_of_current_tape(position.get_board_size(), &app),
+                "[{} note advanced! Note:{}, Move:{}]",
+                rmove.len(),
+                rnote.to_human_presentable(position.get_board_size()),
+                rmove.to_human_presentable(&tape_box, position.get_board_size(), &app)
             ));
-            */
-            let mut is_legal_touch = true;
 
-            let mut is_first = true;
-            // フェーズ切り替えするまで、強制的に１ノート進め続けるぜ☆（＾～＾）。
-            while let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
-                app.comm.println(&format!(
-                    "[LOOP try_read_1move:{}:{}]",
-                    tape_box.to_human_presentable(),
-                    rnote.to_human_presentable(position.get_board_size())
-                ));
-
-                is_legal_touch = position.try_beautiful_touch(&rnote, ply, &app);
-
-                if !is_first && !is_legal_touch {
-                    break;
-                }
-
-                if !is_first && rnote.is_phase_change() {
-                    // フェーズ切り替えしたら終了。（ただし、初回除く）
-                    print!("[End try_read_1move:{}]", rnote);
-                    break;
-                }
-
-                is_first = false;
+            if !position.try_beautiful_touch(&rnote, ply, &app) {
+                // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
+                is_rollback = true;
+                break;
             }
 
-            if !is_legal_touch {
-                // 非合法タッチを自動で戻す。
-                app.comm
-                    .println("[End try_read_1move:Illegal, go opponent forcely!]");
-                tape_box.turn_caret_to_opponent();
-                GamePlayer::read_tape_for_n_notes_forcely(
-                    tape_box,
-                    rmove.len() as u16,
-                    position,
-                    ply,
-                    &app,
-                );
-                tape_box.turn_caret_to_opponent();
-
-                return None;
+            if 1 < rmove.len() && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("[Phase-change-break try_read_1move:{}]", rnote);
+                break;
             }
-
-            // 1つ以上読んでいれば合法。
-            /*
-            if rmove.len() > 0 {
-                rmove
-            } else {
-                None
-            }
-            */
-            Some(rmove)
-        } else {
-            None
         }
+
+        if rmove.is_empty() {
+            return None;
+        }
+
+        if is_rollback {
+            // 非合法タッチを自動で戻す。
+            app.comm.println("[Try_read_1move: Rollback!]");
+            tape_box.turn_caret_to_opponent();
+            GamePlayer::read_tape_for_n_notes_forcely(
+                tape_box,
+                rmove.len() as u16,
+                position,
+                ply,
+                &app,
+            );
+            tape_box.turn_caret_to_opponent();
+
+            return None;
+        }
+
+        // 1つ以上読んでいれば合法。
+        Some(rmove)
     }
 
     pub fn read_tape_for_n_moves_forcely(
@@ -189,7 +175,7 @@ impl GamePlayer {
             }
 
             let tuple =
-                ShogiNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &app.comm);
+                ShogiNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &app);
 
             if let (_last_used_caret, Some(rnote_ope)) = tuple {
                 app.comm

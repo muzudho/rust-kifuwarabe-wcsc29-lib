@@ -586,7 +586,7 @@ impl Position {
     ///
     /// # Returns
     ///
-    /// (conplete, Identified piece)
+    /// (complete, Identified piece)
     pub fn try_beautiful_touch_no_log(
         &mut self,
         rnote_ope: &ShogiNoteOpe,

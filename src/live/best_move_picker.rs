@@ -378,10 +378,11 @@ impl BestMovePicker {
             note_caret.to_human_presentable()
         ));
         */
-        // とりあえず 1手分をパースします。（非合法タッチは自動で戻ります）
+        // とりあえず 1手分ごそっと動かそうぜ☆（＾～＾）
         if let Some(rmove) =
             GamePlayer::try_read_tape_for_1move(training_tape_box, position, ply, &app)
         {
+            // ここに来たら、キャレットが１手分進んでるぜ☆（＾～＾）
             // どの駒が動いた１手なのか、またその番地。
             // 取った駒があるのなら、それも欲しい。
             // (subject_pid, subject_address, opject_pid_opt, object_address_opt)

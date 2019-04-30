@@ -45,13 +45,24 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, _comm: &Communication) -> i16 {
+    pub fn go_to_next(&mut self, app: &Application) -> i16 {
         let old = self.number;
 
         if self.facing_left {
             self.number -= 1;
         } else {
             self.number += 1;
+        }
+
+        // ログ出力☆（＾～＾）
+        {
+            if self.is_facing_left() {
+                app.comm
+                    .print(&format!("[Caret: {}<--{}]", self.number, old).to_string());
+            } else {
+                app.comm
+                    .print(&format!("[Caret: {}-->{}]", old, self.number).to_string());
+            }
         }
 
         old
@@ -64,13 +75,24 @@ impl Caret {
     }
 
     /// ちょっと戻りたいときに☆（＾～＾）
-    pub fn go_back(&mut self, _comm: &Communication) -> i16 {
+    pub fn go_back(&mut self, app: &Application) -> i16 {
         let old = self.number;
 
         if self.facing_left {
             self.number += 1;
         } else {
             self.number -= 1;
+        }
+
+        // ログ出力☆（＾～＾）
+        {
+            if self.is_facing_left() {
+                app.comm
+                    .print(&format!("[Caret: {}<--{}]", self.number, old).to_string());
+            } else {
+                app.comm
+                    .print(&format!("[Caret: {}-->{}]", old, self.number).to_string());
+            }
         }
 
         old
@@ -152,11 +174,11 @@ impl Caret {
     }
 
     /// デバッグ表示用。
-    pub fn to_human_presentable(&self, app: &Application) -> String {
+    pub fn to_human_presentable(&self, _app: &Application) -> String {
         if self.is_facing_left() {
-            format!("[Caret: {}:<--{}]", self.step_in(&app.comm), self.number).to_string()
+            format!("[Caret: <--{}]", self.number).to_string()
         } else {
-            format!("[Caret: {}:{}-->]", self.step_in(&app.comm), self.number).to_string()
+            format!("[Caret: {}-->]", self.number).to_string()
         }
     }
 }

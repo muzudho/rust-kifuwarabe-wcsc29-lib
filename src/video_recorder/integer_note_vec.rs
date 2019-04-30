@@ -5,7 +5,6 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
-use studio::communication::*;
 
 const NONE_VALUE: i8 = -1;
 
@@ -60,45 +59,6 @@ impl IntegerNoteVec {
         self.negative_notes.clear();
     }
 
-    /// Human presentable large log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
-        let mut dump;
-
-        {
-            dump = format!("Len-{}:", self.negative_notes.len());
-        }
-        for note in &self.negative_notes {
-            dump = format!(
-                "{} ({}'{}')",
-                dump,
-                if let Some(pid) = note.get_id() {
-                    pid.to_human_presentable()
-                } else {
-                    NONE_VALUE.to_string()
-                },
-                note.get_ope().to_human_presentable(board_size),
-            );
-        }
-
-        {
-            dump = format!("{} Len+{}:", dump, self.positive_notes.len());
-        }
-        for note in &self.positive_notes {
-            dump = format!(
-                "{} ({}'{}')",
-                dump,
-                if let Some(pid) = note.get_id() {
-                    pid.to_human_presentable()
-                } else {
-                    NONE_VALUE.to_string()
-                },
-                note.get_ope().to_human_presentable(board_size),
-            );
-        }
-
-        dump
-    }
-
     /// 範囲はキャレット番地で示す☆（＾～＾）
     /// ０に背を向けた２つのキャレットがあると仮定し、両端はピークを指すキャレット☆（＾～＾）
     /// 向きは取れない☆（＾～＾）
@@ -127,10 +87,10 @@ impl IntegerNoteVec {
     pub fn go_1note_forcely(
         &self,
         caret: &mut Caret,
-        comm: &Communication,
+        app: &Application,
     ) -> (i16, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
-        let caret_number = caret.go_to_next(comm);
+        let caret_number = caret.go_to_next(&app);
 
         if caret.is_facing_left() {
             // 負の無限大の方に向いているとき。
@@ -208,7 +168,7 @@ impl IntegerNoteVec {
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
     pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
         // とりあえず、キャレットを進めてみる。
-        let caret_number = caret.go_to_next(&app.comm);
+        let caret_number = caret.go_to_next(&app);
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -311,7 +271,7 @@ impl IntegerNoteVec {
             .append(&mut tape_to_empty.negative_notes);
     }
 
-    /// コマンドライン入力形式。
+    /// コマンドライン入力形式の棋譜。
     ///
     /// # Returns
     ///
@@ -419,5 +379,44 @@ impl IntegerNoteVec {
             // 操作は、半角スペース１個区切り。
             ope: operations.trim_start().to_string(),
         }
+    }
+
+    /// Human presentable large log.
+    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+        let mut dump;
+
+        {
+            dump = format!("Len-{}:", self.negative_notes.len());
+        }
+        for note in &self.negative_notes {
+            dump = format!(
+                "{} ({}'{}')",
+                dump,
+                if let Some(pid) = note.get_id() {
+                    pid.to_human_presentable()
+                } else {
+                    NONE_VALUE.to_string()
+                },
+                note.get_ope().to_human_presentable(board_size),
+            );
+        }
+
+        {
+            dump = format!("{} Len+{}:", dump, self.positive_notes.len());
+        }
+        for note in &self.positive_notes {
+            dump = format!(
+                "{} ({}'{}')",
+                dump,
+                if let Some(pid) = note.get_id() {
+                    pid.to_human_presentable()
+                } else {
+                    NONE_VALUE.to_string()
+                },
+                note.get_ope().to_human_presentable(board_size),
+            );
+        }
+
+        dump
     }
 }

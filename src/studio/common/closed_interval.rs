@@ -69,10 +69,6 @@ impl ClosedInterval {
         }
     }
 
-    pub fn to_human_presentable(&self) -> String {
-        format!("{}:{}", self.minimum, self.maximum).to_string()
-    }
-
     pub fn is_empty(&self) -> bool {
         self.minimum < self.maximum
     }
@@ -83,5 +79,15 @@ impl ClosedInterval {
         } else {
             (self.maximum - self.minimum + 1) as usize
         }
+    }
+
+    pub fn to_human_presentable(&self) -> String {
+        format!(
+            "[CloseInterval({}:{}), Len: {}]",
+            self.minimum,
+            self.maximum,
+            self.len()
+        )
+        .to_string()
     }
 }

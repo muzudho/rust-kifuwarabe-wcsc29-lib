@@ -1,18 +1,16 @@
+use instrument::piece_etc::*;
+use sound::shogi_note_operation::*;
+use std::fmt;
+use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
+use studio::common::closed_interval::ClosedInterval;
+
 ///
 /// Rpm棋譜のノート。
 ///
 /// 局面から独立しています。
 ///
-use studio::common::closed_interval::ClosedInterval;
-use studio::communication::*;
-// use kifu_rpm::rpm_tape::*;
-use instrument::piece_etc::*;
-use sound::shogi_note_operation::*;
-use std::fmt;
-
-//#[derive(Debug)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct ShogiNote {
     // 駒の背番号。フェーズ・チェンジのときは None。
@@ -58,20 +56,20 @@ impl ShogiNote {
     ///
     /// (closed_interval, note_opt)
     pub fn parse_1note(
-        comm: &Communication,
         ope_vec: &[&str],
         id_vec: &[&str],
         note_caret: &mut Caret,
         board_size: BoardSize,
+        app: &Application,
     ) -> (ClosedInterval, Option<ShogiNote>) {
         let mut closed_interval = ClosedInterval::new_facing_right();
 
         // 数字を返却してから、キャレットを移動。
-        let n0 = note_caret.go_to_next(comm);
+        let n0 = note_caret.go_to_next(&app);
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (sub_closed_interval, note_ope) = if let (sub_closed_interval, Some(note_ope)) =
-            ShogiNoteOpe::parse_1ope(&ope_vec[n0 as usize], &mut token_caret, board_size, &comm)
+            ShogiNoteOpe::parse_1ope(&ope_vec[n0 as usize], &mut token_caret, board_size, &app)
         {
             (sub_closed_interval, note_ope)
         } else {

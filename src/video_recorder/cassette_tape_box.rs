@@ -81,7 +81,7 @@ impl CassetteTapeBox {
     /// (キャレット番地, 1ノート)
     pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1note_forcely(&app.comm)
+            self.tapes[tape_index].go_1note_forcely(&app)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -94,7 +94,7 @@ impl CassetteTapeBox {
         app: &Application,
     ) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1note_forcely_with_othre_caret(caret, &app.comm)
+            self.tapes[tape_index].go_1note_forcely_with_othre_caret(caret, &app)
         } else {
             panic!("Please choice listening tape.");
         }
