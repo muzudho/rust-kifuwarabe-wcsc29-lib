@@ -1,5 +1,5 @@
+use audio_compo::cassette_deck::*;
 use human::human_interface::*;
-use instrument::game_player::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use musician::best_thread::*;
@@ -7,7 +7,6 @@ use sheet_music_format::kifu_usi::usi_move::*;
 use std::collections::HashMap;
 use std::fs;
 use studio::application::Application;
-use video_recorder::cassette_deck::*;
 
 pub struct BestMovePicker {
     best_thread_map: HashMap<i8, BestThread>,
@@ -108,8 +107,18 @@ impl BestMovePicker {
             }
             */
 
+            let mut debug_tape_count = -1;
             // テープをセット☆（＾～＾）
             while deck.change_next_if_training_tape_exists(&app) {
+                debug_tape_count += 1;
+                if 0 <= debug_tape_count && debug_tape_count <= 0 {
+                    // ここだけテストするぜ☆（＾～＾）
+                } else {
+                    // それ以外は無視。
+                    app.comm.println("デバッグ中☆（＾～＾）テープを中断。");
+                    continue;
+                }
+
                 // テープを１本選択☆（＾～＾）
                 app.comm.println(&format!(
                     "#Tape: {}",
@@ -121,21 +130,22 @@ impl BestMovePicker {
 
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                 // 'piece_loop:
-                // let mut debug_count = 0;
+                let mut debug_piece_count = -1;
                 for my_piece_id in PieceIdentify::iterator() {
-                    /*
-                    if 0 <= debug_count && debug_count <= 3 {
+                    debug_piece_count += 1;
+                    if 29 <= debug_piece_count && debug_piece_count <= 29 {
                         // ここだけテストするぜ☆（＾～＾）
                     } else {
                         // それ以外は無視。
                         app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
                         continue;
                     }
-                    */
 
                     // 駒を１つ選択☆（＾～＾）
-                    app.comm
-                        .println(&format!("#Piece: {}", my_piece_id.to_human_presentable()));
+                    app.comm.println(&format!(
+                        "\n----------------------------------------------------------------------------------------------------------------------------------------------------------------#Piece: {}",
+                        my_piece_id.to_human_presentable()
+                    ));
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
@@ -155,10 +165,11 @@ impl BestMovePicker {
 
                         // ノートをスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
-                        let mut forwarding_note_count = 0;
+                        let mut forwarding_note_count: usize = 0;
                         'note_scan: loop {
                             app.comm.println(&format!(
-                                "[Before pattern match: Caret: {}]",
+                                "\n--------------------------------------------------------------------------------#Note scan: {}th note. [Before pattern match: Caret: {}]",
+                                forwarding_note_count,
                                 deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
                                     &app
                                 ),
@@ -169,17 +180,22 @@ impl BestMovePicker {
                             // （２）最後ではない１手分。局面もキャレットも進んでいる。
                             // （３）テープ終わっていた。キャレットを戻す。
                             // （４）実現しない操作だった。局面とキャレットを戻す。
-                            match GamePlayer::try_read_tape_for_1move(
-                                deck,
-                                Slot::Training,
-                                position,
-                                &app,
-                            ) {
+                            match deck.try_read_tape_for_1move(Slot::Training, position, &app) {
                                 (is_end_of_tape, Some(rmove)) => {
                                     // ヒットしたようだぜ☆（＾～＾）
                                     forwarding_note_count += rmove.len();
+
+                                    // ベストムーブを作って追加しようぜ☆（＾～＾）
+                                    let best_move = rmove.to_best_move(
+                                        deck,
+                                        Slot::Training,
+                                        position.get_board_size(),
+                                        &app,
+                                    );
+
                                     app.comm.println(&format!(
-                                        "[After pattern match: is_end_of_tape: {}, Hit {}th note! Caret: {}, Rmove: {}]",
+                                        "\n[After pattern match: best_move: {}, is_end_of_tape: {}, Hit {}th note! Caret: {}, Rmove: {}]",
+                                        best_move.to_human_presentable(position.get_board_size(), &app),
                                         is_end_of_tape,
                                         forwarding_note_count,
                                         deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
@@ -192,13 +208,6 @@ impl BestMovePicker {
                                             &app
                                     )));
 
-                                    // ベストムーブを作って追加しようぜ☆（＾～＾）
-                                    let best_move = rmove.to_best_move(
-                                        deck,
-                                        Slot::Training,
-                                        position.get_board_size(),
-                                        &app,
-                                    );
                                     best_thread.push_move(best_move);
                                     // とりあえず抜ける☆（＾～＾）
                                     break 'note_scan;
@@ -243,21 +252,18 @@ impl BestMovePicker {
                             deck.to_human_presentable()
                         ));
                         // TODO ここでテープボックスが無くなっているのは　なぜなのか☆（＾～＾）？
-                        deck.turn_caret_to_opponent(Slot::Training);
+                        deck.look_back_caret_to_opponent(Slot::Training, &app);
                         {
-                            GamePlayer::read_tape_for_n_moves_forcely(
-                                deck,
+                            deck.read_tape_for_n_notes_permissive(
                                 Slot::Training,
                                 forwarding_note_count,
                                 position,
                                 &app,
                             );
                         }
-                        deck.turn_caret_to_opponent(Slot::Training);
+                        deck.look_back_caret_to_opponent(Slot::Training, &app);
                         app.comm.println("Backed.");
                     }
-
-                    //debug_count += 1;
                 }
 
                 // いくつか読み取れれば打ち止め。
@@ -269,6 +275,21 @@ impl BestMovePicker {
         } // トレーニング・ディレクトリー内のループ。
 
         //println!("#match_thread loop end.");
+
+        // デバッグ表示☆（*＾～＾*）
+        {
+            for pid in PieceIdentify::iterator() {
+                let pid_num = pid.get_number();
+                let best_thread = &self.best_thread_map[&pid_num];
+
+                app.comm.println(&format!(
+                    "[Best: Pid: {}, Thr-Len: {}. {}]",
+                    pid_num,
+                    best_thread.len(),
+                    best_thread.to_human_presentable(position.get_board_size(), &app)
+                ));
+            }
+        }
 
         let mut best_move_opt = None;
 

@@ -13,7 +13,7 @@ use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
 use studio::communication::*;
-use video_recorder::integer_note_vec::*;
+use video_tape_model::integer_note_vec::*;
 
 /// 対局情報。
 pub struct CassetteTapeLabel {

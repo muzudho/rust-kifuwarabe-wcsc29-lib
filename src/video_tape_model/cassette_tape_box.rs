@@ -1,4 +1,5 @@
 extern crate rand;
+use audio_compo::cassette_deck::Slot;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sound::shogi_note::ShogiNote;
 use std::*;
@@ -7,8 +8,7 @@ use studio::board_size::*;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Caret;
 use studio::common::closed_interval::ClosedInterval;
-use video_recorder::cassette_deck::Slot;
-use video_recorder::cassette_tape::*;
+use video_tape_model::cassette_tape::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {
@@ -116,23 +116,23 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn turn_caret_to_opponent(&mut self) {
+    pub fn look_back_caret_to_opponent(&mut self, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.turn_to_opponent();
+            self.tapes[tape_index].caret.look_back_to_opponent(&app);
         } else {
             panic!("Please choice listening tape.");
         }
     }
-    pub fn turn_caret_to_negative(&mut self) {
+    pub fn look_back_caret_to_negative(&mut self, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.turn_to_negative();
+            self.tapes[tape_index].caret.look_back_to_negative(&app);
         } else {
             panic!("Please choice listening tape.");
         }
     }
-    pub fn turn_caret_to_positive(&mut self) {
+    pub fn look_back_caret_to_positive(&mut self, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.turn_to_positive();
+            self.tapes[tape_index].caret.look_back_to_positive(&app);
         } else {
             panic!("Please choice listening tape.");
         }
@@ -274,7 +274,7 @@ impl CassetteTapeBox {
     /// このテープ・ボックスのデバッグ情報表示。人間向け。
     pub fn to_human_presentable(&self) -> String {
         if let Some(tape_index) = self.listening_tape_index {
-            use video_recorder::cassette_deck::Slot::*;
+            use audio_compo::cassette_deck::Slot::*;
             format!(
                 "[{}-Box: File: '{}', Tapes: {}, Tape index: {}]",
                 match self.role_as_slot {
@@ -299,7 +299,7 @@ impl CassetteTapeBox {
         app: &Application,
     ) -> String {
         if let Some(tape_index) = self.listening_tape_index {
-            use video_recorder::cassette_deck::Slot::*;
+            use audio_compo::cassette_deck::Slot::*;
             format!(
                 "[{}-Box: Tape index: {}, Tape: {}]",
                 match self.role_as_slot {

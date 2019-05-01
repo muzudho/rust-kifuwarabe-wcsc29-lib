@@ -1,3 +1,5 @@
+use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::cassette_deck::Slot;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use sound::shogi_note_operation::*;
@@ -5,8 +7,6 @@ use std::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
-use video_recorder::cassette_deck::CassetteDeck;
-use video_recorder::cassette_deck::Slot;
 
 /// 大橋流だけ指してくれるプレイヤー。
 pub struct OhashiPlayer {}

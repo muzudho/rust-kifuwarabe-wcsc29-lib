@@ -1,9 +1,9 @@
+use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::cassette_deck::Slot;
 use instrument::position::*;
 use std::*;
 use studio::application::Application;
 use studio::communication::*;
-use video_recorder::cassette_deck::CassetteDeck;
-use video_recorder::cassette_deck::Slot;
 
 pub struct HumanInterface {}
 impl HumanInterface {
@@ -23,7 +23,7 @@ impl HumanInterface {
     /// トレーニング局面と、棋譜　の表示。
     pub fn bo(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         /*
-        use video_recorder::cassette_deck::Slot::*;
+        use audio_compo::cassette_deck::Slot::*;
         match slot {
             Training => {
                 app.comm.println("<TRAINING>");

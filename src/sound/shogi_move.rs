@@ -1,3 +1,5 @@
+use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::cassette_deck::Slot;
 use instrument::piece_etc::*;
 use musician::best_move::*;
 use sheet_music_format::kifu_usi::usi_move::*;
@@ -6,9 +8,7 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::*;
-use video_recorder::cassette_deck::CassetteDeck;
-use video_recorder::cassette_deck::Slot;
-use video_recorder::cassette_tape_box::CassetteTapeBox;
+use video_tape_model::cassette_tape_box::CassetteTapeBox;
 
 /// カセット・テープ上の閉区間（１手分）。
 ///

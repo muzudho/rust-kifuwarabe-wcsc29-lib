@@ -1,3 +1,4 @@
+use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
@@ -7,7 +8,6 @@ use sound::shogi_note_operation::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::communication::*;
-use video_recorder::cassette_deck::*;
 
 pub struct KifConverter {}
 impl KifConverter {

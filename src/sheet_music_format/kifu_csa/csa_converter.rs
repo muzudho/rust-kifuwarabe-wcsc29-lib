@@ -7,7 +7,7 @@ use sound::shogi_note_operation::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::communication::*;
-use video_recorder::cassette_deck::*;
+use audio_compo::cassette_deck::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {

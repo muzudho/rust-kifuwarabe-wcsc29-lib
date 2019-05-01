@@ -45,7 +45,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, app: &Application) -> i16 {
+    pub fn go_to_next(&mut self, _app: &Application) -> i16 {
         let old = self.number;
 
         if self.facing_left {
@@ -54,6 +54,7 @@ impl Caret {
             self.number += 1;
         }
 
+        /*
         // ログ出力☆（＾～＾）
         {
             if self.is_facing_left() {
@@ -64,6 +65,7 @@ impl Caret {
                     .print(&format!("[Caret: {}-->{}]", old, self.number).to_string());
             }
         }
+         */
 
         old
     }
@@ -88,10 +90,10 @@ impl Caret {
         {
             if self.is_facing_left() {
                 app.comm
-                    .print(&format!("[Caret: {}<--{}]", self.number, old).to_string());
+                    .print(&format!("[CaretBK: {}<--{}]", self.number, old).to_string());
             } else {
                 app.comm
-                    .print(&format!("[Caret: {}-->{}]", old, self.number).to_string());
+                    .print(&format!("[CaretBK: {}-->{}]", old, self.number).to_string());
             }
         }
 
@@ -103,20 +105,39 @@ impl Caret {
             && self.number <= closed_interval.get_maximum_caret_number()
     }
 
-    pub fn turn_to_negative(&mut self) {
+    /// その場で、向きだけ変えるぜ☆（＾～＾）
+    pub fn look_back_to_negative(&mut self, app: &Application) {
+        app.comm.print("[LookBack N]");
         if !self.is_facing_left() {
+            // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = true;
+
+            // 振り返ってから、１歩前へ☆（＾～＾）
+            self.go_to_next(&app);
         }
     }
 
-    pub fn turn_to_positive(&mut self) {
+    /// その場で、向きだけ変えるぜ☆（＾～＾）
+    pub fn look_back_to_positive(&mut self, app: &Application) {
+        app.comm.print("[LookBack P]");
         if self.is_facing_left() {
+            // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = false;
+
+            // 振り返ってから、１歩前へ☆（＾～＾）
+            self.go_to_next(&app);
         }
     }
 
-    pub fn turn_to_opponent(&mut self) {
+    /// その場で、向きだけ変えるぜ☆（＾～＾）
+    pub fn look_back_to_opponent(&mut self, app: &Application) {
+        app.comm.print("[LookBack O]");
+
+        // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
         self.facing_left = !self.facing_left;
+
+        // 振り返ってから、１歩前へ☆（＾～＾）
+        self.go_to_next(&app);
     }
 
     pub fn is_facing_left(&self) -> bool {

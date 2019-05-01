@@ -1,3 +1,5 @@
+use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::cassette_deck::Slot;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use sound::shogi_note::*;
@@ -6,10 +8,9 @@ use std::*;
 use studio::address::*;
 use studio::application::*;
 use studio::board_size::*;
+use studio::common::caret::*;
 use studio::communication::*;
 use studio::parser::*;
-use video_recorder::cassette_deck::CassetteDeck;
-use video_recorder::cassette_deck::Slot;
 
 pub const BOARD_START: usize = 0;
 pub const DEFAULT_BOARD_SIZE: usize = (DEFAULT_FILE_LEN * DEFAULT_RANK_LEN) as usize;
@@ -724,7 +725,7 @@ impl Position {
                     (true, None)
                 } else {
                     comm.println("<未定義-使っていない空間ほこり取り>");
-                    // （未着手）TODO 未定義の操作。投了とか？一応、違法。
+                    // （未着手）TODO 未定義の操作。使っていない駒台でほこりを取ったり、テープの範囲外にアクセスしたり。一応、違法。
                     (false, None)
                 }
             }
@@ -759,6 +760,27 @@ impl Position {
             Some((idp, addr_obj))
         } else {
             None
+        }
+    }
+
+    /// Operation トラック文字列読取。
+    pub fn read_ope_track(&mut self, line: &str, deck: &mut CassetteDeck, app: &Application) {
+        let mut caret = Caret::new_facing_right_caret();
+
+        loop {
+            if caret.is_greater_than_or_equal_to(line.len() as i16) {
+                return;
+            }
+
+            let tuple = ShogiNoteOpe::parse_1ope(&line, &mut caret, self.get_board_size(), &app);
+
+            if let (_last_used_caret, Some(rnote_ope)) = tuple {
+                app.comm
+                    .println("rpm_cassette_tape_editor.rs:read_ope_track: touch_1note_ope");
+                self.touch_1note_ope(&rnote_ope, deck, &app);
+
+                HumanInterface::bo(deck, Slot::Learning, &self, &app);
+            }
         }
     }
 
@@ -890,7 +912,7 @@ impl Position {
         phase: Phase,
         board_size: BoardSize,
     ) -> String {
-        use video_recorder::cassette_deck::Slot::*;
+        use audio_compo::cassette_deck::Slot::*;
         let right_border = match slot {
             Training => ":",
             Learning => "|",

@@ -3,7 +3,6 @@ use sheet_music_format::kifu_usi::usi_move::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
-use video_recorder::cassette_tape_box::CassetteTapeBox;
 
 /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
 pub struct BestMove {
@@ -15,12 +14,7 @@ pub struct BestMove {
 }
 impl BestMove {
     /// Human presentable.
-    pub fn to_human_presentable(
-        &self,
-        _tape_box: &CassetteTapeBox,
-        board_size: BoardSize,
-        _app: &Application,
-    ) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, _app: &Application) -> String {
         format!(
             "Usi: '{}', SubjPid: {}, SubjAddr: '{}', CapPid: {}, CapAddr: '{}'.",
             self.usi_move.to_sign(),

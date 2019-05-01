@@ -1,4 +1,5 @@
 extern crate rand;
+use audio_compo::cassette_deck::Slot;
 use conf::kifuwarabe_wcsc29_config::*;
 use rand::Rng;
 use serde::*;
@@ -11,8 +12,7 @@ use std::path::Path;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::communication::*;
-use video_recorder::cassette_deck::Slot;
-use video_recorder::cassette_tape_box::*;
+use video_tape_model::cassette_tape_box::*;
 
 /// -rbox.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]

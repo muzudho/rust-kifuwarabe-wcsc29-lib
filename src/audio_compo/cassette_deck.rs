@@ -1,11 +1,12 @@
 use human::human_interface::*;
 use instrument::position::*;
+use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::closed_interval::ClosedInterval;
-use video_recorder::cassette_tape_box::*;
+use video_tape_model::cassette_tape_box::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Slot {
@@ -215,27 +216,27 @@ impl CassetteDeck {
     }
 
     /// 指定のスロットの テープボックスの中の、現在のテープの、キャレットの向きを反対にします。
-    pub fn turn_caret_to_opponent(&mut self, slot: Slot) {
+    pub fn look_back_caret_to_opponent(&mut self, slot: Slot, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.turn_caret_to_opponent();
+            tape_box.look_back_caret_to_opponent(&app);
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in turn caret to opponent. Slot: {:?}.", slot);
         }
     }
-    pub fn turn_caret_to_positive(&mut self, slot: Slot) {
+    pub fn look_back_caret_to_positive(&mut self, slot: Slot, app: &Application) {
         let cassette_slot = &mut self.slots[slot as usize];
         if let Some(ref mut tape_box) = cassette_slot.tape_box {
-            tape_box.turn_caret_to_positive();
+            tape_box.look_back_caret_to_positive(&app);
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in turn caret to positive. Slot: {:?}.", slot);
         }
     }
-    pub fn turn_caret_to_negative(&mut self, slot: Slot) {
+    pub fn look_back_caret_to_negative(&mut self, slot: Slot, app: &Application) {
         let cassette_slot = &mut self.slots[slot as usize];
         if let Some(ref mut tape_box) = cassette_slot.tape_box {
-            tape_box.turn_caret_to_negative();
+            tape_box.look_back_caret_to_negative(&app);
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in turn caret to negative. Slot: {:?}.", slot);
@@ -354,6 +355,203 @@ impl CassetteDeck {
 
             // それ以外は繰り返す。
             count += 1;
+        }
+    }
+
+    /// 1手分進める。（非合法タッチは自動で戻します）
+    ///
+    /// 結果は次の４つだぜ☆（＾～＾）
+    /// （１）最後の１手分。局面もキャレットも進んでいる。
+    /// （２）最後ではない１手分。局面もキャレットも進んでいる。
+    /// （３）テープ終わっていた。キャレットを戻す。
+    /// （４）実現しない操作だった。局面とキャレットを戻す。
+    ///
+    /// # Return
+    ///
+    /// (is_end_of_tape, 指した１手分)
+    pub fn try_read_tape_for_1move(
+        &mut self,
+        slot: Slot,
+        position: &mut Position,
+        app: &Application,
+    ) -> (bool, Option<ShogiMove>) {
+        // 指し手（実際のところ、テープ上の範囲を示したもの）。
+        let mut rmove = ShogiMove::new_facing_right_move();
+
+        let mut is_rollback = false;
+        let mut is_phase_change = false;
+
+        'caret_loop: loop {
+            // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
+            match self.go_to_next(slot, &app) {
+                (caret_number, Some(rnote)) => {
+                    if position.try_beautiful_touch(&rnote, self.get_ply(slot), &app) {
+                        // ここに来たら、着手は成立☆（*＾～＾*）
+                        // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
+                        rmove
+                            .caret_closed_interval
+                            .intersect_caret_number(caret_number);
+                        app.comm.println(&format!(
+                            "[{} note advanced! Note:{}, Move:{}]",
+                            rmove.len(),
+                            rnote.to_human_presentable(position.get_board_size()),
+                            rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
+                        ));
+
+                        if 1 < rmove.len() && rnote.is_phase_change() {
+                            // フェーズ切り替えしたら終了。（ただし、初回除く）
+                            print!("[Phase-change-break try_read_1move:{}]", rnote);
+                            is_phase_change = true;
+                            break 'caret_loop;
+                        }
+                    } else {
+                        // 成立していない着手も、ムーブに含める☆（＾～＾）あとで、ルック・バックする範囲☆（＾～＾）
+                        rmove
+                            .caret_closed_interval
+                            .intersect_caret_number(caret_number);
+                        // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
+                        app.comm.println("[$Untouched. Back a caret]");
+                        /*
+                        // 成立しないタッチを読んだキャレットを無かったことにする。（局面を戻すのとは別）
+                        deck.turn_caret_to_opponent(slot);
+                        deck.go_to_next(slot, &app);
+                        deck.turn_caret_to_opponent(slot);
+                        */
+                        is_rollback = true;
+                        break 'caret_loop;
+                    }
+                }
+                (caret_number, None) => {
+                    // トラックの終わりも、ムーブに含める☆（＾～＾）あとで、ルック・バックする範囲☆（＾～＾）
+                    rmove
+                        .caret_closed_interval
+                        .intersect_caret_number(caret_number);
+                    // トラックの終わり。
+                    app.comm.println("[End of track out of loop. Back a caret]");
+                    /*
+                    // トラックの終わりを読んだキャレットを無かったことにする。（局面を戻すのとは別）
+                    deck.turn_caret_to_opponent(slot);
+                    deck.go_to_next(slot, &app);
+                    deck.turn_caret_to_opponent(slot);
+                    */
+                    return (true, None);
+                }
+            }
+        }
+
+        // ここに来た時、ムーブの長さ＋１　分だけキャレットは進んでいる☆（＾～＾）
+
+        if is_rollback {
+            // 局面を戻す。（キャレットを戻すのとは別）
+            let repeats = rmove.len();
+            app.comm.println(&format!(
+                "[Try_read_1move: Rollback {} note!:{}]",
+                repeats,
+                rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
+            ));
+            self.look_back_caret_to_opponent(slot, &app);
+            self.read_tape_for_n_notes_permissive(slot, repeats, position, &app);
+            self.look_back_caret_to_opponent(slot, &app);
+
+            return (false, None);
+        }
+
+        if is_phase_change {
+            // 1手分。
+            (false, Some(rmove))
+        } else {
+            // 最後の1手なのでフェーズ・チェンジが無かったと考える。
+            (true, Some(rmove))
+        }
+    }
+
+    pub fn read_tape_for_n_moves_forcely(
+        &mut self,
+        slot: Slot,
+        repeats: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        for _i in 0..repeats {
+            self.read_tape_for_1move_forcely(slot, position, &app);
+        }
+    }
+
+    /// 必ず1手進める。（非合法タッチがあれば強制終了）
+    pub fn read_tape_for_1move_forcely(
+        &mut self,
+        slot: Slot,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        app.comm.println(&format!(
+            "[TOP read_tape_for_1move_forcely:{}:{}]",
+            self.to_human_presentable_of_tape_box(slot),
+            self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app)
+        ));
+
+        let mut is_legal_touch = true;
+        let mut forwarding_count = 0;
+
+        // 最後尾に達していたのなら終了。
+        while let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+            app.comm.println(&format!(
+                "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
+                self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                self.to_human_presentable_of_tape_box(slot),
+                rnote.to_human_presentable(position.get_board_size())
+            ));
+            is_legal_touch = position.try_beautiful_touch(&rnote, self.get_ply(slot), &app);
+            forwarding_count += 1;
+
+            if !is_legal_touch {
+                break;
+            }
+
+            if forwarding_count != 1 && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                break;
+            }
+        }
+
+        if !is_legal_touch {
+            // 非合法タッチは強制終了。
+            panic!("Illegal, go opponent forcely!");
+        }
+
+        // 1つも読まなかったら強制終了。
+        if forwarding_count < 1 {
+            panic!("Illegal, zero foward!");
+        }
+    }
+
+    /// 成立しないタッチをしてしまうことも、おおめに見ます。
+    pub fn read_tape_for_n_notes_permissive(
+        &mut self,
+        slot: Slot,
+        repeat: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        for i in 0..repeat {
+            if let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+                app.comm.println(&format!(
+                    "<Go-force:{}/{} {}>",
+                    i,
+                    repeat,
+                    rnote.to_human_presentable(position.get_board_size())
+                ));
+                if !position.try_beautiful_touch(&rnote, self.get_ply(slot), &app) {
+                    app.comm.println(&format!(
+                        "Touch fail, permissive. Note: {}, Caret: {}.",
+                        rnote.to_human_presentable(position.get_board_size()),
+                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                    ));
+                }
+            } else {
+                panic!("<Go forcely fail:{}/{} None>", i, repeat);
+            }
         }
     }
 

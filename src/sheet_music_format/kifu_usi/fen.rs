@@ -1,3 +1,4 @@
+use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
@@ -8,7 +9,6 @@ use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::communication::*;
-use video_recorder::cassette_deck::*;
 
 /// フォーサイス エドワーズ記法
 pub struct Fen {}

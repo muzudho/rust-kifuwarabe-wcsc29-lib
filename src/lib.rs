@@ -32,6 +32,7 @@ extern crate rand;
 extern crate regex;
 extern crate serde;
 extern crate serde_json;
+pub mod audio_compo;
 pub mod conf;
 pub mod human;
 pub mod instrument;
@@ -41,16 +42,15 @@ pub mod musician;
 pub mod sheet_music_format;
 pub mod sound;
 pub mod studio;
-pub mod video_recorder;
+pub mod video_tape_model;
+use audio_compo::cassette_deck::*;
 use human::human_interface::*;
-use instrument::game_player::*;
 use instrument::position::*;
 use lib_sub::*;
 use live::best_move_picker::*;
 use std::io;
 use studio::application::*;
 use studio::common::closed_interval::*;
-use video_recorder::cassette_deck::*;
 
 pub fn main_loop() {
     // The application contains all immutable content.
@@ -96,7 +96,7 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            GamePlayer::read_ope_track(&line, &mut position, &mut deck, &app);
+            position.read_ope_track(&line, &mut deck, &app);
 
         // #####
         // # B #
@@ -220,7 +220,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            GamePlayer::read_ope_track(&line, &mut position, &mut deck, &app);
+            position.read_ope_track(&line, &mut deck, &app);
 
         // #####
         // # P #

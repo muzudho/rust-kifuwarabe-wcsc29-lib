@@ -1,6 +1,7 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
+use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::fen::*;
@@ -8,7 +9,6 @@ use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::usi_converter::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::usi_position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::usi_tape::*;
 use kifuwarabe_wcsc29_lib::studio::application::*;
-use kifuwarabe_wcsc29_lib::video_recorder::cassette_deck::*;
 use std::env;
 
 #[derive(Debug)]
