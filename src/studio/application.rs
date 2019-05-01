@@ -10,6 +10,8 @@ pub struct Application {
     // Config.
     pub my_conf: KifuwarabeWcsc29LibConfig,
     pub kw29_conf: KifuwarabeWcsc29Config,
+    // デバッグ出力のフラグ。usiの邪魔になる出力がいっぱい出るぜ☆（*＾～＾*）
+    pub kifuwarabe_flag: bool,
 }
 impl Application {
     pub fn new() -> Self {
@@ -31,7 +33,12 @@ impl Application {
             comm: Communication::from_file(path_name),
             my_conf: my_config,
             kw29_conf: kw29_config,
+            kifuwarabe_flag: false,
         }
+    }
+
+    pub fn is_debug(&self) -> bool {
+        self.kifuwarabe_flag
     }
 }
 impl Default for Application {

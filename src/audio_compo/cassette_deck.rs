@@ -110,7 +110,7 @@ impl CassetteDeck {
         if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
             // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
             let file_name = learning_box.get_file_name();
-            learning_box.to_rpm(board_size).write(&file_name, &app.comm);
+            learning_box.to_rpm(board_size).write(&file_name, &app);
 
             if 499 < learning_box.len_tapes() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
@@ -355,7 +355,7 @@ impl CassetteDeck {
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
-                position.try_beautiful_touch_no_log(&rpm_note.get_ope(), &app.comm);
+                position.try_beautiful_touch_no_log(&rpm_note.get_ope(), &app);
             Some(rpm_note)
         } else {
             None
@@ -439,9 +439,11 @@ impl CassetteDeck {
                 }
                 (taken_overflow, note_move, None) => {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
-                    app.comm.println(
-                        "[オーバーフローのノートを読んでる☆（＾～＾）]",
-                    );
+                    if app.is_debug() {
+                        app.comm.println(
+                            "[#オーバーフローのノートを読んでる☆（＾～＾）]",
+                        );
+                    }
                     rmove
                         .caret_closed_interval
                         .intersect_closed_interval(note_move.caret_closed_interval);

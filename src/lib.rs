@@ -54,7 +54,8 @@ use studio::common::closed_interval::*;
 
 pub fn main_loop() {
     // The application contains all immutable content.
-    let app = Application::new();
+    // 大会用フラグをこっそっといれたのでミュータブル☆（*＾～＾*）
+    let mut app = Application::new();
 
     // Position.
     let mut position = Position::new_honshogi_origin();
@@ -75,14 +76,25 @@ pub fn main_loop() {
         // Excludes trailing newlines. The surrounding whitespace delete_1notes.
         line = line.trim().parse().expect("info Failed: stdin parse.");
 
+        // #############
+        // # 重要なやつ #
+        // #############
+        if line == "kw" {
+            if app.kifuwarabe_flag {
+                app.kifuwarabe_flag = true;
+                app.comm.println("Debug on!");
+            } else {
+                app.kifuwarabe_flag = false;
+                app.comm.println("Debug off!");
+            }
+
         // ######
         // # 数 #
         // ######
         // ########
         // # 記号 #
         // ########
-
-        if line.starts_with('0')
+        } else if line.starts_with('0')
             || line.starts_with('1')
             || line.starts_with('2')
             || line.starts_with('3')

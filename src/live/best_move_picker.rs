@@ -50,10 +50,12 @@ impl BestMovePicker {
     /// 現在の内容を確定し、次の手筋にチェンジするぜ☆（*＾～＾*）
     pub fn change_thread(&mut self, subject_piece_id: PieceIdentify, app: &Application) {
         if !self.best_thread_buffer.is_empty() {
-            app.comm.println(&format!(
-                "[Change thread: subject_piece_id: {}, not empty]",
-                subject_piece_id.to_human_presentable(),
-            ));
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[Change thread: subject_piece_id: {}, not empty]",
+                    subject_piece_id.to_human_presentable(),
+                ));
+            }
             // 中身が残っていれば、まず確定☆（＾～＾）
             self.best_thread_map.insert(
                 subject_piece_id.get_number(),
@@ -62,7 +64,7 @@ impl BestMovePicker {
 
             // 現在の内容を破棄☆（＾～＾）
             self.best_thread_buffer.clear();
-        } else {
+        } else if app.is_debug() {
             app.comm.println(&format!(
                 "[Change thread: subject_piece_id: {}, is empty]",
                 subject_piece_id.to_human_presentable(),
@@ -92,11 +94,13 @@ impl BestMovePicker {
         // 状態を初期位置に設定します。
         self.init_state();
 
-        // RPMを検索。
-        println!(
-            "#get_mut_best_move start. Phase: {:?}",
-            position.get_phase()
-        );
+        if app.is_debug() {
+            // RPMを検索。
+            println!(
+                "#get_mut_best_move start. Phase: {:?}",
+                position.get_phase()
+            );
+        }
 
         // TODO とりあえず rbox.json ファイルを１個読む。
         'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
@@ -107,12 +111,14 @@ impl BestMovePicker {
                 &app,
             );
 
-            // トレーニング・テープ・ボックスを１箱選択。
-            app.comm.println(&format!(
-                "#Tape-box: {}. Phase: {:?}.",
-                deck.to_human_presentable_of_tape_box(Slot::Training),
-                position.get_phase()
-            ));
+            if app.is_debug() {
+                // トレーニング・テープ・ボックスを１箱選択。
+                app.comm.println(&format!(
+                    "#Tape-box: {}. Phase: {:?}.",
+                    deck.to_human_presentable_of_tape_box(Slot::Training),
+                    position.get_phase()
+                ));
+            }
 
             /*
             // 確認表示。
@@ -151,24 +157,30 @@ impl BestMovePicker {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
                     // このテープだけテストするぜ☆（＾～＾）
-                    app.comm.println(&format!(
-                        "デバッグ中☆（＾～＾）テープ開始 {}。",
-                        debug_tape_count
-                    ));
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "デバッグ中☆（＾～＾）テープ開始 {}。",
+                            debug_tape_count
+                        ));
+                    }
                 } else {
                     // それ以外は無視。
-                    app.comm.println("デバッグ中☆（＾～＾）テープを中断。");
+                    if app.is_debug() {
+                        app.comm.println("デバッグ中☆（＾～＾）テープを中断。");
+                    }
                     continue;
                 }
 
-                // テープを１本選択☆（＾～＾）
-                app.comm.println(&format!(
-                    "#Tape: {}",
-                    deck.to_human_presentable_of_current_tape_of_training_box(
-                        position.get_board_size(),
-                        &app
-                    )
-                ));
+                if app.is_debug() {
+                    // テープを１本選択☆（＾～＾）
+                    app.comm.println(&format!(
+                        "#Tape: {}",
+                        deck.to_human_presentable_of_current_tape_of_training_box(
+                            position.get_board_size(),
+                            &app
+                        )
+                    ));
+                }
 
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                 // 'piece_loop:
@@ -183,25 +195,29 @@ impl BestMovePicker {
                     }
                     */
 
-                    // 駒を１つ選択☆（＾～＾）
-                    app.comm.println(&format!(
-                        "\n----------------------------------------------------------------------------------------------------------------------------------------------------------------#Subject piece: {}",
-                        subject_piece_id.to_human_presentable()
-                    ));
+                    if app.is_debug() {
+                        // 駒を１つ選択☆（＾～＾）
+                        app.comm.println(&format!(
+                            "\n----------------------------------------------------------------------------------------------------------------------------------------------------------------#Subject piece: {}",
+                            subject_piece_id.to_human_presentable()
+                        ));
+                    }
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
                         position.scan_wild(Some(position.get_phase()), *subject_piece_id)
                     {
-                        // Display.
-                        app.comm.println(&format!(
-                            "[{}] Recording thread by piece: {}'{}'{}.",
-                            deck.get_ply(Slot::Training),
-                            position.get_phase().to_log(),
-                            my_idp.to_human_presentable(),
-                            my_addr_obj.to_physical_sign(position.get_board_size())
-                        ));
-                        HumanInterface::bo(deck, &position, &app);
+                        if app.is_debug() {
+                            // Display.
+                            app.comm.println(&format!(
+                                "[{}] Recording thread by piece: {}'{}'{}.",
+                                deck.get_ply(Slot::Training),
+                                position.get_phase().to_log(),
+                                my_idp.to_human_presentable(),
+                                my_addr_obj.to_physical_sign(position.get_board_size())
+                            ));
+                            HumanInterface::bo(deck, &position, &app);
+                        }
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
@@ -209,13 +225,15 @@ impl BestMovePicker {
                         let mut moved_notes = 0;
                         'sequence_moves: loop {
                             'sequence_thread: loop {
-                                app.comm.println(&format!(
-                                    "\n--------------------------------------------------------------------------------#Note scan: Tape span: {}. [Before pattern match: Caret: {}]",
-                                    deck.get_current_tape_span(Slot::Training).len(),
-                                    deck.to_human_presentable_of_caret_of_current_tape(
-                                        Slot::Training, &app
-                                    ),
-                                ));
+                                if app.is_debug() {
+                                    app.comm.println(&format!(
+                                        "\n--------------------------------------------------------------------------------#Note scan: Tape span: {}. [Before pattern match: Caret: {}]",
+                                        deck.get_current_tape_span(Slot::Training).len(),
+                                        deck.to_human_presentable_of_caret_of_current_tape(
+                                            Slot::Training, &app
+                                        ),
+                                    ));
+                                }
 
                                 // 以下の４択☆（＾～＾）
                                 // （１）最後の１手分。局面もキャレットも進んでいる。
@@ -229,19 +247,23 @@ impl BestMovePicker {
                                 if rmove.is_empty() {
                                     if taken_overflow {
                                         // テープの終わりなら仕方ない☆（＾～＾）手筋は終わりだぜ☆（＾～＾）
-                                        app.comm.println(&format!(
-                                            "[End of tape of Piece loop: Caret: {}]",
-                                            deck.to_human_presentable_of_caret_of_current_tape(
-                                                Slot::Training,
-                                                &app
-                                            ),
-                                        ));
+                                        if app.is_debug() {
+                                            app.comm.println(&format!(
+                                                "[End of tape of Piece loop: Caret: {}]",
+                                                deck.to_human_presentable_of_caret_of_current_tape(
+                                                    Slot::Training,
+                                                    &app
+                                                ),
+                                            ));
+                                        }
                                         break 'sequence_thread;
                                     } else {
                                         // このタッチは実現できなかった☆（＾～＾）手筋はここまで☆（＾～＾）抜けて続行するぜ☆（＾～＾）
-                                        app.comm.println(
+                                        if app.is_debug() {
+                                            app.comm.println(
                                             "このタッチは実現できなかった☆（＾～＾）手筋はここまで☆（＾～＾）抜けて続行するぜ☆（＾～＾）"
                                         );
+                                        }
                                         break 'sequence_thread;
                                     }
                                 }
@@ -257,13 +279,15 @@ impl BestMovePicker {
                                 ) {
                                     best_move
                                 } else {
-                                    app.comm.println("info [USIにならないぜ☆（＾～＾）棋譜がダメかもしらん☆（＾～＾）テープ放棄して抜けよう☆（＾～＾）]");
-                                    app.comm.println(
-                                        "info [かといって巻き戻したいし……☆（＾～＾）]",
-                                    );
-                                    app.comm.println(
-                                        "info [全部放棄して次のステップに進もう☆（＾～＾）]",
-                                    );
+                                    if app.is_debug() {
+                                        app.comm.println("info [USIにならないぜ☆（＾～＾）棋譜がダメかもしらん☆（＾～＾）テープ放棄して抜けよう☆（＾～＾）]");
+                                        app.comm.println(
+                                            "info [かといって巻き戻したいし……☆（＾～＾）]",
+                                        );
+                                        app.comm.println(
+                                            "info [全部放棄して次のステップに進もう☆（＾～＾）]",
+                                        );
+                                    }
                                     deck.seek_1move(Slot::Training, &app);
                                     HumanInterface::bo(deck, &position, &app);
                                     self.change_thread(*subject_piece_id, &app);
@@ -273,23 +297,25 @@ impl BestMovePicker {
                                 // パターンマッチには２種類ある☆（＾～＾）
                                 // 主体となる駒まで指定する場合と、主体となる駒を指定しない場合だぜ☆（＾～＾）
                                 // 手筋の各1ムーブ目は、主体となるピースのものであるか判定する☆（＾～＾）
-                                if self.best_thread_buffer.is_empty() {
-                                    if !self.match_subject_piece(
+                                if self.best_thread_buffer.is_empty()
+                                    && !self.match_subject_piece(
                                         *subject_piece_id,
                                         my_addr_obj,
                                         &best_move,
                                         position.get_board_size(),
                                         &app,
-                                    ) {
+                                    )
+                                {
+                                    if app.is_debug() {
                                         // 手筋の１個めが、主体となる駒で始まっていない☆（＾～＾）
                                         // 抜ける☆（＾～＾）
                                         app.comm.println(
                                             "[主体となる駒のものではないぜ☆（＾～＾）]",
                                         );
-
-                                        // これは、主体の駒の手筋にならない☆（＾～＾）抜けて続行するぜ☆（＾～＾）
-                                        continue 'sequence_thread;
                                     }
+
+                                    // これは、主体の駒の手筋にならない☆（＾～＾）抜けて続行するぜ☆（＾～＾）
+                                    continue 'sequence_thread;
                                 }
 
                                 if !self.match_object_piece(
@@ -304,14 +330,17 @@ impl BestMovePicker {
                                     // 竹の節の境目たぜ☆（＾～＾）
                                     // この手の途中で止まっているキャレットを　ごそっと　次の１手まで進め、現在の手筋を確定しろだぜ☆（＾～＾）
                                     // ノートのループは続行する☆（＾～＾）
-                                    app.comm.println("[途切れたぜ☆（＾～＾）]");
+                                    if app.is_debug() {
+                                        app.comm.println("[途切れたぜ☆（＾～＾）]");
+                                    }
                                     deck.seek_1move(Slot::Training, &app);
                                     HumanInterface::bo(deck, &position, &app);
                                     self.change_thread(*subject_piece_id, &app);
                                 }
 
                                 // 今探している駒の指し手のような感じはするみたいだな☆（＾～＾）
-                                app.comm.println(&format!(
+                                if app.is_debug() {
+                                    app.comm.println(&format!(
                                     "\n----------------------------------------[Hit note! taken_overflow: {}, Move {} --> Best move: {}. Caret: {}]",
                                     taken_overflow,
                                     rmove.to_human_presentable(
@@ -324,6 +353,7 @@ impl BestMovePicker {
                                         Slot::Training, &app
                                     ),
                                 ));
+                                }
 
                                 self.best_thread_buffer.push_move(best_move);
                                 // TODO 手筋のループは続行だぜ☆（＾～＾）
@@ -333,7 +363,9 @@ impl BestMovePicker {
                             } // Sequence thread.
 
                             // スレッドを差し替えろだぜ☆（＾～＾）
-                            app.comm.println("[Change thread]");
+                            if app.is_debug() {
+                                app.comm.println("[Change thread]");
+                            }
                             self.change_thread(*subject_piece_id, &app);
 
                             // 無限ループしないように、残っている分は無視して進んで　１手分　終わらせろだぜ☆（＾～＾）
@@ -352,12 +384,14 @@ impl BestMovePicker {
                         // 棋譜の最後まで行ってるだろ、全部戻せだぜ☆（＾～＾）大橋流を指し終えたところまで戻るだろ☆（＾～＾）
                         // TODO 初期局面に戻してどうするのか、現局面に戻せだぜ☆（＾～＾）
                         let repeats = moved_notes - OHASHI_NOTE_LEN + 1; // deck.get_ply(Slot::Learning) as usize;
-                        app.comm.println(&format!(
-                            "Try outed! Go back {} notes. Training deck box: {}. Deck: {}.",
-                            repeats,
-                            deck.to_human_presentable_of_tape_box(Slot::Training),
-                            deck.to_human_presentable()
-                        ));
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "Try outed! Go back {} notes. Training deck box: {}. Deck: {}.",
+                                repeats,
+                                deck.to_human_presentable_of_tape_box(Slot::Training),
+                                deck.to_human_presentable()
+                            ));
+                        }
                         deck.look_back_caret_to_opponent(Slot::Training, &app);
                         {
                             deck.seek_n_notes_permissive(Slot::Training, repeats, position, &app);
@@ -368,13 +402,17 @@ impl BestMovePicker {
                         deck.seek_to_next(Slot::Training, &app);
 
                         HumanInterface::bo(deck, &position, &app);
-                        app.comm.println("Backed.");
+                        if app.is_debug() {
+                            app.comm.println("Backed.");
+                        }
                     } // if
                 } // ピースの for
 
                 // いくつか読み取れれば打ち止め。
                 if self.get_max_note_len() > 4 {
-                    println!("#Break. Exit piece count = {}.", self.get_max_note_len());
+                    if app.is_debug() {
+                        println!("#Break. Exit piece count = {}.", self.get_max_note_len());
+                    }
                     break 'tape_box_dir_loop;
                 }
 
@@ -390,12 +428,14 @@ impl BestMovePicker {
                 let pid_num = pid.get_number();
                 let best_thread = &self.best_thread_map[&pid_num];
 
-                app.comm.println(&format!(
-                    "[Best: Pid: {}, Thr-Len: {}. {}]",
-                    pid_num,
-                    best_thread.len(),
-                    best_thread.to_human_presentable(position.get_board_size(), &app)
-                ));
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[Best: Pid: {}, Thr-Len: {}. {}]",
+                        pid_num,
+                        best_thread.len(),
+                        best_thread.to_human_presentable(position.get_board_size(), &app)
+                    ));
+                }
             }
         }
 
@@ -467,8 +507,9 @@ impl BestMovePicker {
         }
 
         // パターンがマッチした。
-        app.comm.println(&format!(
-                "#[Match-subject: 手筋の主体です。 {} != {} || {} != {}. subject_piece_id: '{}', bmove.subject_pid: '{}', bmove.subject_addr: '{}', my_addr_obj: '{}']",
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "#[#Match-subject: 手筋の主体です。 {} != {} || {} != {}. subject_piece_id: '{}', bmove.subject_pid: '{}', bmove.subject_addr: '{}', my_addr_obj: '{}']",
                 subject_piece_id.get_number(),
                 bmove.subject_pid.get_number(),
                 bmove.subject_addr.get_index(),
@@ -478,6 +519,7 @@ impl BestMovePicker {
                 bmove.subject_addr.to_human_presentable(board_size),
                 my_addr_obj.to_human_presentable(board_size)
             ));
+        }
         true
     }
 
@@ -499,18 +541,27 @@ impl BestMovePicker {
                     if let Some(_is_opponent) = idp.is_opponent(position) {
                         // 相手の駒を取った合法手。
                     } else {
-                        app.comm.println(&format!(
-                            "#[Illegal: 味方の駒を取ってしまう。{}]",
-                            rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-                        ));
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "#[Illegal: 味方の駒を取ってしまう。{}]",
+                                rmove.to_human_presentable(
+                                    deck,
+                                    slot,
+                                    position.get_board_size(),
+                                    &app
+                                )
+                            ));
+                        }
                         return false;
                     }
                 } else {
-                    // 現局面では、取ろうとした駒がなかった。
-                    app.comm.println(&format!(
-                        "#[No-match: 現局面では、取ろうとした駒がなかった。{}]",
-                        rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-                    ));
+                    if app.is_debug() {
+                        // 現局面では、取ろうとした駒がなかった。
+                        app.comm.println(&format!(
+                            "#[No-match: 現局面では、取ろうとした駒がなかった。{}]",
+                            rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                        ));
+                    }
                     return false;
                 }
             } else {
@@ -525,8 +576,10 @@ impl BestMovePicker {
         };
 
         // パターンがマッチした。
-        app.comm
-            .println(&format!("#[Matched: address={}]", my_addr_obj.get_index()));
+        if app.is_debug() {
+            app.comm
+                .println(&format!("#[#Matched: address={}]", my_addr_obj.get_index()));
+        }
         true
     }
 

@@ -43,8 +43,10 @@ impl CassetteTapeBox {
 
     /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
     pub fn eject(&mut self, app: &Application) {
-        app.comm
-            .println(&format!("[Eject: {:?}]", self.role_as_slot));
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[#Eject: {:?}]", self.role_as_slot));
+        }
         self.listening_tape_index = None;
     }
 
@@ -289,7 +291,7 @@ impl CassetteTapeBox {
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
     pub fn write_tape_fragment_of_current_tape(&self, board_size: BoardSize, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].write_tape_fragment(board_size, &app.comm)
+            self.tapes[tape_index].write_tape_fragment(board_size, &app)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -298,7 +300,7 @@ impl CassetteTapeBox {
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
-        rpm_tape_box.write(&self.file, &app.comm);
+        rpm_tape_box.write(&self.file, &app);
     }
 
     /// このテープ・ボックスのデバッグ情報表示。人間向け。

@@ -154,7 +154,9 @@ impl ShogiMove {
         board_size: BoardSize,
         app: &Application,
     ) -> Option<BestMove> {
-        app.comm.println("[To best move: Begin]");
+        if app.is_debug() {
+            app.comm.println("[#To best move: Begin]");
+        }
         if let Some(tape_box) = &deck.slots[slot as usize].tape_box {
             // 動作の主体。
             let mut subject_pid_opt;
@@ -171,32 +173,42 @@ impl ShogiMove {
 
             let mut caret =
                 Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
-            app.comm
-                .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
+            if app.is_debug() {
+                app.comm
+                    .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
+            }
 
             let mut note = if let (_taken_overflow, _rmove, Some(note)) =
                 tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
             {
                 note
             } else {
-                app.comm.println("Note fail(1).");
+                if app.is_debug() {
+                    app.comm.println("Note fail(1).");
+                }
                 return None;
             };
-            app.comm.println(&format!(
-                "[Note: {}]",
-                note.to_human_presentable(board_size)
-            ));
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#Note: {}]",
+                    note.to_human_presentable(board_size)
+                ));
+            }
 
             // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
             if let Some(address) = note.get_ope().address {
-                app.comm.println(&format!(
-                    "[Address: {}]",
-                    address.to_human_presentable(board_size)
-                ));
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[#Address: {}]",
+                        address.to_human_presentable(board_size)
+                    ));
+                }
 
                 if let Some(piece) = address.get_hand_piece() {
-                    app.comm
-                        .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
+                    if app.is_debug() {
+                        app.comm
+                            .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
+                    }
 
                     // 駒台なら必ず自駒のドロップ。
                     subject_pid_opt = note.get_id();
@@ -209,13 +221,17 @@ impl ShogiMove {
                     {
                         note
                     } else {
-                        app.comm.println("Note fail(2).");
+                        if app.is_debug() {
+                            app.comm.println("Note fail(2).");
+                        }
                         return None;
                     };
-                    app.comm.println(&format!(
-                        "[Note: {}]",
-                        note.to_human_presentable(board_size)
-                    ));
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "[Note: {}]",
+                            note.to_human_presentable(board_size)
+                        ));
+                    }
 
                     if let Some(address) = note.get_ope().address {
                         dst_opt = Some(board_size.address_to_cell(address.get_index()));
@@ -234,7 +250,9 @@ impl ShogiMove {
                     subject_pid_opt = note.get_id();
                     subject_address_opt = Some(address);
                     src_opt = Some(board_size.address_to_cell(address.get_index()));
-                    app.comm.println("[Not HandPiece]");
+                    if app.is_debug() {
+                        app.comm.println("[Not HandPiece]");
+                    }
 
                     // 次。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
@@ -242,13 +260,17 @@ impl ShogiMove {
                     {
                         note
                     } else {
-                        app.comm.println("Note fail(3).");
+                        if app.is_debug() {
+                            app.comm.println("Note fail(3).");
+                        }
                         return None;
                     };
-                    app.comm.println(&format!(
-                        "[Note: {}]",
-                        note.to_human_presentable(board_size)
-                    ));
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "[Note: {}]",
+                            note.to_human_presentable(board_size)
+                        ));
+                    }
 
                     if note.get_ope().fingertip_turn {
                         // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
@@ -260,13 +282,17 @@ impl ShogiMove {
                         {
                             note
                         } else {
-                            app.comm.println("Note fail(4).");
+                            if app.is_debug() {
+                                app.comm.println("Note fail(4).");
+                            }
                             return None;
                         };
-                        app.comm.println(&format!(
-                            "[Note: {}]",
-                            note.to_human_presentable(board_size)
-                        ));
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "[Note: {}]",
+                                note.to_human_presentable(board_size)
+                            ));
+                        }
                     }
 
                     if note.get_ope().fingertip_rotate {
@@ -285,13 +311,17 @@ impl ShogiMove {
                         {
                             note
                         } else {
-                            app.comm.println("Note fail(5).");
+                            if app.is_debug() {
+                                app.comm.println("Note fail(5).");
+                            }
                             return None;
                         };
-                        app.comm.println(&format!(
-                            "[Note: {}]",
-                            note.to_human_presentable(board_size)
-                        ));
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "[Note: {}]",
+                                note.to_human_presentable(board_size)
+                            ));
+                        }
 
                         // 自分の駒台に置く動き。
                         if let Some(_address) = note.get_ope().address {
@@ -301,13 +331,17 @@ impl ShogiMove {
                             {
                                 note
                             } else {
-                                app.comm.println("Note fail(6).");
+                                if app.is_debug() {
+                                    app.comm.println("Note fail(6).");
+                                }
                                 return None;
                             };
-                            app.comm.println(&format!(
-                                "[Note: {}]",
-                                note.to_human_presentable(board_size)
-                            ));
+                            if app.is_debug() {
+                                app.comm.println(&format!(
+                                    "[Note: {}]",
+                                    note.to_human_presentable(board_size)
+                                ));
+                            }
 
                             if let Some(address) = note.get_ope().address {
                                 subject_pid_opt = note.get_id();
@@ -319,13 +353,17 @@ impl ShogiMove {
                                 {
                                     note
                                 } else {
-                                    app.comm.println("Note fail(7).");
+                                    if app.is_debug() {
+                                        app.comm.println("Note fail(7).");
+                                    }
                                     return None;
                                 };
-                                app.comm.println(&format!(
-                                    "[Note: {}]",
-                                    note.to_human_presentable(board_size)
-                                ));
+                                if app.is_debug() {
+                                    app.comm.println(&format!(
+                                        "[Note: {}]",
+                                        note.to_human_presentable(board_size)
+                                    ));
+                                }
                             }
                         } else {
                             panic!(
@@ -347,13 +385,17 @@ impl ShogiMove {
                         {
                             note
                         } else {
-                            app.comm.println("Note fail(8).");
+                            if app.is_debug() {
+                                app.comm.println("Note fail(8).");
+                            }
                             return None;
                         };
-                        app.comm.println(&format!(
-                            "[Note: {}]",
-                            note.to_human_presentable(board_size)
-                        ));
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "[Note: {}]",
+                                note.to_human_presentable(board_size)
+                            ));
+                        }
                     }
 
                     if let Some(address) = note.get_ope().address {
@@ -399,7 +441,9 @@ impl ShogiMove {
 
             // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
             if let Some(subject_idp) = subject_pid_opt {
-                app.comm.println("[To best move: End]");
+                if app.is_debug() {
+                    app.comm.println("[#To best move: End]");
+                }
                 Some(BestMove {
                     usi_move: umove,
                     subject_pid: subject_idp,
@@ -425,11 +469,13 @@ impl ShogiMove {
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
 
         let mut text = String::new();
-        app.comm.println(&format!(
-            "OpeStr step in: ({},{}).",
-            caret.step_in(&app.comm),
-            self.caret_closed_interval.get_start()
-        )); // TODO
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "OpeStr step in: ({},{}).",
+                caret.step_in(&app.comm),
+                self.caret_closed_interval.get_start()
+            )); // TODO
+        }
         while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_taken_overflow, _rmove, Some(note)) =
                 tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
@@ -448,11 +494,13 @@ impl ShogiMove {
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
 
         let mut text = String::new();
-        app.comm.println(&format!(
-            "IdStr (step in: {},{})",
-            caret.step_in(&app.comm),
-            self.caret_closed_interval.get_start()
-        )); // TODO
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "IdStr (step in: {},{})",
+                caret.step_in(&app.comm),
+                self.caret_closed_interval.get_start()
+            )); // TODO
+        }
         while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_taken_overflow, _rmove, Some(note)) =
                 tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
@@ -485,12 +533,14 @@ impl ShogiMove {
             let mut text = String::new();
             let mut other_caret =
                 Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
-            app.comm.print(&format!(
-                "{} (Step in:{}, {})",
-                text,
-                other_caret.step_in(&app.comm),
-                self.caret_closed_interval.get_start()
-            ));
+            if app.is_debug() {
+                app.comm.print(&format!(
+                    "{} (Step in:{}, {})",
+                    text,
+                    other_caret.step_in(&app.comm),
+                    self.caret_closed_interval.get_start()
+                ));
+            }
 
             while other_caret.while_to(&self.caret_closed_interval, &app) {
                 if let (_taken_overflow, _rmove, Some(note)) =

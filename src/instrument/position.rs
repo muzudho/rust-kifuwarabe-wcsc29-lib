@@ -386,27 +386,29 @@ impl Position {
     pub fn try_move_hand_to_fingertip(
         &mut self,
         address: Address,
-        comm: &Communication,
         board_size: BoardSize,
+        app: &Application,
     ) -> bool {
         if let Some(ref _fingertip) = self.fingertip {
-            comm.println(&format!(
-                "既に何かをつかんでいた☆（＾～＾）！鳩ノ巣原理は使えない☆（＾～＾）！{}",
-                address.to_human_presentable(board_size)
-            ));
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#既に何かをつかんでいた☆（＾～＾）！鳩ノ巣原理は使えない☆（＾～＾）！{}]",
+                    address.to_human_presentable(board_size)
+                ));
+            }
             false
         } else {
             let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
             if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
                 self.fingertip = Some(Fingertip::from_idp_prev(id_piece, address));
-                true
-            } else {
-                comm.println(&format!(
-                    "駒台に置いてない駒をつかもうとした☆（＾～＾）！{}",
+                return true;
+            } else if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#駒台に置いてない駒をつかもうとした☆（＾～＾）！{}]",
                     address.to_human_presentable(board_size)
                 ));
-                false
             }
+            false
         }
     }
 
@@ -510,10 +512,12 @@ impl Position {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
-        app.comm.println(&format!(
-            "[Touch 1note ope:{}]",
-            rnote_ope.to_human_presentable(self.get_board_size())
-        ));
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Touch 1note ope:{}]",
+                rnote_ope.to_human_presentable(self.get_board_size())
+            ));
+        }
 
         self.touch_1note_ope_no_log(&rnote_ope, deck, &app);
 
@@ -539,7 +543,7 @@ impl Position {
             Slot::Learning,
             ShogiNote::from_id_ope(
                 if let (_is_legal_touch, Some(piece_identify)) =
-                    self.try_beautiful_touch_no_log(&rnote_ope, &app.comm)
+                    self.try_beautiful_touch_no_log(&rnote_ope, &app)
                 {
                     PieceIdentify::from_number(piece_identify.get_id().get_number())
                 } else {
@@ -561,12 +565,14 @@ impl Position {
     ///
     /// (合法タッチか否か)
     pub fn try_beautiful_touch(&mut self, rnote: &ShogiNote, app: &Application) -> bool {
-        app.comm.println(&format!(
-            "[Try touch:{}]",
-            rnote.to_human_presentable(self.get_board_size())
-        ));
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Try touch:{}]",
+                rnote.to_human_presentable(self.get_board_size())
+            ));
+        }
         let (is_legal_touch, _piece_identify_opt) =
-            self.try_beautiful_touch_no_log(&rnote.get_ope(), &app.comm);
+            self.try_beautiful_touch_no_log(&rnote.get_ope(), &app);
         HumanInterface::show_position(self, &app);
 
         is_legal_touch
@@ -586,7 +592,7 @@ impl Position {
     pub fn try_beautiful_touch_no_log(
         &mut self,
         rnote_ope: &ShogiNoteOpe,
-        comm: &Communication,
+        app: &Application,
     ) -> (bool, Option<IdentifiedPiece>) {
         let board_size = self.get_board_size();
 
@@ -600,7 +606,7 @@ impl Position {
                             // 盤上の駒と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
 
                             let tuple = if let Some(ref fingertip) = self.fingertip {
-                                comm.println(&format!(
+                                app.comm.println(&format!(
                                     "<IL-駒重なり{}>",
                                     address.to_human_presentable(board_size)
                                 ));
@@ -637,7 +643,7 @@ impl Position {
                                 // （完遂）駒を指につまんでいた。指につまんでいる駒を置く。
                                 (true, Some(fingertip.get_idp()))
                             } else {
-                                comm.println(&format!(
+                                app.comm.println(&format!(
                                     "<IL-ほこり取り{}>",
                                     address.to_human_presentable(board_size)
                                 ));
@@ -676,12 +682,12 @@ impl Position {
                     (true, Some(fingertip_idp))
                 } else {
                     // 盤上ではなく、指には何も持ってない。駒台の駒をつかむ。
-                    if self.try_move_hand_to_fingertip(address, comm, board_size) {
+                    if self.try_move_hand_to_fingertip(address, board_size, app) {
                         if let Some(ref fingertip) = self.fingertip {
                             // 合法。掴んだ駒を返す。
                             (true, Some(fingertip.get_idp()))
                         } else {
-                            comm.println(&format!(
+                            app.comm.println(&format!(
                                 "<IL-駒台ほこり取り{}>",
                                 address.to_human_presentable(board_size)
                             ));
@@ -716,10 +722,10 @@ impl Position {
                     (true, Some(fingertip.get_idp()))
                 } else if rnote_ope.is_resign() {
                     // 投了☆
-                    comm.println("<投了>");
+                    app.comm.println("<投了>");
                     (true, None)
                 } else {
-                    comm.println("<未定義-使っていない空間ほこり取り>");
+                    app.comm.println("<未定義-使っていない空間ほこり取り>");
                     // （未着手）TODO 未定義の操作。使っていない駒台でほこりを取ったり、テープの範囲外にアクセスしたり。一応、違法。
                     (false, None)
                 }
@@ -916,15 +922,13 @@ impl Position {
                 // hand-graphic.
                 Parser::appendln(
                     &mut content,
-                    &format!("|         |   +----+----+----+----+----+----+----+----+----+             |")
-                        .to_string(),
+                    "|         |   +----+----+----+----+----+----+----+----+----+             |",
                 );
             }
             Second => {
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+             |")
-                        .to_string(),
+                    "              +----+----+----+----+----+----+----+----+----+             |",
                 );
             }
         }
@@ -1023,11 +1027,11 @@ impl Position {
 
             // Second player finger.
             match phase {
-                First => Parser::append(&mut content, &format!("             |").to_string()),
+                First => Parser::append(&mut content, "             |"),
                 Second => {
                     match row {
                         0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
-                            Parser::append(&mut content, &format!("             |").to_string())
+                            Parser::append(&mut content, "             |")
                         }
                         11 => Parser::append(
                             &mut content,
@@ -1054,16 +1058,14 @@ impl Position {
             First => {
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+             |")
-                        .to_string(),
+                    "              +----+----+----+----+----+----+----+----+----+             |",
                 );
             }
             Second => {
                 // hand.
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+ |         | |")
-                        .to_string(),
+                    "              +----+----+----+----+----+----+----+----+----+ |         | |",
                 );
             }
         }

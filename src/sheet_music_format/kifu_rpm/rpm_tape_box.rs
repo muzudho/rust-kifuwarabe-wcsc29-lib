@@ -11,7 +11,6 @@ use std::io::prelude::*;
 use std::path::Path;
 use studio::application::Application;
 use studio::board_size::*;
-use studio::communication::*;
 use video_tape_model::cassette_tape_box::*;
 
 /// -rbox.json ファイルに対応。
@@ -58,7 +57,7 @@ impl RpmTapeBox {
                 // 存在しないファイルの場合。
                 // ダミーの内容を書いておきたい☆（＾～＾）
                 let rpm_tape_box = RpmTapeBox::new();
-                rpm_tape_box.write(box_file, &app.comm);
+                rpm_tape_box.write(box_file, &app);
 
                 rpm_tape_box
             }
@@ -86,8 +85,11 @@ impl RpmTapeBox {
     }
 
     /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
-    pub fn write(&self, file_name: &str, comm: &Communication) {
-        comm.println(&format!("#Write tape box to '{}'...", file_name));
+    pub fn write(&self, file_name: &str, app: &Application) {
+        if app.is_debug() {
+            app.comm
+                .println(&format!("#Write tape box to '{}'...", file_name));
+        }
 
         let path = Path::new(&file_name);
 

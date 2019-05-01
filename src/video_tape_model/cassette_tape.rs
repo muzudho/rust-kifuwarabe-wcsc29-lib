@@ -13,7 +13,6 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
-use studio::communication::*;
 use video_tape_model::integer_note_vec::*;
 
 /// 対局情報。
@@ -223,11 +222,13 @@ impl CassetteTape {
     }
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
-    pub fn write_tape_fragment(&self, board_size: BoardSize, comm: &Communication) {
-        comm.println(&format!(
-            "#Write tape fragment to '{}'...",
-            self.fragment_file_name
-        ));
+    pub fn write_tape_fragment(&self, board_size: BoardSize, app: &Application) {
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "#Write tape fragment to '{}'...",
+                self.fragment_file_name
+            ));
+        }
 
         let path = Path::new(&self.fragment_file_name);
 
