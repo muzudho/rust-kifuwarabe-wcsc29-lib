@@ -83,10 +83,10 @@ impl CassetteTapeBox {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move_forcely(&mut self, app: &Application) -> (i16, ClosedInterval) {
+    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1move_forcely(&app)
+            self.tapes[tape_index].go_1move(&app)
         } else {
             panic!("Please choice listening tape.");
         }

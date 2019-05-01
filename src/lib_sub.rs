@@ -12,12 +12,10 @@ use studio::board_size::*;
 pub struct LibSub {}
 impl LibSub {
     pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
-
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.look_back_caret_to_negative(&app);
             if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
-                if !position.try_beautiful_touch(&rnote, ply, &app) {
+                if !position.try_beautiful_touch(&rnote, &app) {
                     app.comm.println("Touch fail.");
                 }
             }
@@ -25,13 +23,13 @@ impl LibSub {
             panic!("Tape box none.");
         }
 
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_negative(Slot::Learning, &app);
         deck.try_read_tape_for_1move(Slot::Learning, position, &app);
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
@@ -39,7 +37,7 @@ impl LibSub {
         for _i in 0..10 {
             deck.try_read_tape_for_1move(Slot::Learning, position, &app);
         }
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
@@ -47,25 +45,24 @@ impl LibSub {
         for _i in 0..400 {
             deck.try_read_tape_for_1move(Slot::Learning, position, &app);
         }
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let ply = deck.get_ply(Slot::Learning);
         deck.look_back_caret_to_positive(Slot::Learning, &app);
         if let (_caret_number, Some(rnote)) = deck.go_to_next(Slot::Learning, &app) {
-            if !position.try_beautiful_touch(&rnote, ply, &app) {
+            if !position.try_beautiful_touch(&rnote, &app) {
                 app.comm.println("Touch fail.");
             }
         }
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         // 非合法タッチは自動で戻します。
         deck.look_back_caret_to_positive(Slot::Learning, &app);
         deck.try_read_tape_for_1move(Slot::Learning, position, &app);
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
@@ -73,7 +70,7 @@ impl LibSub {
         for _i in 0..10 {
             deck.try_read_tape_for_1move(Slot::Learning, position, &app);
         }
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
@@ -81,7 +78,7 @@ impl LibSub {
         for _i in 0..400 {
             deck.try_read_tape_for_1move(Slot::Learning, position, &app);
         }
-        HumanInterface::bo(deck, Slot::Learning, &position, &app);
+        HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn go(

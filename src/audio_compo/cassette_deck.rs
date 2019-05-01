@@ -191,10 +191,10 @@ impl CassetteDeck {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move_forcely(&mut self, slot: Slot, app: &Application) -> (i16, ClosedInterval) {
+    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move(&mut self, slot: Slot, app: &Application) -> (bool, i16, ClosedInterval) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.go_1move_forcely(&app)
+            tape_box.go_1move(&app)
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in go 1move forcely. Slot: {:?}.", slot);
@@ -322,7 +322,7 @@ impl CassetteDeck {
         position: &mut Position,
         app: &Application,
     ) -> Option<ShogiNote> {
-        HumanInterface::show_position(slot, &app.comm, -1, position);
+        HumanInterface::show_position(position, &app);
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
@@ -377,12 +377,15 @@ impl CassetteDeck {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match self.go_to_next(slot, &app) {
                 (caret_number, Some(rnote)) => {
-                    if position.try_beautiful_touch(&rnote, self.get_ply(slot), &app) {
+                    // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
+                    // このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
+                    // あとで、ルック・バックする範囲☆（＾～＾）
+                    rmove
+                        .caret_closed_interval
+                        .intersect_caret_number(caret_number);
+
+                    if position.try_beautiful_touch(&rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
-                        // 範囲も広げるぜ☆（＾～＾）このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
-                        rmove
-                            .caret_closed_interval
-                            .intersect_caret_number(caret_number);
                         /*
                         app.comm.println(&format!(
                             "[{} note advanced! Note:{}, Move:{}]",
@@ -399,10 +402,6 @@ impl CassetteDeck {
                             break 'caret_loop;
                         }
                     } else {
-                        // 成立していない着手も、ムーブに含める☆（＾～＾）あとで、ルック・バックする範囲☆（＾～＾）
-                        rmove
-                            .caret_closed_interval
-                            .intersect_caret_number(caret_number);
                         // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
                         // app.comm.println("[$Untouched. Back a caret]");
                         is_rollback = true;
@@ -410,12 +409,13 @@ impl CassetteDeck {
                     }
                 }
                 (caret_number, None) => {
-                    // トラックの終わりも、ムーブに含める☆（＾～＾）あとで、ルック・バックする範囲☆（＾～＾）
+                    // オーバーフローを、読んだということだぜ☆（＾～＾）
+                    app.comm.println(
+                        "[オーバーフローのノートを読んでる☆（＾～＾）]",
+                    );
                     rmove
                         .caret_closed_interval
                         .intersect_caret_number(caret_number);
-                    // トラックの終わり。
-                    // app.comm.println("[End of track out of loop. Back a caret]");
                     return (true, None);
                 }
             }
@@ -424,17 +424,16 @@ impl CassetteDeck {
         // ここに来た時、ムーブの長さ＋１　分だけキャレットは進んでいる☆（＾～＾）
 
         if is_rollback {
-            // 局面を戻す。（キャレットを戻すのとは別）
-            let repeats = rmove.len();
+            // キャレットを使って局面を戻す。
             /*
             app.comm.println(&format!(
                 "[Try_read_1move: Rollback {} note!:{}]",
-                repeats,
+                rmove.len(),
                 rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
             ));
             */
             self.look_back_caret_to_opponent(slot, &app);
-            self.read_tape_for_n_notes_permissive(slot, repeats, position, &app);
+            self.go_n_notes_permissive(slot, rmove.len(), position, &app);
             self.look_back_caret_to_opponent(slot, &app);
 
             return (false, None);
@@ -489,7 +488,7 @@ impl CassetteDeck {
                 rnote.to_human_presentable(position.get_board_size())
             ));
             */
-            is_legal_touch = position.try_beautiful_touch(&rnote, self.get_ply(slot), &app);
+            is_legal_touch = position.try_beautiful_touch(&rnote, &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -515,7 +514,7 @@ impl CassetteDeck {
     }
 
     /// 成立しないタッチをしてしまうことも、おおめに見ます。
-    pub fn read_tape_for_n_notes_permissive(
+    pub fn go_n_notes_permissive(
         &mut self,
         slot: Slot,
         repeat: usize,
@@ -539,7 +538,7 @@ impl CassetteDeck {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(&rnote, self.get_ply(slot), &app) {
+                if !position.try_beautiful_touch(&rnote, &app) {
                     /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",

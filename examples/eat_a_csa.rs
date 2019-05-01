@@ -50,7 +50,7 @@ pub fn main() {
 
     // Play out.
     CsaConverter::play_out_csa_tape(&crecord, &mut position, &mut deck, &app);
-    HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+    HumanInterface::bo(&mut deck, &position, &app);
 
     // Save.
     deck.write_tape_box(position.get_board_size(), &app);

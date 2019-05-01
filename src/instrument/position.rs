@@ -523,12 +523,7 @@ impl Position {
             rnote.to_human_presentable(board_size)
         ));
          */
-        HumanInterface::show_position(
-            Slot::Learning,
-            &app.comm,
-            deck.get_ply(Slot::Learning),
-            self,
-        );
+        HumanInterface::show_position(self, &app);
     }
 
     /// 棋譜を作る☆（＾～＾）
@@ -565,14 +560,14 @@ impl Position {
     /// # Returns
     ///
     /// (合法タッチか否か)
-    pub fn try_beautiful_touch(&mut self, rnote: &ShogiNote, ply: i16, app: &Application) -> bool {
+    pub fn try_beautiful_touch(&mut self, rnote: &ShogiNote, app: &Application) -> bool {
         app.comm.println(&format!(
             "[Touch:{}]",
             rnote.to_human_presentable(self.get_board_size())
         ));
         let (is_legal_touch, _piece_identify_opt) =
             self.try_beautiful_touch_no_log(&rnote.get_ope(), &app.comm);
-        HumanInterface::show_position(Slot::Learning, &app.comm, ply, self);
+        HumanInterface::show_position(self, &app);
 
         is_legal_touch
     }
@@ -737,7 +732,7 @@ impl Position {
     /// # Returns
     ///
     /// 識別駒、番地。
-    pub fn find_wild(
+    pub fn scan_wild(
         &self,
         ph_opt: Option<Phase>,
         pid: PieceIdentify,
@@ -779,7 +774,7 @@ impl Position {
                     .println("rpm_cassette_tape_editor.rs:read_ope_track: touch_1note_ope");
                 self.touch_1note_ope(&rnote_ope, deck, &app);
 
-                HumanInterface::bo(deck, Slot::Learning, &self, &app);
+                HumanInterface::bo(deck, &self, &app);
             }
         }
     }
@@ -903,45 +898,32 @@ impl Position {
         )
     }
 
-    /// 将棋盤１個分の表示。
-    /// 右端の縦線が 点線（コロン）ならトレーニング、実践（パイプ）ならラーニング。
-    pub fn to_text(
-        &self,
-        slot: Slot,
-        _comm: &Communication,
-        phase: Phase,
-        board_size: BoardSize,
-    ) -> String {
-        use audio_compo::cassette_deck::Slot::*;
-        let right_border = match slot {
-            Training => ":",
-            Learning => "|",
-        }
-        .to_string();
-
+    /// 余談。
+    /// 将棋盤。きふわらべは、同時に１個の将棋盤しかもたない☆（＾～＾）２つ目とか無い☆（＾～＾）
+    pub fn to_text(&self, _comm: &Communication, phase: Phase, board_size: BoardSize) -> String {
         use instrument::piece_etc::Phase::*;
         let mut content = String::new();
 
         // 先手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::First));
-        Parser::appendln(&mut content, &format!("{}{}", line0, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line1, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line2, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line3, right_border));
+        Parser::appendln(&mut content, &format!("{}|", line0));
+        Parser::appendln(&mut content, &format!("{}|", line1));
+        Parser::appendln(&mut content, &format!("{}|", line2));
+        Parser::appendln(&mut content, &format!("{}|", line3));
 
         match phase {
             First => {
                 // hand-graphic.
                 Parser::appendln(
                     &mut content,
-                    &format!("|         |   +----+----+----+----+----+----+----+----+----+             {}",right_border)
+                    &format!("|         |   +----+----+----+----+----+----+----+----+----+             |")
                         .to_string(),
                 );
             }
             Second => {
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+             {}",right_border)
+                    &format!("              +----+----+----+----+----+----+----+----+----+             |")
                         .to_string(),
                 );
             }
@@ -1041,45 +1023,25 @@ impl Position {
 
             // Second player finger.
             match phase {
-                First => Parser::append(
-                    &mut content,
-                    &format!("             {}", right_border).to_string(),
-                ),
+                First => Parser::append(&mut content, &format!("             |").to_string()),
                 Second => {
                     match row {
-                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => Parser::append(
-                            &mut content,
-                            &format!("             {}", right_border).to_string(),
-                        ),
+                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
+                            Parser::append(&mut content, &format!("             |").to_string())
+                        }
                         11 => Parser::append(
                             &mut content,
                             &format!(
-                                "  {}    {}",
+                                "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size),
-                                right_border
+                                    .to_fingertip_display(board_size)
                             ),
                         ),
-                        12 => Parser::append(
-                            &mut content,
-                            &format!(" +-+ +-+     {}", right_border).to_string(),
-                        ),
-                        13 => Parser::append(
-                            &mut content,
-                            &format!(" | | | |     {}", right_border).to_string(),
-                        ),
-                        14 => Parser::append(
-                            &mut content,
-                            &format!(" | | | |     {}", right_border).to_string(),
-                        ),
-                        15 => Parser::append(
-                            &mut content,
-                            &format!(" | +-+ +---+ {}", right_border).to_string(),
-                        ),
-                        16 => Parser::append(
-                            &mut content,
-                            &format!(" |         | {}", right_border).to_string(),
-                        ),
+                        12 => Parser::append(&mut content, " +-+ +-+     |"),
+                        13 => Parser::append(&mut content, " | | | |     |"),
+                        14 => Parser::append(&mut content, " | | | |     |"),
+                        15 => Parser::append(&mut content, " | +-+ +---+ |"),
+                        16 => Parser::append(&mut content, " |         | |"),
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
@@ -1092,7 +1054,7 @@ impl Position {
             First => {
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+             {}",right_border)
+                    &format!("              +----+----+----+----+----+----+----+----+----+             |")
                         .to_string(),
                 );
             }
@@ -1100,7 +1062,7 @@ impl Position {
                 // hand.
                 Parser::appendln(
                     &mut content,
-                    &format!("              +----+----+----+----+----+----+----+----+----+ |         | {}",right_border)
+                    &format!("              +----+----+----+----+----+----+----+----+----+ |         | |")
                         .to_string(),
                 );
             }
@@ -1108,19 +1070,15 @@ impl Position {
 
         Parser::appendln(
             &mut content,
-            &format!(
-                "               1    2    3    4    5    6    7    8    9                 {}",
-                right_border
-            )
-            .to_string(),
+            "               1    2    3    4    5    6    7    8    9                 |",
         );
 
         // 後手の持ち駒。４行表示。
         let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::Second));
-        Parser::appendln(&mut content, &format!("{}{}", line0, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line1, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line2, right_border));
-        Parser::appendln(&mut content, &format!("{}{}", line3, right_border));
+        Parser::appendln(&mut content, &format!("{}|", line0));
+        Parser::appendln(&mut content, &format!("{}|", line1));
+        Parser::appendln(&mut content, &format!("{}|", line2));
+        Parser::appendln(&mut content, &format!("{}|", line3));
 
         content
     }

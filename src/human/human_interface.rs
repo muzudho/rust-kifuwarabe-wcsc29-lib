@@ -3,45 +3,47 @@ use audio_compo::cassette_deck::Slot;
 use instrument::position::*;
 use std::*;
 use studio::application::Application;
-use studio::communication::*;
 
 pub struct HumanInterface {}
 impl HumanInterface {
-    /// 局面だけ表示。
-    pub fn show_position(slot: Slot, comm: &Communication, ply: i16, position: &Position) {
-        // 何手目か。
-        comm.println(&format!("[{}]", ply));
+    /// 盤面と持ち駒だけ表示。
+    pub fn show_position(position: &Position, app: &Application) {
         // 盤面。
-        comm.println(&position.to_text(
-            slot,
-            comm,
+        app.comm.println(&position.to_text(
+            &app.comm,
             position.get_phase(),
             position.get_board_size(),
         ));
     }
 
-    /// トレーニング局面と、棋譜　の表示。
-    pub fn bo(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
-        /*
-        use audio_compo::cassette_deck::Slot::*;
-        match slot {
-            Training => {
-                app.comm.println("<TRAINING>");
-            }
-            Learning => {
-                app.comm.println("<LEARN>");
-            }
-        }
-         */
-
+    /// 指定スロットの局面の表示。
+    pub fn bo(deck: &mut CassetteDeck, position: &Position, app: &Application) {
+        // 何手目か。
+        app.comm.println(&format!(
+            "[Ply: T{},L{}]",
+            deck.get_ply(Slot::Training),
+            deck.get_ply(Slot::Learning),
+        ));
         // 局面。
-        HumanInterface::show_position(slot, &app.comm, deck.slots[slot as usize].ply, position);
+        HumanInterface::show_position(position, &app);
+    }
 
-        // 棋譜。
+    /// 棋譜の表示。
+    pub fn kifu(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
             let (_numbers, operations) =
                 &tape_box.get_sign_of_current_tape(position.get_board_size());
-            app.comm.println(&format!("Score: {}", operations));
+
+            use audio_compo::cassette_deck::Slot::*;
+            app.comm.println(&format!(
+                "{}-Score: {}",
+                match slot {
+                    Training => "T",
+                    Learning => "L",
+                }
+                .to_string(),
+                operations
+            ));
         } else {
             panic!("tape_box none.")
         }
@@ -52,12 +54,11 @@ impl HumanInterface {
     pub fn bo_with_tape(
         deck: &CassetteDeck,
         slot: Slot,
-        ply: i16,
         position: &Position,
         app: &Application,
     ) {
         // 局面。
-        HumanInterface::show_position(Slot::Training, &app.comm, ply, position);
+        HumanInterface::show_position(position, &app);
 
         // 棋譜。
         let (_numbers, operations) = deck.get_sign_of_current_tape(slot, position.get_board_size());

@@ -137,6 +137,7 @@ impl ShogiMove {
         board_size: BoardSize,
         app: &Application,
     ) -> BestMove {
+        app.comm.println("[To best move: Begin]");
         if let Some(tape_box) = &deck.slots[slot as usize].tape_box {
             // 動作の主体。
             let mut subject_pid_opt;
@@ -153,6 +154,8 @@ impl ShogiMove {
 
             let mut caret =
                 Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+            app.comm
+                .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
 
             let mut note = if let (_caret_number, Some(note)) =
                 tape_box.go_to_next_with_othre_caret(&mut caret, &app)
@@ -161,10 +164,22 @@ impl ShogiMove {
             } else {
                 panic!("Note fail.")
             };
+            app.comm.println(&format!(
+                "[Note: {}]",
+                note.to_human_presentable(board_size)
+            ));
 
             // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
             if let Some(address) = note.get_ope().address {
+                app.comm.println(&format!(
+                    "[Address: {}]",
+                    address.to_human_presentable(board_size)
+                ));
+
                 if let Some(piece) = address.get_hand_piece() {
+                    app.comm
+                        .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
+
                     // 駒台なら必ず自駒のドロップ。
                     subject_pid_opt = note.get_id();
                     subject_address_opt = Some(address);
@@ -196,6 +211,7 @@ impl ShogiMove {
                     subject_pid_opt = note.get_id();
                     subject_address_opt = Some(address);
                     src_opt = Some(board_size.address_to_cell(address.get_index()));
+                    app.comm.println("[Not HandPiece]");
 
                     // 次。
                     note = if let (_caret_number, Some(note)) =
@@ -326,6 +342,7 @@ impl ShogiMove {
 
             // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
             if let Some(subject_idp) = subject_pid_opt {
+                app.comm.println("[To best move: End]");
                 BestMove {
                     usi_move: umove,
                     subject_pid: subject_idp,

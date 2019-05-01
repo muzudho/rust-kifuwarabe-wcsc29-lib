@@ -183,9 +183,9 @@ impl CassetteTape {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move_forcely(&mut self, app: &Application) -> (i16, ClosedInterval) {
-        self.tracks.go_1move_forcely(&mut self.caret, &app)
+    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn go_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
+        self.tracks.go_1move(&mut self.caret, &app)
     }
 
     /// キャレットは必ず１つ進みます。

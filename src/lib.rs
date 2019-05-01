@@ -112,7 +112,7 @@ pub fn main_loop() {
         } else if line.starts_with("bo") {
             // Board.
 
-            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
 
         /*
         // #####
@@ -130,29 +130,29 @@ pub fn main_loop() {
             // Delete 1mark.
             deck.pop_1note(Slot::Learning, &mut position, &app);
 
-            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
             deck.pop_1move(Slot::Learning, &mut position, &app);
 
-            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
                 deck.pop_1move(Slot::Learning, &mut position, &app);
             }
 
-            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
                 deck.pop_1move(Slot::Learning, &mut position, &app);
             }
 
-            HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+            HumanInterface::bo(&mut deck, &position, &app);
 
         // #####
-        // # N #
+        // # F #
         // #####
         } else if line == "f" {
             LibSub::forward_1_note(&mut position, &mut deck, &app);
@@ -207,6 +207,13 @@ pub fn main_loop() {
         // #####
         } else if line == "isready" {
             app.comm.println("readyok");
+
+        // #####
+        // # K #
+        // #####
+        } else if line == "kifu" {
+            HumanInterface::kifu(&mut deck, Slot::Training, &position, &app);
+            HumanInterface::kifu(&mut deck, Slot::Learning, &position, &app);
 
         // #########
         // # Piece #

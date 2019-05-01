@@ -75,5 +75,5 @@ pub fn main() {
 
     deck.change(None, position.get_board_size(), &app);
     UsiConverter::play_out_usi_tape(&mut position, &utape, &mut deck, &app);
-    HumanInterface::bo(&mut deck, Slot::Learning, &position, &app);
+    HumanInterface::bo(&mut deck, &position, &app);
 }
