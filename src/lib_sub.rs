@@ -14,7 +14,7 @@ impl LibSub {
     pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.look_back_caret_to_negative(&app);
-            if let (_caret_number, Some(rnote)) = tape_box.go_to_next(&app) {
+            if let (_caret_number, Some(rnote)) = tape_box.seek_to_next(&app) {
                 if !position.try_beautiful_touch(&rnote, &app) {
                     app.comm.println("Touch fail.");
                 }
@@ -50,7 +50,7 @@ impl LibSub {
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_positive(Slot::Learning, &app);
-        if let (_caret_number, Some(rnote)) = deck.go_to_next(Slot::Learning, &app) {
+        if let (_caret_number, Some(rnote)) = deck.seek_to_next(Slot::Learning, &app) {
             if !position.try_beautiful_touch(&rnote, &app) {
                 app.comm.println("Touch fail.");
             }

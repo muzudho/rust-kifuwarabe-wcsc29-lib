@@ -97,30 +97,30 @@ impl OhashiPlayer {
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 pos.touch_1note_ope_no_log(&element.0, deck, &app);
             }
 
             {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 pos.touch_1note_ope_no_log(&element.1, deck, &app);
             }
 
             {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 }
                 pos.touch_1note_ope_no_log(&element.2, deck, &app);
             }

@@ -83,11 +83,7 @@ impl IntegerNoteVec {
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move(
-        &self,
-        caret: &mut Caret,
-        app: &Application,
-    ) -> (bool, i16, ClosedInterval) {
+    pub fn seek_1move(&self, caret: &mut Caret, app: &Application) -> (bool, i16, ClosedInterval) {
         let mut closed_interval = ClosedInterval::from_all(
             caret.step_in(&app.comm),
             caret.step_in(&app.comm),
@@ -95,7 +91,7 @@ impl IntegerNoteVec {
         );
 
         loop {
-            match self.go_to_next(caret, &app) {
+            match self.seek_to_next(caret, &app) {
                 (caret_number, Some(note)) => {
                     if note.is_phase_change() {
                         closed_interval.intersect_caret_number(caret_number);
@@ -119,7 +115,7 @@ impl IntegerNoteVec {
     /// # Returns
     ///
     /// (キャレット番地, ノート)
-    pub fn go_to_next(&self, caret: &mut Caret, app: &Application) -> (i16, Option<ShogiNote>) {
+    pub fn seek_to_next(&self, caret: &mut Caret, app: &Application) -> (i16, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
         let caret_number = caret.go_to_next(&app);
 

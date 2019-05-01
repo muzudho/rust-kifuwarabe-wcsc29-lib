@@ -562,7 +562,7 @@ impl Position {
     /// (合法タッチか否か)
     pub fn try_beautiful_touch(&mut self, rnote: &ShogiNote, app: &Application) -> bool {
         app.comm.println(&format!(
-            "[Touch:{}]",
+            "[Try touch:{}]",
             rnote.to_human_presentable(self.get_board_size())
         ));
         let (is_legal_touch, _piece_identify_opt) =

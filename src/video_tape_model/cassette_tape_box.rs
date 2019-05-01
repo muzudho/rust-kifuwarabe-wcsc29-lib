@@ -84,9 +84,9 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
+    pub fn seek_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_1move(&app)
+            self.tapes[tape_index].seek_1move(&app)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -99,22 +99,22 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+    pub fn seek_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_to_next(&app)
+            self.tapes[tape_index].seek_to_next(&app)
         } else {
             panic!("Please choice listening tape.");
         }
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_to_next_with_othre_caret(
+    pub fn seek_to_next_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
     ) -> (i16, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].go_to_next_with_othre_caret(caret, &app)
+            self.tapes[tape_index].seek_to_next_with_othre_caret(caret, &app)
         } else {
             panic!("Please choice listening tape.");
         }

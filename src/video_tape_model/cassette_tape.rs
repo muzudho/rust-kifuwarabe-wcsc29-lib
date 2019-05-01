@@ -184,8 +184,8 @@ impl CassetteTape {
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
-        self.tracks.go_1move(&mut self.caret, &app)
+    pub fn seek_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
+        self.tracks.seek_1move(&mut self.caret, &app)
     }
 
     /// キャレットは必ず１つ進みます。
@@ -195,17 +195,17 @@ impl CassetteTape {
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
-    pub fn go_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_to_next(&mut self.caret, &app)
+    pub fn seek_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+        self.tracks.seek_to_next(&mut self.caret, &app)
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
-    pub fn go_to_next_with_othre_caret(
+    pub fn seek_to_next_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
     ) -> (i16, Option<ShogiNote>) {
-        self.tracks.go_to_next(caret, &app)
+        self.tracks.seek_to_next(caret, &app)
     }
 
     /// コマンドライン入力形式の棋譜。

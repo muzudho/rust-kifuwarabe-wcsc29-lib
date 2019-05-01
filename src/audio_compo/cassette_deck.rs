@@ -192,9 +192,9 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn go_1move(&mut self, slot: Slot, app: &Application) -> (bool, i16, ClosedInterval) {
+    pub fn seek_1move(&mut self, slot: Slot, app: &Application) -> (bool, i16, ClosedInterval) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.go_1move(&app)
+            tape_box.seek_1move(&app)
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in go 1move forcely. Slot: {:?}.", slot);
@@ -210,9 +210,9 @@ impl CassetteDeck {
     /// （１）１ノート進んだ。ついでに拾ったノートを返す。
     /// （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
     /// （３）スロットにテープがささっていなかったので強制終了。
-    pub fn go_to_next(&mut self, slot: Slot, app: &Application) -> (i16, Option<ShogiNote>) {
+    pub fn seek_to_next(&mut self, slot: Slot, app: &Application) -> (i16, Option<ShogiNote>) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.go_to_next(&app)
+            tape_box.seek_to_next(&app)
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in go to next. Slot: {:?}.", slot);
@@ -251,19 +251,19 @@ impl CassetteDeck {
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             // とりあえず、キャレットを進めようぜ☆（＾～＾）
-            let (caret_number, _) = tape_box.go_to_next(&app);
+            let (caret_number, _) = tape_box.seek_to_next(&app);
             if -1 < caret_number {
                 // ０、または 正のテープ。
                 // 次にオーバーフローするか判断。
                 if tape_box.is_before_caret_overflow(&app) {
                     // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_positive_of_current_tape(note);
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
                     tape_box.set_note_to_current_tape(caret_number, note);
 
-                    if let (caret_number, Some(_note)) = tape_box.go_to_next(&app) {
+                    if let (caret_number, Some(_note)) = tape_box.seek_to_next(&app) {
                         // 仮のおわり を更新。
                         tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
                             caret_number,
@@ -278,11 +278,11 @@ impl CassetteDeck {
                 if tape_box.is_before_caret_overflow(&app) {
                     // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_negative_of_current_tape(note);
-                    tape_box.go_to_next(&app);
+                    tape_box.seek_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
                     tape_box.set_note_to_current_tape(caret_number, note);
-                    if let (caret_number, Some(_note)) = tape_box.go_to_next(&app) {
+                    if let (caret_number, Some(_note)) = tape_box.seek_to_next(&app) {
                         // 仮のおわり を更新。
                         tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
                             caret_number,
@@ -375,7 +375,7 @@ impl CassetteDeck {
 
         'caret_loop: loop {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-            match self.go_to_next(slot, &app) {
+            match self.seek_to_next(slot, &app) {
                 (caret_number, Some(rnote)) => {
                     // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
                     // このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
@@ -479,7 +479,7 @@ impl CassetteDeck {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+        while let (_caret_number, Some(rnote)) = self.seek_to_next(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -521,14 +521,14 @@ impl CassetteDeck {
         position: &mut Position,
         app: &Application,
     ) {
-        for i in 0..repeat {
+        for _i in 0..repeat {
             // キャレットは必ず進めろだぜ☆（＾～＾）
             // 結果は３つ☆（＾～＾）
             //
             // （１）１ノート進んだ。ついでに拾ったノートを返す。
             // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
             // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+            if let (_caret_number, Some(rnote)) = self.seek_to_next(slot, &app) {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
@@ -548,18 +548,22 @@ impl CassetteDeck {
                     */
                 }
             } else {
-                // オーバーフローした☆（＾～＾）つまりテープの終了だぜ☆（＾～＾）
+                // オーバーフローした☆（＾～＾）テープの終了だが、テープを終了したあとにバックすればもう１回終了するし☆（＾～＾）
+                // 気にせずループを続行しろだぜ☆（＾～＾）
+
+                /*
                 if i + 1 == repeat {
                     // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
                     break;
                 } else {
                     panic!(
-                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {}.",
-                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {} notes.",
+                        self.to_human_presentable_of_caret_of_current_tape(slot, &app),
                         i,
                         repeat
                     );
                 }
+                */
             }
         }
     }
@@ -575,12 +579,13 @@ impl CassetteDeck {
             "None-t-tape-box".to_string()
         }
     }
-    pub fn to_human_presentable_of_caret_of_current_tape_of_training_box(
+    pub fn to_human_presentable_of_caret_of_current_tape(
         &self,
+        slot: Slot,
         app: &Application,
     ) -> String {
-        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.to_human_presentable_of_caret_of_current_tape(&app)
+        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
+            tape_box.to_human_presentable_of_caret_of_current_tape(&app)
         } else {
             "None-t-tape-box".to_string()
         }

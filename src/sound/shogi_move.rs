@@ -55,7 +55,7 @@ impl ShogiMove {
             }
 
             let note = if let (_caret_number, Some(note)) =
-                tape_box.go_to_next_with_othre_caret(caret, &app)
+                tape_box.seek_to_next_with_othre_caret(caret, &app)
             {
                 note
             } else {
@@ -158,7 +158,7 @@ impl ShogiMove {
                 .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
 
             let mut note = if let (_caret_number, Some(note)) =
-                tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
             {
                 note
             } else {
@@ -187,7 +187,7 @@ impl ShogiMove {
 
                     // 次は置くだけ。
                     note = if let (_caret_number, Some(note)) =
-                        tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -215,7 +215,7 @@ impl ShogiMove {
 
                     // 次。
                     note = if let (_caret_number, Some(note)) =
-                        tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -228,7 +228,7 @@ impl ShogiMove {
 
                         // 次。
                         note = if let (_caret_number, Some(note)) =
-                            tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
@@ -248,7 +248,7 @@ impl ShogiMove {
 
                         // 次。
                         note = if let (_caret_number, Some(note)) =
-                            tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
@@ -259,7 +259,7 @@ impl ShogiMove {
                         if let Some(_address) = note.get_ope().address {
                             // 次は、盤上の自駒を触る。
                             note = if let (_caret_number, Some(note)) =
-                                tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                             {
                                 note
                             } else {
@@ -272,7 +272,7 @@ impl ShogiMove {
                                 src_opt = Some(board_size.address_to_cell(address.get_index()));
                                 // 次。
                                 note = if let (_caret_number, Some(note)) =
-                                    tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                                 {
                                     note
                                 } else {
@@ -295,7 +295,7 @@ impl ShogiMove {
 
                         // 次。
                         note = if let (_caret_number, Some(note)) =
-                            tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
@@ -375,7 +375,7 @@ impl ShogiMove {
         )); // TODO
         while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_caret_number, Some(note)) =
-                tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
             {
                 text = format!("{} {}", text, &note.get_ope().to_sign(board_size));
             } else {
@@ -398,7 +398,7 @@ impl ShogiMove {
         )); // TODO
         while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_caret_number, Some(note)) =
-                tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
             {
                 text = format!(
                     "{} {}",
@@ -437,7 +437,7 @@ impl ShogiMove {
 
             while other_caret.while_to(&self.caret_closed_interval, &app) {
                 if let (_caret_number, Some(note)) =
-                    tape_box.go_to_next_with_othre_caret(&mut other_caret, &app)
+                    tape_box.seek_to_next_with_othre_caret(&mut other_caret, &app)
                 {
                     text = format!("{} {}", text, note.to_human_presentable(board_size))
                 } else {

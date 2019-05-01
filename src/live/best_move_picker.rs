@@ -205,8 +205,8 @@ impl BestMovePicker {
                                     "\n--------------------------------------------------------------------------------#Note scan: {}th note of {} move of a thread. [Before pattern match: Caret: {}]",
                                     forwarding_note_count,
                                     self.best_thread_buffer.len(),
-                                    deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
-                                        &app
+                                    deck.to_human_presentable_of_caret_of_current_tape(
+                                        Slot::Training, &app
                                     ),
                                 ));
 
@@ -265,7 +265,7 @@ impl BestMovePicker {
                                             // この手の途中で止まっているキャレットを　ごそっと　次の１手まで進め、現在の手筋を確定しろだぜ☆（＾～＾）
                                             // ノートのループは続行する☆（＾～＾）
                                             app.comm.println("[途切れたぜ☆（＾～＾）]");
-                                            deck.go_1move(Slot::Training, &app);
+                                            deck.seek_1move(Slot::Training, &app);
                                             HumanInterface::bo(deck, &position, &app);
                                             self.change_thread(*subject_piece_id, &app);
                                         }
@@ -281,8 +281,8 @@ impl BestMovePicker {
                                                 &app),
                                             is_end_of_tape,
                                             best_move.to_human_presentable(position.get_board_size(), &app),
-                                            deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
-                                                &app
+                                            deck.to_human_presentable_of_caret_of_current_tape(
+                                                Slot::Training, &app
                                             ),
                                         ));
 
@@ -293,7 +293,8 @@ impl BestMovePicker {
                                         // テープの終わりなら仕方ない☆（＾～＾）手筋は終わりだぜ☆（＾～＾）
                                         app.comm.println(&format!(
                                             "[End of tape of Piece loop: Caret: {}]",
-                                            deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
+                                            deck.to_human_presentable_of_caret_of_current_tape(
+                                                Slot::Training,
                                                 &app
                                             ),
                                         ));
@@ -311,7 +312,7 @@ impl BestMovePicker {
                             self.change_thread(*subject_piece_id, &app);
 
                             // 無限ループしないように、１手進めだぜ☆（＾～＾）
-                            match deck.go_1move(Slot::Training, &app) {
+                            match deck.seek_1move(Slot::Training, &app) {
                                 (true, _, _) => {
                                     break 'sequence_moves;
                                 }
@@ -422,6 +423,7 @@ impl BestMovePicker {
         if subject_piece_id.get_number() != bmove.subject_pid.get_number()
             || bmove.subject_addr.get_index() != my_addr_obj.get_index() as usize
         {
+            /*
             // パターンマッチから外れたら抜けていく。
             app.comm.println(&format!(
                 "#[No-subject: これは手筋の主体ではありません。 {} != {} || {} != {}. subject_piece_id: '{}', bmove.subject_pid: '{}', bmove.subject_addr: '{}', my_addr_obj: '{}']",
@@ -434,6 +436,7 @@ impl BestMovePicker {
                 bmove.subject_addr.to_human_presentable(board_size),
                 my_addr_obj.to_human_presentable(board_size)
             ));
+            */
             return false;
         }
 
