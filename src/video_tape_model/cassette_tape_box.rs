@@ -1,6 +1,7 @@
 extern crate rand;
 use audio_compo::cassette_deck::Slot;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
+use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
 use std::*;
 use studio::application::Application;
@@ -83,8 +84,8 @@ impl CassetteTapeBox {
     ///
     /// # Returns
     ///
-    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
+    /// (taken overflow, move)
+    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].seek_1move(&app)
         } else {
@@ -98,8 +99,8 @@ impl CassetteTapeBox {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, 1ノート)
-    pub fn seek_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+    /// (taken overflow, move, note)
+    pub fn seek_to_next(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].seek_to_next(&app)
         } else {
@@ -108,13 +109,34 @@ impl CassetteTapeBox {
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
     pub fn seek_to_next_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
-    ) -> (i16, Option<ShogiNote>) {
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].seek_to_next_with_othre_caret(caret, &app)
+        } else {
+            panic!("Please choice listening tape.");
+        }
+    }
+
+    pub fn step_in(&self, app: &Application) -> i16 {
+        if let Some(tape_index) = self.listening_tape_index {
+            self.tapes[tape_index].caret.step_in(&app.comm)
+        } else {
+            panic!("Please choice listening tape.");
+        }
+    }
+
+    /// -と+方向の長さがある☆（＾～＾）
+    pub fn get_current_tape_len(&self) -> ClosedInterval {
+        if let Some(tape_index) = self.listening_tape_index {
+            self.tapes[tape_index].get_span_caret_facing_outward()
         } else {
             panic!("Please choice listening tape.");
         }
@@ -240,6 +262,10 @@ impl CassetteTapeBox {
 
     pub fn get_file_name(&self) -> String {
         self.file.to_string()
+    }
+
+    pub fn get_tape_index(&self) -> Option<usize> {
+        self.listening_tape_index
     }
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {

@@ -2,6 +2,7 @@ extern crate rand;
 use conf::kifuwarabe_wcsc29_config::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
+use sound::shogi_move::ShogiMove;
 use sound::shogi_note::*;
 use std::fs;
 use std::fs::OpenOptions;
@@ -184,7 +185,7 @@ impl CassetteTape {
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&mut self, app: &Application) -> (bool, i16, ClosedInterval) {
+    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
         self.tracks.seek_1move(&mut self.caret, &app)
     }
 
@@ -194,17 +195,21 @@ impl CassetteTape {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, 1ノート)
-    pub fn seek_to_next(&mut self, app: &Application) -> (i16, Option<ShogiNote>) {
+    /// (taken overflow, move, note)
+    pub fn seek_to_next(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
         self.tracks.seek_to_next(&mut self.caret, &app)
     }
 
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
     pub fn seek_to_next_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
-    ) -> (i16, Option<ShogiNote>) {
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
         self.tracks.seek_to_next(caret, &app)
     }
 

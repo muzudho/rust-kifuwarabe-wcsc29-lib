@@ -2,6 +2,7 @@ use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
+use live::ohashi_player::OHASHI_NOTE_LEN;
 use musician::best_move::BestMove;
 use musician::best_thread::*;
 use musician::best_thread_buffer::*;
@@ -98,7 +99,7 @@ impl BestMovePicker {
         );
 
         // TODO とりあえず rbox.json ファイルを１個読む。
-        'path_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
+        'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
             deck.change_with_tape_box_file(
                 &tape_box_file.unwrap().path().display().to_string(),
@@ -145,10 +146,15 @@ impl BestMovePicker {
 
             let mut debug_tape_count = -1;
             // テープをセット☆（＾～＾）
+            // 局面は、平手初期局面に戻っているはずだぜ☆（＾～＾）
             while deck.change_next_if_training_tape_exists(&app) {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
-                    // ここだけテストするぜ☆（＾～＾）
+                    // このテープだけテストするぜ☆（＾～＾）
+                    app.comm.println(&format!(
+                        "デバッグ中☆（＾～＾）テープ開始 {}。",
+                        debug_tape_count
+                    ));
                 } else {
                     // それ以外は無視。
                     app.comm.println("デバッグ中☆（＾～＾）テープを中断。");
@@ -167,13 +173,15 @@ impl BestMovePicker {
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                 // 'piece_loop:
                 for subject_piece_id in PieceIdentify::iterator() {
+                    /*
                     if 29 <= subject_piece_id.get_number() && subject_piece_id.get_number() <= 29 {
-                        // ここだけテストするぜ☆（＾～＾）
+                        // この背番号の駒だけテストするぜ☆（＾～＾）
                     } else {
                         // それ以外は無視。
                         app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
                         continue;
                     }
+                    */
 
                     // 駒を１つ選択☆（＾～＾）
                     app.comm.println(&format!(
@@ -197,14 +205,13 @@ impl BestMovePicker {
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
-                        // あとで巻き戻すために、進めた数を覚えておくぜ☆（＾～＾）
-                        let mut forwarding_note_count: usize = 0;
+                        // 現局面から動かしたノート数。
+                        let mut moved_notes = 0;
                         'sequence_moves: loop {
                             'sequence_thread: loop {
                                 app.comm.println(&format!(
-                                    "\n--------------------------------------------------------------------------------#Note scan: {}th note of {} move of a thread. [Before pattern match: Caret: {}]",
-                                    forwarding_note_count,
-                                    self.best_thread_buffer.len(),
+                                    "\n--------------------------------------------------------------------------------#Note scan: Tape span: {}. [Before pattern match: Caret: {}]",
+                                    deck.get_current_tape_span(Slot::Training).len(),
                                     deck.to_human_presentable_of_caret_of_current_tape(
                                         Slot::Training, &app
                                     ),
@@ -215,81 +222,12 @@ impl BestMovePicker {
                                 // （２）最後ではない１手分。局面もキャレットも進んでいる。
                                 // （３）テープ終わっていた。キャレットを戻す。
                                 // （４）実現しない操作だった。局面とキャレットを戻す。
-                                match deck.try_read_tape_for_1move(Slot::Training, position, &app) {
-                                    (is_end_of_tape, Some(rmove)) => {
-                                        // この手は、タッチはできるみたいだな☆（＾～＾）
+                                let (taken_overflow, rmove) =
+                                    deck.try_seek_1move(Slot::Training, position, &app);
+                                moved_notes += rmove.len();
 
-                                        // パターンにマッチしていようが、していまいが、タッチを確定したなら、キャレットは動かしてしまった☆（＾～＾）
-                                        forwarding_note_count += rmove.len();
-
-                                        // ベストムーブを作ろうぜ☆（＾～＾）
-                                        let best_move = rmove.to_best_move(
-                                            deck,
-                                            Slot::Training,
-                                            position.get_board_size(),
-                                            &app,
-                                        );
-
-                                        // パターンマッチには２種類ある☆（＾～＾）
-                                        // 主体となる駒まで指定する場合と、主体となる駒を指定しない場合だぜ☆（＾～＾）
-                                        // 手筋の各1ムーブ目は、主体となるピースのものであるか判定する☆（＾～＾）
-                                        if self.best_thread_buffer.is_empty() {
-                                            if !self.match_subject_piece(
-                                                *subject_piece_id,
-                                                my_addr_obj,
-                                                &best_move,
-                                                position.get_board_size(),
-                                                &app,
-                                            ) {
-                                                // 手筋の１個めが、主体となる駒で始まっていない☆（＾～＾）
-                                                // 抜ける☆（＾～＾）
-                                                app.comm.println(
-                                                    "[主体となる駒のものではないぜ☆（＾～＾）]",
-                                                );
-
-                                                // これは、主体の駒の手筋にならない☆（＾～＾）抜けるぜ☆（＾～＾）
-                                                break 'sequence_thread;
-                                            }
-                                        }
-
-                                        if !self.match_object_piece(
-                                            deck,
-                                            Slot::Training,
-                                            position,
-                                            my_addr_obj,
-                                            &rmove,
-                                            &best_move,
-                                            &app,
-                                        ) {
-                                            // 竹の節の境目たぜ☆（＾～＾）
-                                            // この手の途中で止まっているキャレットを　ごそっと　次の１手まで進め、現在の手筋を確定しろだぜ☆（＾～＾）
-                                            // ノートのループは続行する☆（＾～＾）
-                                            app.comm.println("[途切れたぜ☆（＾～＾）]");
-                                            deck.seek_1move(Slot::Training, &app);
-                                            HumanInterface::bo(deck, &position, &app);
-                                            self.change_thread(*subject_piece_id, &app);
-                                        }
-
-                                        // 今探している駒の指し手のような感じはするみたいだな☆（＾～＾）
-                                        app.comm.println(&format!(
-                                            "\n----------------------------------------[Hit {}th note! is_end_of_tape: {}, Move {} --> Best move: {}. Caret: {}]",
-                                            forwarding_note_count,
-                                            rmove.to_human_presentable(
-                                                deck,
-                                                Slot::Training,
-                                                position.get_board_size(),
-                                                &app),
-                                            is_end_of_tape,
-                                            best_move.to_human_presentable(position.get_board_size(), &app),
-                                            deck.to_human_presentable_of_caret_of_current_tape(
-                                                Slot::Training, &app
-                                            ),
-                                        ));
-
-                                        self.best_thread_buffer.push_move(best_move);
-                                        // 手筋のループは続行だぜ☆（＾～＾）
-                                    }
-                                    (true, None) => {
+                                if rmove.is_empty() {
+                                    if taken_overflow {
                                         // テープの終わりなら仕方ない☆（＾～＾）手筋は終わりだぜ☆（＾～＾）
                                         app.comm.println(&format!(
                                             "[End of tape of Piece loop: Caret: {}]",
@@ -299,60 +237,148 @@ impl BestMovePicker {
                                             ),
                                         ));
                                         break 'sequence_thread;
-                                    }
-                                    (false, None) => {
-                                        // このタッチは実現できなかった☆（＾～＾）手筋はここまで☆（＾～＾）
+                                    } else {
+                                        // このタッチは実現できなかった☆（＾～＾）手筋はここまで☆（＾～＾）抜けて続行するぜ☆（＾～＾）
+                                        app.comm.println(
+                                            "このタッチは実現できなかった☆（＾～＾）手筋はここまで☆（＾～＾）抜けて続行するぜ☆（＾～＾）"
+                                        );
                                         break 'sequence_thread;
                                     }
                                 }
+
+                                // この手は、タッチはできるみたいだな☆（＾～＾）
+
+                                // ベストムーブを作ろうぜ☆（＾～＾）
+                                let best_move = if let Some(best_move) = rmove.to_best_move(
+                                    deck,
+                                    Slot::Training,
+                                    position.get_board_size(),
+                                    &app,
+                                ) {
+                                    best_move
+                                } else {
+                                    app.comm.println("info [USIにならないぜ☆（＾～＾）棋譜がダメかもしらん☆（＾～＾）テープ放棄して抜けよう☆（＾～＾）]");
+                                    app.comm.println(
+                                        "info [かといって巻き戻したいし……☆（＾～＾）]",
+                                    );
+                                    app.comm.println(
+                                        "info [全部放棄して次のステップに進もう☆（＾～＾）]",
+                                    );
+                                    deck.seek_1move(Slot::Training, &app);
+                                    HumanInterface::bo(deck, &position, &app);
+                                    self.change_thread(*subject_piece_id, &app);
+                                    break 'tape_box_dir_loop;
+                                };
+
+                                // パターンマッチには２種類ある☆（＾～＾）
+                                // 主体となる駒まで指定する場合と、主体となる駒を指定しない場合だぜ☆（＾～＾）
+                                // 手筋の各1ムーブ目は、主体となるピースのものであるか判定する☆（＾～＾）
+                                if self.best_thread_buffer.is_empty() {
+                                    if !self.match_subject_piece(
+                                        *subject_piece_id,
+                                        my_addr_obj,
+                                        &best_move,
+                                        position.get_board_size(),
+                                        &app,
+                                    ) {
+                                        // 手筋の１個めが、主体となる駒で始まっていない☆（＾～＾）
+                                        // 抜ける☆（＾～＾）
+                                        app.comm.println(
+                                            "[主体となる駒のものではないぜ☆（＾～＾）]",
+                                        );
+
+                                        // これは、主体の駒の手筋にならない☆（＾～＾）抜けて続行するぜ☆（＾～＾）
+                                        continue 'sequence_thread;
+                                    }
+                                }
+
+                                if !self.match_object_piece(
+                                    deck,
+                                    Slot::Training,
+                                    position,
+                                    my_addr_obj,
+                                    &rmove,
+                                    &best_move,
+                                    &app,
+                                ) {
+                                    // 竹の節の境目たぜ☆（＾～＾）
+                                    // この手の途中で止まっているキャレットを　ごそっと　次の１手まで進め、現在の手筋を確定しろだぜ☆（＾～＾）
+                                    // ノートのループは続行する☆（＾～＾）
+                                    app.comm.println("[途切れたぜ☆（＾～＾）]");
+                                    deck.seek_1move(Slot::Training, &app);
+                                    HumanInterface::bo(deck, &position, &app);
+                                    self.change_thread(*subject_piece_id, &app);
+                                }
+
+                                // 今探している駒の指し手のような感じはするみたいだな☆（＾～＾）
+                                app.comm.println(&format!(
+                                    "\n----------------------------------------[Hit note! taken_overflow: {}, Move {} --> Best move: {}. Caret: {}]",
+                                    taken_overflow,
+                                    rmove.to_human_presentable(
+                                        deck,
+                                        Slot::Training,
+                                        position.get_board_size(),
+                                        &app),
+                                    best_move.to_human_presentable(position.get_board_size(), &app),
+                                    deck.to_human_presentable_of_caret_of_current_tape(
+                                        Slot::Training, &app
+                                    ),
+                                ));
+
+                                self.best_thread_buffer.push_move(best_move);
+                                // TODO 手筋のループは続行だぜ☆（＾～＾）
+
+                                // TODO といいたいところだが１手の手筋にする☆（＾～＾）抜ける☆（＾～＾）
+                                break 'sequence_thread;
                             } // Sequence thread.
 
                             // スレッドを差し替えろだぜ☆（＾～＾）
-                            app.comm.println("[Next thread scan]");
+                            app.comm.println("[Change thread]");
                             self.change_thread(*subject_piece_id, &app);
 
-                            // 無限ループしないように、１手進めだぜ☆（＾～＾）
-                            match deck.seek_1move(Slot::Training, &app) {
-                                (true, _, _) => {
-                                    break 'sequence_moves;
-                                }
-                                _ => {}
-                            }
+                            // 無限ループしないように、残っている分は無視して進んで　１手分　終わらせろだぜ☆（＾～＾）
+                            let (taken_overflow, rmove) = deck.seek_1move(Slot::Training, &app);
+                            moved_notes += rmove.len();
                             HumanInterface::bo(deck, &position, &app);
+
+                            if taken_overflow {
+                                break 'sequence_moves;
+                            }
                         } // Sequence moves.
 
                         // ケツ☆（*＾～＾*） 余ってるかも知れないぜ☆（*＾～＾*）次の手筋探しにチェンジするぜ☆（*＾～＾*）
                         self.change_thread(*subject_piece_id, &app);
 
-                        // 指した手数分、後ろ向きに読み進めながら記録しろだぜ☆（＾～＾）
-                        // TODO それを逆順にすれば　指し手だぜ☆（＾～＾）
+                        // 棋譜の最後まで行ってるだろ、全部戻せだぜ☆（＾～＾）大橋流を指し終えたところまで戻るだろ☆（＾～＾）
+                        // TODO 初期局面に戻してどうするのか、現局面に戻せだぜ☆（＾～＾）
+                        let repeats = moved_notes - OHASHI_NOTE_LEN + 1; // deck.get_ply(Slot::Learning) as usize;
                         app.comm.println(&format!(
-                            "Tried! Then go to opponent {}th note of move! Training deck box: {}. Deck: {}.",
-                            forwarding_note_count,
+                            "Try outed! Go back {} notes. Training deck box: {}. Deck: {}.",
+                            repeats,
                             deck.to_human_presentable_of_tape_box(Slot::Training),
                             deck.to_human_presentable()
                         ));
-                        // TODO ここでテープボックスが無くなっているのは　なぜなのか☆（＾～＾）？
                         deck.look_back_caret_to_opponent(Slot::Training, &app);
                         {
-                            deck.go_n_notes_permissive(
-                                Slot::Training,
-                                forwarding_note_count,
-                                position,
-                                &app,
-                            );
+                            deck.seek_n_notes_permissive(Slot::Training, repeats, position, &app);
                         }
                         deck.look_back_caret_to_opponent(Slot::Training, &app);
+
+                        // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）
+                        deck.seek_to_next(Slot::Training, &app);
+
                         HumanInterface::bo(deck, &position, &app);
                         app.comm.println("Backed.");
                     } // if
-                } // for
+                } // ピースの for
 
                 // いくつか読み取れれば打ち止め。
                 if self.get_max_note_len() > 4 {
                     println!("#Break. Exit piece count = {}.", self.get_max_note_len());
-                    break 'path_loop;
+                    break 'tape_box_dir_loop;
                 }
+
+                // TODO 平手初期局面に戻したいぜ☆（＾～＾）
             } // テープのループ。
         } // トレーニング・ディレクトリー内のループ。
 
@@ -531,7 +557,7 @@ impl BestMovePicker {
         /// （２）最後ではない１手分。局面もキャレットも進んでいる。
         /// （３）テープ終わっていた。キャレットを戻す。
         /// （４）実現しない操作だった。局面とキャレットを戻す。
-        match GamePlayer::try_read_tape_for_1move(deck, Slot::Training, position, ply, &app) {
+        match GamePlayer::try_seek_1move(deck, Slot::Training, position, ply, &app) {
             (is_end_of_tape, Some(rmove)) => {
                 // テープの通りに、局面をタッチしてみて１手分は　なるほど進んだようだぜ☆（＾～＾）
                 // USI に変換してみようぜ☆（＾～＾）
@@ -605,7 +631,7 @@ impl BestMovePicker {
                     /// （２）最後ではない１手分。局面もキャレットも進んでいる。
                     /// （３）テープ終わっていた。キャレットを戻す。
                     /// （４）実現しない操作だった。局面とキャレットを戻す。
-                    match GamePlayer::try_read_tape_for_1move(
+                    match GamePlayer::try_seek_1move(
                         deck,
                         Slot::Training,
                         position,

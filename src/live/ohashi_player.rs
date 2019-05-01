@@ -8,6 +8,9 @@ use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
 
+/// 大橋流のノート数は 120。1手3ノートの40駒。
+pub const OHASHI_NOTE_LEN: usize = 3 * 40;
+
 /// 大橋流だけ指してくれるプレイヤー。
 pub struct OhashiPlayer {}
 impl OhashiPlayer {

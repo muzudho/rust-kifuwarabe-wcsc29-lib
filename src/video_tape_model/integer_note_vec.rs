@@ -1,4 +1,5 @@
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::*;
+use sound::shogi_move::*;
 use sound::shogi_note::*;
 use std::*;
 use studio::application::Application;
@@ -40,20 +41,6 @@ impl IntegerNoteVec {
         }
     }
 
-    /*
-    pub fn from_1_move(removable_rmove: &ShogiMove) -> Self {
-        let mut pnotes = Vec::new();
-
-        // & を頭に付けると元のベクターは残るらしい。付けてないとアクセスできなくなるらしい。
-        pnotes.extend(&removable_rmove.notes);
-
-        IntegerNoteVec {
-            positive_notes: pnotes,
-            negative_notes: Vec::new(),
-        }
-    }
-    */
-
     pub fn clear(&mut self) {
         self.positive_notes.clear();
         self.negative_notes.clear();
@@ -64,7 +51,7 @@ impl IntegerNoteVec {
     /// 向きは取れない☆（＾～＾）
     pub fn get_span_caret_facing_outward(&self) -> ClosedInterval {
         ClosedInterval::from_all(
-            self.get_positive_peak_caret_facing_outward(),
+            self.get_negative_peak_caret_facing_outward(),
             self.get_positive_peak_caret_facing_outward(),
             true,
         )
@@ -82,27 +69,29 @@ impl IntegerNoteVec {
     ///
     /// # Returns
     ///
-    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&self, caret: &mut Caret, app: &Application) -> (bool, i16, ClosedInterval) {
-        let mut closed_interval = ClosedInterval::from_all(
-            caret.step_in(&app.comm),
-            caret.step_in(&app.comm),
-            caret.is_facing_left(),
-        );
+    /// (taken overflow, move)
+    pub fn seek_1move(&self, caret: &mut Caret, app: &Application) -> (bool, ShogiMove) {
+        // 指し手（実際のところ、テープ上の範囲を示したもの）。
+        let mut rmove = ShogiMove::new_facing_right_move();
 
         loop {
+            // とりあえずキャレットを１つ進める。
             match self.seek_to_next(caret, &app) {
-                (caret_number, Some(note)) => {
+                (taken_overflow, note_move, Some(note)) => {
                     if note.is_phase_change() {
-                        closed_interval.intersect_caret_number(caret_number);
-                        return (false, caret_number, closed_interval);
+                        rmove
+                            .caret_closed_interval
+                            .intersect_closed_interval(note_move.caret_closed_interval);
+                        return (taken_overflow, rmove);
                     }
-
                     // ループを続行。
                 }
-                (caret_number, None) => {
+                (taken_overflow, note_move, None) => {
                     // テープの終わり☆（＾～＾）
-                    return (true, caret_number, closed_interval);
+                    rmove
+                        .caret_closed_interval
+                        .intersect_closed_interval(note_move.caret_closed_interval);
+                    return (taken_overflow, rmove);
                 }
             }
         }
@@ -114,10 +103,19 @@ impl IntegerNoteVec {
     ///
     /// # Returns
     ///
-    /// (キャレット番地, ノート)
-    pub fn seek_to_next(&self, caret: &mut Caret, app: &Application) -> (i16, Option<ShogiNote>) {
+    /// (taken overflow, move, note)
+    pub fn seek_to_next(
+        &self,
+        caret: &mut Caret,
+        app: &Application,
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
         let caret_number = caret.go_to_next(&app);
+        let note_move = ShogiMove::from_closed_interval(ClosedInterval::from_all(
+            caret_number,
+            caret_number,
+            caret.is_facing_left(),
+        ));
 
         if caret.is_facing_left() {
             // 負の無限大 <---- 顔の向き。
@@ -125,24 +123,26 @@ impl IntegerNoteVec {
                 // [負] 正
                 if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
                     // 配列の範囲外。
-                    (caret_number, None)
+                    (true, note_move, None)
                 } else {
                     // 配列の範囲内。
                     (
-                        caret_number,
-                        Some(self.negative_notes[get_index_from_caret_numbers(caret_number)]),
+                        false,
+                        note_move,
+                        Some(self.negative_notes[caret_number as usize]),
                     )
                 }
             } else {
                 // 負 [正]
                 if self.positive_notes.len() <= get_index_from_caret_numbers(caret_number) {
                     // 配列の範囲外。
-                    (caret_number, None)
+                    (true, note_move, None)
                 } else {
                     // 配列の範囲内。
                     (
-                        caret_number,
-                        Some(self.positive_notes[get_index_from_caret_numbers(caret_number)]),
+                        false,
+                        note_move,
+                        Some(self.positive_notes[caret_number as usize]),
                     )
                 }
             }
@@ -152,25 +152,27 @@ impl IntegerNoteVec {
                 // 負 [正]
                 if self.positive_notes.len() <= caret_number as usize {
                     // 配列の範囲外。
-                    (caret_number, None)
+                    (true, note_move, None)
                 } else {
                     // 配列の範囲内。
                     (
-                        caret_number,
+                        false,
+                        note_move,
                         Some(self.positive_notes[caret_number as usize]),
                     )
                 }
             } else {
                 // [負] 正
                 if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                    // 配列の範囲外。
+                    (true, note_move, None)
+                } else {
                     // 配列の範囲内。
                     (
-                        caret_number,
+                        false,
+                        note_move,
                         Some(self.negative_notes[caret_number as usize]),
                     )
-                } else {
-                    // 配列の範囲外。
-                    (caret_number, None)
                 }
             }
         }

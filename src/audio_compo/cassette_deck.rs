@@ -166,14 +166,6 @@ impl CassetteDeck {
         }
     }
 
-    pub fn get_learning_tape_box_file_name(&self) -> String {
-        if let Some(tape_box) = &self.slots[Slot::Learning as usize].tape_box {
-            tape_box.get_file_name()
-        } else {
-            panic!("l_tape box none.");
-        }
-    }
-
     pub fn get_ply(&self, slot: Slot) -> i16 {
         self.slots[slot as usize].ply
     }
@@ -187,12 +179,48 @@ impl CassetteDeck {
         }
     }
 
+    pub fn get_file_name_of_tape_box(&self, slot: Slot) -> String {
+        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
+            tape_box.get_file_name()
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("tape box file name fail. Slot: {:?}.", slot);
+        }
+    }
+
+    pub fn get_tape_index(&self, slot: Slot) -> Option<usize> {
+        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
+            tape_box.get_tape_index()
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("Get tape index fail. Slot: {:?}.", slot);
+        }
+    }
+
+    /// -と+方向の長さがある☆（＾～＾）
+    pub fn get_current_tape_span(&self, slot: Slot) -> ClosedInterval {
+        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
+            tape_box.get_current_tape_len()
+        } else {
+            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
+            panic!("Get tape len fail. Slot: {:?}.", slot);
+        }
+    }
+
+    pub fn step_in(&self, slot: Slot, app: &Application) -> i16 {
+        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
+            tape_box.step_in(&app)
+        } else {
+            panic!("Step in fail.");
+        }
+    }
+
     /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
     ///
     /// # Returns
     ///
-    /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&mut self, slot: Slot, app: &Application) -> (bool, i16, ClosedInterval) {
+    /// (taken overflow, move, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
+    pub fn seek_1move(&mut self, slot: Slot, app: &Application) -> (bool, ShogiMove) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             tape_box.seek_1move(&app)
         } else {
@@ -210,7 +238,15 @@ impl CassetteDeck {
     /// （１）１ノート進んだ。ついでに拾ったノートを返す。
     /// （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
     /// （３）スロットにテープがささっていなかったので強制終了。
-    pub fn seek_to_next(&mut self, slot: Slot, app: &Application) -> (i16, Option<ShogiNote>) {
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn seek_to_next(
+        &mut self,
+        slot: Slot,
+        app: &Application,
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             tape_box.seek_to_next(&app)
         } else {
@@ -251,8 +287,9 @@ impl CassetteDeck {
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
             // とりあえず、キャレットを進めようぜ☆（＾～＾）
-            let (caret_number, _) = tape_box.seek_to_next(&app);
-            if -1 < caret_number {
+            let (_taken_overflow, rmove, _) = tape_box.seek_to_next(&app);
+
+            if -1 < rmove.get_end() {
                 // ０、または 正のテープ。
                 // 次にオーバーフローするか判断。
                 if tape_box.is_before_caret_overflow(&app) {
@@ -261,16 +298,12 @@ impl CassetteDeck {
                     tape_box.seek_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    tape_box.set_note_to_current_tape(caret_number, note);
+                    tape_box.set_note_to_current_tape(rmove.get_end(), note);
 
-                    if let (caret_number, Some(_note)) = tape_box.seek_to_next(&app) {
-                        // 仮のおわり を更新。
-                        tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
-                            caret_number,
-                        ));
-                    } else {
-
-                    }
+                    // 仮のおわり を更新。
+                    tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
+                        rmove.get_end(),
+                    ));
                 }
             } else {
                 // 負のテープ。
@@ -281,15 +314,11 @@ impl CassetteDeck {
                     tape_box.seek_to_next(&app);
                 } else {
                     // 先端でなければ、上書き。
-                    tape_box.set_note_to_current_tape(caret_number, note);
-                    if let (caret_number, Some(_note)) = tape_box.seek_to_next(&app) {
-                        // 仮のおわり を更新。
-                        tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
-                            caret_number,
-                        ));
-                    } else {
-
-                    }
+                    tape_box.set_note_to_current_tape(rmove.get_end(), note);
+                    // 仮のおわり を更新。
+                    tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
+                        rmove.get_end(),
+                    ));
                 }
             }
         } else {
@@ -360,13 +389,13 @@ impl CassetteDeck {
     ///
     /// # Return
     ///
-    /// (is_end_of_tape, 指した１手分)
-    pub fn try_read_tape_for_1move(
+    /// (taken overflow, move)
+    pub fn try_seek_1move(
         &mut self,
         slot: Slot,
         position: &mut Position,
         app: &Application,
-    ) -> (bool, Option<ShogiMove>) {
+    ) -> (bool, ShogiMove) {
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
 
@@ -376,13 +405,13 @@ impl CassetteDeck {
         'caret_loop: loop {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match self.seek_to_next(slot, &app) {
-                (caret_number, Some(rnote)) => {
+                (_taken_overflow, note_move, Some(rnote)) => {
                     // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
                     // このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
                     // あとで、ルック・バックする範囲☆（＾～＾）
                     rmove
                         .caret_closed_interval
-                        .intersect_caret_number(caret_number);
+                        .intersect_closed_interval(note_move.caret_closed_interval);
 
                     if position.try_beautiful_touch(&rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
@@ -408,15 +437,15 @@ impl CassetteDeck {
                         break 'caret_loop;
                     }
                 }
-                (caret_number, None) => {
+                (taken_overflow, note_move, None) => {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
                     app.comm.println(
                         "[オーバーフローのノートを読んでる☆（＾～＾）]",
                     );
                     rmove
                         .caret_closed_interval
-                        .intersect_caret_number(caret_number);
-                    return (true, None);
+                        .intersect_closed_interval(note_move.caret_closed_interval);
+                    return (taken_overflow, rmove);
                 }
             }
         }
@@ -433,18 +462,18 @@ impl CassetteDeck {
             ));
             */
             self.look_back_caret_to_opponent(slot, &app);
-            self.go_n_notes_permissive(slot, rmove.len(), position, &app);
+            self.seek_n_notes_permissive(slot, rmove.len(), position, &app);
             self.look_back_caret_to_opponent(slot, &app);
 
-            return (false, None);
+            return (false, ShogiMove::new_facing_right_move());
         }
 
         if is_phase_change {
             // 1手分。
-            (false, Some(rmove))
+            (false, rmove)
         } else {
             // 最後の1手なのでフェーズ・チェンジが無かったと考える。
-            (true, Some(rmove))
+            (true, rmove)
         }
     }
 
@@ -479,7 +508,7 @@ impl CassetteDeck {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_caret_number, Some(rnote)) = self.seek_to_next(slot, &app) {
+        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -514,7 +543,7 @@ impl CassetteDeck {
     }
 
     /// 成立しないタッチをしてしまうことも、おおめに見ます。
-    pub fn go_n_notes_permissive(
+    pub fn seek_n_notes_permissive(
         &mut self,
         slot: Slot,
         repeat: usize,
@@ -528,7 +557,7 @@ impl CassetteDeck {
             // （１）１ノート進んだ。ついでに拾ったノートを返す。
             // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
             // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_caret_number, Some(rnote)) = self.seek_to_next(slot, &app) {
+            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next(slot, &app) {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
