@@ -151,9 +151,12 @@ impl BestMovePicker {
                     if let Some((my_idp, my_addr_obj)) =
                         position.find_wild(Some(position.get_phase()), *my_piece_id)
                     {
+                        // ここに 手筋 を追加していけだぜ☆（＾～＾）
+                        let mut best_thread = BestThread::new();
+
                         // Display.
                         app.comm.println(&format!(
-                            "[{}] Find: {}'{}'{}.",
+                            "[{}] Recording thread by piece: {}'{}'{}.",
                             deck.get_ply(Slot::Training),
                             position.get_phase().to_log(),
                             my_idp.to_human_presentable(),
@@ -161,14 +164,12 @@ impl BestMovePicker {
                         ));
                         HumanInterface::bo(deck, Slot::Learning, &position, &app);
 
-                        let mut best_thread = BestThread::new();
-
-                        // ノートをスキャン。
+                        // １手のまとまりずつ、ノートをスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
                         let mut forwarding_note_count: usize = 0;
                         'note_scan: loop {
                             app.comm.println(&format!(
-                                "\n--------------------------------------------------------------------------------#Note scan: {}th note. [Before pattern match: Caret: {}]",
+                                "\n--------------------------------------------------------------------------------#Note scan: {}th note of a move. [Before pattern match: Caret: {}]",
                                 forwarding_note_count,
                                 deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
                                     &app
@@ -183,6 +184,8 @@ impl BestMovePicker {
                             match deck.try_read_tape_for_1move(Slot::Training, position, &app) {
                                 (is_end_of_tape, Some(rmove)) => {
                                     // ヒットしたようだぜ☆（＾～＾）
+                                    // TODO この手が局面にパターンマッチしているか判定がいるが、コードは削除した☆（＾～＾）
+                                    // TODO パターンマッチは通ったものとして、次へ☆（＾～＾）
                                     forwarding_note_count += rmove.len();
 
                                     // ベストムーブを作って追加しようぜ☆（＾～＾）
@@ -194,19 +197,19 @@ impl BestMovePicker {
                                     );
 
                                     app.comm.println(&format!(
-                                        "\n[After pattern match: best_move: {}, is_end_of_tape: {}, Hit {}th note! Caret: {}, Rmove: {}]",
-                                        best_move.to_human_presentable(position.get_board_size(), &app),
-                                        is_end_of_tape,
+                                        "\n----------------------------------------[Hit {}th note! is_end_of_tape: {}, Move {} --> Best move: {}. Caret: {}]",
                                         forwarding_note_count,
-                                        deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
-                                            &app
-                                        ),
                                         rmove.to_human_presentable(
                                             deck,
                                             Slot::Training,
                                             position.get_board_size(),
+                                            &app),
+                                        is_end_of_tape,
+                                        best_move.to_human_presentable(position.get_board_size(), &app),
+                                        deck.to_human_presentable_of_caret_of_current_tape_of_training_box(
                                             &app
-                                    )));
+                                        ),
+                                    ));
 
                                     best_thread.push_move(best_move);
                                     // とりあえず抜ける☆（＾～＾）

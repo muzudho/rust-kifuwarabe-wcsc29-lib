@@ -12,6 +12,11 @@ pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
     }
 }
 
+/// 余談。
+/// キャレットは、クリアーするとかリセットすることはできない☆（＾～＾）
+/// 常に現在位置を示す☆（＾～＾）
+/// 初期位置は持たない☆（＾～＾）
+/// できるか、できないかではない、これは　そうであるべき　という　思想　だぜ☆（*＾～＾*）
 pub struct Caret {
     facing_left: bool,
     number: i16,
@@ -22,25 +27,10 @@ impl Caret {
     }
 
     pub fn new_facing_right_caret_with_number(init_num: i16) -> Self {
-        let mut brandnew = Caret {
+        Caret {
             facing_left: false,
             number: init_num,
-        };
-
-        // Human care.
-        brandnew.clear_facing_right();
-
-        brandnew
-    }
-
-    pub fn clear_facing_right(&mut self) {
-        self.facing_left = false;
-        self.number = 0;
-    }
-
-    /// TODO リセットは 0 に戻るでいいのか☆（＾～＾）？
-    pub fn reset(&mut self) {
-        self.number = 0;
+        }
     }
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
@@ -77,7 +67,7 @@ impl Caret {
     }
 
     /// ちょっと戻りたいときに☆（＾～＾）
-    pub fn go_back(&mut self, app: &Application) -> i16 {
+    pub fn go_back(&mut self, _app: &Application) -> i16 {
         let old = self.number;
 
         if self.facing_left {
@@ -86,6 +76,7 @@ impl Caret {
             self.number -= 1;
         }
 
+        /*
         // ログ出力☆（＾～＾）
         {
             if self.is_facing_left() {
@@ -96,6 +87,7 @@ impl Caret {
                     .print(&format!("[CaretBK: {}-->{}]", old, self.number).to_string());
             }
         }
+        */
 
         old
     }
@@ -107,7 +99,7 @@ impl Caret {
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_negative(&mut self, app: &Application) {
-        app.comm.print("[LookBack N]");
+        // app.comm.print("[LookBack N]");
         if !self.is_facing_left() {
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = true;
@@ -119,7 +111,7 @@ impl Caret {
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_positive(&mut self, app: &Application) {
-        app.comm.print("[LookBack P]");
+        // app.comm.print("[LookBack P]");
         if self.is_facing_left() {
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = false;
@@ -131,7 +123,7 @@ impl Caret {
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_opponent(&mut self, app: &Application) {
-        app.comm.print("[LookBack O]");
+        // app.comm.print("[LookBack O]");
 
         // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
         self.facing_left = !self.facing_left;
@@ -152,10 +144,24 @@ impl Caret {
     pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
         target <= self.number
     }
-    pub fn while_to(&self, target: &ClosedInterval) -> bool {
+    pub fn while_to(&self, target: &ClosedInterval, _app: &Application) -> bool {
         if self.is_facing_left() {
+            /*
+            app.comm.print(&format!(
+                "[min:{}, num:{}]",
+                target.get_minimum_caret_number(),
+                self.number
+            ));
+            */
             target.get_minimum_caret_number() < self.number
         } else {
+            /*
+            app.comm.print(&format!(
+                "[num:{}, max:{}]",
+                self.number,
+                target.get_maximum_caret_number(),
+            ));
+            */
             self.number < target.get_maximum_caret_number()
         }
     }

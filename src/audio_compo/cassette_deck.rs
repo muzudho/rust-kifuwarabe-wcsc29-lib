@@ -243,18 +243,6 @@ impl CassetteDeck {
         }
     }
 
-    /*
-    pub fn put_1move(&mut self, slot: Slot, rmove: &ShogiMove, app: &Application) {
-        for note in rmove.notes.iter() {
-            self.put_1note(slot, *note, app);
-            if let Some(ply) = note.get_ope().get_phase_change() {
-                // フェーズ更新。
-                self.slots[slot as usize].ply = ply;
-            }
-        }
-    }
-    */
-
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
@@ -391,16 +379,18 @@ impl CassetteDeck {
                         rmove
                             .caret_closed_interval
                             .intersect_caret_number(caret_number);
+                        /*
                         app.comm.println(&format!(
                             "[{} note advanced! Note:{}, Move:{}]",
                             rmove.len(),
                             rnote.to_human_presentable(position.get_board_size()),
                             rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
                         ));
+                        */
 
                         if 1 < rmove.len() && rnote.is_phase_change() {
                             // フェーズ切り替えしたら終了。（ただし、初回除く）
-                            print!("[Phase-change-break try_read_1move:{}]", rnote);
+                            // print!("[Phase-change-break try_read_1move:{}]", rnote);
                             is_phase_change = true;
                             break 'caret_loop;
                         }
@@ -410,13 +400,7 @@ impl CassetteDeck {
                             .caret_closed_interval
                             .intersect_caret_number(caret_number);
                         // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
-                        app.comm.println("[$Untouched. Back a caret]");
-                        /*
-                        // 成立しないタッチを読んだキャレットを無かったことにする。（局面を戻すのとは別）
-                        deck.turn_caret_to_opponent(slot);
-                        deck.go_to_next(slot, &app);
-                        deck.turn_caret_to_opponent(slot);
-                        */
+                        // app.comm.println("[$Untouched. Back a caret]");
                         is_rollback = true;
                         break 'caret_loop;
                     }
@@ -427,13 +411,7 @@ impl CassetteDeck {
                         .caret_closed_interval
                         .intersect_caret_number(caret_number);
                     // トラックの終わり。
-                    app.comm.println("[End of track out of loop. Back a caret]");
-                    /*
-                    // トラックの終わりを読んだキャレットを無かったことにする。（局面を戻すのとは別）
-                    deck.turn_caret_to_opponent(slot);
-                    deck.go_to_next(slot, &app);
-                    deck.turn_caret_to_opponent(slot);
-                    */
+                    // app.comm.println("[End of track out of loop. Back a caret]");
                     return (true, None);
                 }
             }
@@ -444,11 +422,13 @@ impl CassetteDeck {
         if is_rollback {
             // 局面を戻す。（キャレットを戻すのとは別）
             let repeats = rmove.len();
+            /*
             app.comm.println(&format!(
                 "[Try_read_1move: Rollback {} note!:{}]",
                 repeats,
                 rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
             ));
+            */
             self.look_back_caret_to_opponent(slot, &app);
             self.read_tape_for_n_notes_permissive(slot, repeats, position, &app);
             self.look_back_caret_to_opponent(slot, &app);
@@ -484,23 +464,27 @@ impl CassetteDeck {
         position: &mut Position,
         app: &Application,
     ) {
+        /*
         app.comm.println(&format!(
             "[TOP read_tape_for_1move_forcely:{}:{}]",
             self.to_human_presentable_of_tape_box(slot),
             self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app)
         ));
+        */
 
         let mut is_legal_touch = true;
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
         while let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+            /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
                 self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
                 self.to_human_presentable_of_tape_box(slot),
                 rnote.to_human_presentable(position.get_board_size())
             ));
+            */
             is_legal_touch = position.try_beautiful_touch(&rnote, self.get_ply(slot), &app);
             forwarding_count += 1;
 
@@ -510,7 +494,7 @@ impl CassetteDeck {
 
             if forwarding_count != 1 && rnote.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
-                print!("<NXm1End{} {}>", forwarding_count, rnote);
+                // print!("<NXm1End{} {}>", forwarding_count, rnote);
                 break;
             }
         }
@@ -536,18 +520,22 @@ impl CassetteDeck {
     ) {
         for i in 0..repeat {
             if let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+                /*
                 app.comm.println(&format!(
                     "<Go-force:{}/{} {}>",
                     i,
                     repeat,
                     rnote.to_human_presentable(position.get_board_size())
                 ));
+                */
                 if !position.try_beautiful_touch(&rnote, self.get_ply(slot), &app) {
+                    /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",
                         rnote.to_human_presentable(position.get_board_size()),
                         self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
                     ));
+                    */
                 }
             } else {
                 panic!("<Go forcely fail:{}/{} None>", i, repeat);

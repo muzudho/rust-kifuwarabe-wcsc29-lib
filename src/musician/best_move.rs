@@ -16,7 +16,7 @@ impl BestMove {
     /// Human presentable.
     pub fn to_human_presentable(&self, board_size: BoardSize, _app: &Application) -> String {
         format!(
-            "Usi: '{}', SubjPid: {}, SubjAddr: '{}', CapPid: {}, CapAddr: '{}'.",
+            "[Best move: Usi: '{}', SubjPid: {}, SubjAddr: '{}', CapPid: {}, CapAddr: '{}']",
             self.usi_move.to_sign(),
             self.subject_pid.to_human_presentable(),
             self.subject_addr.to_human_presentable(board_size),

@@ -351,7 +351,12 @@ impl ShogiMove {
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
 
         let mut text = String::new();
-        while caret.while_to(&self.caret_closed_interval) {
+        app.comm.println(&format!(
+            "OpeStr step in: ({},{}).",
+            caret.step_in(&app.comm),
+            self.caret_closed_interval.get_start()
+        )); // TODO
+        while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_caret_number, Some(note)) =
                 tape_box.go_to_next_with_othre_caret(&mut caret, &app)
             {
@@ -369,7 +374,12 @@ impl ShogiMove {
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
 
         let mut text = String::new();
-        while caret.while_to(&self.caret_closed_interval) {
+        app.comm.println(&format!(
+            "IdStr (step in: {},{})",
+            caret.step_in(&app.comm),
+            self.caret_closed_interval.get_start()
+        )); // TODO
+        while caret.while_to(&self.caret_closed_interval, &app) {
             if let (_caret_number, Some(note)) =
                 tape_box.go_to_next_with_othre_caret(&mut caret, &app)
             {
@@ -398,13 +408,19 @@ impl ShogiMove {
         app: &Application,
     ) -> String {
         if let Some(tape_box) = &deck.slots[slot as usize].tape_box {
-            let mut caret =
-                Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
-
             let mut text = String::new();
-            while caret.while_to(&self.caret_closed_interval) {
+            let mut other_caret =
+                Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+            app.comm.print(&format!(
+                "{} (Step in:{}, {})",
+                text,
+                other_caret.step_in(&app.comm),
+                self.caret_closed_interval.get_start()
+            ));
+
+            while other_caret.while_to(&self.caret_closed_interval, &app) {
                 if let (_caret_number, Some(note)) =
-                    tape_box.go_to_next_with_othre_caret(&mut caret, &app)
+                    tape_box.go_to_next_with_othre_caret(&mut other_caret, &app)
                 {
                     text = format!("{} {}", text, note.to_human_presentable(board_size))
                 } else {
@@ -414,7 +430,7 @@ impl ShogiMove {
 
             // TODO スタートが181で、エンドが1だったりするのはなんでだぜ☆（＾～＾）？
             format!(
-                "{}{}",
+                "[Move:{}{}]",
                 self.caret_closed_interval.to_human_presentable(),
                 text
             )

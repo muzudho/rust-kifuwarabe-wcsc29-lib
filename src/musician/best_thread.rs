@@ -2,7 +2,7 @@ use musician::best_move::*;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 
-/// シーケンスな手筋１個分。読み筋。
+/// 手筋１個分。読み筋。
 #[derive(Default)]
 pub struct BestThread {
     pub moves: Vec<BestMove>,
@@ -20,6 +20,7 @@ impl BestThread {
         self.moves.is_empty()
     }
 
+    /// 指し手を追加。
     pub fn push_move(&mut self, bmove: BestMove) {
         self.moves.push(bmove);
     }

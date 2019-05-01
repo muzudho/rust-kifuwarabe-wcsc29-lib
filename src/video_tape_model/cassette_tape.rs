@@ -100,17 +100,6 @@ impl CassetteTape {
     }
     */
 
-    /// 新品の状態に戻します。
-    pub fn clear(&mut self) {
-        self.caret.clear_facing_right();
-        self.label.clear();
-        self.tracks.clear();
-    }
-
-    pub fn reset_caret(&mut self) {
-        self.caret.reset();
-    }
-
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
     pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
         let mut rng = rand::thread_rng();
