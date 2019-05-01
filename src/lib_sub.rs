@@ -108,7 +108,7 @@ impl LibSub {
         let rnote_opes =
             UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning));
         for rnote_ope in rnote_opes {
-            app.comm.println("lib.rs:go: touch_1note_ope");
+            // app.comm.println("lib.rs:go: touch_1note_ope");
             position.touch_1note_ope(&rnote_ope, deck, &app);
         }
     }

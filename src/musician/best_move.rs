@@ -5,6 +5,7 @@ use studio::application::Application;
 use studio::board_size::*;
 
 /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
+#[derive(Clone)]
 pub struct BestMove {
     pub usi_move: UsiMove,
     pub subject_pid: PieceIdentify,

@@ -201,7 +201,11 @@ impl CassetteDeck {
         }
     }
 
-    /// 結果は３つ☆（＾～＾）
+    /// キャレットは必ず１つ進みます。
+    /// 0 は、正の数とします。（マイナスゼロは無いです）
+    /// Noneを返したら、オーバーフローしています。
+    ///
+    /// だから、結果は３つ☆（＾～＾）
     ///
     /// （１）１ノート進んだ。ついでに拾ったノートを返す。
     /// （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
@@ -519,7 +523,14 @@ impl CassetteDeck {
         app: &Application,
     ) {
         for i in 0..repeat {
+            // キャレットは必ず進めろだぜ☆（＾～＾）
+            // 結果は３つ☆（＾～＾）
+            //
+            // （１）１ノート進んだ。ついでに拾ったノートを返す。
+            // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
+            // （３）スロットにテープがささっていなかったので強制終了。
             if let (_caret_number, Some(rnote)) = self.go_to_next(slot, &app) {
+                // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
                     "<Go-force:{}/{} {}>",
@@ -538,7 +549,18 @@ impl CassetteDeck {
                     */
                 }
             } else {
-                panic!("<Go forcely fail:{}/{} None>", i, repeat);
+                // オーバーフローした☆（＾～＾）つまりテープの終了だぜ☆（＾～＾）
+                if i + 1 == repeat {
+                    // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
+                    break;
+                } else {
+                    panic!(
+                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {}.",
+                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                        i,
+                        repeat
+                    );
+                }
             }
         }
     }

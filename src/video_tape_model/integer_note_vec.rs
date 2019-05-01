@@ -107,56 +107,70 @@ impl IntegerNoteVec {
         }
     }
 
-    /// 正負の両端の先端要素を超えたら、Noneを返します。
     /// キャレットは必ず１つ進みます。
     /// 0 は、正の数とします。（マイナスゼロは無いです）
+    /// Noneを返したら、オーバーフローしています。
     ///
     /// # Returns
     ///
-    /// (キャレット番地, 1ノート)
+    /// (キャレット番地, ノート)
     pub fn go_to_next(&self, caret: &mut Caret, app: &Application) -> (i16, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
         let caret_number = caret.go_to_next(&app);
 
         if caret.is_facing_left() {
-            // 負の無限大の方に向いているとき。
+            // 負の無限大 <---- 顔の向き。
             if caret_number < 0 {
+                // [負] 正
                 if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
-                    // 負の先端要素を超えたら。
+                    // 配列の範囲外。
                     (caret_number, None)
                 } else {
-                    // 負。
+                    // 配列の範囲内。
                     (
                         caret_number,
                         Some(self.negative_notes[get_index_from_caret_numbers(caret_number)]),
                     )
                 }
             } else {
-                // 正。
-                (
-                    caret_number,
-                    Some(self.positive_notes[get_index_from_caret_numbers(caret_number)]),
-                )
-            }
-        } else {
-            // 正の無限大の方に向いているとき。
-            if -1 < caret_number {
-                if self.positive_notes.len() <= caret_number as usize {
-                    // 正の先端要素を超えたら。
+                // 負 [正]
+                if self.positive_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                    // 配列の範囲外。
                     (caret_number, None)
                 } else {
-                    // 正。
+                    // 配列の範囲内。
+                    (
+                        caret_number,
+                        Some(self.positive_notes[get_index_from_caret_numbers(caret_number)]),
+                    )
+                }
+            }
+        } else {
+            // 顔の向き ----> 正の無限大。
+            if -1 < caret_number {
+                // 負 [正]
+                if self.positive_notes.len() <= caret_number as usize {
+                    // 配列の範囲外。
+                    (caret_number, None)
+                } else {
+                    // 配列の範囲内。
                     (
                         caret_number,
                         Some(self.positive_notes[caret_number as usize]),
                     )
                 }
             } else {
-                // 負。
-                (
-                    caret_number,
-                    Some(self.negative_notes[caret_number as usize]),
-                )
+                // [負] 正
+                if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                    // 配列の範囲内。
+                    (
+                        caret_number,
+                        Some(self.negative_notes[caret_number as usize]),
+                    )
+                } else {
+                    // 配列の範囲外。
+                    (caret_number, None)
+                }
             }
         }
     }

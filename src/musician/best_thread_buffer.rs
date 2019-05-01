@@ -1,19 +1,21 @@
 use musician::best_move::*;
+use musician::best_thread::BestThread;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 
 /// 手筋１個分。読み筋。
 #[derive(Default)]
-pub struct BestThread {
+pub struct BestThreadBuffer {
     pub moves: Vec<BestMove>,
 }
-impl BestThread {
+impl BestThreadBuffer {
     pub fn new() -> Self {
-        BestThread { moves: Vec::new() }
+        BestThreadBuffer { moves: Vec::new() }
     }
 
-    pub fn from_buffer(moves_buf: Vec<BestMove>) -> Self {
-        BestThread { moves: moves_buf }
+    /// 現在の内容を破棄し、空っぽにするぜ☆（＾～＾）
+    pub fn clear(&mut self) {
+        self.moves.clear();
     }
 
     pub fn len(&self) -> usize {
@@ -22,6 +24,16 @@ impl BestThread {
 
     pub fn is_empty(&self) -> bool {
         self.moves.is_empty()
+    }
+
+    /// 指し手を追加。
+    pub fn push_move(&mut self, bmove: BestMove) {
+        self.moves.push(bmove);
+    }
+
+    pub fn to_object(&self) -> BestThread {
+        // ベクターってこれでコピーできるの☆（＾～＾）？
+        BestThread::from_buffer(self.moves.to_vec())
     }
 
     pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {

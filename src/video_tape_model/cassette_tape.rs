@@ -82,24 +82,6 @@ impl CassetteTape {
         }
     }
 
-    /*
-    /// 指し手１つから、テープを作るぜ☆（＾～＾）
-    pub fn from_1_move(rmove: &ShogiMove, app: &Application) -> Self {
-        CassetteTape {
-            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf),
-            caret: Caret::new_facing_right_caret(),
-            label: CassetteTapeLabel {
-                date: "".to_string(),
-                event: "".to_string(),
-                player1: "".to_string(),
-                player2: "".to_string(),
-                source_file: "".to_string(),
-            },
-            tracks: IntegerNoteVec::from_1_move(rmove),
-        }
-    }
-    */
-
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
     pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
         let mut rng = rand::thread_rng();
@@ -206,6 +188,10 @@ impl CassetteTape {
         self.tracks.go_1move_forcely(&mut self.caret, &app)
     }
 
+    /// キャレットは必ず１つ進みます。
+    /// 0 は、正の数とします。（マイナスゼロは無いです）
+    /// Noneを返したら、オーバーフローしています。
+    ///
     /// # Returns
     ///
     /// (キャレット番地, 1ノート)
