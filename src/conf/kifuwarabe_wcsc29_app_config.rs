@@ -26,7 +26,7 @@ pub struct KifuwarabeWcsc29AppConfig {
 impl KifuwarabeWcsc29AppConfig {
     /// 設定ファイル読込。
     pub fn load() -> KifuwarabeWcsc29AppConfig {
-        let path = Path::new("./kifuwarabe-wcsc29-lib-config.json");
+        let path = Path::new("./kifuwarabe-wcsc29-app-config.json");
 
         let mut file = match File::open(path) {
             Ok(x) => x,
