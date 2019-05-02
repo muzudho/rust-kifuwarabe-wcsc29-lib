@@ -153,6 +153,8 @@ cargo run --example usi_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/usi-
 
 [rust-kifuwarabe-wcsc29.](https://github.com/muzudho/kifuwarabe-wcsc29)
 
+ディレクトリ構成を設定すること。トレーニング・ファイルが必要。
+
 ## Test
 
 ```Shell

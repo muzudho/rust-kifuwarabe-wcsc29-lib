@@ -81,11 +81,11 @@ pub fn main_loop() {
         // #############
         if line == "kw" {
             if app.kifuwarabe_flag {
-                app.kifuwarabe_flag = true;
-                app.comm.println("Debug on!");
-            } else {
                 app.kifuwarabe_flag = false;
                 app.comm.println("Debug off!");
+            } else {
+                app.kifuwarabe_flag = true;
+                app.comm.println("Debug on!");
             }
 
         // ######
@@ -108,7 +108,7 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            position.read_ope_track(&line, &mut deck, &app);
+            position.toush_by_line(&line, &mut deck, &app);
 
         // #####
         // # B #
@@ -239,7 +239,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            position.read_ope_track(&line, &mut deck, &app);
+            position.toush_by_line(&line, &mut deck, &app);
 
         // #####
         // # P #
@@ -258,7 +258,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
-            app.comm.println("id name Kifuwarabe Build.20");
+            app.comm.println("id name Kifuwarabe Build.21");
             app.comm.println("id author Satoshi TAKAHASHI");
             app.comm.println("usiok");
         } else if line == "usinewgame" {

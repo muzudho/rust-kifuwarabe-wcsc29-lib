@@ -503,6 +503,37 @@ impl Position {
         }
     }
 
+    /// Operation トラック文字列読取。
+    pub fn toush_by_line(
+        &mut self,
+        line: &str,
+        deck: &mut CassetteDeck,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        let mut caret = Caret::new_facing_right_caret();
+
+        loop {
+            if caret.is_greater_than_or_equal_to(line.len() as i16) {
+                return;
+            }
+
+            if let (_last_used_caret, Some(rnote_ope)) =
+                ShogiNoteOpe::parse_1ope(&line, &mut caret, self.get_board_size(), &app)
+            {
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[#toush_by_line: {}]",
+                        rnote_ope.to_human_presentable(board_size)
+                    ));
+                }
+                self.touch_1note_ope(&rnote_ope, deck, &app);
+
+                HumanInterface::bo(deck, &self, &app);
+            }
+        }
+    }
+
     /// 棋譜を作る☆（＾～＾）
     /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
     pub fn touch_1note_ope(
@@ -539,9 +570,11 @@ impl Position {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
+        // TODO フェーズを操作したい。
         deck.put_1note(
             Slot::Learning,
             ShogiNote::from_id_ope(
+                // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
                 if let (_is_legal_touch, Some(piece_identify)) =
                     self.try_beautiful_touch_no_log(&rnote_ope, &app)
                 {
@@ -761,27 +794,6 @@ impl Position {
             Some((idp, addr_obj))
         } else {
             None
-        }
-    }
-
-    /// Operation トラック文字列読取。
-    pub fn read_ope_track(&mut self, line: &str, deck: &mut CassetteDeck, app: &Application) {
-        let mut caret = Caret::new_facing_right_caret();
-
-        loop {
-            if caret.is_greater_than_or_equal_to(line.len() as i16) {
-                return;
-            }
-
-            let tuple = ShogiNoteOpe::parse_1ope(&line, &mut caret, self.get_board_size(), &app);
-
-            if let (_last_used_caret, Some(rnote_ope)) = tuple {
-                app.comm
-                    .println("rpm_cassette_tape_editor.rs:read_ope_track: touch_1note_ope");
-                self.touch_1note_ope(&rnote_ope, deck, &app);
-
-                HumanInterface::bo(deck, &self, &app);
-            }
         }
     }
 
