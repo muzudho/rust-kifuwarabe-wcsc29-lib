@@ -1,6 +1,6 @@
 use chrono::Utc;
-use conf::kifuwarabe_wcsc29_config::KifuwarabeWcsc29Config;
-use conf::kifuwarabe_wcsc29_lib_config::KifuwarabeWcsc29LibConfig;
+use conf::kifuwarabe_wcsc29_app_config::KifuwarabeWcsc29AppConfig;
+use conf::kifuwarabe_wcsc29_master_config::KifuwarabeWcsc29MasterConfig;
 use std::path::PathBuf;
 use studio::communication::Communication;
 
@@ -8,15 +8,15 @@ pub struct Application {
     // Logging.
     pub comm: Communication,
     // Config.
-    pub my_conf: KifuwarabeWcsc29LibConfig,
-    pub kw29_conf: KifuwarabeWcsc29Config,
+    pub my_conf: KifuwarabeWcsc29AppConfig,
+    pub kw29_conf: KifuwarabeWcsc29MasterConfig,
     // デバッグ出力のフラグ。usiの邪魔になる出力がいっぱい出るぜ☆（*＾～＾*）
     pub kifuwarabe_flag: bool,
 }
 impl Application {
     pub fn new() -> Self {
-        let my_config = KifuwarabeWcsc29LibConfig::load();
-        let kw29_config = KifuwarabeWcsc29Config::load(&my_config);
+        let my_config = KifuwarabeWcsc29AppConfig::load();
+        let kw29_config = KifuwarabeWcsc29MasterConfig::load(&my_config);
 
         // logger, logging, log file.
         let mut path = PathBuf::from(&my_config.logging.directory);

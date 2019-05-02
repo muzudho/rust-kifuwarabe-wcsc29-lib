@@ -1,6 +1,6 @@
 extern crate rand;
 use audio_compo::cassette_deck::Slot;
-use conf::kifuwarabe_wcsc29_config::*;
+use conf::kifuwarabe_wcsc29_master_config::*;
 use rand::Rng;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
@@ -69,7 +69,7 @@ impl RpmTapeBox {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
+    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29MasterConfig) -> String {
         let mut rng = rand::thread_rng();
         let rand1: u64 = rng.gen();
         let rand2: u64 = rng.gen();

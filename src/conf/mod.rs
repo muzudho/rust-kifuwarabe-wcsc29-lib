@@ -1,2 +1,2 @@
-pub mod kifuwarabe_wcsc29_config;
-pub mod kifuwarabe_wcsc29_lib_config;
+pub mod kifuwarabe_wcsc29_app_config;
+pub mod kifuwarabe_wcsc29_master_config;

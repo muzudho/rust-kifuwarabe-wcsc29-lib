@@ -1,5 +1,5 @@
 extern crate rand;
-use conf::kifuwarabe_wcsc29_config::*;
+use conf::kifuwarabe_wcsc29_master_config::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
 use sound::shogi_move::ShogiMove;
@@ -83,7 +83,7 @@ impl CassetteTape {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29Config) -> String {
+    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29MasterConfig) -> String {
         let mut rng = rand::thread_rng();
         let rand1: u64 = rng.gen();
         let rand2: u64 = rng.gen();
