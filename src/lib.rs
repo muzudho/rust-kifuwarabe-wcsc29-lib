@@ -108,7 +108,7 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            position.toush_by_line(&line, &mut deck, &app);
+            position.touch_by_line(&line, &mut deck, &app);
 
         // #####
         // # B #
@@ -239,7 +239,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            position.toush_by_line(&line, &mut deck, &app);
+            position.touch_by_line(&line, &mut deck, &app);
 
         // #####
         // # P #

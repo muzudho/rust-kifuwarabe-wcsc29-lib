@@ -504,13 +504,7 @@ impl Position {
     }
 
     /// Operation トラック文字列読取。
-    pub fn toush_by_line(
-        &mut self,
-        line: &str,
-        deck: &mut CassetteDeck,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
+    pub fn touch_by_line(&mut self, line: &str, deck: &mut CassetteDeck, app: &Application) {
         let mut caret = Caret::new_facing_right_caret();
 
         loop {
@@ -524,7 +518,7 @@ impl Position {
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[#toush_by_line: {}]",
-                        rnote_ope.to_human_presentable(board_size)
+                        rnote_ope.to_human_presentable(self.get_board_size())
                     ));
                 }
                 self.touch_1note_ope(&rnote_ope, deck, &app);
