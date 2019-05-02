@@ -21,7 +21,7 @@ impl UsiConverter {
         // 局面を動かしながら変換していく。
         let mut ply = 1;
         for umove in &utape.moves {
-            let rnote_opes = UsiConverter::convert_move(*umove, position, ply);
+            let rnote_opes = UsiConverter::convert_move(*umove, position, ply, &app);
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
@@ -32,7 +32,12 @@ impl UsiConverter {
         }
     }
 
-    pub fn convert_move(umove: UsiMove, position: &Position, ply: i16) -> Vec<ShogiNoteOpe> {
+    pub fn convert_move(
+        umove: UsiMove,
+        position: &Position,
+        ply: i16,
+        app: &Application,
+    ) -> Vec<ShogiNoteOpe> {
         let mut rpm_move = Vec::new();
 
         if umove.is_resign() {
@@ -40,8 +45,12 @@ impl UsiConverter {
             return rpm_move;
         }
 
-        let destination_address =
-            Address::from_cell(umove.destination.unwrap(), position.get_board_size());
+        let destination_address = Address::from_cell(
+            umove
+                .destination
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.destination."))),
+            position.get_board_size(),
+        );
 
         match umove.get_drop() {
             Some(drop) => {
@@ -90,7 +99,9 @@ impl UsiConverter {
 
                 // board-off
                 let board_off = ShogiNoteOpe::from_address(Address::from_cell(
-                    umove.source.unwrap(),
+                    umove
+                        .source
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.source."))),
                     position.get_board_size(),
                 ));
                 rpm_move.push(board_off);

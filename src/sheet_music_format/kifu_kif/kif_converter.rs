@@ -7,7 +7,6 @@ use sheet_music_format::kifu_kif::kif_tape::*;
 use sound::shogi_note_operation::*;
 use studio::address::*;
 use studio::application::Application;
-use studio::communication::*;
 
 pub struct KifConverter {}
 impl KifConverter {
@@ -23,7 +22,7 @@ impl KifConverter {
 
         let mut ply = 1;
         for kmove in &ktape.items {
-            let rnote_opes = KifConverter::convert_move(&app.comm, kmove, position, ply);
+            let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
                 position.touch_1note_ope(&rnote_ope, deck, &app);
@@ -35,26 +34,34 @@ impl KifConverter {
 
     /// 変換には、現局面が必要。
     pub fn convert_move(
-        _comm: &Communication,
         kmove: &KifMove,
         position: &Position,
         ply: i16,
+        app: &Application,
     ) -> Vec<ShogiNoteOpe> {
         let mut rmoves = Vec::new();
 
-        let destination_address =
-            Address::from_cell(kmove.destination.unwrap(), position.get_board_size());
+        let destination_address = Address::from_cell(
+            kmove
+                .destination
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. kmove.destination."))),
+            position.get_board_size(),
+        );
 
         if kmove.is_drop {
             // 駒を打つ動きの場合
             let piece_type = jsa_piece_type_to_perfect(kmove.piece);
-            let piece = Piece::from_ph_pt(Some(position.get_phase()), piece_type.unwrap());
+            let piece = Piece::from_ph_pt(
+                Some(position.get_phase()),
+                piece_type.unwrap_or_else(|| panic!(app.comm.panic("Fail. piece_type."))),
+            );
             let drop = position.peek_hand(piece);
 
             // hand-off
             let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                 Some(position.get_phase()),
-                drop.unwrap().get_type(),
+                drop.unwrap_or_else(|| panic!(app.comm.panic("Fail. drop.")))
+                    .get_type(),
             ));
             rmoves.push(hand_off);
 
@@ -93,14 +100,20 @@ impl KifConverter {
 
             // board-off
             let board_off = ShogiNoteOpe::from_address(Address::from_cell(
-                kmove.source.unwrap(),
+                kmove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. kmove.source."))),
                 position.get_board_size(),
             ));
             rmoves.push(board_off);
 
             // board-turn-over
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            if let Some(id_piece) = position.get_id_piece(kmove.source.unwrap()) {
+            if let Some(id_piece) = position.get_id_piece(
+                kmove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. position.get_id_piece."))),
+            ) {
                 id_piece.is_promoted()
             } else {
                 false

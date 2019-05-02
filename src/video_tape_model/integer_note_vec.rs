@@ -425,7 +425,7 @@ impl IntegerNoteVec {
     }
 
     /// Human presentable large log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         let mut dump;
 
         {
@@ -440,7 +440,7 @@ impl IntegerNoteVec {
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_human_presentable(board_size),
+                note.get_ope().to_human_presentable(board_size, &app),
             );
         }
 
@@ -456,7 +456,7 @@ impl IntegerNoteVec {
                 } else {
                     NONE_VALUE.to_string()
                 },
-                note.get_ope().to_human_presentable(board_size),
+                note.get_ope().to_human_presentable(board_size, &app),
             );
         }
 

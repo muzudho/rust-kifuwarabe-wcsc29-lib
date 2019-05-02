@@ -15,10 +15,10 @@ pub struct BestMove {
 }
 impl BestMove {
     /// Human presentable.
-    pub fn to_human_presentable(&self, board_size: BoardSize, _app: &Application) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         format!(
             "[Best move: Usi: '{}', SubjPid: {}, SubjAddr: '{}', CapPid: {}, CapAddr: '{}']",
-            self.usi_move.to_sign(),
+            self.usi_move.to_sign(&app),
             self.subject_pid.to_human_presentable(),
             self.subject_addr.to_human_presentable(board_size),
             if let Some(cap_id) = self.capture_pid {

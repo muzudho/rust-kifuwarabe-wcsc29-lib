@@ -54,7 +54,7 @@ pub struct CassetteTape {
 impl CassetteTape {
     pub fn new_facing_right(app: &Application) -> Self {
         CassetteTape {
-            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf),
+            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf, &app),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
                 date: "".to_string(),
@@ -83,7 +83,10 @@ impl CassetteTape {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29MasterConfig) -> String {
+    pub fn create_file_full_name(
+        kw29_conf: &KifuwarabeWcsc29MasterConfig,
+        app: &Application,
+    ) -> String {
         let mut rng = rand::thread_rng();
         let rand1: u64 = rng.gen();
         let rand2: u64 = rng.gen();
@@ -94,7 +97,7 @@ impl CassetteTape {
         Path::new(&kw29_conf.tape_fragments)
             .join(file)
             .to_str()
-            .unwrap()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. tape.fragment.")))
             .to_string()
     }
 
@@ -271,7 +274,7 @@ impl CassetteTape {
         format!(
             "[Tape: {} {}]",
             self.caret.to_human_presentable(&app),
-            self.tracks.to_human_presentable(board_size)
+            self.tracks.to_human_presentable(board_size, &app)
         )
         .to_string()
     }

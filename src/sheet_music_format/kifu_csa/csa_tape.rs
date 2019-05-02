@@ -4,7 +4,7 @@ use sheet_music_format::kifu_csa::csa_move::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
-use studio::communication::*;
+use studio::application::Application;
 
 #[derive(Default)]
 pub struct CsaTape {
@@ -15,7 +15,7 @@ impl CsaTape {
         CsaTape { items: Vec::new() }
     }
 
-    pub fn from_file(file: &str, comm: &Communication) -> CsaTape {
+    pub fn from_file(file: &str, app: &Application) -> CsaTape {
         let mut record = CsaTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
@@ -25,7 +25,7 @@ impl CsaTape {
                 && line.len() == 7
             {
                 print!("{}  ", line);
-                if let Some(csa_move) = CsaMove::parse(&line, &comm) {
+                if let Some(csa_move) = CsaMove::parse(&line, &app) {
                     record.push(csa_move);
                 }
             }
@@ -45,12 +45,16 @@ impl CsaTape {
         }
     }
 
-    pub fn make_move(&mut self, cmove: CsaMove, position: &mut Position) {
+    pub fn make_move(&mut self, cmove: CsaMove, position: &mut Position,app:&Application) {
         if cmove.is_drop() {
             // TODO drop
 
         } else {
-            let source_id_piece_opt = position.remove_id_piece(cmove.source.unwrap());
+            let source_id_piece_opt = position.remove_id_piece(
+                cmove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. cmove.source."))),
+            );
 
             // CSAの棋譜では、成ったかどうかは分からない。
             /*

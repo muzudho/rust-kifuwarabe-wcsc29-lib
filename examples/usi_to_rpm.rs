@@ -37,7 +37,9 @@ pub fn main() {
     // The application contains all immutable content.
     let app = Application::new();
 
-    let path = args.path.unwrap();
+    let path = args
+        .path
+        .unwrap_or_else(|| panic!(app.comm.panic("Fail. Arg path.")));
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
@@ -55,12 +57,9 @@ pub fn main() {
     if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
         app.comm.println("Position parsed.");
 
-        if let Some(parsed_utape) = UsiPosition::parse_usi_line_moves(
-            &app.comm,
-            &line,
-            &mut start,
-            position.get_board_size(),
-        ) {
+        if let Some(parsed_utape) =
+            UsiPosition::parse_usi_line_moves(&line, &mut start, position.get_board_size(), &app)
+        {
             app.comm.println("Moves parsed.");
             utape = parsed_utape;
         };

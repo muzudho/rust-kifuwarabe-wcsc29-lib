@@ -37,18 +37,18 @@ impl PositionFile {
         // 盤面作成。
         let mut temp_board = [None; DEFAULT_BOARD_SIZE];
         let mut start = 0usize;
-        for (cell, line) in document["board"].as_array().unwrap().iter().enumerate() {
-            temp_board[cell] = parse_sign_2char_to_piece(line.as_str().unwrap(), &mut start);
+        for (cell, line) in document["board"].as_array().unwrap_or_else(|| app.comm.panic_as_string("Fail. Board as array.")).iter().enumerate() {
+            temp_board[cell] = parse_sign_2char_to_piece(line.as_str().unwrap_or_else(|| app.comm.panic_as_string("Fail. Line as str.")), &mut start);
             // println!("Line: '{}'.", line);
         }
 
         PositionFile {
-            comment: document["comment"].as_str().unwrap().to_string(),
-            ply: document["ply"].as_i64().unwrap() as usize,
-            turn: match document["turn"].as_str().unwrap() {
+            comment: document["comment"].as_str().unwrap_or_else(|| app.comm.panic_as_string("Fail. Comment.")).to_string(),
+            ply: document["ply"].as_i64().unwrap_or_else(|| app.comm.panic_as_string("Fail. Ply.")) as usize,
+            turn: match document["turn"].as_str().unwrap_or_else(|| app.comm.panic_as_string("Fail. Turn.")) {
                 "black" => 1,
                 "white" => 2,
-                _ => panic!("Undefined turn: [{}].", document["turn"].as_str().unwrap())
+                _ => panic!("Undefined turn: [{}].", document["turn"].as_str().unwrap_or_else(|| app.comm.panic_as_string("Fail. Turn.")))
             },
             board: temp_board,
         }

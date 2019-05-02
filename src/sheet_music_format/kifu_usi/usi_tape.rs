@@ -5,6 +5,7 @@ use sheet_music_format::kifu_usi::usi_move::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
+use studio::application::Application;
 use studio::board_size::*;
 use studio::communication::*;
 use studio::parser::*;
@@ -20,14 +21,14 @@ impl UsiTape {
 
     /// USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は動かさない☆（＾～＾）
     pub fn parse_usi_all_moves(
-        comm: &Communication,
         line: &str,
         start: &mut usize,
         board_size: BoardSize,
+        app: &Application,
     ) -> Option<Self> {
         let mut urecord = UsiTape { moves: Vec::new() };
 
-        Parser::skip_spaces(&comm, &line, start);
+        Parser::skip_spaces(&app.comm, &line, start);
 
         // `position startpos moves `. [0]p, [1]o, ...
         // Examples.
@@ -35,7 +36,7 @@ impl UsiTape {
 
         // ex.) Parses 7g7f 3c3d.
         loop {
-            let umove = Fen::parse_usi_1move(&comm, &line, start, board_size);
+            let umove = Fen::parse_usi_1move(&line, start, board_size, &app);
             // comm.println(&format!("#Umove: `{}`.", umove.to_sign()));
 
             // TODO 内部形式としては RPM で持ちたい。
@@ -71,18 +72,27 @@ impl UsiTape {
         }
     }
 
-    pub fn make_usi_move(&mut self, umove: UsiMove, position: &mut Position) {
+    pub fn make_usi_move(&mut self, umove: UsiMove, position: &mut Position, app: &Application) {
         if umove.is_drop() {
             // TODO drop
 
         } else {
-            let source_id_piece_opt = position.remove_id_piece(umove.source.unwrap());
+            let source_id_piece_opt = position.remove_id_piece(
+                umove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.source."))),
+            );
             if umove.promotion {
                 if let Some(mut source_id_piece) = source_id_piece_opt {
                     source_id_piece.turn_over();
                 }
             }
-            position.set_id_piece(umove.destination.unwrap(), source_id_piece_opt);
+            position.set_id_piece(
+                umove
+                    .destination
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.destination."))),
+                source_id_piece_opt,
+            );
             self.moves.push(umove);
         }
     }

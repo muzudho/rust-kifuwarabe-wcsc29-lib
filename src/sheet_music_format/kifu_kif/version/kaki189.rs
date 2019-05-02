@@ -3,6 +3,7 @@ use sheet_music_format::kifu_kif::kif_tape::*;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::*;
+use studio::application::Application;
 
 /* Example
 # ----  柿木将棋 V1.89 棋譜ファイル  ----
@@ -26,7 +27,7 @@ use std::*;
 /// 柿木将棋 V1.89 棋譜ファイル
 pub struct Kaki189 {}
 impl Kaki189 {
-    pub fn from_file(file: &str) -> KifTape {
+    pub fn from_file(file: &str, app: &Application) -> KifTape {
         let mut record = KifTape::new();
 
         for result in BufReader::new(File::open(file).unwrap()).lines() {
@@ -35,7 +36,11 @@ impl Kaki189 {
             // スペースを除く、先頭が数字で始まる行は　指し手。
             if 4 < line.len() {
                 let mut first_ch = line.trim_start().to_string();
-                first_ch = first_ch.chars().nth(0).unwrap().to_string();
+                first_ch = first_ch
+                    .chars()
+                    .nth(0)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0.")))
+                    .to_string();
                 match first_ch.parse::<i8>() {
                     Ok(_x) => {
                         if let Some(kif_move) = KifMove::parse(&line) {

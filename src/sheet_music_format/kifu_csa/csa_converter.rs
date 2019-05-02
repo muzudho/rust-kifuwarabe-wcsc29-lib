@@ -1,3 +1,4 @@
+use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
@@ -6,8 +7,6 @@ use sheet_music_format::kifu_csa::csa_tape::*;
 use sound::shogi_note_operation::*;
 use studio::address::*;
 use studio::application::Application;
-use studio::communication::*;
-use audio_compo::cassette_deck::*;
 
 pub struct CsaConverter {}
 impl CsaConverter {
@@ -23,7 +22,7 @@ impl CsaConverter {
 
         let mut ply = 1;
         for cmove in &crecord.items {
-            let rnote_opes = CsaConverter::convert_move(&app.comm, cmove, position, ply);
+            let rnote_opes = CsaConverter::convert_move(cmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
                 position.touch_1note_ope(&rnote_ope, deck, &app);
@@ -35,10 +34,10 @@ impl CsaConverter {
 
     /// 変換には、現局面が必要。
     pub fn convert_move(
-        _comm: &Communication,
         cmove: &CsaMove,
         position: &Position,
         ply: i16,
+        app: &Application,
     ) -> Vec<ShogiNoteOpe> {
         let mut p_moves = Vec::new();
 
@@ -91,15 +90,20 @@ impl CsaConverter {
             // board-off
             // 盤上の駒の番地。
             let board_off = ShogiNoteOpe::from_address(Address::from_cell(
-                cmove.source.unwrap(),
+                cmove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. cmove.source."))),
                 position.get_board_size(),
             ));
             p_moves.push(board_off);
 
             // board-turn-over
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            let pre_promoted = if let Some(id_piece) = position.get_id_piece(cmove.source.unwrap())
-            {
+            let pre_promoted = if let Some(id_piece) = position.get_id_piece(
+                cmove
+                    .source
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. cmove.source."))),
+            ) {
                 id_piece.is_promoted()
             } else {
                 false

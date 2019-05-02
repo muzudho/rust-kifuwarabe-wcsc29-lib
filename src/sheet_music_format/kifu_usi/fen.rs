@@ -8,19 +8,27 @@ use std::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::board_size::*;
-use studio::communication::*;
 
 /// フォーサイス エドワーズ記法
 pub struct Fen {}
 impl Fen {
-    pub fn do_sfen(line: &str, start: &mut usize, position: &mut Position) -> bool {
+    pub fn do_sfen(
+        line: &str,
+        start: &mut usize,
+        position: &mut Position,
+        app: &Application,
+    ) -> bool {
         // ゲームに使う駒がまだ決まっていないところから始めます。
         position.reset_empty_position();
 
         let rank = 9;
         let mut file = 1;
 
-        let sign = line.to_string().chars().next().unwrap();
+        let sign = line
+            .to_string()
+            .chars()
+            .next()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. line.")));
         let mut spaces = match sign {
             '1' => 1,
             '2' => 2,
@@ -37,7 +45,7 @@ impl Fen {
 
         if spaces == 0 {
             let piece_opt = parse_sign_line_to_piece(line, start);
-            position.activate_piece(piece_opt, Cell::from_file_rank(file, rank));
+            position.activate_piece(piece_opt, Cell::from_file_rank(file, rank), &app);
         /* file += 1; */
         } else if spaces == -1 {
             /* file = 1; */
@@ -70,7 +78,7 @@ impl Fen {
                     true
                 } else {
                     // 指定局面を、初期局面とする☆（＾～＾）
-                    Fen::do_sfen(line, start, position)
+                    Fen::do_sfen(line, start, position, &app)
                 }
             }
             None => false,
@@ -79,10 +87,10 @@ impl Fen {
 
     /// ex.) Parses 7g7f.
     pub fn parse_usi_1move(
-        _comm: &Communication,
         line: &str,
         start: &mut usize,
         board_size: BoardSize,
+        app: &Application,
     ) -> UsiMove {
         let drop_opt = parse_sign_to_drop(line, start);
         let source_opt = if drop_opt == None {
@@ -108,7 +116,12 @@ impl Fen {
         if let Some(drop) = drop_opt {
             UsiMove::create_drop(destination, drop, board_size)
         } else {
-            UsiMove::create_walk(source_opt.unwrap(), destination, promotion_flag, board_size)
+            UsiMove::create_walk(
+                source_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. source_opt."))),
+                destination,
+                promotion_flag,
+                board_size,
+            )
         }
     }
 }

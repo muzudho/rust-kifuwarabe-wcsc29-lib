@@ -69,4 +69,10 @@ impl Communication {
             eprintln!("Couldn't write to file: {}", e);
         }
     }
+
+    /// panic! で包んで使う。
+    pub fn panic(&self, msg: &str) -> String {
+        self.println(msg); // コンソールに表示して、ログも取る。
+        String::from(msg)
+    }
 }

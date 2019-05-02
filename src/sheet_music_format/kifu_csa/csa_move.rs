@@ -1,6 +1,6 @@
 use instrument::piece_etc::*;
 use studio::address::*;
-use studio::communication::*;
+use studio::application::Application;
 use studio::parser::*;
 
 pub struct CsaMove {
@@ -11,18 +11,33 @@ pub struct CsaMove {
     pub koma: Option<PieceType>,
 }
 impl CsaMove {
-    pub fn parse(line: &str, _comm: &Communication) -> Option<CsaMove> {
+    pub fn parse(line: &str, app: &Application) -> Option<CsaMove> {
         // comm.println(&format!("Parse   : line: '{}'.", line));
 
         if line.len() < 7 {
             return None;
         };
 
-        let ch0 = line.chars().nth(0).unwrap();
-        let ch1 = line.chars().nth(1).unwrap();
-        let ch2 = line.chars().nth(2).unwrap();
-        let ch3 = line.chars().nth(3).unwrap();
-        let ch4 = line.chars().nth(4).unwrap();
+        let ch0 = line
+            .chars()
+            .nth(0)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. ch0.")));
+        let ch1 = line
+            .chars()
+            .nth(1)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. ch1.")));
+        let ch2 = line
+            .chars()
+            .nth(2)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. ch2.")));
+        let ch3 = line
+            .chars()
+            .nth(3)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. ch3.")));
+        let ch4 = line
+            .chars()
+            .nth(4)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. ch4.")));
         let str5 = &line[5..=6];
 
         if ch0 == '%' {

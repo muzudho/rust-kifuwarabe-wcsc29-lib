@@ -95,14 +95,14 @@ impl ShogiNote {
     }
 
     /// For log.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         format!(
             "'{}'{}",
             match self.identify {
                 Some(pid) => pid.to_human_presentable(),
                 None => "--".to_string(),
             },
-            self.operation.to_human_presentable(board_size)
+            self.operation.to_human_presentable(board_size, &app)
         )
     }
 }

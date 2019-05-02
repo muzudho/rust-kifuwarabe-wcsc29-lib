@@ -118,7 +118,7 @@ impl ShogiNoteOpe {
     }
 
     /// Human presentable.
-    pub fn to_human_presentable(&self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         match self.address {
             Some(address) => {
                 // 人に読みやすいセル表記にします。
@@ -129,7 +129,10 @@ impl ShogiNoteOpe {
                         .address_to_cell(address.get_index())
                         .to_human_presentable()
                 } else if address.is_hand() {
-                    address.get_hand_piece().unwrap().to_human_presentable()
+                    address
+                        .get_hand_piece()
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
+                        .to_human_presentable()
                 } else {
                     panic!(
                         "Unexpected address: {}.",
@@ -200,13 +203,19 @@ impl ShogiNoteOpe {
         let mut n0 = caret.go_to_next(&app) as usize;
         closed_interval.intersect_caret_number(n0 as i16);
 
-        let mut ch0 = line[n0..=n0].chars().nth(0).unwrap();
+        let mut ch0 = line[n0..=n0]
+            .chars()
+            .nth(0)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0")));
         match ch0 {
             ' ' => (closed_interval, None),
             '0' => {
                 // 駒台。
                 let mut n1 = caret.go_to_next(&app) as usize;
-                let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
+                let mut ch1 = line[n1..=n1]
+                    .chars()
+                    .nth(0)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0.")));
 
                 if 2 < line.len() {
                     match ch1 {
@@ -215,7 +224,10 @@ impl ShogiNoteOpe {
                             // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
                             n1 = caret.go_to_next(&app) as usize;
-                            ch1 = line[n1..=n1].chars().nth(0).unwrap();
+                            ch1 = line[n1..=n1]
+                                .chars()
+                                .nth(0)
+                                .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0.")));
                         }
                         _ => {}
                     };
@@ -235,7 +247,10 @@ impl ShogiNoteOpe {
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
                 let mut n1 = caret.go_to_next(&app) as usize;
-                let mut ch1 = line[n1..=n1].chars().nth(0).unwrap();
+                let mut ch1 = line[n1..=n1]
+                    .chars()
+                    .nth(0)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0.")));
 
                 // comm.print(&format!("Parse1Op: '{}', '{}'.", ch0, ch1));
                 let address = Address::from_cell(
@@ -272,7 +287,10 @@ impl ShogiNoteOpe {
                     }
 
                     n0 = caret.go_to_next(&app) as usize;
-                    ch0 = line[n0..=n0].chars().nth(0).unwrap();
+                    ch0 = line[n0..=n0]
+                        .chars()
+                        .nth(0)
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. n0.")));
                     closed_interval.intersect_caret_number(n0 as i16);
 
                     if ch0 == ']' {

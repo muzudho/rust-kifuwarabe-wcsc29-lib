@@ -191,7 +191,7 @@ impl ShogiMove {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#Note: {}]",
-                    note.to_human_presentable(board_size)
+                    note.to_human_presentable(board_size, &app)
                 ));
             }
 
@@ -229,7 +229,7 @@ impl ShogiMove {
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[Note: {}]",
-                            note.to_human_presentable(board_size)
+                            note.to_human_presentable(board_size, &app)
                         ));
                     }
 
@@ -238,7 +238,7 @@ impl ShogiMove {
                     } else {
                         panic!(
                             "Unexpected 1st note of move(30): {}.",
-                            note.to_human_presentable(board_size)
+                            note.to_human_presentable(board_size, &app)
                         );
                     }
 
@@ -268,7 +268,7 @@ impl ShogiMove {
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[Note: {}]",
-                            note.to_human_presentable(board_size)
+                            note.to_human_presentable(board_size, &app)
                         ));
                     }
 
@@ -290,7 +290,7 @@ impl ShogiMove {
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[Note: {}]",
-                                note.to_human_presentable(board_size)
+                                note.to_human_presentable(board_size, &app)
                             ));
                         }
                     }
@@ -319,7 +319,7 @@ impl ShogiMove {
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[Note: {}]",
-                                note.to_human_presentable(board_size)
+                                note.to_human_presentable(board_size, &app)
                             ));
                         }
 
@@ -339,7 +339,7 @@ impl ShogiMove {
                             if app.is_debug() {
                                 app.comm.println(&format!(
                                     "[Note: {}]",
-                                    note.to_human_presentable(board_size)
+                                    note.to_human_presentable(board_size, &app)
                                 ));
                             }
 
@@ -361,14 +361,14 @@ impl ShogiMove {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "[Note: {}]",
-                                        note.to_human_presentable(board_size)
+                                        note.to_human_presentable(board_size, &app)
                                     ));
                                 }
                             }
                         } else {
                             panic!(
                                 "Unexpected 1st note of move(70): {}.",
-                                note.to_human_presentable(board_size)
+                                note.to_human_presentable(board_size, &app)
                             );
                         }
                     } else {
@@ -393,7 +393,7 @@ impl ShogiMove {
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[Note: {}]",
-                                note.to_human_presentable(board_size)
+                                note.to_human_presentable(board_size, &app)
                             ));
                         }
                     }
@@ -408,7 +408,7 @@ impl ShogiMove {
             } else {
                 panic!(
                     "Unexpected 1st note of move(100): {}.",
-                    note.to_human_presentable(board_size)
+                    note.to_human_presentable(board_size, &app)
                 );
             }
 
@@ -424,9 +424,18 @@ impl ShogiMove {
             */
 
             let umove = if let Some(drop) = drop_opt {
-                UsiMove::create_drop(dst_opt.unwrap(), drop, board_size)
+                UsiMove::create_drop(
+                    dst_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. dst_opt."))),
+                    drop,
+                    board_size,
+                )
             } else if let Some(dst) = dst_opt {
-                UsiMove::create_walk(src_opt.unwrap(), dst, subject_promotion, board_size)
+                UsiMove::create_walk(
+                    src_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. src_opt."))),
+                    dst,
+                    subject_promotion,
+                    board_size,
+                )
             } else {
                 // 目的地の分からない指し手☆（＾～＾）
                 panic!(
@@ -447,7 +456,8 @@ impl ShogiMove {
                 Some(BestMove {
                     usi_move: umove,
                     subject_pid: subject_idp,
-                    subject_addr: subject_address_opt.unwrap(),
+                    subject_addr: subject_address_opt
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. subject_address_opt."))),
                     capture_pid: object_pid_opt,
                     capture_addr: object_address_opt,
                 })
@@ -546,7 +556,7 @@ impl ShogiMove {
                 if let (_taken_overflow, _rmove, Some(note)) =
                     tape_box.seek_to_next_with_othre_caret(&mut other_caret, &app)
                 {
-                    text = format!("{} {}", text, note.to_human_presentable(board_size))
+                    text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
                 } else {
                     break;
                 }

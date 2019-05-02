@@ -398,7 +398,11 @@ impl Position {
             }
             false
         } else {
-            let hand_index_obj = HandIndex::from_piece(address.get_hand_piece().unwrap());
+            let hand_index_obj = HandIndex::from_piece(
+                address
+                    .get_hand_piece()
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece."))),
+            );
             if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
                 self.fingertip = Some(Fingertip::from_idp_prev(id_piece, address));
                 return true;
@@ -458,9 +462,11 @@ impl Position {
         }
     }
 
-    pub fn remove_hand(&mut self, piece: Piece) -> IdentifiedPiece {
+    pub fn remove_hand(&mut self, piece: Piece, app: &Application) -> IdentifiedPiece {
         let hand_index_obj = HandIndex::from_piece(piece);
-        self.hands[hand_index_obj.get_index()].pop().unwrap()
+        self.hands[hand_index_obj.get_index()]
+            .pop()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. remove_hand.")))
     }
 
     pub fn peek_hand(&self, piece: Piece) -> Option<IdentifiedPiece> {
@@ -474,11 +480,13 @@ impl Position {
     }
 
     /// USI position 読込時に使う。使ってない駒を盤上に置く。
-    pub fn activate_piece(&mut self, piece_opt: Option<Piece>, cell: Cell) {
+    pub fn activate_piece(&mut self, piece_opt: Option<Piece>, cell: Cell, app: &Application) {
         if let Some(piece) = piece_opt {
             let disactivate_piece = piece.to_disactivate();
             let hand_index_obj = HandIndex::from_piece(disactivate_piece);
-            let id_piece = self.hands[hand_index_obj.get_index()].pop().unwrap();
+            let id_piece = self.hands[hand_index_obj.get_index()]
+                .pop()
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. activate_piece.")));
 
             let destination = self.board_size.cell_to_address(cell);
             self.board[destination] = Some(id_piece);
@@ -518,7 +526,7 @@ impl Position {
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[#toush_by_line: {}]",
-                        rnote_ope.to_human_presentable(self.get_board_size())
+                        rnote_ope.to_human_presentable(self.get_board_size(), &app)
                     ));
                 }
                 self.touch_1note_ope(&rnote_ope, deck, &app);
@@ -540,7 +548,7 @@ impl Position {
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#Touch 1note ope:{}]",
-                rnote_ope.to_human_presentable(self.get_board_size())
+                rnote_ope.to_human_presentable(self.get_board_size(), &app)
             ));
         }
 
@@ -595,7 +603,7 @@ impl Position {
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#Try touch:{}]",
-                rnote.to_human_presentable(self.get_board_size())
+                rnote.to_human_presentable(self.get_board_size(), &app)
             ));
         }
         let (is_legal_touch, _piece_identify_opt) =

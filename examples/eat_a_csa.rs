@@ -37,7 +37,9 @@ pub fn main() {
     // The application contains all immutable content.
     let app = Application::new();
 
-    let path = args.path.unwrap();
+    let path = args
+        .path
+        .unwrap_or_else(|| panic!(app.comm.panic("Fail. Arg path.")));
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
@@ -46,7 +48,7 @@ pub fn main() {
     // Deck.
     let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
-    let crecord = CsaTape::from_file(&path, &app.comm);
+    let crecord = CsaTape::from_file(&path, &app);
 
     // Play out.
     CsaConverter::play_out_csa_tape(&crecord, &mut position, &mut deck, &app);

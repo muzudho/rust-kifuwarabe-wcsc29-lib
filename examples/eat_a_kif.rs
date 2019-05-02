@@ -36,7 +36,9 @@ pub fn main() {
     // The application contains all immutable content.
     let app = Application::new();
 
-    let path = args.path.unwrap();
+    let path = args
+        .path
+        .unwrap_or_else(|| panic!(app.comm.panic("Fail. Arg path.")));
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
@@ -46,7 +48,7 @@ pub fn main() {
     let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
 
     // Training data.
-    let ktape = KifTape::from_file(&path);
+    let ktape = KifTape::from_file(&path, &app);
 
     // Play out.
     KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);

@@ -1,6 +1,7 @@
 use sheet_music_format::kifu_kif::kif_move::*;
 use sheet_music_format::kifu_kif::version::kaki189::*;
 use std::*;
+use studio::application::Application;
 
 #[derive(Default)]
 pub struct KifTape {
@@ -11,9 +12,9 @@ impl KifTape {
         KifTape { items: Vec::new() }
     }
 
-    pub fn from_file(file: &str) -> KifTape {
+    pub fn from_file(file: &str, app: &Application) -> KifTape {
         // バージョンがいろいろあるようだ。
-        Kaki189::from_file(file)
+        Kaki189::from_file(file, &app)
     }
 
     pub fn push(&mut self, mov: KifMove) {

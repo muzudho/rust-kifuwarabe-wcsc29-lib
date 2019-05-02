@@ -100,11 +100,11 @@ impl LibSub {
         // println!("bestmove win");
         // println!("bestmove resign");
         app.comm
-            .println(&format!("bestmove {}", best_umove.to_sign()));
+            .println(&format!("bestmove {}", best_umove.to_sign(&app)));
 
         // USI を再翻訳して再生するぜ☆（＾～＾）
         let rnote_opes =
-            UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning));
+            UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning), &app);
         for rnote_ope in rnote_opes {
             // app.comm.println("lib.rs:go: touch_1note_ope");
             position.touch_1note_ope(&rnote_ope, deck, &app);
@@ -155,10 +155,10 @@ impl LibSub {
         if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
             // USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は指定局面から動かさないぜ☆（＾～＾）
             urecord_opt = UsiPosition::parse_usi_line_moves(
-                &app.comm,
                 &line,
                 &mut start,
                 position.get_board_size(),
+                &app,
             );
         }
         //comm.println("#Position parse end1.");

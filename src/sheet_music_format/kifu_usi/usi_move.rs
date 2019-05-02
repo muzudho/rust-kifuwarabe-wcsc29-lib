@@ -1,6 +1,7 @@
 use instrument::piece_etc::*;
 use std::*;
 use studio::address::*;
+use studio::application::Application;
 use studio::board_size::*;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -93,7 +94,7 @@ impl UsiMove {
     }
 
     /// USI符号。
-    pub fn to_sign(self) -> String {
+    pub fn to_sign(self, app: &Application) -> String {
         if self.resign {
             return "resign".to_string();
         }
@@ -103,18 +104,16 @@ impl UsiMove {
         if let Some(drop) = self.drop {
             sign.push_str(&format!("{}*", drop.to_sign()));
         } else {
-            sign.push_str(&format!(
-                "{}{}",
-                self.source.unwrap().get_file(),
-                rank_to_sign(self.source.unwrap().get_rank())
-            ));
+            let sr = self
+                .source
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. self.source.")));
+            sign.push_str(&format!("{}{}", sr.get_file(), rank_to_sign(sr.get_rank())));
         }
 
-        sign.push_str(&format!(
-            "{}{}",
-            self.destination.unwrap().get_file(),
-            rank_to_sign(self.destination.unwrap().get_rank())
-        ));
+        let ds = self
+            .destination
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. self.destination.")));
+        sign.push_str(&format!("{}{}", ds.get_file(), rank_to_sign(ds.get_rank())));
 
         if self.promotion {
             sign.push_str("+");

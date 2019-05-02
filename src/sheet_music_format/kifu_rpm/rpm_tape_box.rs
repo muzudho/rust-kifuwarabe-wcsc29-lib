@@ -69,7 +69,10 @@ impl RpmTapeBox {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(kw29_conf: &KifuwarabeWcsc29MasterConfig) -> String {
+    pub fn create_file_full_name(
+        kw29_conf: &KifuwarabeWcsc29MasterConfig,
+        app: &Application,
+    ) -> String {
         let mut rng = rand::thread_rng();
         let rand1: u64 = rng.gen();
         let rand2: u64 = rng.gen();
@@ -80,7 +83,7 @@ impl RpmTapeBox {
         Path::new(&kw29_conf.learning)
             .join(file)
             .to_str()
-            .unwrap()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. conf.learning.")))
             .to_string()
     }
 

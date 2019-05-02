@@ -29,7 +29,7 @@ impl CassetteTapeBox {
     pub fn new_empty(slot: Slot, app: &Application) -> Self {
         CassetteTapeBox {
             role_as_slot: slot,
-            file: RpmTapeBox::create_file_full_name(&app.kw29_conf),
+            file: RpmTapeBox::create_file_full_name(&app.kw29_conf, &app),
             tapes: Vec::new(),
             listening_tape_index: None,
         }
