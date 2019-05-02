@@ -34,7 +34,8 @@ impl KifMove {
     }
 
     pub fn parse(line: &str, app: &Application) -> Option<KifMove> {
-        let re = Regex::new(r"\s*\d+ ((.*))*\([ 0-9:/]+\)").unwrap();
+        let re = Regex::new(r"\s*\d+ ((.*))*\([ 0-9:/]+\)")
+            .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
         let caps = re
             .captures(line)
             .unwrap_or_else(|| panic!(app.comm.panic("Fail. parse.")));

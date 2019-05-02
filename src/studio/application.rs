@@ -26,8 +26,8 @@ impl Application {
             Utc::now().format("%Y%m%d-%H%M(%S)").to_string(),
             &my_config.logging.file_extension
         ));
-        let path_name = &path.to_str().unwrap();
-        // print!("#Log path_name: '{}'.", path_name);
+        let path_name = &path.to_str().unwrap_or_else(|| panic!("Fail. path_name.")); // ログ取れない。無限ループ防止で簡素なpanic。
+                                                                                      // print!("#Log path_name: '{}'.", path_name);
 
         Application {
             comm: Communication::from_file(path_name),

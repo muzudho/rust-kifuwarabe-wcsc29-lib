@@ -113,7 +113,8 @@ impl RpmTapeBox {
             .open(path)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-        let json_text = serde_json::to_string(self).unwrap();
+        let json_text =
+            serde_json::to_string(self).unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
 
         if let Err(e) = writeln!(file_obj, "{}", json_text) {
             eprintln!("Couldn't write to file: {}", e);

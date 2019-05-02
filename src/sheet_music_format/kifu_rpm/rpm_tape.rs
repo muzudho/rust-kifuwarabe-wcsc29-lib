@@ -41,12 +41,13 @@ impl RpmTape {
         }
     }
 
-    pub fn to_human_presentable(&self) -> String {
-        self.tracks.to_human_presentable()
+    pub fn to_human_presentable(&self, app: &Application) -> String {
+        self.tracks.to_human_presentable(&app)
     }
 
-    pub fn to_json(&self) -> String {
-        serde_json::to_string(self).unwrap()
+    pub fn to_json(&self, app: &Application) -> String {
+        serde_json::to_string(self)
+            .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))))
     }
 
     pub fn to_object(&self, board_size: BoardSize, app: &Application) -> CassetteTape {

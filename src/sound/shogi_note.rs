@@ -76,7 +76,9 @@ impl ShogiNote {
             panic!("Unexpected operation note token. {}", ope_vec[n0 as usize])
         };
 
-        let pnum: i8 = id_vec[n0 as usize].parse().unwrap();
+        let pnum: i8 = id_vec[n0 as usize]
+            .parse()
+            .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))));
         let pid_opt = if pnum == -1 {
             // フェーズ・チェンジ。
             None

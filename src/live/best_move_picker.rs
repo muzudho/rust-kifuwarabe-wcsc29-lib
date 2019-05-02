@@ -642,7 +642,7 @@ impl BestMovePicker {
                             cap_pid.to_human_presentable(),
                             bmove
                                 .capture_addr
-                                .unwrap()
+                                .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())))
                                 .to_human_presentable(position.get_board_size())
                         )
                         .to_string()

@@ -60,7 +60,8 @@ impl UsiTape {
                 .lines()
                 .next()
         {
-            let first_line = first_line_result.unwrap();
+            let first_line =
+                first_line_result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
             app.comm
                 .println(&format!("Read first line: `{}`.", first_line));
             first_line

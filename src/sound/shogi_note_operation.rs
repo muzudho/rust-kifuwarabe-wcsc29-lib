@@ -298,7 +298,10 @@ impl ShogiNoteOpe {
                     }
 
                     // Ply カウント。
-                    let num: i16 = ch0.to_string().parse::<i16>().unwrap();
+                    let num: i16 = ch0
+                        .to_string()
+                        .parse::<i16>()
+                        .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))));
                     ply *= 10;
                     ply += num;
                 }

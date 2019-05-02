@@ -258,7 +258,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
-            app.comm.println("id name Kifuwarabe Build.22");
+            app.comm.println("id name Kifuwarabe Build.23");
             app.comm.println("id author Satoshi TAKAHASHI");
             app.comm.println("usiok");
         } else if line == "usinewgame" {

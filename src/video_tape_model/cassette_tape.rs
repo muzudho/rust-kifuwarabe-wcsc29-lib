@@ -255,7 +255,7 @@ impl CassetteTape {
 
         let rpm_tape = self.to_rpm(board_size);
 
-        if let Err(e) = writeln!(file_obj, "{},", rpm_tape.to_json()) {
+        if let Err(e) = writeln!(file_obj, "{},", rpm_tape.to_json(&app)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 
