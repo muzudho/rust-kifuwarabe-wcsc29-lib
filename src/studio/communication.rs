@@ -1,5 +1,7 @@
+use std::fs;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
+use std::path::Path;
 
 #[derive(Default)]
 pub struct Communication {
@@ -20,6 +22,16 @@ impl Communication {
     pub fn print(&self, line: &str) {
         print!("{}", line);
 
+        // ディレクトリー作成。
+        if let Some(parent) = Path::new(&self.log_file_name).parent() {
+            match fs::create_dir_all(parent) {
+                Ok(_x) => {}
+                Err(err) => panic!(err),
+            }
+        } else {
+            panic!("Create directory fail. {}", self.log_file_name);
+        }
+
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
@@ -35,6 +47,16 @@ impl Communication {
     /// Write line.
     pub fn println(&self, line: &str) {
         println!("{}", line);
+
+        // ディレクトリー作成。
+        if let Some(parent) = Path::new(&self.log_file_name).parent() {
+            match fs::create_dir_all(parent) {
+                Ok(_x) => {}
+                Err(err) => panic!(err),
+            }
+        } else {
+            panic!("Create directory fail. {}", self.log_file_name);
+        }
 
         let mut file = OpenOptions::new()
             .create(true)
