@@ -103,10 +103,16 @@ impl BestMovePicker {
         }
 
         // TODO とりあえず rbox.json ファイルを１個読む。
-        'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training).unwrap() {
+        'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training)
+            .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
+        {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
             deck.change_with_tape_box_file(
-                &tape_box_file.unwrap().path().display().to_string(),
+                &tape_box_file
+                    .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
+                    .path()
+                    .display()
+                    .to_string(),
                 position.get_board_size(),
                 &app,
             );

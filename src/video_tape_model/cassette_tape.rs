@@ -251,7 +251,7 @@ impl CassetteTape {
             .write(true)
             .append(true)
             .open(path)
-            .unwrap();
+            .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
         let rpm_tape = self.to_rpm(board_size);
 

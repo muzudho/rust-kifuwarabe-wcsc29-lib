@@ -30,8 +30,11 @@ impl Kaki189 {
     pub fn from_file(file: &str, app: &Application) -> KifTape {
         let mut record = KifTape::new();
 
-        for result in BufReader::new(File::open(file).unwrap()).lines() {
-            let line = result.unwrap();
+        for result in
+            BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
+                .lines()
+        {
+            let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
             // スペースを除く、先頭が数字で始まる行は　指し手。
             if 4 < line.len() {
@@ -43,7 +46,7 @@ impl Kaki189 {
                     .to_string();
                 match first_ch.parse::<i8>() {
                     Ok(_x) => {
-                        if let Some(kif_move) = KifMove::parse(&line) {
+                        if let Some(kif_move) = KifMove::parse(&line, &app) {
                             record.push(kif_move);
                         }
                     }

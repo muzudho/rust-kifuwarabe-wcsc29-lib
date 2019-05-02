@@ -1,6 +1,7 @@
 use instrument::piece_etc::*;
 use regex::Regex;
 use studio::address::*;
+use studio::application::Application;
 
 pub struct KifMove {
     pub destination: Option<Cell>,
@@ -32,9 +33,11 @@ impl KifMove {
         sign
     }
 
-    pub fn parse(line: &str) -> Option<KifMove> {
+    pub fn parse(line: &str, app: &Application) -> Option<KifMove> {
         let re = Regex::new(r"\s*\d+ ((.*))*\([ 0-9:/]+\)").unwrap();
-        let caps = re.captures(line).unwrap();
+        let caps = re
+            .captures(line)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. parse.")));
         let sign = caps.get(1).map_or("", |m| m.as_str());
 
         let mut mv = KifMove {
@@ -59,7 +62,11 @@ impl KifMove {
 
         let dfile = if 0 < sign.len() - nth {
             // Phase 0.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sing.")))
+                .to_string();
             nth += 1;
             match ch.as_str() {
                 "１" => Some(1),
@@ -82,18 +89,49 @@ impl KifMove {
 
         mv.destination = if 0 < sign.len() - nth {
             // Phase 1.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             match ch.as_str() {
-                "一" => Some(Cell::from_file_rank(dfile.unwrap(), 1)),
-                "二" => Some(Cell::from_file_rank(dfile.unwrap(), 2)),
-                "三" => Some(Cell::from_file_rank(dfile.unwrap(), 3)),
-                "四" => Some(Cell::from_file_rank(dfile.unwrap(), 4)),
-                "五" => Some(Cell::from_file_rank(dfile.unwrap(), 5)),
-                "六" => Some(Cell::from_file_rank(dfile.unwrap(), 6)),
-                "七" => Some(Cell::from_file_rank(dfile.unwrap(), 7)),
-                "八" => Some(Cell::from_file_rank(dfile.unwrap(), 8)),
-                "九" => Some(Cell::from_file_rank(dfile.unwrap(), 9)),
+                "一" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    1,
+                )),
+                "二" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    2,
+                )),
+                "三" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    3,
+                )),
+                "四" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    4,
+                )),
+                "五" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    5,
+                )),
+                "六" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    6,
+                )),
+                "七" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    7,
+                )),
+                "八" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    8,
+                )),
+                "九" => Some(Cell::from_file_rank(
+                    dfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. dfile."))),
+                    9,
+                )),
                 _ => {
                     nth -= 1;
                     None
@@ -105,11 +143,19 @@ impl KifMove {
 
         if 0 < sign.len() - nth {
             // Phase 2.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             mv.is_same = match ch.as_str() {
                 "同" => {
-                    let ch = sign.chars().nth(nth).unwrap().to_string();
+                    let ch = sign
+                        .chars()
+                        .nth(nth)
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                        .to_string();
                     nth += 1;
                     match ch.as_str() {
                         "　" => true,
@@ -125,7 +171,11 @@ impl KifMove {
 
         if 0 < sign.len() - nth {
             // Phase 3.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             use instrument::piece_etc::JsaPieceType::*;
             mv.piece = match ch.as_str() {
@@ -141,7 +191,11 @@ impl KifMove {
                 "馬" => Some(PB),
                 "龍" => Some(PR),
                 "成" => {
-                    let ch = sign.chars().nth(nth).unwrap().to_string();
+                    let ch = sign
+                        .chars()
+                        .nth(nth)
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                        .to_string();
                     nth += 1;
                     match ch.as_str() {
                         "香" => Some(PL),
@@ -159,7 +213,11 @@ impl KifMove {
 
         if 0 < sign.len() - nth {
             // Phase 4.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             mv.is_promote = match ch.as_str() {
                 "成" => true,
@@ -172,7 +230,11 @@ impl KifMove {
 
         if 0 < sign.len() - nth {
             // Phase 5.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             mv.is_drop = match ch.as_str() {
                 "打" => true,
@@ -185,7 +247,11 @@ impl KifMove {
 
         if 0 < sign.len() - nth {
             // Phase 6.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             nth += 1;
             match ch.as_str() {
                 "(" => {}
@@ -195,7 +261,11 @@ impl KifMove {
 
         let sfile = if 0 < sign.len() - nth {
             // Phase 7.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile.")))
+                .to_string();
             nth += 1;
             match ch.as_str() {
                 "1" => Some(1),
@@ -218,18 +288,49 @@ impl KifMove {
 
         mv.source = if 0 < sign.len() - nth {
             // Phase 8.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign
+                .chars()
+                .nth(nth)
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. sign.")))
+                .to_string();
             /*nth += 1;*/
             match ch.as_str() {
-                "1" => Some(Cell::from_file_rank(sfile.unwrap(), 1)),
-                "2" => Some(Cell::from_file_rank(sfile.unwrap(), 2)),
-                "3" => Some(Cell::from_file_rank(sfile.unwrap(), 3)),
-                "4" => Some(Cell::from_file_rank(sfile.unwrap(), 4)),
-                "5" => Some(Cell::from_file_rank(sfile.unwrap(), 5)),
-                "6" => Some(Cell::from_file_rank(sfile.unwrap(), 6)),
-                "7" => Some(Cell::from_file_rank(sfile.unwrap(), 7)),
-                "8" => Some(Cell::from_file_rank(sfile.unwrap(), 8)),
-                "9" => Some(Cell::from_file_rank(sfile.unwrap(), 9)),
+                "1" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    1,
+                )),
+                "2" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    2,
+                )),
+                "3" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    3,
+                )),
+                "4" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    4,
+                )),
+                "5" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    5,
+                )),
+                "6" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    6,
+                )),
+                "7" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    7,
+                )),
+                "8" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    8,
+                )),
+                "9" => Some(Cell::from_file_rank(
+                    sfile.unwrap_or_else(|| panic!(app.comm.panic("Fail. sfile."))),
+                    9,
+                )),
                 _ => {
                     /*nth -= 1;*/
                     None
@@ -242,7 +343,7 @@ impl KifMove {
         /*
         if 0 < sign.len() - nth {
             // Phase 9.
-            let ch = sign.chars().nth(nth).unwrap().to_string();
+            let ch = sign.chars().nth(nth).unwrap_or_else(|| panic!(app.comm.panic("Fail. sign."))).to_string();
             /* nth += 1; */
             match ch.as_str() {
                 ")" => {},

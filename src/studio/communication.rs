@@ -37,7 +37,7 @@ impl Communication {
             .write(true)
             .append(true)
             .open(&self.log_file_name)
-            .unwrap();
+            .unwrap_or_else(|f| panic!(f)); // このエラーは、無限ループしてしまうので、ログには残さない。
 
         if let Err(e) = write!(file, "{}", line) {
             eprintln!("Couldn't write to file: {}", e);
@@ -63,7 +63,7 @@ impl Communication {
             .write(true)
             .append(true)
             .open(&self.log_file_name)
-            .unwrap();
+            .unwrap_or_else(|f| panic!(f)); // このエラーは、無限ループしてしまうので、ログには残さない。
 
         if let Err(e) = writeln!(file, "{}", line) {
             eprintln!("Couldn't write to file: {}", e);
@@ -73,6 +73,13 @@ impl Communication {
     /// panic! で包んで使う。
     pub fn panic(&self, msg: &str) -> String {
         self.println(msg); // コンソールに表示して、ログも取る。
+        String::from(msg)
+    }
+
+    /// 入出力エラーの時、 panic! で包んで使う。
+    pub fn panic_io(&self, err: &std::io::Error) -> String {
+        let msg = format!("{}", err);
+        self.println(&msg);
         String::from(msg)
     }
 }

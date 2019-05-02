@@ -7,7 +7,6 @@ use std::io::{BufRead, BufReader};
 use std::*;
 use studio::application::Application;
 use studio::board_size::*;
-use studio::communication::*;
 use studio::parser::*;
 
 #[derive(Default)]
@@ -55,10 +54,15 @@ impl UsiTape {
     }
 
     /// 1行目のテキストを返す。
-    pub fn read_first_line(comm: &Communication, file: &str) -> String {
-        if let Some(first_line_result) = BufReader::new(File::open(file).unwrap()).lines().next() {
+    pub fn read_first_line(file: &str, app: &Application) -> String {
+        if let Some(first_line_result) =
+            BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
+                .lines()
+                .next()
+        {
             let first_line = first_line_result.unwrap();
-            comm.println(&format!("Read first line: `{}`.", first_line));
+            app.comm
+                .println(&format!("Read first line: `{}`.", first_line));
             first_line
         } else {
             "".to_string()

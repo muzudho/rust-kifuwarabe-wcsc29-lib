@@ -111,7 +111,7 @@ impl RpmTapeBox {
             .create(true)
             .write(true)
             .open(path)
-            .unwrap();
+            .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
         let json_text = serde_json::to_string(self).unwrap();
 

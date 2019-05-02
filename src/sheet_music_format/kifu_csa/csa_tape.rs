@@ -18,8 +18,11 @@ impl CsaTape {
     pub fn from_file(file: &str, app: &Application) -> CsaTape {
         let mut record = CsaTape::new();
 
-        for result in BufReader::new(File::open(file).unwrap()).lines() {
-            let line = result.unwrap();
+        for result in
+            BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
+                .lines()
+        {
+            let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
             if (line.starts_with('+') | line.starts_with('-') | line.starts_with('%'))
                 && line.len() == 7
@@ -45,7 +48,7 @@ impl CsaTape {
         }
     }
 
-    pub fn make_move(&mut self, cmove: CsaMove, position: &mut Position,app:&Application) {
+    pub fn make_move(&mut self, cmove: CsaMove, position: &mut Position, app: &Application) {
         if cmove.is_drop() {
             // TODO drop
 

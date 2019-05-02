@@ -45,7 +45,7 @@ pub fn main() {
     // Position.
     let mut position = Position::new_honshogi_origin();
 
-    let line = UsiTape::read_first_line(&app.comm, &path);
+    let line = UsiTape::read_first_line(&path, &app);
 
     app.comm.println(&format!("Parse line: `{}`.", line));
     let mut utape = UsiTape::default();
