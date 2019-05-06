@@ -1002,7 +1002,29 @@ impl Position {
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
-                ZeroPointFive | OnePointFive | Second => {
+                OnePointFive => {
+                    match row {
+                        0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
+                            Parser::append(&mut content, &"             ".to_string())
+                        }
+                        // 全角数字がずれるので、桁数指定はしない。7桁固定。
+                        11 => Parser::append(
+                            &mut content,
+                            &format!(
+                                "     {} ",
+                                self.get_cell_display_by_address(Address::from_fingertip())
+                                    .to_fingertip_display(board_size)
+                            ),
+                        ),
+                        12 => Parser::append(&mut content, &"----------+  ".to_string()),
+                        13 => Parser::append(&mut content, &"      +---+  ".to_string()),
+                        14 => Parser::append(&mut content, &"      +---+  ".to_string()),
+                        15 => Parser::append(&mut content, &"      +---+  ".to_string()),
+                        16 => Parser::append(&mut content, &"------+      ".to_string()),
+                        _ => panic!("Unexpected row: {0}.", row),
+                    };
+                }
+                ZeroPointFive | Second => {
                     Parser::append(&mut content, &"             ".to_string())
                 }
             }
@@ -1070,8 +1092,27 @@ impl Position {
 
             // Second player finger.
             match phase_value {
-                ZeroPointFive | OnePointFive | First => {
-                    Parser::append(&mut content, "             |")
+                OnePointFive | First => Parser::append(&mut content, "             |"),
+                ZeroPointFive => {
+                    match row {
+                        0 => Parser::append(&mut content, "     +------ |"),
+                        1 => Parser::append(&mut content, " +---+       |"),
+                        2 => Parser::append(&mut content, " +---+       |"),
+                        3 => Parser::append(&mut content, " +---+       |"),
+                        4 => Parser::append(&mut content, " +---------- |"),
+                        5 => Parser::append(
+                            &mut content,
+                            &format!(
+                                "  {}    |",
+                                self.get_cell_display_by_address(Address::from_fingertip())
+                                    .to_fingertip_display(board_size)
+                            ),
+                        ),
+                        6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
+                            Parser::append(&mut content, "             |")
+                        }
+                        _ => panic!("Unexpected row: {0}.", row),
+                    };
                 }
                 Second => {
                     match row {
