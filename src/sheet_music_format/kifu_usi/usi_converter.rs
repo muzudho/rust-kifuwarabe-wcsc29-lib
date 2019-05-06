@@ -40,8 +40,14 @@ impl UsiConverter {
     ) -> Vec<ShogiNoteOpe> {
         let mut rpm_move = Vec::new();
 
+        // change-phase
+        rpm_move.push(ShogiNoteOpe::change_phase(ply));
+
         if umove.is_resign() {
             rpm_move.push(ShogiNoteOpe::resign());
+
+            // change-phase
+            rpm_move.push(ShogiNoteOpe::change_phase(ply));
             return rpm_move;
         }
 
@@ -78,15 +84,15 @@ impl UsiConverter {
                     let hand_off = ShogiNoteOpe::from_address(destination_address);
                     rpm_move.push(hand_off);
 
+                    // hand-rotate
+                    let hand_rotate = ShogiNoteOpe::rotate();
+                    rpm_move.push(hand_rotate);
+
                     // hand-turn
                     if id_piece.is_promoted() {
                         let hand_turn = ShogiNoteOpe::turn_over();
                         rpm_move.push(hand_turn);
                     }
-
-                    // hand-rotate
-                    let hand_rotate = ShogiNoteOpe::rotate();
-                    rpm_move.push(hand_rotate);
 
                     // hand-on
                     let up = id_piece.get_type();
@@ -119,8 +125,7 @@ impl UsiConverter {
         }
 
         // change-phase
-        let change_phase = ShogiNoteOpe::change_phase(ply);
-        rpm_move.push(change_phase);
+        rpm_move.push(ShogiNoteOpe::change_phase(ply));
 
         rpm_move
     }

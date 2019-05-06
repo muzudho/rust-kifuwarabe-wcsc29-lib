@@ -133,23 +133,23 @@ impl BestMovePicker {
                 HumanInterface::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(Phase::First), K00) {
+                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::First), K00) {
                         comm.println(&format!("info First-K00: {}.", addr_obj.get_index()));
                     }
                 }
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(Phase::First), K01) {
+                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::First), K01) {
                         comm.println(&format!("info First-K01: {}.", addr_obj.get_index()));
                     }
                 }
                 // 後手玉の番地。
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(Phase::Second), K00) {
+                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::Second), K00) {
                         comm.println(&format!("info Second-K00: {}.", addr_obj.get_index()));
                     }
                 }
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(Phase::Second), K01) {
+                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::Second), K01) {
                         comm.println(&format!("info Second-K01: {}.", addr_obj.get_index()));
                     }
                 }

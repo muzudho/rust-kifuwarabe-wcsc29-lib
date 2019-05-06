@@ -52,7 +52,10 @@ impl RpmTape {
 
     pub fn to_object(&self, board_size: BoardSize, app: &Application) -> CassetteTape {
         CassetteTape {
-            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf, &app),
+            fragment_file_name: CassetteTape::create_tape_fragment_file_full_name(
+                &app.kw29_conf,
+                &app,
+            ),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
                 date: "".to_string(),

@@ -41,10 +41,10 @@ impl CsaTape {
         self.items.push(mov);
     }
 
-    pub fn get_current_phase(&self) -> Phase {
+    pub fn get_current_phase(&self) -> HalfPlayerPhase {
         match self.items.len() % 2 {
-            0 => Phase::First,
-            _ => Phase::Second,
+            0 => HalfPlayerPhase::First,
+            _ => HalfPlayerPhase::Second,
         }
     }
 

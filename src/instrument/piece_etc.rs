@@ -5,27 +5,35 @@ use studio::address::*;
 use studio::board_size::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Phase {
+pub enum HalfPlayerPhase {
+    /// 0.5.
+    ZeroPointFive,
     /// Starting first.
     First,
+    /// 1.5.
+    OnePointFive,
     /// Starting second.
     Second,
 }
-impl Phase {
+impl HalfPlayerPhase {
     /// Human presentalbe.
     pub fn to_log(self) -> String {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         match self {
+            ZeroPointFive => "＜",
             First => "▼",
+            OnePointFive => "＞",
             Second => "△",
         }
         .to_string()
     }
 
     pub fn to_sign(self) -> String {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         match self {
+            ZeroPointFive => "z",
             First => "b",
+            OnePointFive => "o",
             Second => "w",
         }
         .to_string()
@@ -349,13 +357,13 @@ impl CellDisplay {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct IdentifiedPiece {
-    phase: Option<Phase>,
+    phase: Option<HalfPlayerPhase>,
     promoted: bool,
     id: PieceIdentify,
 }
 impl IdentifiedPiece {
     pub fn from_phase_pro_id(
-        phase_opt: Option<Phase>,
+        phase_opt: Option<HalfPlayerPhase>,
         promoted_flag: bool,
         piece_id: PieceIdentify,
     ) -> IdentifiedPiece {
@@ -367,7 +375,7 @@ impl IdentifiedPiece {
     }
 
     pub fn some(
-        phase_opt: Option<Phase>,
+        phase_opt: Option<HalfPlayerPhase>,
         promoted_flag: bool,
         piece_id: PieceIdentify,
     ) -> Option<IdentifiedPiece> {
@@ -383,16 +391,18 @@ impl IdentifiedPiece {
     }
 
     pub fn rotate(&mut self) {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         if let Some(phase) = self.phase {
             self.phase = match phase {
+                ZeroPointFive => Some(OnePointFive),
                 First => Some(Second),
+                OnePointFive => Some(ZeroPointFive),
                 Second => Some(First),
             }
         }
     }
 
-    pub fn get_phase(self) -> Option<Phase> {
+    pub fn get_phase(self) -> Option<HalfPlayerPhase> {
         self.phase
     }
 
@@ -444,10 +454,11 @@ impl IdentifiedPiece {
     }
 
     pub fn to_human_presentable(self) -> String {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
+                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
                 First => {
                     if self.is_promoted() {
                         match self.get_id() {
@@ -539,6 +550,7 @@ impl IdentifiedPiece {
                         .to_string()
                     }
                 }
+                OnePointFive => panic!("OnePointFive IDP is error."),
                 Second => {
                     if self.is_promoted() {
                         match self.get_id() {
@@ -700,10 +712,11 @@ impl IdentifiedPiece {
 
     /// 成り玉とかあって、USI としては使えない。
     pub fn to_extended_usi_text(self) -> String {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
+                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
                 First => {
                     if self.is_promoted() {
                         // 先手の成り駒。
@@ -733,6 +746,7 @@ impl IdentifiedPiece {
                         }
                     }
                 }
+                OnePointFive => panic!("OnePointFive IDP is error."),
                 Second => {
                     if self.is_promoted() {
                         // 後手の成り駒。
@@ -771,10 +785,11 @@ impl IdentifiedPiece {
     }
 
     pub fn to_usi_sign(self) -> String {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::PieceIdentify::*;
         if let Some(phase) = self.get_phase() {
             match phase {
+                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
                 First => {
                     if self.is_promoted() {
                         // 先手の成り駒。
@@ -804,6 +819,7 @@ impl IdentifiedPiece {
                         }
                     }
                 }
+                OnePointFive => panic!("OnePointFive IDP is error."),
                 Second => {
                     if self.is_promoted() {
                         // 後手の成り駒。
@@ -921,16 +937,17 @@ pub enum Piece {
     PP3,
 }
 impl Piece {
-    pub fn from_ph_pid(phase_opt: Option<Phase>, pid: PieceIdentify) -> Self {
+    pub fn from_ph_pid(phase_opt: Option<HalfPlayerPhase>, pid: PieceIdentify) -> Self {
         Piece::from_ph_pt(phase_opt, pid.get_piece_type())
     }
 
-    pub fn from_ph_pt(phase_opt: Option<Phase>, piece_type: PieceType) -> Self {
-        use instrument::piece_etc::Phase::*;
+    pub fn from_ph_pt(phase_opt: Option<HalfPlayerPhase>, piece_type: PieceType) -> Self {
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::Piece::*;
         use instrument::piece_etc::PieceType::*;
         match phase_opt {
             Some(phase) => match phase {
+                ZeroPointFive => panic!("ZeroPointFive Piece is error."),
                 First => match piece_type {
                     K => K1,
                     PK => PK1,
@@ -956,6 +973,7 @@ impl Piece {
                     P => P1,
                     PP => PP1,
                 },
+                OnePointFive => panic!("OnePointFive Piece is error."),
                 Second => match piece_type {
                     K => K2,
                     PK => PK2,
@@ -1163,13 +1181,13 @@ impl Piece {
         }
     }
 
-    pub fn get_phase(self) -> Option<Phase> {
+    pub fn get_phase(self) -> Option<HalfPlayerPhase> {
         use instrument::piece_etc::Piece::*;
         match self {
             K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1
-            | PP1 => Some(Phase::First),
+            | PP1 => Some(HalfPlayerPhase::First),
             K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2
-            | PP2 => Some(Phase::Second),
+            | PP2 => Some(HalfPlayerPhase::Second),
             K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3
             | PP3 => None,
         }
@@ -1532,10 +1550,11 @@ impl PieceType {
 }
 
 pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
-    use instrument::piece_etc::Phase::*;
+    use instrument::piece_etc::HalfPlayerPhase::*;
     use instrument::piece_etc::PieceIdentify::*;
     if let Some(phase) = id_piece.phase {
         match phase {
+            ZeroPointFive => panic!("ZeroPointFive PieceType is error."),
             First => match id_piece.get_id() {
                 K00 | K01 => 0,
                 R20 | R21 => 1,
@@ -1547,6 +1566,7 @@ pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
                 P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
                 | P35 | P36 | P37 | P38 | P39 => 7,
             },
+            OnePointFive => panic!("OnePointFive PieceType is error."),
             Second => match id_piece.get_id() {
                 K00 | K01 => 8,
                 R20 | R21 => 9,

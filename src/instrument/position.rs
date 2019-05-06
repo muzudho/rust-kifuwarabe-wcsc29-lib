@@ -56,7 +56,7 @@ impl Fingertip {
 }
 
 pub struct Position {
-    phase: Phase,
+    phase: HalfPlayerPhase,
     board_size: BoardSize,
     pub board: [Option<IdentifiedPiece>; DEFAULT_BOARD_SIZE],
     pub hands: [Vec<IdentifiedPiece>; HANDS_LEN],
@@ -67,7 +67,7 @@ impl Position {
     pub fn new_honshogi_origin() -> Position {
         // このあと すぐリセットする。
         let mut instance = Position {
-            phase: Phase::First,
+            phase: HalfPlayerPhase::First,
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
             hands: [
@@ -106,7 +106,7 @@ impl Position {
     /// 自分の駒を持ち駒として持っているところから始めます。
     pub fn reset_origin_position(&mut self) {
         //println!("#Position: reset_origin_position.");
-        self.phase = Phase::First;
+        self.phase = HalfPlayerPhase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
@@ -136,8 +136,8 @@ impl Position {
             Vec::new(),
         ];
 
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::IdentifiedPiece;
-        use instrument::piece_etc::Phase::*;
         use instrument::piece_etc::Piece::*;
         use instrument::piece_etc::PieceIdentify::*;
         // きふわらべは 駒台の駒をスタック構造と捉えて後ろから取っていくので、
@@ -243,7 +243,7 @@ impl Position {
     /// ゲームに使う駒がまだ決まっていないところから始めます。自由初期局面用。
     pub fn reset_empty_position(&mut self) {
         //println!("#Position: reset_empty_position.");
-        self.phase = Phase::First;
+        self.phase = HalfPlayerPhase::First;
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
@@ -273,8 +273,8 @@ impl Position {
             Vec::new(),
         ];
 
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::IdentifiedPiece;
-        use instrument::piece_etc::Phase::*;
         use instrument::piece_etc::Piece::*;
         use instrument::piece_etc::PieceIdentify::*;
         // 玉2枚。
@@ -351,7 +351,7 @@ impl Position {
         }
     }
 
-    pub fn get_phase(&self) -> Phase {
+    pub fn get_phase(&self) -> HalfPlayerPhase {
         self.phase
     }
 
@@ -438,7 +438,7 @@ impl Position {
 
     pub fn search_hand(
         &self,
-        ph_opt: Option<Phase>,
+        ph_opt: Option<HalfPlayerPhase>,
         pid: PieceIdentify,
     ) -> Option<IdentifiedPiece> {
         let pt = pid.get_piece_type();
@@ -641,10 +641,12 @@ impl Position {
                             // 盤上の駒と、指先の何かを入れ替えます。何かには None も含まれます。（非合法でも行います）
 
                             let tuple = if let Some(ref fingertip) = self.fingertip {
-                                app.comm.println(&format!(
-                                    "<IL-駒重なり{}>",
-                                    address.to_human_presentable(board_size)
-                                ));
+                                if app.is_debug() {
+                                    app.comm.println(&format!(
+                                        "<IL-駒重なり:{}>",
+                                        address.to_human_presentable(board_size)
+                                    ));
+                                }
 
                                 // （未着手）指に既に何か持ってた。指に持っている駒を優先します。
                                 (false, Some(fingertip.get_idp()))
@@ -678,10 +680,12 @@ impl Position {
                                 // （完遂）駒を指につまんでいた。指につまんでいる駒を置く。
                                 (true, Some(fingertip.get_idp()))
                             } else {
-                                app.comm.println(&format!(
-                                    "<IL-ほこり取り{}>",
-                                    address.to_human_presentable(board_size)
-                                ));
+                                if app.is_debug() {
+                                    app.comm.println(&format!(
+                                        "<IL-ほこり取り:{}>",
+                                        address.to_human_presentable(board_size)
+                                    ));
+                                }
                                 // （未着手）ほこりを取る。一応、違法。
                                 (false, None)
                             };
@@ -722,10 +726,12 @@ impl Position {
                             // 合法。掴んだ駒を返す。
                             (true, Some(fingertip.get_idp()))
                         } else {
-                            app.comm.println(&format!(
-                                "<IL-駒台ほこり取り{}>",
-                                address.to_human_presentable(board_size)
-                            ));
+                            if app.is_debug() {
+                                app.comm.println(&format!(
+                                    "<IL-駒台ほこり取り:{}>",
+                                    address.to_human_presentable(board_size)
+                                ));
+                            }
                             // （未着手）駒台のほこりを取った。
                             (false, None)
                         }
@@ -738,10 +744,12 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    use instrument::piece_etc::Phase::*;
+                    use instrument::piece_etc::HalfPlayerPhase::*;
                     self.phase = match self.phase {
-                        First => Second,
-                        Second => First,
+                        ZeroPointFive => First,
+                        First => OnePointFive,
+                        OnePointFive => Second,
+                        Second => ZeroPointFive,
                     };
                     // （完遂） phase change.
                     (true, None)
@@ -757,10 +765,14 @@ impl Position {
                     (true, Some(fingertip.get_idp()))
                 } else if rnote_ope.is_resign() {
                     // 投了☆
-                    app.comm.println("<投了>");
+                    if app.is_debug() {
+                        app.comm.println("<投了>");
+                    }
                     (true, None)
                 } else {
-                    app.comm.println("<未定義-使っていない空間ほこり取り>");
+                    if app.is_debug() {
+                        app.comm.println("<未定義-使っていない空間ほこり取り>");
+                    }
                     // （未着手）TODO 未定義の操作。使っていない駒台でほこりを取ったり、テープの範囲外にアクセスしたり。一応、違法。
                     (false, None)
                 }
@@ -775,7 +787,7 @@ impl Position {
     /// 識別駒、番地。
     pub fn scan_wild(
         &self,
-        ph_opt: Option<Phase>,
+        ph_opt: Option<HalfPlayerPhase>,
         pid: PieceIdentify,
     ) -> Option<(IdentifiedPiece, Address)> {
         // 盤上のスキャン。
@@ -802,18 +814,23 @@ impl Position {
     /// 空行が多くなるものの、持ち駒を４行表示。
     /// １行に１０駒入れれば、４行で４０駒全部入る。
     /// 横幅は７０文字としておく。
-    pub fn to_hand_4lines(&self, phase_opt: Option<Phase>) -> (String, String, String, String) {
+    pub fn to_hand_4lines(
+        &self,
+        phase_opt: Option<HalfPlayerPhase>,
+    ) -> (String, String, String, String) {
         let mut line0 = String::new();
         let mut line1 = String::new();
         let mut line2 = String::new();
         let mut line3 = String::new();
 
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::Piece::*;
 
         let array = if let Some(phase) = phase_opt {
             match phase {
+                ZeroPointFive => [K3, R3, B3, G3, S3, N3, L3, P3],
                 First => [K1, R1, B1, G1, S1, N1, L1, P1],
+                OnePointFive => [K3, R3, B3, G3, S3, N3, L3, P3],
                 Second => [K2, R2, B2, G2, S2, N2, L2, P2],
             }
         } else {
@@ -920,12 +937,17 @@ impl Position {
 
     /// 余談。
     /// 将棋盤。きふわらべは、同時に１個の将棋盤しかもたない☆（＾～＾）２つ目とか無い☆（＾～＾）
-    pub fn to_text(&self, _comm: &Communication, phase: Phase, board_size: BoardSize) -> String {
-        use instrument::piece_etc::Phase::*;
+    pub fn to_text(
+        &self,
+        _comm: &Communication,
+        phase: HalfPlayerPhase,
+        board_size: BoardSize,
+    ) -> String {
+        use instrument::piece_etc::HalfPlayerPhase::*;
         let mut content = String::new();
 
         // 先手の持ち駒。４行表示。
-        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::First));
+        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(HalfPlayerPhase::First));
         Parser::appendln(&mut content, &format!("{}|", line0));
         Parser::appendln(&mut content, &format!("{}|", line1));
         Parser::appendln(&mut content, &format!("{}|", line2));
@@ -939,7 +961,7 @@ impl Position {
                     "|         |   +----+----+----+----+----+----+----+----+----+             |",
                 );
             }
-            Second => {
+            ZeroPointFive | OnePointFive | Second => {
                 Parser::appendln(
                     &mut content,
                     "              +----+----+----+----+----+----+----+----+----+             |",
@@ -975,7 +997,9 @@ impl Position {
                         _ => panic!("Unexpected row: {0}.", row),
                     };
                 }
-                Second => Parser::append(&mut content, &"             ".to_string()),
+                ZeroPointFive | OnePointFive | Second => {
+                    Parser::append(&mut content, &"             ".to_string())
+                }
             }
 
             if row % 2 == 0 {
@@ -1041,7 +1065,9 @@ impl Position {
 
             // Second player finger.
             match phase {
-                First => Parser::append(&mut content, "             |"),
+                ZeroPointFive | OnePointFive | First => {
+                    Parser::append(&mut content, "             |")
+                }
                 Second => {
                     match row {
                         0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 => {
@@ -1069,7 +1095,7 @@ impl Position {
         }
 
         match phase {
-            First => {
+            ZeroPointFive | OnePointFive | First => {
                 Parser::appendln(
                     &mut content,
                     "              +----+----+----+----+----+----+----+----+----+             |",
@@ -1090,7 +1116,7 @@ impl Position {
         );
 
         // 後手の持ち駒。４行表示。
-        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(Phase::Second));
+        let (line0, line1, line2, line3) = self.to_hand_4lines(Some(HalfPlayerPhase::Second));
         Parser::appendln(&mut content, &format!("{}|", line0));
         Parser::appendln(&mut content, &format!("{}|", line1));
         Parser::appendln(&mut content, &format!("{}|", line2));

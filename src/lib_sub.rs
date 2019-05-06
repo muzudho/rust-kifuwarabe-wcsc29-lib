@@ -118,7 +118,7 @@ impl LibSub {
 
     pub fn hand1(position: &Position, app: &Application) {
         // TODO 先手の持ち駒を表示。
-        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(Phase::First));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(HalfPlayerPhase::First));
         app.comm.println(&line0);
         app.comm.println(&line1);
         app.comm.println(&line2);
@@ -126,7 +126,7 @@ impl LibSub {
     }
     pub fn hand2(position: &Position, app: &Application) {
         // TODO 後手の持ち駒を表示。
-        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(Phase::Second));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(HalfPlayerPhase::Second));
         app.comm.println(&line0);
         app.comm.println(&line1);
         app.comm.println(&line2);

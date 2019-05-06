@@ -289,7 +289,7 @@ impl CassetteTapeBox {
     }
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
-    pub fn write_tape_fragment_of_current_tape(&self, board_size: BoardSize, app: &Application) {
+    pub fn write_current_tape_fragment(&self, board_size: BoardSize, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].write_tape_fragment(board_size, &app)
         } else {

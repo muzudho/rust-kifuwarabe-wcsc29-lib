@@ -41,6 +41,9 @@ impl CsaConverter {
     ) -> Vec<ShogiNoteOpe> {
         let mut p_moves = Vec::new();
 
+        // change-phase
+        p_moves.push(ShogiNoteOpe::change_phase(ply));
+
         // 盤上の駒の番地。
         let destination_address = Address::from_cell(cmove.destination, position.get_board_size());
 
@@ -68,15 +71,15 @@ impl CsaConverter {
                 let hand_off = ShogiNoteOpe::from_address(destination_address);
                 p_moves.push(hand_off);
 
+                // hand-rotate
+                let hand_rotate = ShogiNoteOpe::rotate();
+                p_moves.push(hand_rotate);
+
                 // hand-turn
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
                     p_moves.push(hand_turn);
                 }
-
-                // hand-rotate
-                let hand_rotate = ShogiNoteOpe::rotate();
-                p_moves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
@@ -120,8 +123,7 @@ impl CsaConverter {
         };
 
         // change-phase
-        let change_phase = ShogiNoteOpe::change_phase(ply);
-        p_moves.push(change_phase);
+        p_moves.push(ShogiNoteOpe::change_phase(ply));
 
         p_moves
     }

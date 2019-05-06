@@ -28,7 +28,7 @@ impl OhashiPlayer {
     /// 初期化に使う。
     fn init_note(
         ply: i16,
-        ph: Phase,
+        ph: HalfPlayerPhase,
         file: i8,
         rank: i8,
         pid: PieceIdentify,
@@ -44,7 +44,7 @@ impl OhashiPlayer {
     /// オリジン・ポジションから、平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
     pub fn play_ohashi_starting(pos: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        use instrument::piece_etc::Phase::*;
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::PieceIdentify::*;
 
         // 大橋流の順序にしてください。

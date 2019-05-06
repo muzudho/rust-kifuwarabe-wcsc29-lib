@@ -76,12 +76,13 @@ impl Address {
         Address::from_hand_ph_pt(pi.get_phase(), pi.get_type())
     }
 
-    pub fn from_hand_ph_pt(phase_opt: Option<Phase>, pt: PieceType) -> Self {
-        use instrument::piece_etc::Phase::*;
+    pub fn from_hand_ph_pt(phase_opt: Option<HalfPlayerPhase>, pt: PieceType) -> Self {
+        use instrument::piece_etc::HalfPlayerPhase::*;
         use instrument::piece_etc::PieceType::*;
 
         let index_num = match phase_opt {
             Some(phase) => match phase {
+                ZeroPointFive => panic!("ZeroPointFive Hand is error."),
                 First => match pt {
                     K => 82,
                     R | PR => 83,
@@ -93,6 +94,7 @@ impl Address {
                     P | PP => 89,
                     _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
                 },
+                OnePointFive => panic!("OnePointFive Hand is error."),
                 Second => match pt {
                     K => 90,
                     R | PR => 91,

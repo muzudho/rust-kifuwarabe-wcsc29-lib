@@ -54,7 +54,10 @@ pub struct CassetteTape {
 impl CassetteTape {
     pub fn new_facing_right(app: &Application) -> Self {
         CassetteTape {
-            fragment_file_name: CassetteTape::create_file_full_name(&app.kw29_conf, &app),
+            fragment_file_name: CassetteTape::create_tape_fragment_file_full_name(
+                &app.kw29_conf,
+                &app,
+            ),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
                 date: "".to_string(),
@@ -83,7 +86,7 @@ impl CassetteTape {
     }
 
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
-    pub fn create_file_full_name(
+    pub fn create_tape_fragment_file_full_name(
         kw29_conf: &KifuwarabeWcsc29MasterConfig,
         app: &Application,
     ) -> String {
@@ -253,9 +256,7 @@ impl CassetteTape {
             .open(path)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-        let rpm_tape = self.to_rpm(board_size);
-
-        if let Err(e) = writeln!(file_obj, "{},", rpm_tape.to_json(&app)) {
+        if let Err(e) = writeln!(file_obj, "{},", self.to_rpm(board_size).to_json(&app)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 

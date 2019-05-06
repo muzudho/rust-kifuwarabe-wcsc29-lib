@@ -41,6 +41,9 @@ impl KifConverter {
     ) -> Vec<ShogiNoteOpe> {
         let mut rmoves = Vec::new();
 
+        // change-phase
+        rmoves.push(ShogiNoteOpe::change_phase(ply));
+
         let destination_address = Address::from_cell(
             kmove
                 .destination
@@ -79,15 +82,15 @@ impl KifConverter {
                 let hand_off = ShogiNoteOpe::from_address(destination_address);
                 rmoves.push(hand_off);
 
+                // hand-rotate
+                let hand_rotate = ShogiNoteOpe::rotate();
+                rmoves.push(hand_rotate);
+
                 // hand-turn
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
                     rmoves.push(hand_turn);
                 }
-
-                // hand-rotate
-                let hand_rotate = ShogiNoteOpe::rotate();
-                rmoves.push(hand_rotate);
 
                 // hand-on
                 let up = capture_id_piece.get_type();
@@ -130,8 +133,7 @@ impl KifConverter {
         };
 
         // change-phase
-        let change_phase = ShogiNoteOpe::change_phase(ply);
-        rmoves.push(change_phase);
+        rmoves.push(ShogiNoteOpe::change_phase(ply));
 
         rmoves
     }

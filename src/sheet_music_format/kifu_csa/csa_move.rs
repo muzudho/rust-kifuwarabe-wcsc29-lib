@@ -4,7 +4,7 @@ use studio::application::Application;
 use studio::parser::*;
 
 pub struct CsaMove {
-    pub phase: Phase,
+    pub phase: HalfPlayerPhase,
     pub source: Option<Cell>,
     pub destination: Cell,
     // 成ったかどうかは、盤上で駒を動かしてみないと分からない。
@@ -59,8 +59,8 @@ impl CsaMove {
 
         Some(CsaMove {
             phase: match ch0 {
-                '+' => Phase::First,
-                '-' => Phase::Second,
+                '+' => HalfPlayerPhase::First,
+                '-' => HalfPlayerPhase::Second,
                 _ => panic!("Unexpected phase: '{}'.", ch1),
             },
             source: src_opt,

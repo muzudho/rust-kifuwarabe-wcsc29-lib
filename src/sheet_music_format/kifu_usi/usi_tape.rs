@@ -70,10 +70,10 @@ impl UsiTape {
         }
     }
 
-    pub fn get_current_phase(&self) -> Phase {
+    pub fn get_current_phase(&self) -> HalfPlayerPhase {
         match self.moves.len() % 2 {
-            0 => Phase::First,
-            _ => Phase::Second,
+            0 => HalfPlayerPhase::First,
+            _ => HalfPlayerPhase::Second,
         }
     }
 

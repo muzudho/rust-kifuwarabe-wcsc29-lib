@@ -1,10 +1,10 @@
 /*
 use instrument::position::*;
 
-pub reverse_cell_vec(phase:&Phase, cell_vec:&Vec<i8>) -> Vec<i8> {
+pub reverse_cell_vec(phase:&HalfPlayerPhase, cell_vec:&Vec<i8>) -> Vec<i8> {
     let v = Vec::new();
 
-    if phase == Phase::First {
+    if phase == HalfPlayerPhase::First {
         for cell in cell_vec {
             if cell != -1 {
                 v.push(cell);
@@ -39,7 +39,7 @@ pub generate_pawn_cell_vec(address:i8) -> Vec<i8> {
 }
 
 // TODO
-pub generate_lance_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_lance_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v.push(file_rank_to_address_by_offset(file, 0, rank, -1));
@@ -53,7 +53,7 @@ pub generate_lance_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
     v
 }
 
-pub generate_knight_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_knight_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v.push(file_rank_to_address_by_offset(file, -1, rank, -1));
@@ -62,56 +62,56 @@ pub generate_knight_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
 }
 
 // TODO
-pub generate_silver_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_silver_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_gold_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_gold_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_king_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_king_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_bishop_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_bishop_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_rook_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_rook_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_horse_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_horse_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_dragon_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_dragon_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
 }
 
 // TODO
-pub generate_rook_cell_vec(phase:&Phase, address:i8) -> Vec<i8> {
+pub generate_rook_cell_vec(phase:&HalfPlayerPhase, address:i8) -> Vec<i8> {
     let v = Vec::new();
     (file, rank) = address_to_file_rank(address);
     v
