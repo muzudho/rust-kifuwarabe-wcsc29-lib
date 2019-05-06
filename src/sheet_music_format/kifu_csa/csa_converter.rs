@@ -17,6 +17,8 @@ impl CsaConverter {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
+        let board_size = position.get_board_size();
+
         // 大橋流を指すところから☆（*＾～＾*）
         OhashiPlayer::play_ohashi_starting(position, deck, app);
 
@@ -25,7 +27,7 @@ impl CsaConverter {
             let rnote_opes = CsaConverter::convert_move(cmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(deck, &rnote_ope, &app);
+                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
             }
 
             ply += 1;

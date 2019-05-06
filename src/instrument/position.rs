@@ -513,7 +513,14 @@ impl Position {
     }
 
     /// Operation トラック文字列読取。
-    pub fn touch_by_line(&mut self, line: &str, deck: &mut CassetteDeck, app: &Application) {
+    pub fn touch_by_line(
+        &mut self,
+        line: &str,
+        deck: &mut CassetteDeck,
+        is_ok_illegal: bool,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
         let mut caret = Caret::new_facing_right_caret();
 
         loop {
@@ -530,7 +537,7 @@ impl Position {
                         rnote_ope.to_human_presentable(self.get_board_size(), &app)
                     ));
                 }
-                self.touch_1note_ope(deck, &rnote_ope, &app);
+                self.touch_1note_ope(deck, &rnote_ope, is_ok_illegal, board_size, &app);
 
                 HumanInterface::bo(deck, &self, &app);
             }
@@ -543,6 +550,8 @@ impl Position {
         &mut self,
         deck: &mut CassetteDeck,
         rnote_ope: &ShogiNoteOpe,
+        is_ok_illegal: bool,
+        board_size: BoardSize,
         app: &Application,
     ) {
         if app.is_debug() {
@@ -552,7 +561,7 @@ impl Position {
             ));
         }
 
-        self.touch_1note_ope_no_log(deck, &rnote_ope, &app);
+        self.touch_1note_ope_no_log(deck, &rnote_ope, is_ok_illegal, board_size, &app);
 
         /*
         comm.println(&format!(
@@ -569,21 +578,39 @@ impl Position {
         &mut self,
         deck: &mut CassetteDeck,
         rnote_ope: &ShogiNoteOpe,
+        is_ok_illegal: bool,
+        board_size: BoardSize,
         app: &Application,
     ) {
         let slot = Slot::Learning;
 
-        let rnote = ShogiNote::from_id_ope(
-            // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-            if let (_is_legal_touch, Some(piece_identify)) =
-                self.try_beautiful_touch_no_log(&deck, slot, &rnote_ope, &app)
-            {
+        // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
+        let id = match self.try_beautiful_touch_no_log(&deck, slot, &rnote_ope, &app) {
+            (is_legal_touch, Some(piece_identify)) => {
+                if !is_legal_touch && !is_ok_illegal {
+                    panic!(
+                        "Illegal touch. PID: {}, Rnote: '{}'.",
+                        piece_identify.to_human_presentable(),
+                        rnote_ope.to_human_presentable(board_size, &app)
+                    )
+                }
+
                 PieceIdentify::from_number(piece_identify.get_id().get_number())
-            } else {
+            }
+            (is_legal_touch, None) => {
+                // フェーズチェンジなどはここ。
+                if !is_legal_touch && !is_ok_illegal {
+                    panic!(
+                        "Illegal touch. Rnote: '{}'.",
+                        rnote_ope.to_human_presentable(board_size, &app)
+                    )
+                }
+
                 None
-            },
-            *rnote_ope,
-        );
+            }
+        };
+
+        let rnote = ShogiNote::from_id_ope(id, *rnote_ope);
 
         // TODO フェーズを操作したい。
         deck.put_1note(slot, rnote, app);
@@ -752,15 +779,9 @@ impl Position {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
                     self.phase.go_next(&deck, slot);
-                    /*
-                    use instrument::half_player_phase::HalfPlayerPhase::*;
-                    self.phase = match self.phase {
-                        ZeroPointFive => First,
-                        First => OnePointFive,
-                        OnePointFive => Second,
-                        Second => ZeroPointFive,
-                    };
-                    */
+                    if app.is_debug() {
+                        app.comm.println("<フェーズチェンジ>");
+                    }
                     // （完遂） phase change.
                     (true, None)
                 } else if let Some(ref mut fingertip) = self.fingertip {

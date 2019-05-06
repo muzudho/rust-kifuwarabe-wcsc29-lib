@@ -93,6 +93,11 @@ fn main() {
                 // Training data.
                 let ctape = CsaTape::from_file(&in_file, &app);
 
+                if app.is_debug() {
+                    app.comm
+                        .println(&format!("Ctape: '{}'", ctape.to_human_presentable()));
+                }
+
                 // Play out.
                 CsaConverter::play_out_csa_tape(&ctape, &mut position, &mut deck, &app);
 

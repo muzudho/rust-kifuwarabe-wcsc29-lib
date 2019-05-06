@@ -44,14 +44,18 @@ impl OhashiPlayer {
 
     /// オリジン・ポジションから、平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
-    pub fn play_ohashi_starting(pos: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn play_ohashi_starting(
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
 
         // 大橋流の順序にしてください。
         // しかし きふわらべ は駒台から逆順に駒を取っていくので（スタック構造のポップ）、
         // 局面作成の時点で、駒台の駒は　背番号の逆順に追加しておいてください。
-        let bs = pos.get_board_size();
+        let bs = position.get_board_size();
         let array: [(ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe); 40] = [
             OhashiPlayer::init_note(-39, Second, 5, 1, K00, bs),
             OhashiPlayer::init_note(-38, First, 5, 9, K01, bs),
@@ -106,7 +110,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(deck, &element.0, &app);
+                position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
@@ -116,7 +120,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(deck, &element.1, &app);
+                position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
@@ -126,7 +130,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(deck, &element.2, &app);
+                position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
         }
     }

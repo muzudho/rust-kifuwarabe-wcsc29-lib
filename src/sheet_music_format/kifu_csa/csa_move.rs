@@ -111,15 +111,21 @@ impl CsaMove {
         }
     }
 
-    /*
-    pub fn to_text(&self) -> String {
-        format!("{} {} {} {} {} {}",
-            phase_to_sign(self.phase),
-            self.source_file,
-            self.source_rank,
-            self.destination_file,
-            self.destination_rank,
-            piece_type_to_sign(self.koma))
+    pub fn to_human_presentable(&self) -> String {
+        format!(
+            "[CMove: {}:{}:{}:{}]",
+            self.phase.to_sign(),
+            if let Some(src) = self.source {
+                src.to_human_presentable()
+            } else {
+                "None".to_string()
+            },
+            self.destination.to_human_presentable(),
+            if let Some(km) = self.koma {
+                km.to_sign()
+            } else {
+                "None".to_string()
+            }
+        )
     }
-    */
 }

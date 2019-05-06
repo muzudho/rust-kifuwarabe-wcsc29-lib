@@ -91,7 +91,7 @@ impl Address {
                 N | PN => 87,
                 L | PL => 88,
                 P | PP => 89,
-                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
+                _ => panic!("Unexpected first hand piece_type {}.", pt.to_sign()),
             },
             Second => match pt {
                 K => 90,
@@ -102,7 +102,7 @@ impl Address {
                 N | PN => 95,
                 L | PL => 96,
                 P | PP => 97,
-                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
+                _ => panic!("Unexpected second hand piece_type {}.", pt.to_sign()),
             },
             OnePointFive | ZeroPointFive => match pt {
                 K => 98,
@@ -113,7 +113,7 @@ impl Address {
                 N => 103,
                 L => 104,
                 P => 105,
-                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
+                _ => panic!("Unexpected 0.5, 1.5 hand piece_type {}.", pt.to_sign()),
             },
         };
 

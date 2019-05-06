@@ -108,7 +108,8 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            position.touch_by_line(&line, &mut deck, &app);
+            let board_size = position.get_board_size();
+            position.touch_by_line(&line, &mut deck, true, board_size, &app);
 
         // #####
         // # B #
@@ -239,7 +240,8 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            position.touch_by_line(&line, &mut deck, &app);
+            let board_size = position.get_board_size();
+            position.touch_by_line(&line, &mut deck, true, board_size, &app);
 
         // #####
         // # P #

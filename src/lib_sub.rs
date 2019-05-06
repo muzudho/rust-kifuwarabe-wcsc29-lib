@@ -96,6 +96,8 @@ impl LibSub {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
+        let board_size = position.get_board_size();
+
         if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
             tape_box.look_back_caret_to_positive(&app);
         } else {
@@ -115,7 +117,9 @@ impl LibSub {
             UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning), &app);
         for rnote_ope in rnote_opes {
             // app.comm.println("lib.rs:go: touch_1note_ope");
-            position.touch_1note_ope(deck, &rnote_ope, &app);
+
+            // 非合法手はいったん出力し、将棋所の方でエラーにする☆（＾～＾）
+            position.touch_1note_ope(deck, &rnote_ope, true, board_size, &app);
         }
     }
 

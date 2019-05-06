@@ -70,4 +70,16 @@ impl CsaTape {
             self.push(cmove);
         }
     }
+
+    pub fn to_human_presentable(&self) -> String {
+        let mut text = "[CTape: ".to_string();
+
+        for cmove in &self.items {
+            text = format!("{} {}", text, cmove.to_human_presentable());
+        }
+
+        text = format!("{}]", text);
+
+        text
+    }
 }
