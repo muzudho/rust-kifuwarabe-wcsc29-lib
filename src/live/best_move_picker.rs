@@ -107,7 +107,7 @@ impl BestMovePicker {
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
         {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
-            deck.change_tape_as_name_box_file(
+            deck.change_training_tape_as_name_box_file(
                 &tape_box_file
                     .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
                     .path()

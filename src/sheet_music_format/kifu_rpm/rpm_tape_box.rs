@@ -127,7 +127,11 @@ impl RpmTapeBox {
 
     /// JSONを、オブジェクトに変換します。（トレーニング・テープを想定☆（＾～＾））
     pub fn to_training_object(&self, board_size: BoardSize, app: &Application) -> CassetteTapeBox {
-        let mut tape_box = CassetteTapeBox::new_empty(Slot::Training, &app);
+        if app.is_debug() {
+            app.comm.println("[#rpm_tape_box.to_training_object]");
+        }
+
+        let mut tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
 
         for tape_j in &self.tape_box {
             // テープを追加中。

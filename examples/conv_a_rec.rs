@@ -9,7 +9,6 @@ use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_tape::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::KifConverter;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_tape::*;
 use kifuwarabe_wcsc29_lib::studio::application::*;
-use kifuwarabe_wcsc29_lib::video_tape_model::cassette_tape_box::*;
 use kifuwarabe_wcsc29_lib::*;
 use std::env;
 use std::ffi::OsStr;
@@ -57,8 +56,8 @@ fn main() {
         .input_file
         .unwrap_or_else(|| panic!(app.comm.panic("Fail. args.input_file.")));
 
-    // トレーニング・テープと想定☆（＾～＾）
-    let tape_box_file_for_write = args
+    // 保存先のテープ・フラグメント名☆（＾～＾）　ラーニング・テープと想定☆（＾～＾）
+    let tape_file_name_without_extension = args
         .output_file
         .unwrap_or_else(|| panic!(app.comm.panic("Fail. args.output_file.")));
 
@@ -71,15 +70,7 @@ fn main() {
     let mut position = Position::new_honshogi_origin();
 
     // Deck.
-    let mut deck = CassetteDeck::new_change(
-        Some(CassetteTapeBox::from_training_tape_box_file(
-            &tape_box_file_for_write,
-            position.get_board_size(),
-            &app,
-        )),
-        position.get_board_size(),
-        &app,
-    );
+    let mut deck = CassetteDeck::new_for_tape_conversion(&tape_file_name_without_extension, &app);
 
     if !in_file.is_empty() {
         // 棋譜解析。
@@ -96,7 +87,7 @@ fn main() {
                 KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
 
                 // Write.
-                deck.write_tape_fragment(position.get_board_size(), &app);
+                deck.write_leaning_tape_fragment(position.get_board_size(), &app);
             }
             "CSA" => {
                 // Training data.
@@ -106,7 +97,7 @@ fn main() {
                 CsaConverter::play_out_csa_tape(&ctape, &mut position, &mut deck, &app);
 
                 // Write.
-                deck.write_tape_fragment(position.get_board_size(), &app);
+                deck.write_leaning_tape_fragment(position.get_board_size(), &app);
             }
             _ => print!("Pass extension: {}", extension),
         }

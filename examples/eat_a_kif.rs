@@ -45,7 +45,7 @@ pub fn main() {
     let mut position = Position::new_honshogi_origin();
 
     // Deck.
-    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+    let mut deck = CassetteDeck::new_empty(&app);
 
     // Training data.
     let ktape = KifTape::from_file(&path, &app);
@@ -54,5 +54,5 @@ pub fn main() {
     KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
 
     // Write.
-    deck.write_tape_fragment(position.get_board_size(), &app);
+    deck.write_leaning_tape_fragment(position.get_board_size(), &app);
 }

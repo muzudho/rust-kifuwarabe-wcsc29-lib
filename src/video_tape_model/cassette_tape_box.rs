@@ -26,7 +26,7 @@ pub struct CassetteTapeBox {
 }
 impl CassetteTapeBox {
     /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
-    pub fn new_empty(slot: Slot, app: &Application) -> Self {
+    pub fn new_empty_tape_box(slot: Slot, app: &Application) -> Self {
         CassetteTapeBox {
             role_as_slot: slot,
             file: RpmTapeBox::create_file_full_name(&app.kw29_conf, &app),
@@ -35,12 +35,36 @@ impl CassetteTapeBox {
         }
     }
 
-    /// トレーニング・テープ・ボックスを作成します。
-    pub fn from_training_tape_box_file(
-        file_name: &str,
-        board_size: BoardSize,
+    /// ファイル名付きで、テープ・ボックスを作成します。
+    pub fn new_with_tape_box_file_name_without_extension(
+        slot: Slot,
+        file_name_without_extension: &str,
         app: &Application,
     ) -> Self {
+        if app.is_debug() {
+            app.comm
+                .println("[#cassette_tape_box.new_with_tape_box_file_name]");
+        }
+
+        let mut tapes_vec = Vec::new();
+        tapes_vec.push(CassetteTape::new_facing_right_with_file(
+            format!("{}.tapefrag", file_name_without_extension).to_string(),
+        ));
+
+        CassetteTapeBox {
+            role_as_slot: slot,
+            file: format!("{}.rtape", file_name_without_extension).to_string(),
+            tapes: tapes_vec,
+            listening_tape_index: Some(0),
+        }
+    }
+
+    /// ファイルを読み込んで、テープ・ボックスを作成します。
+    pub fn from_tape_box_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
+        if app.is_debug() {
+            app.comm.println("[#cassette_tape_box.from_tape_box_file]");
+        }
+
         let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
         rpm_tape_box.to_training_object(board_size, &app)
     }

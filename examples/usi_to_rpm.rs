@@ -51,7 +51,7 @@ pub fn main() {
     let mut utape = UsiTape::default();
 
     // Deck.
-    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+    let mut deck = CassetteDeck::new_empty(&app);
 
     let mut start = 0;
     if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {

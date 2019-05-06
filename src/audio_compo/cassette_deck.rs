@@ -30,7 +30,7 @@ pub struct CassetteSlot {
     pub tape_box: Option<CassetteTapeBox>,
 }
 impl CassetteSlot {
-    pub fn new_t() -> Self {
+    pub fn new_empty_training_tape_box() -> Self {
         CassetteSlot {
             slot_as_role: Slot::Training,
             ply: 1,
@@ -38,11 +38,52 @@ impl CassetteSlot {
         }
     }
 
-    pub fn new_as_learning(app: &Application) -> Self {
+    pub fn new_learning_tape_box(app: &Application) -> Self {
         CassetteSlot {
             slot_as_role: Slot::Learning,
             ply: 1,
-            tape_box: Some(CassetteTapeBox::new_empty(Slot::Learning, &app)),
+            tape_box: Some(CassetteTapeBox::new_empty_tape_box(Slot::Learning, &app)),
+        }
+    }
+
+    pub fn new_learning_with_file_name_without_extension(
+        file_name_without_extension: &str,
+        app: &Application,
+    ) -> Self {
+        if app.is_debug() {
+            app.comm
+                .println("[#cassette_deck.new_learning_with_file_name_without_extension]");
+        }
+
+        CassetteSlot {
+            slot_as_role: Slot::Learning,
+            ply: 1,
+            tape_box: Some(
+                CassetteTapeBox::new_with_tape_box_file_name_without_extension(
+                    Slot::Learning,
+                    file_name_without_extension,
+                    &app,
+                ),
+            ),
+        }
+    }
+
+    pub fn new_learning_from_tape_box_file(
+        file_name: &str,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> Self {
+        if app.is_debug() {
+            app.comm
+                .println("[#cassette_deck.new_learning_from_tape_box_file]");
+        }
+
+        CassetteSlot {
+            slot_as_role: Slot::Learning,
+            ply: 1,
+            tape_box: Some(CassetteTapeBox::from_tape_box_file(
+                file_name, board_size, &app,
+            )),
         }
     }
 
@@ -68,29 +109,45 @@ pub struct CassetteDeck {
 }
 impl CassetteDeck {
     /// 新規作成と、ラーニング・テープの交換☆（＾～＾）
-    pub fn new_change(
-        training_tape_box_opt: Option<CassetteTapeBox>,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> Self {
-        let mut brandnew = CassetteDeck {
-            slots: [CassetteSlot::new_t(), CassetteSlot::new_as_learning(&app)],
-        };
-
-        brandnew.change_training_tape(training_tape_box_opt, board_size, &app);
-
-        brandnew
+    pub fn new_empty(app: &Application) -> Self {
+        CassetteDeck {
+            slots: [
+                CassetteSlot::new_empty_training_tape_box(),
+                CassetteSlot::new_learning_tape_box(&app),
+            ],
+        }
     }
 
+    /// TODO 任意の棋譜１つを、１つのテープ・フラグメントに変換するときに使うカセット・デッキ☆（＾～＾）
+    pub fn new_for_tape_conversion(
+        learning_tape_file_name_without_extension: &str,
+        app: &Application,
+    ) -> Self {
+        CassetteDeck {
+            slots: [
+                CassetteSlot::new_empty_training_tape_box(),
+                CassetteSlot::new_learning_with_file_name_without_extension(
+                    learning_tape_file_name_without_extension,
+                    &app,
+                ),
+            ],
+        }
+    }
+
+    // ベストムーブを探すときに使う☆（＾～＾）
     // JSONファイルを元に トレーニング・テープをオブジェクト化して、デッキに差し込むぜ☆（＾～＾）
-    pub fn change_tape_as_name_box_file(
+    pub fn change_training_tape_as_name_box_file(
         &mut self,
         file_name: &str,
         board_size: BoardSize,
         app: &Application,
     ) {
-        let training_tape_box =
-            CassetteTapeBox::from_training_tape_box_file(&file_name, board_size, &app);
+        if app.is_debug() {
+            app.comm
+                .println("[#cassette_deck.change_training_tape_as_name_box_file]");
+        }
+
+        let training_tape_box = CassetteTapeBox::from_tape_box_file(&file_name, board_size, &app);
         self.change_training_tape(Some(training_tape_box), board_size, &app);
     }
 
@@ -128,7 +185,7 @@ impl CassetteDeck {
             // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
             self.set_tape_box(
                 Slot::Learning,
-                Some(CassetteTapeBox::new_empty(Slot::Learning, &app)),
+                Some(CassetteTapeBox::new_empty_tape_box(Slot::Learning, &app)),
                 &app,
             );
         }
@@ -175,7 +232,7 @@ impl CassetteDeck {
     }
 
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）
-    pub fn write_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
+    pub fn write_leaning_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
         if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
             tape_box.write_current_tape_fragment(board_size, &app);
         } else {

@@ -100,8 +100,9 @@ cargo clippy --example conv_a_kif
 ### Run.
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
-cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak.rbox"
-cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.tameshi" --debug
+### --output は拡張子抜きファイル名。
+cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak"
+cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK" --debug
 ```
 
 ## How to eat .csa record?

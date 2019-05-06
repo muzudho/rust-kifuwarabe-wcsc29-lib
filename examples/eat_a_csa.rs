@@ -46,7 +46,7 @@ pub fn main() {
     let mut position = Position::new_honshogi_origin();
 
     // Deck.
-    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+    let mut deck = CassetteDeck::new_empty(&app);
 
     let crecord = CsaTape::from_file(&path, &app);
 

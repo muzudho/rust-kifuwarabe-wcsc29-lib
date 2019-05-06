@@ -61,7 +61,7 @@ pub fn main_loop() {
     let mut position = Position::new_honshogi_origin();
 
     // Deck.
-    let mut deck = CassetteDeck::new_change(None, position.get_board_size(), &app);
+    let mut deck = CassetteDeck::new_empty(&app);
 
     let mut best_move_picker = BestMovePicker::default();
 
