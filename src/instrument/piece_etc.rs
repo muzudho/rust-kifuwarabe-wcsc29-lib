@@ -3,6 +3,7 @@ use instrument::position::*;
 use std::fmt;
 use std::slice::Iter;
 use studio::address::*;
+use studio::application::Application;
 use studio::board_size::*;
 
 /// Piece identify. Order of "大橋"(Ohashi) mode.
@@ -306,13 +307,13 @@ impl CellDisplay {
     }
 
     /// 3桁追加して 7桁に揃える。
-    pub fn to_fingertip_display(&self, board_size: BoardSize) -> String {
+    pub fn to_fingertip_display(&self, board_size: BoardSize, app: &Application) -> String {
         if let Some(prev) = self.previous_address {
             // 駒のIDの方は桁数指定すると、ずれるからしてない。
             format!(
                 "{}:{:>2}",
                 self.to_display(),
-                prev.to_physical_sign(board_size)
+                prev.to_physical_sign(board_size, &app)
             )
         } else {
             format!("{}   ", self.to_display())
@@ -1177,59 +1178,59 @@ impl Piece {
         match self {
             K1 => "▼玉",
             K2 => "△玉",
-            K3 => "□玉",
+            K3 => "外玉",
             PK1 => "▼生",
             PK2 => "△生",
-            PK3 => "□生",
+            PK3 => "外生",
 
             R1 => "▼飛",
             R2 => "△飛",
-            R3 => "□飛",
+            R3 => "外飛",
             PR1 => "▼竜",
             PR2 => "△竜",
-            PR3 => "□竜",
+            PR3 => "外竜",
 
             B1 => "▼角",
             B2 => "△角",
-            B3 => "□角",
+            B3 => "外角",
             PB1 => "▼馬",
             PB2 => "△馬",
-            PB3 => "□馬",
+            PB3 => "外馬",
 
             G1 => "▼金",
             G2 => "△金",
-            G3 => "□金",
+            G3 => "外金",
             PG1 => "▼今",
             PG2 => "△今",
-            PG3 => "□今",
+            PG3 => "外今",
 
             S1 => "▼銀",
             S2 => "△銀",
-            S3 => "□銀",
+            S3 => "外銀",
             PS1 => "▼全",
             PS2 => "△全",
-            PS3 => "□全",
+            PS3 => "外全",
 
             N1 => "▼桂",
             N2 => "△桂",
-            N3 => "□桂",
+            N3 => "外桂",
             PN1 => "▼圭",
             PN2 => "△圭",
-            PN3 => "□圭",
+            PN3 => "外圭",
 
             L1 => "▼香",
             L2 => "△香",
-            L3 => "□香",
+            L3 => "外香",
             PL1 => "▼杏",
             PL2 => "△杏",
-            PL3 => "□杏",
+            PL3 => "外杏",
 
             P1 => "▼歩",
             P2 => "△歩",
-            P3 => "□歩",
+            P3 => "外歩",
             PP1 => "▼と",
             PP2 => "△と",
-            PP3 => "□と",
+            PP3 => "外と",
         }
         .to_string()
     }

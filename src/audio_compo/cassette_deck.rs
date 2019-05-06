@@ -168,7 +168,9 @@ impl CassetteDeck {
         if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
             // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
             let file_name = learning_box.get_file_name();
-            learning_box.to_rpm(board_size).write(&file_name, &app);
+            learning_box
+                .to_rpm(board_size, &app)
+                .write(&file_name, &app);
 
             if 499 < learning_box.len_tapes() {
                 // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
@@ -252,9 +254,14 @@ impl CassetteDeck {
         self.slots[slot as usize].ply
     }
 
-    pub fn get_sign_of_current_tape(&self, slot: Slot, board_size: BoardSize) -> (String, String) {
+    pub fn get_sign_of_current_tape(
+        &self,
+        slot: Slot,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> (String, String) {
         if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
-            tape_box.get_sign_of_current_tape(board_size)
+            tape_box.get_sign_of_current_tape(board_size, &app)
         } else {
             // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
             panic!("tape box none in go to next. Slot: {:?}.", slot);

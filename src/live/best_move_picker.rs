@@ -220,7 +220,7 @@ impl BestMovePicker {
                                 deck.get_ply(Slot::Training),
                                 position.get_phase().get_value().to_log(),
                                 my_idp.to_human_presentable(),
-                                my_addr_obj.to_physical_sign(position.get_board_size())
+                                my_addr_obj.to_physical_sign(position.get_board_size(), &app)
                             ));
                             HumanInterface::bo(deck, &position, &app);
                         }
@@ -522,8 +522,8 @@ impl BestMovePicker {
                 my_addr_obj.get_index() as usize,
                 subject_piece_id.to_human_presentable(),
                 bmove.subject_pid.to_human_presentable(),
-                bmove.subject_addr.to_human_presentable(board_size),
-                my_addr_obj.to_human_presentable(board_size)
+                bmove.subject_addr.to_human_presentable(board_size,&app),
+                my_addr_obj.to_human_presentable(board_size,&app)
             ));
         }
         true

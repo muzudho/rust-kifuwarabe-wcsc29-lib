@@ -319,7 +319,7 @@ impl IntegerNoteVec {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
+    pub fn to_sign(&self, board_size: BoardSize, app: &Application) -> (String, String) {
         let mut numbers = "".to_string();
         let mut operations = "".to_string();
 
@@ -333,7 +333,11 @@ impl IntegerNoteVec {
                     NONE_VALUE.to_string()
                 }
             );
-            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
+            operations = format!(
+                "{} {}",
+                operations,
+                note.get_ope().to_sign(board_size, &app)
+            );
         }
 
         for note in &self.positive_notes {
@@ -346,7 +350,11 @@ impl IntegerNoteVec {
                     NONE_VALUE.to_string()
                 }
             );
-            operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
+            operations = format!(
+                "{} {}",
+                operations,
+                note.get_ope().to_sign(board_size, &app)
+            );
         }
 
         (numbers, operations)
@@ -357,7 +365,7 @@ impl IntegerNoteVec {
     /// # Returns
     ///
     /// 駒の背番号（ダブルクォーテーション含まず）, 操作（ダブルクォーテーション含まず）。
-    pub fn to_rpm_tracks(&self, board_size: BoardSize) -> RpmTapeTracks {
+    pub fn to_rpm_tracks(&self, board_size: BoardSize, app: &Application) -> RpmTapeTracks {
         // 背番号トラック。
         let mut numbers = "".to_string();
         for sign in 0..2 {
@@ -406,10 +414,14 @@ impl IntegerNoteVec {
             for note in notes {
                 if is_first {
                     // 最初。
-                    operations = note.get_ope().to_sign(board_size).to_string();
+                    operations = note.get_ope().to_sign(board_size, &app).to_string();
                 } else {
                     // ２つ目からスペース区切り。
-                    operations = format!("{} {}", operations, note.get_ope().to_sign(board_size));
+                    operations = format!(
+                        "{} {}",
+                        operations,
+                        note.get_ope().to_sign(board_size, &app)
+                    );
                 }
 
                 is_first = false;

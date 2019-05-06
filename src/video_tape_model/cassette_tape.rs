@@ -223,8 +223,8 @@ impl CassetteTape {
     /// # Returns
     ///
     /// 駒の背番号, 操作。
-    pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
-        self.tracks.to_sign(board_size)
+    pub fn to_sign(&self, board_size: BoardSize, app: &Application) -> (String, String) {
+        self.tracks.to_sign(board_size, &app)
     }
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
@@ -256,17 +256,17 @@ impl CassetteTape {
             .open(path)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-        if let Err(e) = writeln!(file_obj, "{},", self.to_rpm(board_size).to_json(&app)) {
+        if let Err(e) = writeln!(file_obj, "{},", self.to_rpm(board_size, &app).to_json(&app)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 
         // comm.println("#Sheet saved.");
     }
 
-    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTape {
+    pub fn to_rpm(&self, board_size: BoardSize, app: &Application) -> RpmTape {
         RpmTape {
             label: self.label.to_rpm(),
-            tracks: self.tracks.to_rpm_tracks(board_size),
+            tracks: self.tracks.to_rpm_tracks(board_size, &app),
         }
     }
 

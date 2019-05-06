@@ -10,7 +10,6 @@ use studio::address::*;
 use studio::application::*;
 use studio::board_size::*;
 use studio::common::caret::*;
-use studio::communication::*;
 use studio::parser::*;
 
 pub const BOARD_START: usize = 0;
@@ -394,23 +393,24 @@ impl Position {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#既に何かをつかんでいた☆（＾～＾）！鳩ノ巣原理は使えない☆（＾～＾）！{}]",
-                    address.to_human_presentable(board_size)
+                    address.to_human_presentable(board_size, &app)
                 ));
             }
             false
         } else {
             let hand_index_obj = HandIndex::from_piece(
                 address
-                    .get_hand_piece()
+                    .get_hand_piece(&app)
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece."))),
             );
+
             if let Some(id_piece) = self.hands[hand_index_obj.get_index()].pop() {
                 self.fingertip = Some(Fingertip::from_idp_prev(id_piece, address));
                 return true;
             } else if app.is_debug() {
                 app.comm.println(&format!(
                     "[#駒台に置いてない駒をつかもうとした☆（＾～＾）！{}]",
-                    address.to_human_presentable(board_size)
+                    address.to_human_presentable(board_size, &app)
                 ));
             }
             false
@@ -678,7 +678,7 @@ impl Position {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "<IL-駒重なり:{}>",
-                                        address.to_human_presentable(board_size)
+                                        address.to_human_presentable(board_size, &app)
                                     ));
                                 }
 
@@ -717,7 +717,7 @@ impl Position {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "<IL-ほこり取り:{}>",
-                                        address.to_human_presentable(board_size)
+                                        address.to_human_presentable(board_size, &app)
                                     ));
                                 }
                                 // （未着手）ほこりを取る。一応、違法。
@@ -763,7 +763,7 @@ impl Position {
                             if app.is_debug() {
                                 app.comm.println(&format!(
                                     "<IL-駒台ほこり取り:{}>",
-                                    address.to_human_presentable(board_size)
+                                    address.to_human_presentable(board_size, &app)
                                 ));
                             }
                             // （未着手）駒台のほこりを取った。
@@ -965,9 +965,9 @@ impl Position {
     /// 将棋盤。きふわらべは、同時に１個の将棋盤しかもたない☆（＾～＾）２つ目とか無い☆（＾～＾）
     pub fn to_text(
         &self,
-        _comm: &Communication,
         phase_value: HalfPlayerPhaseValue,
         board_size: BoardSize,
+        app: &Application,
     ) -> String {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         let mut content = String::new();
@@ -1014,7 +1014,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size)
+                                    .to_fingertip_display(board_size, &app)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1034,7 +1034,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size)
+                                    .to_fingertip_display(board_size, &app)
                             ),
                         ),
                         12 => Parser::append(&mut content, &"----------+  ".to_string()),
@@ -1126,7 +1126,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size)
+                                    .to_fingertip_display(board_size, &app)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1145,7 +1145,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size)
+                                    .to_fingertip_display(board_size, &app)
                             ),
                         ),
                         12 => Parser::append(&mut content, " +-+ +-+     |"),

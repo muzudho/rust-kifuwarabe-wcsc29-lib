@@ -130,13 +130,13 @@ impl ShogiNoteOpe {
                         .to_human_presentable()
                 } else if address.is_hand() {
                     address
-                        .get_hand_piece()
+                        .get_hand_piece(&app)
                         .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
                         .to_human_presentable()
                 } else {
                     panic!(
                         "Unexpected address: {}.",
-                        address.to_human_presentable(board_size)
+                        address.to_human_presentable(board_size, &app)
                     )
                 }
             }
@@ -160,9 +160,9 @@ impl ShogiNoteOpe {
         }
     }
 
-    pub fn to_sign(&self, board_size: BoardSize) -> String {
+    pub fn to_sign(&self, board_size: BoardSize, app: &Application) -> String {
         match self.address {
-            Some(address) => address.to_physical_sign(board_size),
+            Some(address) => address.to_physical_sign(board_size, &app),
             None => {
                 if self.fingertip_turn {
                     "+".to_string()

@@ -20,14 +20,14 @@ impl BestMove {
             "[Best move: Usi: '{}', SubjPid: {}, SubjAddr: '{}', CapPid: {}, CapAddr: '{}']",
             self.usi_move.to_sign(&app),
             self.subject_pid.to_human_presentable(),
-            self.subject_addr.to_human_presentable(board_size),
+            self.subject_addr.to_human_presentable(board_size, &app),
             if let Some(cap_id) = self.capture_pid {
                 cap_id.to_human_presentable()
             } else {
                 "None".to_string()
             },
             if let Some(cap_addr) = self.capture_addr {
-                cap_addr.to_human_presentable(board_size)
+                cap_addr.to_human_presentable(board_size, &app)
             } else {
                 "None".to_string()
             },

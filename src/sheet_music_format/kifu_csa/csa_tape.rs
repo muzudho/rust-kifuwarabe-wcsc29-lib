@@ -16,25 +16,25 @@ impl CsaTape {
     }
 
     pub fn from_file(file: &str, app: &Application) -> CsaTape {
-        let mut record = CsaTape::new();
+        let mut ctape = CsaTape::new();
 
-        for result in
+        for line_result in
             BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
                 .lines()
         {
-            let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
+            let line = line_result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
             if (line.starts_with('+') | line.starts_with('-') | line.starts_with('%'))
                 && line.len() == 7
             {
                 print!("{}  ", line);
                 if let Some(csa_move) = CsaMove::parse(&line, &app) {
-                    record.push(csa_move);
+                    ctape.push(csa_move);
                 }
             }
         }
 
-        record
+        ctape
     }
 
     pub fn push(&mut self, mov: CsaMove) {

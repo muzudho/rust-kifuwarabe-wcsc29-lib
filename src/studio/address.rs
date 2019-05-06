@@ -1,6 +1,7 @@
 use instrument::half_player_phase::HalfPlayerPhaseValue;
 use instrument::piece_etc::*;
 use std::fmt;
+use studio::application::Application;
 use studio::board_size::*;
 
 /// TODO 指先マス。暫定。
@@ -106,13 +107,13 @@ impl Address {
             },
             OnePointFive | ZeroPointFive => match pt {
                 K => 98,
-                R => 99,
-                B => 100,
+                R | PR => 99,
+                B | PB => 100,
                 G => 101,
-                S => 102,
-                N => 103,
-                L => 104,
-                P => 105,
+                S | PS => 102,
+                N | PN => 103,
+                L | PL => 104,
+                P | PP => 105,
                 _ => panic!("Unexpected 0.5, 1.5 hand piece_type {}.", pt.to_sign()),
             },
         };
@@ -121,14 +122,14 @@ impl Address {
     }
 
     /// Human presentable.
-    pub fn to_human_presentable(self, board_size: BoardSize) -> String {
+    pub fn to_human_presentable(self, board_size: BoardSize, app: &Application) -> String {
         if self.is_on_board(board_size) {
             // 盤上。
             board_size
                 .address_to_cell(self.index)
                 .to_human_presentable()
         // それ以外。
-        } else if let Some(piece) = self.get_hand_piece() {
+        } else if let Some(piece) = self.get_hand_piece(&app) {
             format!("Hand: {}", piece.to_sign()).to_string()
         } else {
             panic!("Unexpected address: {}.", self.index);
@@ -167,8 +168,12 @@ impl Address {
         self.index - FINGERTIP_ADDRESS - 1
     }
 
-    pub fn get_hand_piece(self) -> Option<Piece> {
-        // 持ち駒
+    /// 持ち駒
+    pub fn get_hand_piece(self, app: &Application) -> Option<Piece> {
+        if app.is_debug() {
+            app.comm.println(&format!("[HandP:{}]", self.index));
+        }
+
         // TODO マジックナンバーを解消したい。
         use instrument::piece_etc::Piece::*;
         match self.index {
@@ -180,6 +185,7 @@ impl Address {
             87 => Some(N1),
             88 => Some(L1),
             89 => Some(P1),
+
             90 => Some(K2),
             91 => Some(R2),
             92 => Some(B2),
@@ -188,6 +194,7 @@ impl Address {
             95 => Some(N2),
             96 => Some(L2),
             97 => Some(P2),
+
             98 => Some(K3),
             99 => Some(R3),
             100 => Some(B3),
@@ -204,14 +211,14 @@ impl Address {
     }
 
     /// 基本2桁、Sky 3桁。（指先のことを Sky と表示する仕様）
-    pub fn to_physical_sign(self, board_size: BoardSize) -> String {
+    pub fn to_physical_sign(self, board_size: BoardSize, app: &Application) -> String {
         if self.is_on_board(board_size) {
             let cell = board_size.address_to_cell(self.index);
             cell.to_scalar().to_string()
         } else if self.is_fingertip() {
             "Sky".to_string()
         } else if self.is_hand() {
-            if let Some(piece) = self.get_hand_piece() {
+            if let Some(piece) = self.get_hand_piece(&app) {
                 // 持ち駒
                 format!(
                     "0{}", // "{}*"

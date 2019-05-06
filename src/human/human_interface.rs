@@ -11,9 +11,9 @@ impl HumanInterface {
         if app.is_debug() {
             // 盤面。
             app.comm.println(&position.to_text(
-                &app.comm,
                 position.get_phase().get_value(),
                 position.get_board_size(),
+                &app,
             ));
         }
     }
@@ -37,7 +37,7 @@ impl HumanInterface {
         if app.is_debug() {
             if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
                 let (_numbers, operations) =
-                    &tape_box.get_sign_of_current_tape(position.get_board_size());
+                    &tape_box.get_sign_of_current_tape(position.get_board_size(), &app);
 
                 use audio_compo::cassette_deck::Slot::*;
                 app.comm.println(&format!(
@@ -64,7 +64,7 @@ impl HumanInterface {
 
             // 棋譜。
             let (_numbers, operations) =
-                deck.get_sign_of_current_tape(slot, position.get_board_size());
+                deck.get_sign_of_current_tape(slot, position.get_board_size(), &app);
             app.comm.println(&format!("TAPE: {}", operations));
         }
     }

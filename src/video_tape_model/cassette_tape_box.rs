@@ -317,9 +317,13 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn get_sign_of_current_tape(&self, board_size: BoardSize) -> (String, String) {
+    pub fn get_sign_of_current_tape(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> (String, String) {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].to_sign(board_size)
+            self.tapes[tape_index].to_sign(board_size, &app)
         } else {
             panic!("Please choice listening tape.");
         }
@@ -333,11 +337,11 @@ impl CassetteTapeBox {
         self.listening_tape_index
     }
 
-    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
+    pub fn to_rpm(&self, board_size: BoardSize, app: &Application) -> RpmTapeBox {
         let mut rbox = RpmTapeBox::new();
 
         for tape in &self.tapes {
-            rbox.push(tape.to_rpm(board_size));
+            rbox.push(tape.to_rpm(board_size, &app));
         }
 
         rbox
@@ -362,7 +366,7 @@ impl CassetteTapeBox {
 
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
-        let rpm_tape_box = self.to_rpm(board_size);
+        let rpm_tape_box = self.to_rpm(board_size, &app);
         rpm_tape_box.write(&self.file, &app);
     }
 

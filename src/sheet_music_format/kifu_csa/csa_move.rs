@@ -113,7 +113,7 @@ impl CsaMove {
 
     pub fn to_human_presentable(&self) -> String {
         format!(
-            "[CMove: {}:{}:{}:{}]",
+            "[CMove: (Ph:{})(Sr:{})(Ds:{})(Km:{})]",
             self.phase.to_sign(),
             if let Some(src) = self.source {
                 src.to_human_presentable()
