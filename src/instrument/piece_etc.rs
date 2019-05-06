@@ -1,44 +1,9 @@
+use instrument::half_player_phase::*;
 use instrument::position::*;
 use std::fmt;
 use std::slice::Iter;
 use studio::address::*;
 use studio::board_size::*;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum HalfPlayerPhase {
-    /// 0.5.
-    ZeroPointFive,
-    /// Starting first.
-    First,
-    /// 1.5.
-    OnePointFive,
-    /// Starting second.
-    Second,
-}
-impl HalfPlayerPhase {
-    /// Human presentalbe.
-    pub fn to_log(self) -> String {
-        use instrument::piece_etc::HalfPlayerPhase::*;
-        match self {
-            ZeroPointFive => "＜",
-            First => "▼",
-            OnePointFive => "＞",
-            Second => "△",
-        }
-        .to_string()
-    }
-
-    pub fn to_sign(self) -> String {
-        use instrument::piece_etc::HalfPlayerPhase::*;
-        match self {
-            ZeroPointFive => "z",
-            First => "b",
-            OnePointFive => "o",
-            Second => "w",
-        }
-        .to_string()
-    }
-}
 
 /// Piece identify. Order of "大橋"(Ohashi) mode.
 /// With out phase.
@@ -357,25 +322,26 @@ impl CellDisplay {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct IdentifiedPiece {
-    phase: Option<HalfPlayerPhase>,
+    phase: HalfPlayerPhaseObject,
     promoted: bool,
     id: PieceIdentify,
 }
 impl IdentifiedPiece {
     pub fn from_phase_pro_id(
-        phase_opt: Option<HalfPlayerPhase>,
+        phase_value: HalfPlayerPhaseValue,
         promoted_flag: bool,
         piece_id: PieceIdentify,
     ) -> IdentifiedPiece {
         IdentifiedPiece {
-            phase: phase_opt,
+            phase: HalfPlayerPhaseObject::from_value(phase_value),
             promoted: promoted_flag,
             id: piece_id,
         }
     }
 
+    /*
     pub fn some(
-        phase_opt: Option<HalfPlayerPhase>,
+        phase_opt: Option<HalfPlayerPhaseValue>,
         promoted_flag: bool,
         piece_id: PieceIdentify,
     ) -> Option<IdentifiedPiece> {
@@ -385,24 +351,24 @@ impl IdentifiedPiece {
             piece_id,
         ))
     }
+    */
+
+    /*
+    pub fn go_next(&mut self) {
+        self.phase.go_next();
+    }
+    */
 
     pub fn turn_over(&mut self) {
         self.promoted = !self.promoted;
     }
 
-    pub fn rotate(&mut self) {
-        use instrument::piece_etc::HalfPlayerPhase::*;
-        if let Some(phase) = self.phase {
-            self.phase = match phase {
-                ZeroPointFive => Some(OnePointFive),
-                First => Some(Second),
-                OnePointFive => Some(ZeroPointFive),
-                Second => Some(First),
-            }
-        }
+    /// 点対称に回転☆（＾ｑ＾）！
+    pub fn rotate_point_symmetrically(&mut self) {
+        self.phase.rotate_point_symmetrically();
     }
 
-    pub fn get_phase(self) -> Option<HalfPlayerPhase> {
+    pub fn get_phase(self) -> HalfPlayerPhaseObject {
         self.phase
     }
 
@@ -412,10 +378,10 @@ impl IdentifiedPiece {
 
     // 相手の駒なら真。
     pub fn is_opponent(self, position: &Position) -> Option<bool> {
-        if let Some(ph) = self.get_phase() {
-            Some(ph != position.get_phase())
-        } else {
+        if self.get_phase().is_half() {
             None
+        } else {
+            Some(self.get_phase().get_value() != position.get_phase().get_value())
         }
     }
 
@@ -454,405 +420,398 @@ impl IdentifiedPiece {
     }
 
     pub fn to_human_presentable(self) -> String {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+        use instrument::piece_etc::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        if let Some(phase) = self.get_phase() {
-            match phase {
-                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
-                First => {
-                    if self.is_promoted() {
-                        match self.get_id() {
-                            K00 => "IK00",
-                            K01 => "IK01",
-                            G02 => "IM02",
-                            G03 => "IM03",
-                            G04 => "IM04",
-                            G05 => "IM05",
-                            S06 => "NG06",
-                            S07 => "NG07",
-                            S08 => "NG08",
-                            S09 => "NG09",
-                            N10 => "NK10",
-                            N11 => "NK11",
-                            N12 => "NK12",
-                            N13 => "NK13",
-                            L14 => "NY14",
-                            L15 => "NY15",
-                            L16 => "NY16",
-                            L17 => "NY17",
-                            B18 => "UM18",
-                            B19 => "UM19",
-                            R20 => "RY20",
-                            R21 => "RY21",
-                            P22 => "TO22",
-                            P23 => "TO23",
-                            P24 => "TO24",
-                            P25 => "TO25",
-                            P26 => "TO26",
-                            P27 => "TO27",
-                            P28 => "TO28",
-                            P29 => "TO29",
-                            P30 => "TO30",
-                            P31 => "TO31",
-                            P32 => "TO32",
-                            P33 => "TO33",
-                            P34 => "TO34",
-                            P35 => "TO35",
-                            P36 => "TO36",
-                            P37 => "TO37",
-                            P38 => "TO38",
-                            P39 => "TO39",
-                        }
-                        .to_string()
-                    } else {
-                        match self.get_id() {
-                            K00 => "OU00",
-                            K01 => "OU01",
-                            G02 => "KI02",
-                            G03 => "KI03",
-                            G04 => "KI04",
-                            G05 => "KI05",
-                            S06 => "GI06",
-                            S07 => "GI07",
-                            S08 => "GI08",
-                            S09 => "GI09",
-                            N10 => "KE10",
-                            N11 => "KE11",
-                            N12 => "KE12",
-                            N13 => "KE13",
-                            L14 => "KY14",
-                            L15 => "KY15",
-                            L16 => "KY16",
-                            L17 => "KY17",
-                            B18 => "KA18",
-                            B19 => "KA19",
-                            R20 => "HI20",
-                            R21 => "HI21",
-                            P22 => "FU22",
-                            P23 => "FU23",
-                            P24 => "FU24",
-                            P25 => "FU25",
-                            P26 => "FU26",
-                            P27 => "FU27",
-                            P28 => "FU28",
-                            P29 => "FU29",
-                            P30 => "FU30",
-                            P31 => "FU31",
-                            P32 => "FU32",
-                            P33 => "FU33",
-                            P34 => "FU34",
-                            P35 => "FU35",
-                            P36 => "FU36",
-                            P37 => "FU37",
-                            P38 => "FU38",
-                            P39 => "FU39",
-                        }
-                        .to_string()
+        match self.get_phase().get_value() {
+            First => {
+                if self.is_promoted() {
+                    match self.get_id() {
+                        K00 => "IK00",
+                        K01 => "IK01",
+                        G02 => "IM02",
+                        G03 => "IM03",
+                        G04 => "IM04",
+                        G05 => "IM05",
+                        S06 => "NG06",
+                        S07 => "NG07",
+                        S08 => "NG08",
+                        S09 => "NG09",
+                        N10 => "NK10",
+                        N11 => "NK11",
+                        N12 => "NK12",
+                        N13 => "NK13",
+                        L14 => "NY14",
+                        L15 => "NY15",
+                        L16 => "NY16",
+                        L17 => "NY17",
+                        B18 => "UM18",
+                        B19 => "UM19",
+                        R20 => "RY20",
+                        R21 => "RY21",
+                        P22 => "TO22",
+                        P23 => "TO23",
+                        P24 => "TO24",
+                        P25 => "TO25",
+                        P26 => "TO26",
+                        P27 => "TO27",
+                        P28 => "TO28",
+                        P29 => "TO29",
+                        P30 => "TO30",
+                        P31 => "TO31",
+                        P32 => "TO32",
+                        P33 => "TO33",
+                        P34 => "TO34",
+                        P35 => "TO35",
+                        P36 => "TO36",
+                        P37 => "TO37",
+                        P38 => "TO38",
+                        P39 => "TO39",
                     }
-                }
-                OnePointFive => panic!("OnePointFive IDP is error."),
-                Second => {
-                    if self.is_promoted() {
-                        match self.get_id() {
-                            K00 => "生00",
-                            K01 => "生01",
-                            G02 => "今02",
-                            G03 => "今03",
-                            G04 => "今04",
-                            G05 => "今05",
-                            S06 => "全06",
-                            S07 => "全07",
-                            S08 => "全08",
-                            S09 => "全09",
-                            N10 => "圭10",
-                            N11 => "圭11",
-                            N12 => "圭12",
-                            N13 => "圭13",
-                            L14 => "杏14",
-                            L15 => "杏15",
-                            L16 => "杏16",
-                            L17 => "杏17",
-                            B18 => "馬18",
-                            B19 => "馬19",
-                            R20 => "竜20",
-                            R21 => "竜21",
-                            P22 => "と22",
-                            P23 => "と23",
-                            P24 => "と24",
-                            P25 => "と25",
-                            P26 => "と26",
-                            P27 => "と27",
-                            P28 => "と28",
-                            P29 => "と29",
-                            P30 => "と30",
-                            P31 => "と31",
-                            P32 => "と32",
-                            P33 => "と33",
-                            P34 => "と34",
-                            P35 => "と35",
-                            P36 => "と36",
-                            P37 => "と37",
-                            P38 => "と38",
-                            P39 => "と39",
-                        }
-                        .to_string()
-                    } else {
-                        // 成りや、先後を含まない表示。
-                        self.get_id().to_human_presentable()
+                    .to_string()
+                } else {
+                    match self.get_id() {
+                        K00 => "OU00",
+                        K01 => "OU01",
+                        G02 => "KI02",
+                        G03 => "KI03",
+                        G04 => "KI04",
+                        G05 => "KI05",
+                        S06 => "GI06",
+                        S07 => "GI07",
+                        S08 => "GI08",
+                        S09 => "GI09",
+                        N10 => "KE10",
+                        N11 => "KE11",
+                        N12 => "KE12",
+                        N13 => "KE13",
+                        L14 => "KY14",
+                        L15 => "KY15",
+                        L16 => "KY16",
+                        L17 => "KY17",
+                        B18 => "KA18",
+                        B19 => "KA19",
+                        R20 => "HI20",
+                        R21 => "HI21",
+                        P22 => "FU22",
+                        P23 => "FU23",
+                        P24 => "FU24",
+                        P25 => "FU25",
+                        P26 => "FU26",
+                        P27 => "FU27",
+                        P28 => "FU28",
+                        P29 => "FU29",
+                        P30 => "FU30",
+                        P31 => "FU31",
+                        P32 => "FU32",
+                        P33 => "FU33",
+                        P34 => "FU34",
+                        P35 => "FU35",
+                        P36 => "FU36",
+                        P37 => "FU37",
+                        P38 => "FU38",
+                        P39 => "FU39",
                     }
+                    .to_string()
                 }
             }
-        } else if self.is_promoted() {
-            // 使っていない駒として表示するぜ☆（＾～＾）
-            match self.get_id() {
-                // ナリオウ
-                K00 => "ﾅｵ00",
-                K01 => "ﾅｵ01",
-                // ナリキン
-                G02 => "ﾅｷ02",
-                G03 => "ﾅｷ03",
-                G04 => "ﾅｷ04",
-                G05 => "ﾅｷ05",
-                // ナリシルバー
-                S06 => "ﾅｼ06",
-                S07 => "ﾅｼ07",
-                S08 => "ﾅｼ08",
-                S09 => "ﾅｼ09",
-                // ナリケイ
-                N10 => "ﾅｹ10",
-                N11 => "ﾅｹ11",
-                N12 => "ﾅｹ12",
-                N13 => "ﾅｹ13",
-                // ナリヤリ
-                L14 => "ﾅﾔ14",
-                L15 => "ﾅﾔ15",
-                L16 => "ﾅﾔ16",
-                L17 => "ﾅﾔ17",
-                // ナリカク
-                B18 => "ﾅｶ18",
-                B19 => "ﾅｶ19",
-                // ナリヒ
-                R20 => "ﾅﾋ20",
-                R21 => "ﾅﾋ21",
-                // ナリフ
-                P22 => "ﾅﾌ22",
-                P23 => "ﾅﾌ23",
-                P24 => "ﾅﾌ24",
-                P25 => "ﾅﾌ25",
-                P26 => "ﾅﾌ26",
-                P27 => "ﾅﾌ27",
-                P28 => "ﾅﾌ28",
-                P29 => "ﾅﾌ29",
-                P30 => "ﾅﾌ30",
-                P31 => "ﾅﾌ31",
-                P32 => "ﾅﾌ32",
-                P33 => "ﾅﾌ33",
-                P34 => "ﾅﾌ34",
-                P35 => "ﾅﾌ35",
-                P36 => "ﾅﾌ36",
-                P37 => "ﾅﾌ37",
-                P38 => "ﾅﾌ38",
-                P39 => "ﾅﾌ39",
+            Second => {
+                if self.is_promoted() {
+                    match self.get_id() {
+                        K00 => "生00",
+                        K01 => "生01",
+                        G02 => "今02",
+                        G03 => "今03",
+                        G04 => "今04",
+                        G05 => "今05",
+                        S06 => "全06",
+                        S07 => "全07",
+                        S08 => "全08",
+                        S09 => "全09",
+                        N10 => "圭10",
+                        N11 => "圭11",
+                        N12 => "圭12",
+                        N13 => "圭13",
+                        L14 => "杏14",
+                        L15 => "杏15",
+                        L16 => "杏16",
+                        L17 => "杏17",
+                        B18 => "馬18",
+                        B19 => "馬19",
+                        R20 => "竜20",
+                        R21 => "竜21",
+                        P22 => "と22",
+                        P23 => "と23",
+                        P24 => "と24",
+                        P25 => "と25",
+                        P26 => "と26",
+                        P27 => "と27",
+                        P28 => "と28",
+                        P29 => "と29",
+                        P30 => "と30",
+                        P31 => "と31",
+                        P32 => "と32",
+                        P33 => "と33",
+                        P34 => "と34",
+                        P35 => "と35",
+                        P36 => "と36",
+                        P37 => "と37",
+                        P38 => "と38",
+                        P39 => "と39",
+                    }
+                    .to_string()
+                } else {
+                    // 成りや、先後を含まない表示。
+                    self.get_id().to_human_presentable()
+                }
             }
-            .to_string()
-        } else {
-            match self.get_id() {
-                // オウ
-                K00 => "ｵｳ00",
-                K01 => "ｵｳ01",
-                // キン
-                G02 => "ｷﾝ02",
-                G03 => "ｷﾝ03",
-                G04 => "ｷﾝ04",
-                G05 => "ｷﾝ05",
-                // シルバー
-                S06 => "ｼﾙ06",
-                S07 => "ｼﾙ07",
-                S08 => "ｼﾙ08",
-                S09 => "ｼﾙ09",
-                // ケイ
-                N10 => "ｹｲ10",
-                N11 => "ｹｲ11",
-                N12 => "ｹｲ12",
-                N13 => "ｹｲ13",
-                // ヤリ
-                L14 => "ﾔﾘ14",
-                L15 => "ﾔﾘ15",
-                L16 => "ﾔﾘ16",
-                L17 => "ﾔﾘ17",
-                // カク
-                B18 => "ｶｸ18",
-                B19 => "ｶｸ19",
-                // ヒ
-                R20 => "ヒ20",
-                R21 => "ヒ21",
-                // フ
-                P22 => "フ22",
-                P23 => "フ23",
-                P24 => "フ24",
-                P25 => "フ25",
-                P26 => "フ26",
-                P27 => "フ27",
-                P28 => "フ28",
-                P29 => "フ29",
-                P30 => "フ30",
-                P31 => "フ31",
-                P32 => "フ32",
-                P33 => "フ33",
-                P34 => "フ34",
-                P35 => "フ35",
-                P36 => "フ36",
-                P37 => "フ37",
-                P38 => "フ38",
-                P39 => "フ39",
+            ZeroPointFive | OnePointFive => {
+                // 使っていない駒として表示するぜ☆（＾～＾）
+                if self.is_promoted() {
+                    match self.get_id() {
+                        // ナリオウ
+                        K00 => "ﾅｵ00",
+                        K01 => "ﾅｵ01",
+                        // ナリキン
+                        G02 => "ﾅｷ02",
+                        G03 => "ﾅｷ03",
+                        G04 => "ﾅｷ04",
+                        G05 => "ﾅｷ05",
+                        // ナリシルバー
+                        S06 => "ﾅｼ06",
+                        S07 => "ﾅｼ07",
+                        S08 => "ﾅｼ08",
+                        S09 => "ﾅｼ09",
+                        // ナリケイ
+                        N10 => "ﾅｹ10",
+                        N11 => "ﾅｹ11",
+                        N12 => "ﾅｹ12",
+                        N13 => "ﾅｹ13",
+                        // ナリヤリ
+                        L14 => "ﾅﾔ14",
+                        L15 => "ﾅﾔ15",
+                        L16 => "ﾅﾔ16",
+                        L17 => "ﾅﾔ17",
+                        // ナリカク
+                        B18 => "ﾅｶ18",
+                        B19 => "ﾅｶ19",
+                        // ナリヒ
+                        R20 => "ﾅﾋ20",
+                        R21 => "ﾅﾋ21",
+                        // ナリフ
+                        P22 => "ﾅﾌ22",
+                        P23 => "ﾅﾌ23",
+                        P24 => "ﾅﾌ24",
+                        P25 => "ﾅﾌ25",
+                        P26 => "ﾅﾌ26",
+                        P27 => "ﾅﾌ27",
+                        P28 => "ﾅﾌ28",
+                        P29 => "ﾅﾌ29",
+                        P30 => "ﾅﾌ30",
+                        P31 => "ﾅﾌ31",
+                        P32 => "ﾅﾌ32",
+                        P33 => "ﾅﾌ33",
+                        P34 => "ﾅﾌ34",
+                        P35 => "ﾅﾌ35",
+                        P36 => "ﾅﾌ36",
+                        P37 => "ﾅﾌ37",
+                        P38 => "ﾅﾌ38",
+                        P39 => "ﾅﾌ39",
+                    }
+                    .to_string()
+                } else {
+                    match self.get_id() {
+                        // オウ
+                        K00 => "ｵｳ00",
+                        K01 => "ｵｳ01",
+                        // キン
+                        G02 => "ｷﾝ02",
+                        G03 => "ｷﾝ03",
+                        G04 => "ｷﾝ04",
+                        G05 => "ｷﾝ05",
+                        // シルバー
+                        S06 => "ｼﾙ06",
+                        S07 => "ｼﾙ07",
+                        S08 => "ｼﾙ08",
+                        S09 => "ｼﾙ09",
+                        // ケイ
+                        N10 => "ｹｲ10",
+                        N11 => "ｹｲ11",
+                        N12 => "ｹｲ12",
+                        N13 => "ｹｲ13",
+                        // ヤリ
+                        L14 => "ﾔﾘ14",
+                        L15 => "ﾔﾘ15",
+                        L16 => "ﾔﾘ16",
+                        L17 => "ﾔﾘ17",
+                        // カク
+                        B18 => "ｶｸ18",
+                        B19 => "ｶｸ19",
+                        // ヒ
+                        R20 => "ヒ20",
+                        R21 => "ヒ21",
+                        // フ
+                        P22 => "フ22",
+                        P23 => "フ23",
+                        P24 => "フ24",
+                        P25 => "フ25",
+                        P26 => "フ26",
+                        P27 => "フ27",
+                        P28 => "フ28",
+                        P29 => "フ29",
+                        P30 => "フ30",
+                        P31 => "フ31",
+                        P32 => "フ32",
+                        P33 => "フ33",
+                        P34 => "フ34",
+                        P35 => "フ35",
+                        P36 => "フ36",
+                        P37 => "フ37",
+                        P38 => "フ38",
+                        P39 => "フ39",
+                    }
+                    .to_string()
+                }
             }
-            .to_string()
         }
     }
 
     /// 成り玉とかあって、USI としては使えない。
     pub fn to_extended_usi_text(self) -> String {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        if let Some(phase) = self.get_phase() {
-            match phase {
-                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
-                First => {
-                    if self.is_promoted() {
-                        // 先手の成り駒。
-                        match self.get_id() {
-                            K00 | K01 => "+K",
-                            R20 | R21 => "+R",
-                            B18 | B19 => "+B",
-                            G02 | G03 | G04 | G05 => "+G",
-                            S06 | S07 | S08 | S09 => "+S",
-                            N10 | N11 | N12 | N13 => "+N",
-                            L14 | L15 | L16 | L17 => "+L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
-                        }
-                    } else {
-                        // 先手の不成駒。
-                        match self.get_id() {
-                            K00 | K01 => "K",
-                            R20 | R21 => "R",
-                            B18 | B19 => "B",
-                            G02 | G03 | G04 | G05 => "G",
-                            S06 | S07 | S08 | S09 => "S",
-                            N10 | N11 | N12 | N13 => "N",
-                            L14 | L15 | L16 | L17 => "L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
-                        }
+        match self.get_phase().get_value() {
+            First => {
+                if self.is_promoted() {
+                    // 先手の成り駒。
+                    match self.get_id() {
+                        K00 | K01 => "+K",
+                        R20 | R21 => "+R",
+                        B18 | B19 => "+B",
+                        G02 | G03 | G04 | G05 => "+G",
+                        S06 | S07 | S08 | S09 => "+S",
+                        N10 | N11 | N12 | N13 => "+N",
+                        L14 | L15 | L16 | L17 => "+L",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
                     }
-                }
-                OnePointFive => panic!("OnePointFive IDP is error."),
-                Second => {
-                    if self.is_promoted() {
-                        // 後手の成り駒。
-                        match self.get_id() {
-                            K00 | K01 => "+k",
-                            R20 | R21 => "+r",
-                            B18 | B19 => "+b",
-                            G02 | G03 | G04 | G05 => "+g",
-                            S06 | S07 | S08 | S09 => "+S",
-                            N10 | N11 | N12 | N13 => "+n",
-                            L14 | L15 | L16 | L17 => "+l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
-                        }
-                    } else {
-                        // 後手の不成駒。
-                        match self.get_id() {
-                            K00 | K01 => "k",
-                            R20 | R21 => "r",
-                            B18 | B19 => "b",
-                            G02 | G03 | G04 | G05 => "g",
-                            S06 | S07 | S08 | S09 => "s",
-                            N10 | N11 | N12 | N13 => "n",
-                            L14 | L15 | L16 | L17 => "l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
-                        }
+                } else {
+                    // 先手の不成駒。
+                    match self.get_id() {
+                        K00 | K01 => "K",
+                        R20 | R21 => "R",
+                        B18 | B19 => "B",
+                        G02 | G03 | G04 | G05 => "G",
+                        S06 | S07 | S08 | S09 => "S",
+                        N10 | N11 | N12 | N13 => "N",
+                        L14 | L15 | L16 | L17 => "L",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "P",
                     }
                 }
             }
-        } else {
-            // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
-            panic!("Unexpected physical sign.")
+            Second => {
+                if self.is_promoted() {
+                    // 後手の成り駒。
+                    match self.get_id() {
+                        K00 | K01 => "+k",
+                        R20 | R21 => "+r",
+                        B18 | B19 => "+b",
+                        G02 | G03 | G04 | G05 => "+g",
+                        S06 | S07 | S08 | S09 => "+S",
+                        N10 | N11 | N12 | N13 => "+n",
+                        L14 | L15 | L16 | L17 => "+l",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                    }
+                } else {
+                    // 後手の不成駒。
+                    match self.get_id() {
+                        K00 | K01 => "k",
+                        R20 | R21 => "r",
+                        B18 | B19 => "b",
+                        G02 | G03 | G04 | G05 => "g",
+                        S06 | S07 | S08 | S09 => "s",
+                        N10 | N11 | N12 | N13 => "n",
+                        L14 | L15 | L16 | L17 => "l",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                    }
+                }
+            }
+            ZeroPointFive | OnePointFive => {
+                // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
+                panic!("Unexpected physical sign.")
+            }
         }
         .to_string()
     }
 
     pub fn to_usi_sign(self) -> String {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        if let Some(phase) = self.get_phase() {
-            match phase {
-                ZeroPointFive => panic!("ZeroPointFive IDP is error."),
-                First => {
-                    if self.is_promoted() {
-                        // 先手の成り駒。
-                        match self.get_id() {
-                            K00 | K01 => "K",
-                            R20 | R21 => "+R",
-                            B18 | B19 => "+B",
-                            G02 | G03 | G04 | G05 => "G",
-                            S06 | S07 | S08 | S09 => "+S",
-                            N10 | N11 | N12 | N13 => "+N",
-                            L14 | L15 | L16 | L17 => "+L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
-                        }
-                    } else {
-                        // 先手の不成駒。
-                        match self.get_id() {
-                            K00 | K01 => "K",
-                            R20 | R21 => "R",
-                            B18 | B19 => "B",
-                            G02 | G03 | G04 | G05 => "G",
-                            S06 | S07 | S08 | S09 => "S",
-                            N10 | N11 | N12 | N13 => "N",
-                            L14 | L15 | L16 | L17 => "L",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "P",
-                        }
+        match self.get_phase().get_value() {
+            First => {
+                if self.is_promoted() {
+                    // 先手の成り駒。
+                    match self.get_id() {
+                        K00 | K01 => "K",
+                        R20 | R21 => "+R",
+                        B18 | B19 => "+B",
+                        G02 | G03 | G04 | G05 => "G",
+                        S06 | S07 | S08 | S09 => "+S",
+                        N10 | N11 | N12 | N13 => "+N",
+                        L14 | L15 | L16 | L17 => "+L",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "+P",
                     }
-                }
-                OnePointFive => panic!("OnePointFive IDP is error."),
-                Second => {
-                    if self.is_promoted() {
-                        // 後手の成り駒。
-                        match self.get_id() {
-                            K00 | K01 => "k",
-                            R20 | R21 => "+r",
-                            B18 | B19 => "+b",
-                            G02 | G03 | G04 | G05 => "g",
-                            S06 | S07 | S08 | S09 => "+S",
-                            N10 | N11 | N12 | N13 => "+n",
-                            L14 | L15 | L16 | L17 => "+l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
-                        }
-                    } else {
-                        // 後手の不成駒。
-                        match self.get_id() {
-                            K00 | K01 => "k",
-                            R20 | R21 => "r",
-                            B18 | B19 => "b",
-                            G02 | G03 | G04 | G05 => "g",
-                            S06 | S07 | S08 | S09 => "s",
-                            N10 | N11 | N12 | N13 => "n",
-                            L14 | L15 | L16 | L17 => "l",
-                            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32
-                            | P33 | P34 | P35 | P36 | P37 | P38 | P39 => "p",
-                        }
+                } else {
+                    // 先手の不成駒。
+                    match self.get_id() {
+                        K00 | K01 => "K",
+                        R20 | R21 => "R",
+                        B18 | B19 => "B",
+                        G02 | G03 | G04 | G05 => "G",
+                        S06 | S07 | S08 | S09 => "S",
+                        N10 | N11 | N12 | N13 => "N",
+                        L14 | L15 | L16 | L17 => "L",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "P",
                     }
                 }
             }
-        } else {
-            // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
-            panic!("Unexpected usi sign.")
+            Second => {
+                if self.is_promoted() {
+                    // 後手の成り駒。
+                    match self.get_id() {
+                        K00 | K01 => "k",
+                        R20 | R21 => "+r",
+                        B18 | B19 => "+b",
+                        G02 | G03 | G04 | G05 => "g",
+                        S06 | S07 | S08 | S09 => "+S",
+                        N10 | N11 | N12 | N13 => "+n",
+                        L14 | L15 | L16 | L17 => "+l",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "+p",
+                    }
+                } else {
+                    // 後手の不成駒。
+                    match self.get_id() {
+                        K00 | K01 => "k",
+                        R20 | R21 => "r",
+                        B18 | B19 => "b",
+                        G02 | G03 | G04 | G05 => "g",
+                        S06 | S07 | S08 | S09 => "s",
+                        N10 | N11 | N12 | N13 => "n",
+                        L14 | L15 | L16 | L17 => "l",
+                        P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33
+                        | P34 | P35 | P36 | P37 | P38 | P39 => "p",
+                    }
+                }
+            }
+            ZeroPointFive | OnePointFive => {
+                // 使っていない駒を USI符号 に変換しようとしてはいけないぜ☆（＾～＾）
+                panic!("Unexpected usi sign.")
+            }
         }
         .to_string()
     }
@@ -937,70 +896,66 @@ pub enum Piece {
     PP3,
 }
 impl Piece {
-    pub fn from_ph_pid(phase_opt: Option<HalfPlayerPhase>, pid: PieceIdentify) -> Self {
-        Piece::from_ph_pt(phase_opt, pid.get_piece_type())
+    pub fn from_ph_pid(phase: HalfPlayerPhaseValue, pid: PieceIdentify) -> Self {
+        Piece::from_ph_pt(phase, pid.get_piece_type())
     }
 
-    pub fn from_ph_pt(phase_opt: Option<HalfPlayerPhase>, piece_type: PieceType) -> Self {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+    pub fn from_ph_pt(phase: HalfPlayerPhaseValue, piece_type: PieceType) -> Self {
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::Piece::*;
         use instrument::piece_etc::PieceType::*;
-        match phase_opt {
-            Some(phase) => match phase {
-                ZeroPointFive => panic!("ZeroPointFive Piece is error."),
-                First => match piece_type {
-                    K => K1,
-                    PK => PK1,
+        match phase {
+            First => match piece_type {
+                K => K1,
+                PK => PK1,
 
-                    R => R1,
-                    PR => PR1,
+                R => R1,
+                PR => PR1,
 
-                    B => B1,
-                    PB => PB1,
+                B => B1,
+                PB => PB1,
 
-                    G => G1,
-                    PG => PG1,
+                G => G1,
+                PG => PG1,
 
-                    S => S1,
-                    PS => PS1,
+                S => S1,
+                PS => PS1,
 
-                    N => N1,
-                    PN => PN1,
+                N => N1,
+                PN => PN1,
 
-                    L => L1,
-                    PL => PL1,
+                L => L1,
+                PL => PL1,
 
-                    P => P1,
-                    PP => PP1,
-                },
-                OnePointFive => panic!("OnePointFive Piece is error."),
-                Second => match piece_type {
-                    K => K2,
-                    PK => PK2,
-
-                    R => R2,
-                    PR => PR2,
-
-                    B => B2,
-                    PB => PB2,
-
-                    G => G2,
-                    PG => PG2,
-
-                    S => S2,
-                    PS => PS2,
-
-                    N => N2,
-                    PN => PN2,
-
-                    L => L2,
-                    PL => PL2,
-
-                    P => P2,
-                    PP => PP2,
-                },
+                P => P1,
+                PP => PP1,
             },
-            None => match piece_type {
+            Second => match piece_type {
+                K => K2,
+                PK => PK2,
+
+                R => R2,
+                PR => PR2,
+
+                B => B2,
+                PB => PB2,
+
+                G => G2,
+                PG => PG2,
+
+                S => S2,
+                PS => PS2,
+
+                N => N2,
+                PN => PN2,
+
+                L => L2,
+                PL => PL2,
+
+                P => P2,
+                PP => PP2,
+            },
+            ZeroPointFive | OnePointFive => match piece_type {
                 K => K3,
                 PK => PK3,
 
@@ -1181,15 +1136,15 @@ impl Piece {
         }
     }
 
-    pub fn get_phase(self) -> Option<HalfPlayerPhase> {
+    pub fn get_phase(self) -> HalfPlayerPhaseValue {
         use instrument::piece_etc::Piece::*;
         match self {
             K1 | PK1 | R1 | PR1 | B1 | PB1 | G1 | PG1 | S1 | PS1 | N1 | PN1 | L1 | PL1 | P1
-            | PP1 => Some(HalfPlayerPhase::First),
+            | PP1 => HalfPlayerPhaseValue::First,
             K2 | PK2 | R2 | PR2 | B2 | PB2 | G2 | PG2 | S2 | PS2 | N2 | PN2 | L2 | PL2 | P2
-            | PP2 => Some(HalfPlayerPhase::Second),
+            | PP2 => HalfPlayerPhaseValue::Second,
             K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3
-            | PP3 => None,
+            | PP3 => HalfPlayerPhaseValue::ZeroPointFive, // TODO とりあえず☆（＾～＾）
         }
     }
 
@@ -1550,37 +1505,32 @@ impl PieceType {
 }
 
 pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
-    use instrument::piece_etc::HalfPlayerPhase::*;
+    use instrument::half_player_phase::HalfPlayerPhaseValue::*;
     use instrument::piece_etc::PieceIdentify::*;
-    if let Some(phase) = id_piece.phase {
-        match phase {
-            ZeroPointFive => panic!("ZeroPointFive PieceType is error."),
-            First => match id_piece.get_id() {
-                K00 | K01 => 0,
-                R20 | R21 => 1,
-                B18 | B19 => 2,
-                G02 | G03 | G04 | G05 => 3,
-                S06 | S07 | S08 | S09 => 4,
-                N10 | N11 | N12 | N13 => 5,
-                L14 | L15 | L16 | L17 => 6,
-                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
-                | P35 | P36 | P37 | P38 | P39 => 7,
-            },
-            OnePointFive => panic!("OnePointFive PieceType is error."),
-            Second => match id_piece.get_id() {
-                K00 | K01 => 8,
-                R20 | R21 => 9,
-                B18 | B19 => 10,
-                G02 | G03 | G04 | G05 => 11,
-                S06 | S07 | S08 | S09 => 12,
-                N10 | N11 | N12 | N13 => 13,
-                L14 | L15 | L16 | L17 => 14,
-                P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34
-                | P35 | P36 | P37 | P38 | P39 => 15,
-            },
-        }
-    } else {
-        match id_piece.get_id() {
+    match id_piece.phase.get_value() {
+        First => match id_piece.get_id() {
+            K00 | K01 => 0,
+            R20 | R21 => 1,
+            B18 | B19 => 2,
+            G02 | G03 | G04 | G05 => 3,
+            S06 | S07 | S08 | S09 => 4,
+            N10 | N11 | N12 | N13 => 5,
+            L14 | L15 | L16 | L17 => 6,
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34 | P35
+            | P36 | P37 | P38 | P39 => 7,
+        },
+        Second => match id_piece.get_id() {
+            K00 | K01 => 8,
+            R20 | R21 => 9,
+            B18 | B19 => 10,
+            G02 | G03 | G04 | G05 => 11,
+            S06 | S07 | S08 | S09 => 12,
+            N10 | N11 | N12 | N13 => 13,
+            L14 | L15 | L16 | L17 => 14,
+            P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34 | P35
+            | P36 | P37 | P38 | P39 => 15,
+        },
+        ZeroPointFive | OnePointFive => match id_piece.get_id() {
             K00 | K01 => 16,
             R20 | R21 => 17,
             B18 | B19 => 18,
@@ -1590,7 +1540,7 @@ pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
             L14 | L15 | L16 | L17 => 22,
             P22 | P23 | P24 | P25 | P26 | P27 | P28 | P29 | P30 | P31 | P32 | P33 | P34 | P35
             | P36 | P37 | P38 | P39 => 23,
-        }
+        },
     }
 }
 

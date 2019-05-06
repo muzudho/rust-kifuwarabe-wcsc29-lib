@@ -1,10 +1,11 @@
+use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use studio::address::*;
 use studio::application::Application;
 use studio::parser::*;
 
 pub struct CsaMove {
-    pub phase: HalfPlayerPhase,
+    pub phase: HalfPlayerPhaseValue,
     pub source: Option<Cell>,
     pub destination: Cell,
     // 成ったかどうかは、盤上で駒を動かしてみないと分からない。
@@ -59,8 +60,8 @@ impl CsaMove {
 
         Some(CsaMove {
             phase: match ch0 {
-                '+' => HalfPlayerPhase::First,
-                '-' => HalfPlayerPhase::Second,
+                '+' => HalfPlayerPhaseValue::First,
+                '-' => HalfPlayerPhaseValue::Second,
                 _ => panic!("Unexpected phase: '{}'.", ch1),
             },
             source: src_opt,

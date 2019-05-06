@@ -12,7 +12,7 @@ impl HumanInterface {
             // 盤面。
             app.comm.println(&position.to_text(
                 &app.comm,
-                position.get_phase(),
+                position.get_phase().get_value(),
                 position.get_board_size(),
             ));
         }

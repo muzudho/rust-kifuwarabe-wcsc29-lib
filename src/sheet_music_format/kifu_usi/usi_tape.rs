@@ -1,4 +1,4 @@
-use instrument::piece_etc::*;
+use instrument::half_player_phase::*;
 use instrument::position::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_move::*;
@@ -70,10 +70,10 @@ impl UsiTape {
         }
     }
 
-    pub fn get_current_phase(&self) -> HalfPlayerPhase {
+    pub fn get_current_phase(&self) -> HalfPlayerPhaseValue {
         match self.moves.len() % 2 {
-            0 => HalfPlayerPhase::First,
-            _ => HalfPlayerPhase::Second,
+            0 => HalfPlayerPhaseValue::First,
+            _ => HalfPlayerPhaseValue::Second,
         }
     }
 

@@ -1,4 +1,4 @@
-use instrument::piece_etc::*;
+use instrument::half_player_phase::*;
 use instrument::position::*;
 use sheet_music_format::kifu_csa::csa_move::*;
 use std::fs::File;
@@ -41,10 +41,10 @@ impl CsaTape {
         self.items.push(mov);
     }
 
-    pub fn get_current_phase(&self) -> HalfPlayerPhase {
+    pub fn get_current_phase(&self) -> HalfPlayerPhaseValue {
         match self.items.len() % 2 {
-            0 => HalfPlayerPhase::First,
-            _ => HalfPlayerPhase::Second,
+            0 => HalfPlayerPhaseValue::First,
+            _ => HalfPlayerPhaseValue::Second,
         }
     }
 

@@ -1,6 +1,6 @@
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
-use instrument::piece_etc::*;
+use instrument::half_player_phase::*;
 use instrument::position::*;
 use live::best_move_picker::*;
 use sheet_music_format::kifu_usi::fen::*;
@@ -12,15 +12,22 @@ use studio::board_size::*;
 pub struct LibSub {}
 impl LibSub {
     pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
+        let slot = Slot::Learning;
+        let rnote_opt = if let Some(ref mut tape_box) = &mut deck.slots[slot as usize].tape_box {
             tape_box.look_back_caret_to_negative(&app);
             if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_to_next(&app) {
-                if !position.try_beautiful_touch(&rnote, &app) {
-                    app.comm.println("Touch fail.");
-                }
+                Some(rnote)
+            } else {
+                None
             }
         } else {
             panic!("Tape box none.");
+        };
+
+        if let Some(rnote) = rnote_opt {
+            if !position.try_beautiful_touch(&deck, slot, &rnote, &app) {
+                app.comm.println("Touch fail.");
+            }
         }
 
         HumanInterface::bo(deck, &position, &app);
@@ -49,10 +56,11 @@ impl LibSub {
     }
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_positive(Slot::Learning, &app);
+        let slot = Slot::Learning;
+        deck.look_back_caret_to_positive(slot, &app);
         if let (_taken_overflow, _note_move, Some(rnote)) = deck.seek_to_next(Slot::Learning, &app)
         {
-            if !position.try_beautiful_touch(&rnote, &app) {
+            if !position.try_beautiful_touch(&deck, slot, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
         }
@@ -107,7 +115,7 @@ impl LibSub {
             UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning), &app);
         for rnote_ope in rnote_opes {
             // app.comm.println("lib.rs:go: touch_1note_ope");
-            position.touch_1note_ope(&rnote_ope, deck, &app);
+            position.touch_1note_ope(deck, &rnote_ope, &app);
         }
     }
 
@@ -118,7 +126,7 @@ impl LibSub {
 
     pub fn hand1(position: &Position, app: &Application) {
         // TODO 先手の持ち駒を表示。
-        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(HalfPlayerPhase::First));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(HalfPlayerPhaseValue::First);
         app.comm.println(&line0);
         app.comm.println(&line1);
         app.comm.println(&line2);
@@ -126,7 +134,7 @@ impl LibSub {
     }
     pub fn hand2(position: &Position, app: &Application) {
         // TODO 後手の持ち駒を表示。
-        let (line0, line1, line2, line3) = position.to_hand_4lines(Some(HalfPlayerPhase::Second));
+        let (line0, line1, line2, line3) = position.to_hand_4lines(HalfPlayerPhaseValue::Second);
         app.comm.println(&line0);
         app.comm.println(&line1);
         app.comm.println(&line2);
@@ -134,7 +142,8 @@ impl LibSub {
     }
     pub fn hand3(position: &Position, app: &Application) {
         // TODO 使っていない駒を表示。
-        let (line0, line1, line2, line3) = position.to_hand_4lines(None);
+        let (line0, line1, line2, line3) =
+            position.to_hand_4lines(HalfPlayerPhaseValue::ZeroPointFive); // TODO とりあえず 0.5 で。
         app.comm.println(&line0);
         app.comm.println(&line1);
         app.comm.println(&line2);

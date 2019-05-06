@@ -25,7 +25,7 @@ impl KifConverter {
             let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(&rnote_ope, deck, &app);
+                position.touch_1note_ope(deck, &rnote_ope, &app);
             }
 
             ply += 1;
@@ -55,14 +55,14 @@ impl KifConverter {
             // 駒を打つ動きの場合
             let piece_type = jsa_piece_type_to_perfect(kmove.piece);
             let piece = Piece::from_ph_pt(
-                Some(position.get_phase()),
+                position.get_phase().get_value(),
                 piece_type.unwrap_or_else(|| panic!(app.comm.panic("Fail. piece_type."))),
             );
             let drop = position.peek_hand(piece);
 
             // hand-off
             let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                Some(position.get_phase()),
+                position.get_phase().get_value(),
                 drop.unwrap_or_else(|| panic!(app.comm.panic("Fail. drop.")))
                     .get_type(),
             ));
@@ -95,7 +95,7 @@ impl KifConverter {
                 // hand-on
                 let up = capture_id_piece.get_type();
                 let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                    Some(position.get_phase()),
+                    position.get_phase().get_value(),
                     up,
                 ));
                 rmoves.push(hand_on);

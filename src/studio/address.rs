@@ -1,3 +1,4 @@
+use instrument::half_player_phase::HalfPlayerPhaseValue;
 use instrument::piece_etc::*;
 use std::fmt;
 use studio::board_size::*;
@@ -76,38 +77,34 @@ impl Address {
         Address::from_hand_ph_pt(pi.get_phase(), pi.get_type())
     }
 
-    pub fn from_hand_ph_pt(phase_opt: Option<HalfPlayerPhase>, pt: PieceType) -> Self {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+    pub fn from_hand_ph_pt(phase_value: HalfPlayerPhaseValue, pt: PieceType) -> Self {
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceType::*;
 
-        let index_num = match phase_opt {
-            Some(phase) => match phase {
-                ZeroPointFive => panic!("ZeroPointFive Hand is error."),
-                First => match pt {
-                    K => 82,
-                    R | PR => 83,
-                    B | PB => 84,
-                    G => 85,
-                    S | PS => 86,
-                    N | PN => 87,
-                    L | PL => 88,
-                    P | PP => 89,
-                    _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
-                },
-                OnePointFive => panic!("OnePointFive Hand is error."),
-                Second => match pt {
-                    K => 90,
-                    R | PR => 91,
-                    B | PB => 92,
-                    G => 93,
-                    S | PS => 94,
-                    N | PN => 95,
-                    L | PL => 96,
-                    P | PP => 97,
-                    _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
-                },
+        let index_num = match phase_value {
+            First => match pt {
+                K => 82,
+                R | PR => 83,
+                B | PB => 84,
+                G => 85,
+                S | PS => 86,
+                N | PN => 87,
+                L | PL => 88,
+                P | PP => 89,
+                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
             },
-            None => match pt {
+            Second => match pt {
+                K => 90,
+                R | PR => 91,
+                B | PB => 92,
+                G => 93,
+                S | PS => 94,
+                N | PN => 95,
+                L | PL => 96,
+                P | PP => 97,
+                _ => panic!("Unexpected hand piece_type {}.", pt.to_sign()),
+            },
+            OnePointFive | ZeroPointFive => match pt {
                 K => 98,
                 R => 99,
                 B => 100,

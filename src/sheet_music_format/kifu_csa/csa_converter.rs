@@ -25,7 +25,7 @@ impl CsaConverter {
             let rnote_opes = CsaConverter::convert_move(cmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(&rnote_ope, deck, &app);
+                position.touch_1note_ope(deck, &rnote_ope, &app);
             }
 
             ply += 1;
@@ -52,7 +52,7 @@ impl CsaConverter {
 
             // hand-off
             let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                Some(position.get_phase()),
+                position.get_phase().get_value(),
                 drop,
             ));
             p_moves.push(hand_off);
@@ -84,7 +84,7 @@ impl CsaConverter {
                 // hand-on
                 let up = capture_id_piece.get_type();
                 let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                    Some(position.get_phase()),
+                    position.get_phase().get_value(),
                     up,
                 ));
                 p_moves.push(hand_on);

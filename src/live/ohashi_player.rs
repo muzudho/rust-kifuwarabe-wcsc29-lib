@@ -1,5 +1,6 @@
 use audio_compo::cassette_deck::CassetteDeck;
 use audio_compo::cassette_deck::Slot;
+use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use sound::shogi_note_operation::*;
@@ -28,14 +29,14 @@ impl OhashiPlayer {
     /// 初期化に使う。
     fn init_note(
         ply: i16,
-        ph: HalfPlayerPhase,
+        phase_value: HalfPlayerPhaseValue,
         file: i8,
         rank: i8,
         pid: PieceIdentify,
         bs: BoardSize,
     ) -> (ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe) {
         (
-            ShogiNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(Some(ph), pid))),
+            ShogiNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(phase_value, pid))),
             ShogiNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs)),
             ShogiNoteOpe::change_phase(ply),
         )
@@ -44,7 +45,7 @@ impl OhashiPlayer {
     /// オリジン・ポジションから、平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
     pub fn play_ohashi_starting(pos: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        use instrument::piece_etc::HalfPlayerPhase::*;
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
 
         // 大橋流の順序にしてください。
@@ -105,7 +106,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(&element.0, deck, &app);
+                pos.touch_1note_ope_no_log(deck, &element.0, &app);
             }
 
             {
@@ -115,7 +116,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(&element.1, deck, &app);
+                pos.touch_1note_ope_no_log(deck, &element.1, &app);
             }
 
             {
@@ -125,7 +126,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                pos.touch_1note_ope_no_log(&element.2, deck, &app);
+                pos.touch_1note_ope_no_log(deck, &element.2, &app);
             }
         }
     }

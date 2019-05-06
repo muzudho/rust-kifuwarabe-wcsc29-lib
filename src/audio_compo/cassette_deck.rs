@@ -355,7 +355,7 @@ impl CassetteDeck {
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
-                position.try_beautiful_touch_no_log(&rpm_note.get_ope(), &app);
+                position.try_beautiful_touch_no_log(&self, slot, &rpm_note.get_ope(), &app);
             Some(rpm_note)
         } else {
             None
@@ -413,7 +413,7 @@ impl CassetteDeck {
                         .caret_closed_interval
                         .intersect_closed_interval(note_move.caret_closed_interval);
 
-                    if position.try_beautiful_touch(&rnote, &app) {
+                    if position.try_beautiful_touch(&self, slot, &rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
                         /*
                         app.comm.println(&format!(
@@ -519,7 +519,7 @@ impl CassetteDeck {
                 rnote.to_human_presentable(position.get_board_size())
             ));
             */
-            is_legal_touch = position.try_beautiful_touch(&rnote, &app);
+            is_legal_touch = position.try_beautiful_touch(&self, slot, &rnote, &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -569,7 +569,7 @@ impl CassetteDeck {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(&rnote, &app) {
+                if !position.try_beautiful_touch(&self, slot, &rnote, &app) {
                     /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",
