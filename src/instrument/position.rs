@@ -778,9 +778,12 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.phase.go_next(&deck, slot);
+                    self.phase.go_next(&deck, slot, &app);
                     if app.is_debug() {
-                        app.comm.println("<フェーズチェンジ>");
+                        app.comm.println(&format!(
+                            "[#フェーズチェンジ {:?}]>",
+                            self.phase.get_value()
+                        ));
                     }
                     // （完遂） phase change.
                     (true, None)

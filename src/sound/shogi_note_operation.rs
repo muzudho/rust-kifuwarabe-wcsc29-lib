@@ -123,7 +123,7 @@ impl ShogiNoteOpe {
             Some(address) => {
                 // 人に読みやすいセル表記にします。
                 if address.is_fingertip() {
-                    "SK".to_string()
+                    "FT".to_string()
                 } else if address.is_on_board(board_size) {
                     board_size
                         .address_to_cell(address.get_index())

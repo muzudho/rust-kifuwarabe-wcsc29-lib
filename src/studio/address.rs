@@ -171,7 +171,7 @@ impl Address {
     /// 持ち駒
     pub fn get_hand_piece(self, app: &Application) -> Option<Piece> {
         if app.is_debug() {
-            app.comm.println(&format!("[HandP:{}]", self.index));
+            app.comm.println(&format!("[#HandP:{}]", self.index));
         }
 
         // TODO マジックナンバーを解消したい。

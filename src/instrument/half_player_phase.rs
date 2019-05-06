@@ -1,5 +1,6 @@
 use audio_compo::cassette_deck::CassetteDeck;
 use audio_compo::cassette_deck::Slot;
+use studio::application::Application;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HalfPlayerPhaseValue {
@@ -62,8 +63,17 @@ impl HalfPlayerPhaseObject {
     }
 
     /// 隣へ☆（＾ｑ＾）！
-    pub fn go_next(&mut self, deck: &CassetteDeck, slot: Slot) {
+    pub fn go_next(&mut self, deck: &CassetteDeck, slot: Slot, app: &Application) {
         if let Some(ref tape_box) = &deck.slots[slot as usize].tape_box {
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#phase.go_next Start: {:?}, Slot: {:?}, FacingLeft: {}]",
+                    self.value,
+                    slot,
+                    tape_box.is_facing_left_of_current_tape()
+                ));
+            }
+
             use instrument::half_player_phase::HalfPlayerPhaseValue::*;
             if tape_box.is_facing_left_of_current_tape() {
                 self.value = match self.value {
@@ -79,6 +89,15 @@ impl HalfPlayerPhaseObject {
                     OnePointFive => Second,
                     Second => ZeroPointFive,
                 };
+            }
+
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#phase.go_next End: {:?}, Slot: {:?}, FacingLeft: {}]",
+                    self.value,
+                    slot,
+                    tape_box.is_facing_left_of_current_tape()
+                ));
             }
         } else {
             panic!("Please choice tape box.");

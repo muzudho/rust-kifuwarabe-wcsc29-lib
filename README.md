@@ -102,7 +102,6 @@ cargo clippy --example conv_a_kif
 ### Please change encoding to UTF-8.
 ### --output は拡張子抜きファイル名。
 cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak"
-cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK" --debug
 ```
 
 ## How to eat .csa record?
@@ -128,6 +127,8 @@ cargo run --example eat_a_csa -- --path C:/shogi-record/formation-go/wcsc28_kifu
 cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/eating-go/WCSC28_F4_DGK_TNK.csa
 
 cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/formation-go$%wcsc28_kifu$%WCSC28_F4_HNW_PAL.csa
+
+cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK" --debug
 ```
 
 Output.

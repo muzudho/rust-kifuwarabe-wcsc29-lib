@@ -19,7 +19,7 @@ impl HumanInterface {
     }
 
     /// 指定スロットの局面の表示。
-    pub fn bo(deck: &mut CassetteDeck, position: &Position, app: &Application) {
+    pub fn bo(deck: &CassetteDeck, position: &Position, app: &Application) {
         if app.is_debug() {
             // 何手目か。
             app.comm.println(&format!(
@@ -33,7 +33,7 @@ impl HumanInterface {
     }
 
     /// 棋譜の表示。
-    pub fn kifu(deck: &mut CassetteDeck, slot: Slot, position: &Position, app: &Application) {
+    pub fn kifu(deck: &CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         if app.is_debug() {
             if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
                 let (_numbers, operations) =

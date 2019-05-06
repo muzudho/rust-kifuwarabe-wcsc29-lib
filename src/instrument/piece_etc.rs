@@ -220,48 +220,6 @@ impl PieceIdentify {
             P37 => "歩37",
             P38 => "歩38",
             P39 => "歩39",
-            /*
-            K00 => "K00",
-            K01 => "K01",
-            G02 => "G02",
-            G03 => "G03",
-            G04 => "G04",
-            G05 => "G05",
-            S06 => "S06",
-            S07 => "S07",
-            S08 => "S08",
-            S09 => "S09",
-            N10 => "N10",
-            N11 => "N11",
-            N12 => "N12",
-            N13 => "N13",
-            L14 => "L14",
-            L15 => "L15",
-            L16 => "L16",
-            L17 => "L17",
-            B18 => "B18",
-            B19 => "B19",
-            R20 => "R20",
-            R21 => "R21",
-            P22 => "P22",
-            P23 => "P23",
-            P24 => "P24",
-            P25 => "P25",
-            P26 => "P26",
-            P27 => "P27",
-            P28 => "P28",
-            P29 => "P29",
-            P30 => "P30",
-            P31 => "P31",
-            P32 => "P32",
-            P33 => "P33",
-            P34 => "P34",
-            P35 => "P35",
-            P36 => "P36",
-            P37 => "P37",
-            P38 => "P38",
-            P39 => "P39",
-            */
         }
         .to_string()
     }
@@ -339,26 +297,6 @@ impl IdentifiedPiece {
             id: piece_id,
         }
     }
-
-    /*
-    pub fn some(
-        phase_opt: Option<HalfPlayerPhaseValue>,
-        promoted_flag: bool,
-        piece_id: PieceIdentify,
-    ) -> Option<IdentifiedPiece> {
-        Some(IdentifiedPiece::from_phase_pro_id(
-            phase_opt,
-            promoted_flag,
-            piece_id,
-        ))
-    }
-    */
-
-    /*
-    pub fn go_next(&mut self) {
-        self.phase.go_next();
-    }
-    */
 
     pub fn turn_over(&mut self) {
         self.promoted = !self.promoted;
@@ -984,6 +922,7 @@ impl Piece {
         }
     }
 
+    /// 駒箱に片付けるぜ☆（＾～＾）
     pub fn to_disactivate(self) -> Self {
         use instrument::piece_etc::Piece::*;
         match self {
@@ -1018,59 +957,47 @@ impl Piece {
         match self {
             K1 => PK1,
             K2 => PK2,
-            K3 => PK3,
             PK1 => K1,
             PK2 => K2,
-            PK3 => K3,
 
             R1 => PR1,
             R2 => PR2,
-            R3 => PR3,
             PR1 => R1,
             PR2 => R2,
-            PR3 => R3,
 
             B1 => PB1,
             B2 => PB2,
-            B3 => PB3,
             PB1 => B1,
             PB2 => B2,
-            PB3 => B3,
 
             G1 => PG1,
             G2 => PG2,
-            G3 => PG3,
             PG1 => G1,
             PG2 => G2,
-            PG3 => G3,
 
             S1 => PS1,
             S2 => PS2,
-            S3 => PS3,
             PS1 => S1,
             PS2 => S2,
-            PS3 => S3,
 
             N1 => PN1,
             N2 => PN2,
-            N3 => PN3,
             PN1 => N1,
             PN2 => N2,
-            PN3 => N3,
 
             L1 => PL1,
             L2 => PL2,
-            L3 => PL3,
             PL1 => L1,
             PL2 => L2,
-            PL3 => L3,
 
             P1 => PP1,
             P2 => PP2,
-            P3 => PP3,
             PP1 => P1,
             PP2 => P2,
-            PP3 => P3,
+
+            // 駒箱の中のものは成れない☆（＾～＾）
+            K3 | PK3 | R3 | PR3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3
+            | PP3 => panic!("[#駒箱の中のものは成れない☆（＾～＾）]"),
         }
     }
 
@@ -1080,60 +1007,48 @@ impl Piece {
             // K
             K1 => K2,
             K2 => K1,
-            K3 => K3,
             PK1 => PK2,
             PK2 => PK1,
-            PK3 => PK3,
 
             // R
             R1 => R2,
             R2 => R1,
-            R3 => R3,
             PR1 => PR2,
             PR2 => PR1,
-            PR3 => PR3,
 
             B1 => B2,
             B2 => B1,
-            B3 => B3,
             PB1 => PB2,
             PB2 => PB1,
-            PB3 => PB3,
 
             G1 => PG2,
             G2 => PG1,
-            G3 => PG3,
             PG1 => G2,
             PG2 => G1,
-            PG3 => G3,
 
             S1 => S2,
             S2 => S1,
-            S3 => S3,
             PS1 => PS2,
             PS2 => PS1,
-            PS3 => PS3,
 
             N1 => N2,
             N2 => N1,
-            N3 => N3,
             PN1 => PN2,
             PN2 => PN1,
-            PN3 => PN3,
 
             L1 => L2,
             L2 => L1,
-            L3 => L3,
             PL1 => PL2,
             PL2 => PL1,
-            PL3 => PL3,
 
             P1 => P2,
             P2 => P1,
-            P3 => P3,
             PP1 => PP2,
             PP2 => PP1,
-            PP3 => PP3,
+
+            // 駒箱のものは回せない☆（＾～＾）
+            K3 | PK3 | PR3 | R3 | B3 | PB3 | G3 | PG3 | S3 | PS3 | N3 | PN3 | L3 | PL3 | P3
+            | PP3 => panic!("[#駒箱の中の物は回せない☆（＾～＾）]"),
         }
     }
 
