@@ -19,6 +19,7 @@ use std::path::Path;
 pub struct Arguments {
     pub input_file: Option<String>,
     pub output_file: Option<String>,
+    pub debug: bool,
 }
 impl Arguments {
     pub fn parse() -> Arguments {
@@ -27,6 +28,7 @@ impl Arguments {
         let mut opts = Options::new();
         opts.optopt("i", "input", "set input record file name.", "NAME");
         opts.optopt("o", "output", "set output record file name.", "NAME");
+        opts.optflag("d", "debug", "Debug.");
 
         let matches = opts
             .parse(&args[1..])
@@ -35,6 +37,7 @@ impl Arguments {
         Arguments {
             input_file: matches.opt_str("input"),
             output_file: matches.opt_str("output"),
+            debug: matches.opt_present("debug"),
         }
     }
 }
@@ -48,7 +51,7 @@ fn main() {
     let args = Arguments::parse();
 
     // The application contains all immutable content.
-    let app = Application::new();
+    let mut app = Application::new();
 
     let in_file = args
         .input_file
@@ -59,12 +62,17 @@ fn main() {
         .output_file
         .unwrap_or_else(|| panic!(app.comm.panic("Fail. args.output_file.")));
 
+    if args.debug {
+        app.kifuwarabe_flag = true;
+        app.comm.println("Debug on!");
+    }
+
     // Position.
     let mut position = Position::new_honshogi_origin();
 
     // Deck.
     let mut deck = CassetteDeck::new_change(
-        Some(CassetteTapeBox::from_training_file(
+        Some(CassetteTapeBox::from_training_tape_box_file(
             &tape_box_file_for_write,
             position.get_board_size(),
             &app,

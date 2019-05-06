@@ -73,7 +73,7 @@ RPM形式棋譜というのは きふわらべ に読める棋譜の形式(Rever
 
 ```Shell
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
 
 ### Compile.
@@ -90,7 +90,7 @@ cargo run --example eat_a_kif -- --path C:/muzudho/kifuwarabe-wcsc29-learn/outpu
 
 ```Shell
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
 
 ### Compile.
@@ -101,14 +101,14 @@ cargo clippy --example conv_a_kif
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
 cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak.rbox"
-cargo run --example conv_a_rec -- --input "C:\shogi-record\go\eating\wcsc\１回戦\kifu.csa" --output "C:/muzudho/shogi-record/rpm/wcsc/１回戦\kifu.rbox"
+cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.tameshi" --debug
 ```
 
 ## How to eat .csa record?
 
 ```Shell
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
@@ -136,7 +136,7 @@ Output.
 
 ```Shell
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
@@ -159,7 +159,7 @@ cargo run --example usi_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/usi-
 
 ```Shell
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.
@@ -175,7 +175,7 @@ cargo run --example main
 
 ```
 ### Example.
-cd C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
 cls
  
 ### Compile.

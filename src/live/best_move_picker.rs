@@ -107,7 +107,7 @@ impl BestMovePicker {
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
         {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
-            deck.change_with_tape_box_file(
+            deck.change_tape_as_name_box_file(
                 &tape_box_file
                     .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
                     .path()
@@ -674,7 +674,7 @@ impl BestMovePicker {
                     let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                     {
                         let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
-                        cassette_tape_box_2.change_with_tape(cassette_tape_2);
+                        cassette_tape_box_2.change_tape_as_name(cassette_tape_2);
                     }
                     */
                     /*

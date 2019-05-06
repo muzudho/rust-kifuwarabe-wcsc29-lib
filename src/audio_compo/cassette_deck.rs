@@ -77,33 +77,34 @@ impl CassetteDeck {
             slots: [CassetteSlot::new_t(), CassetteSlot::new_as_learning(&app)],
         };
 
-        brandnew.change(training_tape_box_opt, board_size, &app);
+        brandnew.change_training_tape(training_tape_box_opt, board_size, &app);
 
         brandnew
     }
 
     // JSONファイルを元に トレーニング・テープをオブジェクト化して、デッキに差し込むぜ☆（＾～＾）
-    pub fn change_with_tape_box_file(
+    pub fn change_tape_as_name_box_file(
         &mut self,
         file_name: &str,
         board_size: BoardSize,
         app: &Application,
     ) {
-        let training_tape_box = CassetteTapeBox::from_training_file(&file_name, board_size, &app);
-        self.change(Some(training_tape_box), board_size, &app);
+        let training_tape_box =
+            CassetteTapeBox::from_training_tape_box_file(&file_name, board_size, &app);
+        self.change_training_tape(Some(training_tape_box), board_size, &app);
     }
 
     /// トレーニング・テープを交換するぜ☆（＾～＾）
     ///
     /// 棋譜読取の際は、テープ・ボックスの中にテープ・インデックスが指定されてある☆（＾～＾）
-    pub fn change(
+    pub fn change_training_tape(
         &mut self,
         training_tape_box_opt: Option<CassetteTapeBox>,
         board_size: BoardSize,
         app: &Application,
     ) {
         // トレーニング・テープは読み取り専用なんで、べつに保存とかしない☆（＾～＾）
-        self.slots[Slot::Training as usize].tape_box = training_tape_box_opt;
+        self.set_tape_box(Slot::Training, training_tape_box_opt, &app);
         self.slots[Slot::Training as usize].ply = 1;
 
         let mut full = false;
@@ -121,14 +122,24 @@ impl CassetteDeck {
         }
 
         if full {
+            if app.is_debug() {
+                app.comm.println("Change learning tape box.");
+            }
             // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
-            self.slots[Slot::Learning as usize].tape_box =
-                Some(CassetteTapeBox::new_empty(Slot::Learning, &app));
+            self.set_tape_box(
+                Slot::Learning,
+                Some(CassetteTapeBox::new_empty(Slot::Learning, &app)),
+                &app,
+            );
         }
 
         // 新しいラーニング・テープに差し替える。
         if let Some(ref mut learning_box) = self.slots[Slot::Learning as usize].tape_box {
-            learning_box.change_brandnew(&app);
+            if app.is_debug() {
+                app.comm.println("Change learning tape.");
+            }
+
+            learning_box.change_tape_brandnew(&app);
             self.slots[Slot::Learning as usize].ply = 1;
         } else {
             panic!("Get l_box none.")
@@ -143,10 +154,24 @@ impl CassetteDeck {
     /// (成功)
     pub fn change_next_if_training_tape_exists(&mut self, app: &Application) -> bool {
         if let Some(ref mut training_tape_box) = &mut self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.change_next_if_it_exists(&app)
+            training_tape_box.change_tape_if_next_exists(&app)
         } else {
             false
         }
+    }
+
+    pub fn set_tape_box(
+        &mut self,
+        slot: Slot,
+        tape_box: Option<CassetteTapeBox>,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm
+                .println(&format!("Set tape box: Slot: {:?}.", slot));
+        }
+
+        self.slots[slot as usize].tape_box = tape_box;
     }
 
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）

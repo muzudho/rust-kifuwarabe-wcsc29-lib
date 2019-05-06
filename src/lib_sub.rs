@@ -190,7 +190,7 @@ impl LibSub {
 
             if let Some(urecord) = urecord_opt {
                 // 差し替え。
-                deck.change(None, position.get_board_size(), &app);
+                deck.change_training_tape(None, position.get_board_size(), &app);
                 UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
             }
             //comm.println("#Record converted1.");

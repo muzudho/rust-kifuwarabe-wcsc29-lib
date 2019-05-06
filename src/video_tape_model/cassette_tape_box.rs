@@ -35,10 +35,44 @@ impl CassetteTapeBox {
         }
     }
 
-    /// トレーニング・テープを作成します。
-    pub fn from_training_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
+    /// トレーニング・テープ・ボックスを作成します。
+    pub fn from_training_tape_box_file(
+        file_name: &str,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> Self {
         let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
         rpm_tape_box.to_training_object(board_size, &app)
+    }
+
+    fn set_tape_index(&mut self, index_opt: Option<usize>, app: &Application) {
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#set_tape_index: {}, Slot: '{:?}']",
+                if let Some(index) = index_opt {
+                    index.to_string()
+                } else {
+                    "None".to_string()
+                },
+                self.role_as_slot
+            ));
+        }
+
+        self.listening_tape_index = index_opt;
+    }
+
+    pub fn back_to_first_tape(&mut self, app: &Application) {
+        if self.tapes.is_empty() {
+            if app.is_debug() {
+                app.comm.println("[#back_to_first_tape: Tapes is empty.]");
+            }
+            self.set_tape_index(None, &app);
+        } else {
+            if app.is_debug() {
+                app.comm.println("[#back_to_first_tape: Set 0.]");
+            }
+            self.set_tape_index(Some(0), &app);
+        }
     }
 
     /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
@@ -47,7 +81,7 @@ impl CassetteTapeBox {
             app.comm
                 .println(&format!("[#Eject: {:?}]", self.role_as_slot));
         }
-        self.listening_tape_index = None;
+        self.set_tape_index(None, &app);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）
@@ -56,29 +90,31 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (成功)
-    pub fn change_next_if_it_exists(&mut self, _app: &Application) -> bool {
+    pub fn change_tape_if_next_exists(&mut self, app: &Application) -> bool {
         if let Some(tape_index) = self.listening_tape_index {
-            self.listening_tape_index = Some(tape_index + 1);
+            self.set_tape_index(Some(tape_index + 1), &app);
             tape_index + 1 < self.tapes.len()
         } else if self.tapes.is_empty() {
             false
         } else {
-            self.listening_tape_index = Some(0);
+            self.set_tape_index(Some(0), &app);
             true
         }
     }
 
     /// ピークに、新品の空テープを追加してそれを聴くぜ☆（＾ｑ＾）
-    pub fn change_brandnew(&mut self, app: &Application) {
+    pub fn change_tape_brandnew(&mut self, app: &Application) {
         let brandnew = CassetteTape::new_facing_right(&app);
-        self.listening_tape_index = Some(self.tapes.len());
+        let index = self.tapes.len();
+        self.set_tape_index(Some(index), &app);
         self.tapes.push(brandnew);
     }
 
     /// ピークに、指定のテープを追加してそれを聴くぜ☆（＾～＾）
     /// トレーニング・テープを聴くときと、ラーニング・テープをJSONを出力するときに使う☆（＾～＾）
-    pub fn change_with_tape(&mut self, tape: CassetteTape) {
-        self.listening_tape_index = Some(self.tapes.len());
+    pub fn change_tape_as_name(&mut self, tape: CassetteTape, app: &Application) {
+        let index = self.tapes.len();
+        self.set_tape_index(Some(index), &app);
         self.tapes.push(tape);
     }
 
@@ -106,7 +142,10 @@ impl CassetteTapeBox {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].seek_to_next(&app)
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "Please change tape. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 

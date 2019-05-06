@@ -62,7 +62,7 @@ fn main() {
 
     // Deck.
     let mut deck = CassetteDeck::new_change(
-        Some(CassetteTapeBox::from_training_file(
+        Some(CassetteTapeBox::from_training_tape_box_file(
             &tape_box_file_for_write.to_string(),
             position.get_board_size(),
             &app,

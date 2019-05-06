@@ -22,7 +22,7 @@ impl OhashiPlayer {
         app: &Application,
     ) {
         // オリジン局面に戻す☆（＾～＾）
-        deck.change(None, position.get_board_size(), &app);
+        deck.change_training_tape(None, position.get_board_size(), &app);
         position.reset_origin_position();
     }
 
