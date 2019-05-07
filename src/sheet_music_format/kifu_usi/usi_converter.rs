@@ -27,7 +27,14 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
+                position.touch_1note_ope(
+                    deck,
+                    &rnote_ope,
+                    false,
+                    board_size,
+                    &app,
+                    "play_out_usi_tape",
+                );
             }
 
             ply += 1;
@@ -66,7 +73,7 @@ impl UsiConverter {
 
                 // hand-off
                 let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                    position.get_phase().get_value(),
+                    position.get_phase().get_state(),
                     drop,
                 ));
                 rpm_move.push(hand_off);
@@ -99,7 +106,7 @@ impl UsiConverter {
                     // hand-on
                     let up = id_piece.get_type();
                     let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                        position.get_phase().get_value(),
+                        position.get_phase().get_state(),
                         up,
                     ));
                     rpm_move.push(hand_on);

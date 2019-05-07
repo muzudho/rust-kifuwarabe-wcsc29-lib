@@ -19,7 +19,7 @@ impl Fen {
         app: &Application,
     ) -> bool {
         // ゲームに使う駒がまだ決まっていないところから始めます。
-        position.reset_empty_position();
+        position.repeat_empty_position(&app);
 
         let rank = 9;
         let mut file = 1;

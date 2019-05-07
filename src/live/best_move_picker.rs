@@ -98,7 +98,7 @@ impl BestMovePicker {
             // RPMを検索。
             println!(
                 "#get_mut_best_move start. Phase: {:?}",
-                position.get_phase().get_value()
+                position.get_phase().get_state()
             );
         }
 
@@ -122,7 +122,7 @@ impl BestMovePicker {
                 app.comm.println(&format!(
                     "#Tape-box: {}. Phase: {:?}.",
                     deck.to_human_presentable_of_tape_box(Slot::Training),
-                    position.get_phase().get_value()
+                    position.get_phase().get_state()
                 ));
             }
 
@@ -211,14 +211,14 @@ impl BestMovePicker {
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
-                        position.scan_wild(position.get_phase().get_value(), *subject_piece_id)
+                        position.scan_wild(position.get_phase().get_state(), *subject_piece_id)
                     {
                         if app.is_debug() {
                             // Display.
                             app.comm.println(&format!(
                                 "[{}] Recording thread by piece: {}'{}'{}.",
                                 deck.get_ply(Slot::Training),
-                                position.get_phase().get_value().to_log(),
+                                position.get_phase().get_state().to_log(),
                                 my_idp.to_human_presentable(),
                                 my_addr_obj.to_physical_sign(position.get_board_size(), &app)
                             ));

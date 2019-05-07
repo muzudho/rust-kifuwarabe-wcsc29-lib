@@ -23,7 +23,7 @@ impl OhashiPlayer {
     ) {
         // オリジン局面に戻す☆（＾～＾）
         deck.change_training_tape(None, position.get_board_size(), &app);
-        position.reset_origin_position();
+        position.repeat_origin_position(&app);
     }
 
     /// 初期化に使う。
@@ -110,7 +110,14 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
+                position.touch_1note_ope_no_log(
+                    deck,
+                    &element.0,
+                    false,
+                    bs,
+                    &app,
+                    "play_ohashi_starting",
+                );
             }
 
             {
@@ -120,7 +127,14 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
+                position.touch_1note_ope_no_log(
+                    deck,
+                    &element.1,
+                    false,
+                    bs,
+                    &app,
+                    "play_ohashi_starting",
+                );
             }
 
             {
@@ -130,7 +144,14 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
+                position.touch_1note_ope_no_log(
+                    deck,
+                    &element.2,
+                    false,
+                    bs,
+                    &app,
+                    "play_ohashi_starting",
+                );
             }
         }
     }

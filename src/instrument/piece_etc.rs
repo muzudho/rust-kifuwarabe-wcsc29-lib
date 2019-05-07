@@ -290,9 +290,10 @@ impl IdentifiedPiece {
         phase_value: HalfPlayerPhaseValue,
         promoted_flag: bool,
         piece_id: PieceIdentify,
+        app: &Application,
     ) -> IdentifiedPiece {
         IdentifiedPiece {
-            phase: HalfPlayerPhaseObject::from_value(phase_value),
+            phase: HalfPlayerPhaseObject::from_value(phase_value, &app, 111111),
             promoted: promoted_flag,
             id: piece_id,
         }
@@ -303,8 +304,8 @@ impl IdentifiedPiece {
     }
 
     /// 点対称に回転☆（＾ｑ＾）！
-    pub fn rotate_point_symmetrically(&mut self) {
-        self.phase.rotate_point_symmetrically();
+    pub fn rotate_point_symmetrically(&mut self, app: &Application) {
+        self.phase.rotate_point_symmetrically(&app);
     }
 
     pub fn get_phase(self) -> HalfPlayerPhaseObject {
@@ -320,7 +321,7 @@ impl IdentifiedPiece {
         if self.get_phase().is_half() {
             None
         } else {
-            Some(self.get_phase().get_value() != position.get_phase().get_value())
+            Some(self.get_phase().get_state() != position.get_phase().get_state())
         }
     }
 
@@ -361,7 +362,7 @@ impl IdentifiedPiece {
     pub fn to_human_presentable(self) -> String {
         use instrument::piece_etc::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        match self.get_phase().get_value() {
+        match self.get_phase().get_state() {
             First => {
                 if self.is_promoted() {
                     match self.get_id() {
@@ -618,7 +619,7 @@ impl IdentifiedPiece {
     pub fn to_extended_usi_text(self) -> String {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        match self.get_phase().get_value() {
+        match self.get_phase().get_state() {
             First => {
                 if self.is_promoted() {
                     // 先手の成り駒。
@@ -688,7 +689,7 @@ impl IdentifiedPiece {
     pub fn to_usi_sign(self) -> String {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         use instrument::piece_etc::PieceIdentify::*;
-        match self.get_phase().get_value() {
+        match self.get_phase().get_state() {
             First => {
                 if self.is_promoted() {
                     // 先手の成り駒。
@@ -1423,7 +1424,7 @@ impl PieceType {
 pub fn hand_id_piece_to_hand_index(id_piece: IdentifiedPiece) -> usize {
     use instrument::half_player_phase::HalfPlayerPhaseValue::*;
     use instrument::piece_etc::PieceIdentify::*;
-    match id_piece.phase.get_value() {
+    match id_piece.phase.get_state() {
         First => match id_piece.get_id() {
             K00 | K01 => 0,
             R20 | R21 => 1,

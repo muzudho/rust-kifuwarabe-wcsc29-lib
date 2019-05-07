@@ -67,7 +67,7 @@ fn main() {
     }
 
     // Position.
-    let mut position = Position::new_honshogi_origin();
+    let mut position = Position::new_honshogi_origin(&app, 123003);
 
     // Deck.
     let mut deck = CassetteDeck::new_for_tape_conversion(&tape_file_name_without_extension, &app);

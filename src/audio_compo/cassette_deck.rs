@@ -443,8 +443,13 @@ impl CassetteDeck {
         HumanInterface::show_position(position, &app);
 
         if let Some(rpm_note) = self.delete_1note(slot, &app) {
-            let (_is_legal_touch, _piece_identify_opt) =
-                position.try_beautiful_touch_no_log(&self, slot, &rpm_note.get_ope(), &app);
+            let (_is_legal_touch, _piece_identify_opt) = position.try_beautiful_touch_no_log(
+                &self,
+                slot,
+                &rpm_note.get_ope(),
+                &app,
+                "pop_1note",
+            );
             Some(rpm_note)
         } else {
             None

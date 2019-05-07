@@ -40,50 +40,83 @@ impl HalfPlayerPhaseValue {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct HalfPlayerPhaseObject {
-    value: HalfPlayerPhaseValue,
+    // デバッグ用のでたらめな数字。
+    hint_owner: i64,
+    state: HalfPlayerPhaseValue,
 }
 impl HalfPlayerPhaseObject {
-    pub fn new() -> Self {
+    pub fn new_empty(app: &Application, hint_owner_num: i64) -> Self {
+        if app.is_debug() {
+            app.comm.println("[#phase.new]");
+        }
+
         HalfPlayerPhaseObject {
-            value: HalfPlayerPhaseValue::ZeroPointFive,
+            hint_owner: hint_owner_num,
+            state: HalfPlayerPhaseValue::ZeroPointFive,
         }
     }
 
-    pub fn from_value(init_value: HalfPlayerPhaseValue) -> Self {
-        HalfPlayerPhaseObject { value: init_value }
+    pub fn from_value(
+        init_value: HalfPlayerPhaseValue,
+        app: &Application,
+        hint_owner_num: i64,
+    ) -> Self {
+        if app.is_debug() {
+            app.comm.println("[#phase.from_value]");
+        }
+
+        HalfPlayerPhaseObject {
+            hint_owner: hint_owner_num,
+            state: init_value,
+        }
     }
 
-    pub fn get_value(&self) -> HalfPlayerPhaseValue {
-        self.value
+    pub fn repeat_phase(&mut self, app: &Application) {
+        if app.is_debug() {
+            app.comm.println("[#phase.repeat_phase]");
+        }
+        self.state = HalfPlayerPhaseValue::ZeroPointFive;
+    }
+
+    pub fn get_state(&self) -> HalfPlayerPhaseValue {
+        self.state
     }
 
     pub fn is_half(&self) -> bool {
-        self.value == HalfPlayerPhaseValue::ZeroPointFive
-            || self.value == HalfPlayerPhaseValue::OnePointFive
+        self.state == HalfPlayerPhaseValue::ZeroPointFive
+            || self.state == HalfPlayerPhaseValue::OnePointFive
     }
 
-    /// 隣へ☆（＾ｑ＾）！
-    pub fn go_next(&mut self, deck: &CassetteDeck, slot: Slot, app: &Application) {
+    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）
+    pub fn go_next_phase_for_position(
+        &mut self,
+        deck: &CassetteDeck,
+        slot: Slot,
+        app: &Application,
+        hint: &str,
+    ) {
         if let Some(ref tape_box) = &deck.slots[slot as usize].tape_box {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#phase.go_next Start: {:?}, Slot: {:?}, FacingLeft: {}]",
-                    self.value,
+                    "[#phase.go_next Start: {:?}, Slot: {:?}, FacingLeft: {}, hint: [{}, {}]",
+                    self.state,
                     slot,
-                    tape_box.is_facing_left_of_current_tape()
+                    tape_box.is_facing_left_of_current_tape(),
+                    hint,
+                    self.hint_owner
                 ));
             }
 
             use instrument::half_player_phase::HalfPlayerPhaseValue::*;
             if tape_box.is_facing_left_of_current_tape() {
-                self.value = match self.value {
+                self.state = match self.state {
                     ZeroPointFive => Second,
                     First => ZeroPointFive,
                     OnePointFive => First,
                     Second => OnePointFive,
                 };
             } else {
-                self.value = match self.value {
+                self.state = match self.state {
                     ZeroPointFive => First,
                     First => OnePointFive,
                     OnePointFive => Second,
@@ -93,10 +126,12 @@ impl HalfPlayerPhaseObject {
 
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#phase.go_next End: {:?}, Slot: {:?}, FacingLeft: {}]",
-                    self.value,
+                    "[#phase.go_next End: {:?}, Slot: {:?}, FacingLeft: {}, hint: [{}, {}]]",
+                    self.state,
                     slot,
-                    tape_box.is_facing_left_of_current_tape()
+                    tape_box.is_facing_left_of_current_tape(),
+                    hint,
+                    self.hint_owner
                 ));
             }
         } else {
@@ -105,9 +140,13 @@ impl HalfPlayerPhaseObject {
     }
 
     /// 点対称に回転☆（＾ｑ＾）！
-    pub fn rotate_point_symmetrically(&mut self) {
+    pub fn rotate_point_symmetrically(&mut self, app: &Application) {
+        if app.is_debug() {
+            app.comm.println("[#phase.rotate_point_symmetrically]");
+        }
+
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-        self.value = match self.value {
+        self.state = match self.state {
             ZeroPointFive => OnePointFive,
             First => Second,
             OnePointFive => ZeroPointFive,

@@ -58,7 +58,7 @@ pub fn main_loop() {
     let mut app = Application::new();
 
     // Position.
-    let mut position = Position::new_honshogi_origin();
+    let mut position = Position::new_honshogi_origin(&app, 222222);
 
     // Deck.
     let mut deck = CassetteDeck::new_empty(&app);

@@ -119,7 +119,7 @@ impl LibSub {
             // app.comm.println("lib.rs:go: touch_1note_ope");
 
             // 非合法手はいったん出力し、将棋所の方でエラーにする☆（＾～＾）
-            position.touch_1note_ope(deck, &rnote_ope, true, board_size, &app);
+            position.touch_1note_ope(deck, &rnote_ope, true, board_size, &app, "go");
         }
     }
 

@@ -38,8 +38,8 @@ impl Fingertip {
         self.id_piece.turn_over();
     }
 
-    pub fn rotate_point_symmetrically(&mut self) {
-        self.id_piece.rotate_point_symmetrically();
+    pub fn rotate_point_symmetrically(&mut self, app: &Application) {
+        self.id_piece.rotate_point_symmetrically(&app);
     }
 
     pub fn get_fingertip(&self) -> (IdentifiedPiece, Address) {
@@ -64,10 +64,14 @@ pub struct Position {
 }
 impl Position {
     /// 本将棋用に初期化します。駒を並べる前の局面です。
-    pub fn new_honshogi_origin() -> Position {
+    pub fn new_honshogi_origin(app: &Application, hint_owner: i64) -> Position {
+        if app.is_debug() {
+            app.comm.println("[#Position.new_honshogi_origin]")
+        }
+
         // このあと すぐリセットする。
         let mut instance = Position {
-            phase: HalfPlayerPhaseObject::new(),
+            phase: HalfPlayerPhaseObject::new_empty(&app, hint_owner),
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
             hands: [
@@ -99,14 +103,14 @@ impl Position {
             fingertip: None,
         };
 
-        instance.reset_origin_position();
+        instance.repeat_origin_position(&app);
         instance
     }
 
     /// 自分の駒を持ち駒として持っているところから始めます。
-    pub fn reset_origin_position(&mut self) {
+    pub fn repeat_origin_position(&mut self, app: &Application) {
         //println!("#Position: reset_origin_position.");
-        self.phase = HalfPlayerPhaseObject::new();
+        self.phase.repeat_phase(&app);
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
@@ -145,105 +149,105 @@ impl Position {
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, K00));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, K00, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(K1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, K01));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, K01, &app));
         }
         // 飛2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(R2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, R20));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, R20, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(R1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, R21));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, R21, &app));
         }
         // 角2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(B2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, B18));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, B18, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(B1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, B19));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, B19, &app));
         }
         // 金4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(G2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G04));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G02));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G04, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G02, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(G1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G05));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G03));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G05, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G03, &app));
         }
         // 銀4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(S2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S08));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S06));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S08, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S06, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(S1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S09));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S07));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S09, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S07, &app));
         }
         // 桂4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(N2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N12));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N10));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N12, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N10, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(N1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N11));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N13));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N11, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N13, &app));
         }
         // 香4枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(L2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L16));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L14));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L16, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L14, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(L1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L17));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L15));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L17, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L15, &app));
         }
         // 歩18枚。（逆順）
         {
             let vec = &mut self.hands[HandIndex::from_piece(P2).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P38));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P36));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P34));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P32));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P30));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P28));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P26));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P24));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P22));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P38, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P36, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P34, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P32, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P30, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P28, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P26, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P24, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P22, &app));
         }
         {
             let vec = &mut self.hands[HandIndex::from_piece(P1).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P39));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P37));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P35));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P33));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P31));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P29));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P27));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P25));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P23));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P39, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P37, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P35, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P33, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P31, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P29, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P27, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P25, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P23, &app));
         }
     }
 
     /// ゲームに使う駒がまだ決まっていないところから始めます。自由初期局面用。
-    pub fn reset_empty_position(&mut self) {
+    pub fn repeat_empty_position(&mut self, app: &Application) {
         //println!("#Position: reset_empty_position.");
-        self.phase = HalfPlayerPhaseObject::new();
+        self.phase.repeat_phase(&app);
         self.board_size = BoardSize::create_hon_shogi();
         self.board = [None; DEFAULT_BOARD_SIZE];
         self.hands = [
@@ -280,74 +284,74 @@ impl Position {
         // 玉2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(K3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, K00));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, K01));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, K00, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, K01, &app));
         }
         // 飛2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(R3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, R20));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, R21));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, R20, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, R21, &app));
         }
         // 角2枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(B3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, B18));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, B19));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, B18, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, B19, &app));
         }
         // 金4枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(G3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G02));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G04));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G03));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G05));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G02, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, G04, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G03, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, G05, &app));
         }
         // 銀4枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(S3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S06));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S08));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S07));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S09));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S06, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, S08, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S07, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, S09, &app));
         }
         // 桂4枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(N3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N10));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N12));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N11));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N13));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N10, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, N12, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N11, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, N13, &app));
         }
         // 香4枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(L3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L14));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L16));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L15));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L17));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L14, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, L16, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L15, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, L17, &app));
         }
         // 歩18枚。
         {
             let vec = &mut self.hands[HandIndex::from_piece(P3).get_index()];
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P22));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P24));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P26));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P28));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P30));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P32));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P34));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P36));
-            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P38));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P23));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P25));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P27));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P29));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P31));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P33));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P35));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P37));
-            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P39));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P22, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P24, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P26, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P28, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P30, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P32, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P34, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P36, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(Second, false, P38, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P23, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P25, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P27, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P29, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P31, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P33, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P35, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P37, &app));
+            vec.push(IdentifiedPiece::from_phase_pro_id(First, false, P39, &app));
         }
     }
 
@@ -512,6 +516,17 @@ impl Position {
         }
     }
 
+    pub fn go_next_phase(
+        &mut self,
+        deck: &CassetteDeck,
+        slot: Slot,
+        app: &Application,
+        hint: &str,
+    ) {
+        self.phase
+            .go_next_phase_for_position(&deck, slot, &app, &format!("{}/go_next_phase", hint))
+    }
+
     /// Operation トラック文字列読取。
     pub fn touch_by_line(
         &mut self,
@@ -537,7 +552,14 @@ impl Position {
                         rnote_ope.to_human_presentable(self.get_board_size(), &app)
                     ));
                 }
-                self.touch_1note_ope(deck, &rnote_ope, is_ok_illegal, board_size, &app);
+                self.touch_1note_ope(
+                    deck,
+                    &rnote_ope,
+                    is_ok_illegal,
+                    board_size,
+                    &app,
+                    "touch_by_line",
+                );
 
                 HumanInterface::bo(deck, &self, &app);
             }
@@ -553,6 +575,7 @@ impl Position {
         is_ok_illegal: bool,
         board_size: BoardSize,
         app: &Application,
+        hint: &str,
     ) {
         if app.is_debug() {
             app.comm.println(&format!(
@@ -561,7 +584,14 @@ impl Position {
             ));
         }
 
-        self.touch_1note_ope_no_log(deck, &rnote_ope, is_ok_illegal, board_size, &app);
+        self.touch_1note_ope_no_log(
+            deck,
+            &rnote_ope,
+            is_ok_illegal,
+            board_size,
+            &app,
+            &format!("{}/touch_1note_ope", hint),
+        );
 
         /*
         comm.println(&format!(
@@ -581,11 +611,18 @@ impl Position {
         is_ok_illegal: bool,
         board_size: BoardSize,
         app: &Application,
+        hint: &str,
     ) {
         let slot = Slot::Learning;
 
         // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-        let id = match self.try_beautiful_touch_no_log(&deck, slot, &rnote_ope, &app) {
+        let id = match self.try_beautiful_touch_no_log(
+            &deck,
+            slot,
+            &rnote_ope,
+            &app,
+            &format!("{}/touch_1note_ope_no_log", hint),
+        ) {
             (is_legal_touch, Some(piece_identify)) => {
                 if !is_legal_touch && !is_ok_illegal {
                     panic!(
@@ -638,8 +675,13 @@ impl Position {
                 rnote.to_human_presentable(self.get_board_size(), &app)
             ));
         }
-        let (is_legal_touch, _piece_identify_opt) =
-            self.try_beautiful_touch_no_log(&deck, slot, &rnote.get_ope(), &app);
+        let (is_legal_touch, _piece_identify_opt) = self.try_beautiful_touch_no_log(
+            &deck,
+            slot,
+            &rnote.get_ope(),
+            &app,
+            "try_beautiful_touch",
+        );
         HumanInterface::show_position(self, &app);
 
         is_legal_touch
@@ -662,6 +704,7 @@ impl Position {
         slot: Slot,
         rnote_ope: &ShogiNoteOpe,
         app: &Application,
+        hint: &str,
     ) -> (bool, Option<IdentifiedPiece>) {
         let board_size = self.get_board_size();
 
@@ -778,11 +821,19 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.phase.go_next(&deck, slot, &app);
+                    self.go_next_phase(
+                        &deck,
+                        slot,
+                        &app,
+                        &format!(
+                            "{}/盤上や駒台の、どこも指していない。",
+                            hint
+                        ),
+                    );
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[#フェーズチェンジ {:?}]>",
-                            self.phase.get_value()
+                            self.phase.get_state()
                         ));
                     }
                     // （完遂） phase change.
@@ -794,7 +845,7 @@ impl Position {
                         fingertip.turn_over();
                     } else if rnote_ope.fingertip_rotate {
                         // （完遂）先後入れ替えの操作。
-                        fingertip.rotate_point_symmetrically();
+                        fingertip.rotate_point_symmetrically(&app);
                     };
                     (true, Some(fingertip.get_idp()))
                 } else if rnote_ope.is_resign() {
@@ -828,7 +879,7 @@ impl Position {
         for addr in BOARD_START..self.board_size.len() {
             // Id piece.
             if let Some(idp) = self.board[addr] {
-                if idp.get_phase().get_value() == phase_value && idp.get_id() == pid {
+                if idp.get_phase().get_state() == phase_value && idp.get_id() == pid {
                     // 駒の先後と、背番号が一致したら。
                     let addr_obj = Address::from_raw(addr);
                     return Some((idp, addr_obj));
@@ -966,12 +1017,7 @@ impl Position {
 
     /// 余談。
     /// 将棋盤。きふわらべは、同時に１個の将棋盤しかもたない☆（＾～＾）２つ目とか無い☆（＾～＾）
-    pub fn to_text(
-        &self,
-        phase_value: HalfPlayerPhaseValue,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> String {
+    pub fn to_text(&self, app: &Application) -> String {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         let mut content = String::new();
 
@@ -982,7 +1028,7 @@ impl Position {
         Parser::appendln(&mut content, &format!("{}|", line2));
         Parser::appendln(&mut content, &format!("{}|", line3));
 
-        match phase_value {
+        match self.phase.get_state() {
             First => {
                 // hand-graphic.
                 Parser::appendln(
@@ -1003,7 +1049,7 @@ impl Position {
             let rank = 9 - (row / 2);
 
             // 先手の手。
-            match phase_value {
+            match self.phase.get_state() {
                 First => {
                     match row {
                         0 => Parser::append(&mut content, &"|         |  ".to_string()),
@@ -1017,7 +1063,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size, &app)
+                                    .to_fingertip_display(self.get_board_size(), &app)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1037,7 +1083,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size, &app)
+                                    .to_fingertip_display(self.get_board_size(), &app)
                             ),
                         ),
                         12 => Parser::append(&mut content, &"----------+  ".to_string()),
@@ -1115,7 +1161,7 @@ impl Position {
             }
 
             // Second player finger.
-            match phase_value {
+            match self.phase.get_state() {
                 OnePointFive | First => Parser::append(&mut content, "             |"),
                 ZeroPointFive => {
                     match row {
@@ -1129,7 +1175,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size, &app)
+                                    .to_fingertip_display(self.get_board_size(), &app)
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1148,7 +1194,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(board_size, &app)
+                                    .to_fingertip_display(self.get_board_size(), &app)
                             ),
                         ),
                         12 => Parser::append(&mut content, " +-+ +-+     |"),
@@ -1164,7 +1210,7 @@ impl Position {
             Parser::append_ln(&mut content);
         }
 
-        match phase_value {
+        match self.phase.get_state() {
             ZeroPointFive | OnePointFive | First => {
                 Parser::appendln(
                     &mut content,

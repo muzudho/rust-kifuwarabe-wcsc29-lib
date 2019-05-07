@@ -43,7 +43,7 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
-    let mut position = Position::new_honshogi_origin();
+    let mut position = Position::new_honshogi_origin(&app, 123002);
 
     // Deck.
     let mut deck = CassetteDeck::new_empty(&app);

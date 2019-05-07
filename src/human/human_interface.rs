@@ -10,11 +10,7 @@ impl HumanInterface {
     pub fn show_position(position: &Position, app: &Application) {
         if app.is_debug() {
             // 盤面。
-            app.comm.println(&position.to_text(
-                position.get_phase().get_value(),
-                position.get_board_size(),
-                &app,
-            ));
+            app.comm.println(&position.to_text(&app));
         }
     }
 
