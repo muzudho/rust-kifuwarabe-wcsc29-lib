@@ -86,24 +86,6 @@ cargo clippy --example eat_a_kif
 cargo run --example eat_a_kif -- --path C:/muzudho/kifuwarabe-wcsc29-learn/output-wcsc-record/copied-daiwa/daiwa.kif
 ```
 
-## How to convert .kif record?
-
-```Shell
-### Example.
-cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
-cls
-
-### Compile.
-set RUST_BACKTRACE=1
-cargo clippy --example conv_a_kif
-
-### Run.
-### '--' is separator. You can pass arguments to exe.
-### Please change encoding to UTF-8.
-### --output は拡張子抜きファイル名。
-cargo run --example conv_a_kif -- --input "C:/shogi-record/go/eating/wcsc/永世名人/01eis-kak.kif" --output "C:/muzudho/shogi-record/rpm/wcsc/永世名人/01eis-kak"
-```
-
 ## How to eat .csa record?
 
 ```Shell
@@ -120,15 +102,7 @@ cargo clippy --example eat_a_csa
 ### Please change encoding to UTF-8.
 cargo run --example eat_a_csa -- --path C:/muzudho/kifuwarabe-wcsc29-learn/output-wcsc-record/extracted-wcsc28_kifu/wcsc28_kifu/WCSC_F1_APR_MCB.csa
 
-cargo run --example eat_a_csa -- --path C:/muzudho/kifuwarabe-wcsc29-learn/csa-record/WCSC_F2_QHA_TNK.csa
-
-cargo run --example eat_a_csa -- --path C:/shogi-record/formation-go/wcsc28_kifu/WCSC_F1_APR_MCB.csa
-
-cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/eating-go/WCSC28_F4_DGK_TNK.csa
-
-cargo run --example eat_a_csa -- --path C:/shogi-record/eating-went/formation-go$%wcsc28_kifu$%WCSC28_F4_HNW_PAL.csa
-
-cargo run --example conv_a_rec -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK" --debug
+cargo run --example converter -- --input "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK.csa" --output "C:/muzudho/wcsc29-master/shogi-record/eating-go/formation-go$%wcsc28_kifu$%WCSC28_F4_DGK_TNK" --debug
 ```
 
 Output.

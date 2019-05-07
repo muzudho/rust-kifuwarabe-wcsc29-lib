@@ -40,35 +40,25 @@ impl HalfPlayerPhaseValue {
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct HalfPlayerPhaseObject {
-    // デバッグ用のでたらめな数字。
-    hint_owner: i64,
     state: HalfPlayerPhaseValue,
 }
 impl HalfPlayerPhaseObject {
-    pub fn new_empty(app: &Application, hint_owner_num: i64) -> Self {
+    pub fn new_empty(app: &Application) -> Self {
         if app.is_debug() {
             app.comm.println("[#phase.new]");
         }
 
         HalfPlayerPhaseObject {
-            hint_owner: hint_owner_num,
             state: HalfPlayerPhaseValue::ZeroPointFive,
         }
     }
 
-    pub fn from_value(
-        init_value: HalfPlayerPhaseValue,
-        app: &Application,
-        hint_owner_num: i64,
-    ) -> Self {
+    pub fn from_value(init_value: HalfPlayerPhaseValue, app: &Application) -> Self {
         if app.is_debug() {
             app.comm.println("[#phase.from_value]");
         }
 
-        HalfPlayerPhaseObject {
-            hint_owner: hint_owner_num,
-            state: init_value,
-        }
+        HalfPlayerPhaseObject { state: init_value }
     }
 
     pub fn repeat_phase(&mut self, app: &Application) {
@@ -78,11 +68,11 @@ impl HalfPlayerPhaseObject {
         self.state = HalfPlayerPhaseValue::ZeroPointFive;
     }
 
-    pub fn get_state(&self) -> HalfPlayerPhaseValue {
+    pub fn get_state(self) -> HalfPlayerPhaseValue {
         self.state
     }
 
-    pub fn is_half(&self) -> bool {
+    pub fn is_half(self) -> bool {
         self.state == HalfPlayerPhaseValue::ZeroPointFive
             || self.state == HalfPlayerPhaseValue::OnePointFive
     }

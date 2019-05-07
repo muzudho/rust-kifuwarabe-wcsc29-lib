@@ -80,6 +80,6 @@ impl Communication {
     pub fn panic_io(&self, err: &std::io::Error) -> String {
         let msg = format!("{}", err);
         self.println(&msg);
-        String::from(msg)
+        msg
     }
 }

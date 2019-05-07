@@ -43,7 +43,7 @@ pub fn main() {
     app.comm.println(&format!("args.path = '{}'.", path));
 
     // Position.
-    let mut position = Position::new_honshogi_origin(&app, 123005);
+    let mut position = Position::new_honshogi_origin(&app);
 
     let line = UsiTape::read_first_line(&path, &app);
 

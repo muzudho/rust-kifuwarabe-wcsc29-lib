@@ -64,14 +64,14 @@ pub struct Position {
 }
 impl Position {
     /// 本将棋用に初期化します。駒を並べる前の局面です。
-    pub fn new_honshogi_origin(app: &Application, hint_owner: i64) -> Position {
+    pub fn new_honshogi_origin(app: &Application) -> Position {
         if app.is_debug() {
             app.comm.println("[#Position.new_honshogi_origin]")
         }
 
         // このあと すぐリセットする。
         let mut instance = Position {
-            phase: HalfPlayerPhaseObject::new_empty(&app, hint_owner),
+            phase: HalfPlayerPhaseObject::new_empty(&app),
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
             hands: [

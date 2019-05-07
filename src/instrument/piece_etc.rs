@@ -293,7 +293,7 @@ impl IdentifiedPiece {
         app: &Application,
     ) -> IdentifiedPiece {
         IdentifiedPiece {
-            phase: HalfPlayerPhaseObject::from_value(phase_value, &app, 111111),
+            phase: HalfPlayerPhaseObject::from_value(phase_value, &app),
             promoted: promoted_flag,
             id: piece_id,
         }
