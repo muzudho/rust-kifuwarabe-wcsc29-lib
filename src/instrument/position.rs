@@ -397,14 +397,14 @@ impl Position {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#既に何かをつかんでいた☆（＾～＾）！鳩ノ巣原理は使えない☆（＾～＾）！{}]",
-                    address.to_human_presentable(board_size, &app)
+                    address.to_human_presentable(board_size)
                 ));
             }
             false
         } else {
             let hand_index_obj = HandIndex::from_piece(
                 address
-                    .get_hand_piece(&app)
+                    .get_hand_piece()
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece."))),
             );
 
@@ -414,7 +414,7 @@ impl Position {
             } else if app.is_debug() {
                 app.comm.println(&format!(
                     "[#駒台に置いてない駒をつかもうとした☆（＾～＾）！{}]",
-                    address.to_human_presentable(board_size, &app)
+                    address.to_human_presentable(board_size)
                 ));
             }
             false
@@ -516,15 +516,8 @@ impl Position {
         }
     }
 
-    pub fn go_next_phase(
-        &mut self,
-        deck: &CassetteDeck,
-        slot: Slot,
-        app: &Application,
-        hint: &str,
-    ) {
-        self.phase
-            .go_next_phase_for_position(&deck, slot, &app, &format!("{}/go_next_phase", hint))
+    pub fn go_next_phase(&mut self, deck: &CassetteDeck, slot: Slot) {
+        self.phase.go_next_phase_for_position(&deck, slot)
     }
 
     /// Operation トラック文字列読取。
@@ -552,14 +545,7 @@ impl Position {
                         rnote_ope.to_human_presentable(self.get_board_size(), &app)
                     ));
                 }
-                self.touch_1note_ope(
-                    deck,
-                    &rnote_ope,
-                    is_ok_illegal,
-                    board_size,
-                    &app,
-                    "touch_by_line",
-                );
+                self.touch_1note_ope(deck, &rnote_ope, is_ok_illegal, board_size, &app);
 
                 HumanInterface::bo(deck, &self, &app);
             }
@@ -575,7 +561,6 @@ impl Position {
         is_ok_illegal: bool,
         board_size: BoardSize,
         app: &Application,
-        hint: &str,
     ) {
         if app.is_debug() {
             app.comm.println(&format!(
@@ -584,14 +569,7 @@ impl Position {
             ));
         }
 
-        self.touch_1note_ope_no_log(
-            deck,
-            &rnote_ope,
-            is_ok_illegal,
-            board_size,
-            &app,
-            &format!("{}/touch_1note_ope", hint),
-        );
+        self.touch_1note_ope_no_log(deck, &rnote_ope, is_ok_illegal, board_size, &app);
 
         /*
         comm.println(&format!(
@@ -611,18 +589,11 @@ impl Position {
         is_ok_illegal: bool,
         board_size: BoardSize,
         app: &Application,
-        hint: &str,
     ) {
         let slot = Slot::Learning;
 
         // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-        let id = match self.try_beautiful_touch_no_log(
-            &deck,
-            slot,
-            &rnote_ope,
-            &app,
-            &format!("{}/touch_1note_ope_no_log", hint),
-        ) {
+        let id = match self.try_beautiful_touch_no_log(&deck, slot, &rnote_ope, &app) {
             (is_legal_touch, Some(piece_identify)) => {
                 if !is_legal_touch && !is_ok_illegal {
                     panic!(
@@ -675,13 +646,8 @@ impl Position {
                 rnote.to_human_presentable(self.get_board_size(), &app)
             ));
         }
-        let (is_legal_touch, _piece_identify_opt) = self.try_beautiful_touch_no_log(
-            &deck,
-            slot,
-            &rnote.get_ope(),
-            &app,
-            "try_beautiful_touch",
-        );
+        let (is_legal_touch, _piece_identify_opt) =
+            self.try_beautiful_touch_no_log(&deck, slot, &rnote.get_ope(), &app);
         HumanInterface::show_position(self, &app);
 
         is_legal_touch
@@ -704,7 +670,6 @@ impl Position {
         slot: Slot,
         rnote_ope: &ShogiNoteOpe,
         app: &Application,
-        hint: &str,
     ) -> (bool, Option<IdentifiedPiece>) {
         let board_size = self.get_board_size();
 
@@ -721,7 +686,7 @@ impl Position {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "<IL-駒重なり:{}>",
-                                        address.to_human_presentable(board_size, &app)
+                                        address.to_human_presentable(board_size)
                                     ));
                                 }
 
@@ -760,7 +725,7 @@ impl Position {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "<IL-ほこり取り:{}>",
-                                        address.to_human_presentable(board_size, &app)
+                                        address.to_human_presentable(board_size)
                                     ));
                                 }
                                 // （未着手）ほこりを取る。一応、違法。
@@ -806,7 +771,7 @@ impl Position {
                             if app.is_debug() {
                                 app.comm.println(&format!(
                                     "<IL-駒台ほこり取り:{}>",
-                                    address.to_human_presentable(board_size, &app)
+                                    address.to_human_presentable(board_size)
                                 ));
                             }
                             // （未着手）駒台のほこりを取った。
@@ -821,18 +786,10 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.go_next_phase(
-                        &deck,
-                        slot,
-                        &app,
-                        &format!(
-                            "{}/盤上や駒台の、どこも指していない。",
-                            hint
-                        ),
-                    );
+                    self.go_next_phase(&deck, slot);
                     if app.is_debug() {
                         app.comm.println(&format!(
-                            "[#フェーズチェンジ {:?}]>",
+                            "[#フェーズチェンジ {:?}]",
                             self.phase.get_state()
                         ));
                     }
@@ -1017,7 +974,7 @@ impl Position {
 
     /// 余談。
     /// 将棋盤。きふわらべは、同時に１個の将棋盤しかもたない☆（＾～＾）２つ目とか無い☆（＾～＾）
-    pub fn to_text(&self, app: &Application) -> String {
+    pub fn to_text(&self) -> String {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         let mut content = String::new();
 
@@ -1063,7 +1020,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(self.get_board_size(), &app)
+                                    .to_fingertip_display(self.get_board_size())
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1083,7 +1040,7 @@ impl Position {
                             &format!(
                                 "     {} ",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(self.get_board_size(), &app)
+                                    .to_fingertip_display(self.get_board_size())
                             ),
                         ),
                         12 => Parser::append(&mut content, &"----------+  ".to_string()),
@@ -1175,7 +1132,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(self.get_board_size(), &app)
+                                    .to_fingertip_display(self.get_board_size())
                             ),
                         ),
                         6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 => {
@@ -1194,7 +1151,7 @@ impl Position {
                             &format!(
                                 "  {}    |",
                                 self.get_cell_display_by_address(Address::from_fingertip())
-                                    .to_fingertip_display(self.get_board_size(), &app)
+                                    .to_fingertip_display(self.get_board_size())
                             ),
                         ),
                         12 => Parser::append(&mut content, " +-+ +-+     |"),

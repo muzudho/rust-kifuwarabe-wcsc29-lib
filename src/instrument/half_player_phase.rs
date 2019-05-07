@@ -88,25 +88,8 @@ impl HalfPlayerPhaseObject {
     }
 
     /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）
-    pub fn go_next_phase_for_position(
-        &mut self,
-        deck: &CassetteDeck,
-        slot: Slot,
-        app: &Application,
-        hint: &str,
-    ) {
+    pub fn go_next_phase_for_position(&mut self, deck: &CassetteDeck, slot: Slot) {
         if let Some(ref tape_box) = &deck.slots[slot as usize].tape_box {
-            if app.is_debug() {
-                app.comm.println(&format!(
-                    "[#phase.go_next Start: {:?}, Slot: {:?}, FacingLeft: {}, hint: [{}, {}]",
-                    self.state,
-                    slot,
-                    tape_box.is_facing_left_of_current_tape(),
-                    hint,
-                    self.hint_owner
-                ));
-            }
-
             use instrument::half_player_phase::HalfPlayerPhaseValue::*;
             if tape_box.is_facing_left_of_current_tape() {
                 self.state = match self.state {
@@ -122,17 +105,6 @@ impl HalfPlayerPhaseObject {
                     OnePointFive => Second,
                     Second => ZeroPointFive,
                 };
-            }
-
-            if app.is_debug() {
-                app.comm.println(&format!(
-                    "[#phase.go_next End: {:?}, Slot: {:?}, FacingLeft: {}, hint: [{}, {}]]",
-                    self.state,
-                    slot,
-                    tape_box.is_facing_left_of_current_tape(),
-                    hint,
-                    self.hint_owner
-                ));
             }
         } else {
             panic!("Please choice tape box.");

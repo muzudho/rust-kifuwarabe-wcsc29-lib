@@ -265,13 +265,13 @@ impl CellDisplay {
     }
 
     /// 3桁追加して 7桁に揃える。
-    pub fn to_fingertip_display(&self, board_size: BoardSize, app: &Application) -> String {
+    pub fn to_fingertip_display(&self, board_size: BoardSize) -> String {
         if let Some(prev) = self.previous_address {
             // 駒のIDの方は桁数指定すると、ずれるからしてない。
             format!(
                 "{}:{:>2}",
                 self.to_display(),
-                prev.to_physical_sign(board_size, &app)
+                prev.to_physical_sign(board_size)
             )
         } else {
             format!("{}   ", self.to_display())

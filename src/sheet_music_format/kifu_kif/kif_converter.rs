@@ -27,14 +27,7 @@ impl KifConverter {
             let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(
-                    deck,
-                    &rnote_ope,
-                    false,
-                    board_size,
-                    &app,
-                    "play_out_kifu_tape",
-                );
+                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
             }
 
             ply += 1;

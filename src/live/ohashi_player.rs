@@ -110,14 +110,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(
-                    deck,
-                    &element.0,
-                    false,
-                    bs,
-                    &app,
-                    "play_ohashi_starting",
-                );
+                position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
@@ -127,14 +120,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(
-                    deck,
-                    &element.1,
-                    false,
-                    bs,
-                    &app,
-                    "play_ohashi_starting",
-                );
+                position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
@@ -144,14 +130,7 @@ impl OhashiPlayer {
                 if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
                     tape_box.seek_to_next(&app);
                 }
-                position.touch_1note_ope_no_log(
-                    deck,
-                    &element.2,
-                    false,
-                    bs,
-                    &app,
-                    "play_ohashi_starting",
-                );
+                position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
         }
     }

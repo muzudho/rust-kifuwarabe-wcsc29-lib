@@ -1,7 +1,6 @@
 use instrument::half_player_phase::HalfPlayerPhaseValue;
 use instrument::piece_etc::*;
 use std::fmt;
-use studio::application::Application;
 use studio::board_size::*;
 
 /// TODO 指先マス。暫定。
@@ -122,14 +121,14 @@ impl Address {
     }
 
     /// Human presentable.
-    pub fn to_human_presentable(self, board_size: BoardSize, app: &Application) -> String {
+    pub fn to_human_presentable(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             // 盤上。
             board_size
                 .address_to_cell(self.index)
                 .to_human_presentable()
         // それ以外。
-        } else if let Some(piece) = self.get_hand_piece(&app) {
+        } else if let Some(piece) = self.get_hand_piece() {
             format!("Hand: {}", piece.to_sign()).to_string()
         } else {
             panic!("Unexpected address: {}.", self.index);
@@ -169,11 +168,7 @@ impl Address {
     }
 
     /// 持ち駒
-    pub fn get_hand_piece(self, app: &Application) -> Option<Piece> {
-        if app.is_debug() {
-            app.comm.println(&format!("[#HandP:{}]", self.index));
-        }
-
+    pub fn get_hand_piece(self) -> Option<Piece> {
         // TODO マジックナンバーを解消したい。
         use instrument::piece_etc::Piece::*;
         match self.index {
@@ -211,14 +206,14 @@ impl Address {
     }
 
     /// 基本2桁、Sky 3桁。（指先のことを Sky と表示する仕様）
-    pub fn to_physical_sign(self, board_size: BoardSize, app: &Application) -> String {
+    pub fn to_physical_sign(self, board_size: BoardSize) -> String {
         if self.is_on_board(board_size) {
             let cell = board_size.address_to_cell(self.index);
             cell.to_scalar().to_string()
         } else if self.is_fingertip() {
             "Sky".to_string()
         } else if self.is_hand() {
-            if let Some(piece) = self.get_hand_piece(&app) {
+            if let Some(piece) = self.get_hand_piece() {
                 // 持ち駒
                 format!(
                     "0{}", // "{}*"

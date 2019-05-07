@@ -80,14 +80,7 @@ impl CsaConverter {
             }
             */
 
-            position.touch_1note_ope(
-                deck,
-                &change_phase,
-                false,
-                board_size,
-                &app,
-                "convert_csa_move(1)",
-            );
+            position.touch_1note_ope(deck, &change_phase, false, board_size, &app);
 
             /*
             if app.is_debug() {
@@ -117,14 +110,7 @@ impl CsaConverter {
                     position.get_phase().get_state(),
                     drop,
                 ));
-                position.touch_1note_ope(
-                    deck,
-                    &hand_off,
-                    false,
-                    board_size,
-                    &app,
-                    "convert_csa_move(2)",
-                );
+                position.touch_1note_ope(deck, &hand_off, false, board_size, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -135,14 +121,7 @@ impl CsaConverter {
             // hand-on
             {
                 let hand_on = ShogiNoteOpe::from_address(destination_address);
-                position.touch_1note_ope(
-                    deck,
-                    &hand_on,
-                    false,
-                    board_size,
-                    &app,
-                    "convert_csa_move(3)",
-                );
+                position.touch_1note_ope(deck, &hand_on, false, board_size, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -159,14 +138,7 @@ impl CsaConverter {
                 // hand-off
                 {
                     let hand_off = ShogiNoteOpe::from_address(destination_address);
-                    position.touch_1note_ope(
-                        deck,
-                        &hand_off,
-                        false,
-                        board_size,
-                        &app,
-                        "convert_csa_move(4)",
-                    );
+                    position.touch_1note_ope(deck, &hand_off, false, board_size, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -177,14 +149,7 @@ impl CsaConverter {
                 // hand-rotate
                 {
                     let hand_rotate = ShogiNoteOpe::rotate();
-                    position.touch_1note_ope(
-                        deck,
-                        &hand_rotate,
-                        false,
-                        board_size,
-                        &app,
-                        "convert_csa_move(5)",
-                    );
+                    position.touch_1note_ope(deck, &hand_rotate, false, board_size, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -195,14 +160,7 @@ impl CsaConverter {
                 // hand-turn
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
-                    position.touch_1note_ope(
-                        deck,
-                        &hand_turn,
-                        false,
-                        board_size,
-                        &app,
-                        "convert_csa_move(6)",
-                    );
+                    position.touch_1note_ope(deck, &hand_turn, false, board_size, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -225,14 +183,7 @@ impl CsaConverter {
                         ));
                     }
                     */
-                    position.touch_1note_ope(
-                        deck,
-                        &hand_on,
-                        false,
-                        board_size,
-                        &app,
-                        "convert_csa_move(7)",
-                    );
+                    position.touch_1note_ope(deck, &hand_on, false, board_size, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -259,14 +210,7 @@ impl CsaConverter {
                         .unwrap_or_else(|| panic!(app.comm.panic("Fail. cmove.source."))),
                     position.get_board_size(),
                 ));
-                position.touch_1note_ope(
-                    deck,
-                    &board_off,
-                    false,
-                    board_size,
-                    &app,
-                    "convert_csa_move(8)",
-                );
+                position.touch_1note_ope(deck, &board_off, false, board_size, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -288,14 +232,7 @@ impl CsaConverter {
             let cur_promoted = is_promoted_piece_type(cmove.koma);
             if !pre_promoted && cur_promoted {
                 let board_turn = ShogiNoteOpe::turn_over();
-                position.touch_1note_ope(
-                    deck,
-                    &board_turn,
-                    false,
-                    board_size,
-                    &app,
-                    "convert_csa_move(9)",
-                );
+                position.touch_1note_ope(deck, &board_turn, false, board_size, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -306,14 +243,7 @@ impl CsaConverter {
             // board-on
             {
                 let board_on = ShogiNoteOpe::from_address(destination_address);
-                position.touch_1note_ope(
-                    deck,
-                    &board_on,
-                    false,
-                    board_size,
-                    &app,
-                    "convert_csa_move(10)",
-                );
+                position.touch_1note_ope(deck, &board_on, false, board_size, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -343,14 +273,7 @@ impl CsaConverter {
                 HumanInterface::bo(deck, &position, &app);
             }
             */
-            position.touch_1note_ope(
-                deck,
-                &change_phase,
-                false,
-                board_size,
-                &app,
-                "convert_csa_move(11)",
-            );
+            position.touch_1note_ope(deck, &change_phase, false, board_size, &app);
             /*
             if app.is_debug() {
                 HumanInterface::bo(deck, &position, &app);

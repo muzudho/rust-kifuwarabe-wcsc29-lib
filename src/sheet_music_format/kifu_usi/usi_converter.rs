@@ -27,14 +27,7 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(
-                    deck,
-                    &rnote_ope,
-                    false,
-                    board_size,
-                    &app,
-                    "play_out_usi_tape",
-                );
+                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
             }
 
             ply += 1;

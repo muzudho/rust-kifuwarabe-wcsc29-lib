@@ -200,11 +200,11 @@ impl ShogiMove {
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[#Address: {}]",
-                        address.to_human_presentable(board_size, &app)
+                        address.to_human_presentable(board_size)
                     ));
                 }
 
-                if let Some(piece) = address.get_hand_piece(&app) {
+                if let Some(piece) = address.get_hand_piece() {
                     if app.is_debug() {
                         app.comm
                             .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
@@ -490,7 +490,7 @@ impl ShogiMove {
             if let (_taken_overflow, _rmove, Some(note)) =
                 tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
             {
-                text = format!("{} {}", text, &note.get_ope().to_sign(board_size, &app));
+                text = format!("{} {}", text, &note.get_ope().to_sign(board_size));
             } else {
                 break;
             }

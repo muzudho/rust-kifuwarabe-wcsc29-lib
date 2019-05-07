@@ -10,7 +10,7 @@ impl HumanInterface {
     pub fn show_position(position: &Position, app: &Application) {
         if app.is_debug() {
             // 盤面。
-            app.comm.println(&position.to_text(&app));
+            app.comm.println(&position.to_text());
         }
     }
 
@@ -33,7 +33,7 @@ impl HumanInterface {
         if app.is_debug() {
             if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
                 let (_numbers, operations) =
-                    &tape_box.get_sign_of_current_tape(position.get_board_size(), &app);
+                    &tape_box.get_sign_of_current_tape(position.get_board_size());
 
                 use audio_compo::cassette_deck::Slot::*;
                 app.comm.println(&format!(
@@ -60,7 +60,7 @@ impl HumanInterface {
 
             // 棋譜。
             let (_numbers, operations) =
-                deck.get_sign_of_current_tape(slot, position.get_board_size(), &app);
+                deck.get_sign_of_current_tape(slot, position.get_board_size());
             app.comm.println(&format!("TAPE: {}", operations));
         }
     }
