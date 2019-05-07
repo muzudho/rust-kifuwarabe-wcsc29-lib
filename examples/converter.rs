@@ -87,7 +87,7 @@ fn main() {
                 KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
 
                 // Write.
-                deck.write_leaning_tape_fragment(position.get_board_size(), &app);
+                deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             "CSA" => {
                 // Training data.
@@ -102,7 +102,7 @@ fn main() {
                 CsaConverter::play_out_csa_tape(&ctape, &mut position, &mut deck, &app);
 
                 // Write.
-                deck.write_leaning_tape_fragment(position.get_board_size(), &app);
+                deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             _ => print!("Pass extension: {}", extension),
         }

@@ -45,7 +45,7 @@ impl RpmTape {
         self.tracks.to_human_presentable(&app)
     }
 
-    pub fn to_json(&self, app: &Application) -> String {
+    pub fn to_tape_json(&self, app: &Application) -> String {
         serde_json::to_string(self)
             .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))))
     }

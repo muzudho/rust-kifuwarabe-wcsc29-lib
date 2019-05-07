@@ -48,7 +48,7 @@ impl CassetteTapeBox {
 
         let mut tapes_vec = Vec::new();
         tapes_vec.push(CassetteTape::new_facing_right_with_file(
-            format!("{}.tapefrag", file_name_without_extension).to_string(),
+            format!("{}.tapesfrag", file_name_without_extension).to_string(),
         ));
 
         CassetteTapeBox {
@@ -352,7 +352,7 @@ impl CassetteTapeBox {
     }
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
-    pub fn write_current_tape_fragment(&self, board_size: BoardSize, app: &Application) {
+    pub fn write_current_tapes_fragment(&self, board_size: BoardSize, app: &Application) {
         if let Some(tape_index) = self.listening_tape_index {
             self.tapes[tape_index].write_tape_fragment(board_size, &app)
         } else {

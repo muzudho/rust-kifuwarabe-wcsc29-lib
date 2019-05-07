@@ -95,9 +95,9 @@ impl CassetteTape {
         let rand2: u64 = rng.gen();
         let rand3: u64 = rng.gen();
         let rand4: u64 = rng.gen();
-        let file = format!("{}-{}-{}-{}.tapefrag", rand1, rand2, rand3, rand4).to_string();
+        let file = format!("{}-{}-{}-{}.tapesfrag", rand1, rand2, rand3, rand4).to_string();
 
-        Path::new(&kw29_conf.tape_fragments)
+        Path::new(&kw29_conf.tapes_fragments)
             .join(file)
             .to_str()
             .unwrap_or_else(|| panic!(app.comm.panic("Fail. tape.fragment.")))
@@ -248,7 +248,7 @@ impl CassetteTape {
             panic!("Create directory fail. {}", self.fragment_file_name);
         }
 
-        // 末尾に カンマ を付けて追記していくぜ☆（＾～＾）
+        // 末尾に カンマ を付けて追記していくぜ☆（＾～＾）JSONとしては不完全だから、フラグメントだぜ☆（＾～＾）
         let mut file_obj = OpenOptions::new()
             .create(true)
             .write(true)
@@ -256,7 +256,7 @@ impl CassetteTape {
             .open(path)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-        if let Err(e) = writeln!(file_obj, "{},", self.to_rpm(board_size).to_json(&app)) {
+        if let Err(e) = writeln!(file_obj, "{},", self.to_rpm(board_size).to_tape_json(&app)) {
             eprintln!("Couldn't write to file: {}", e);
         }
 

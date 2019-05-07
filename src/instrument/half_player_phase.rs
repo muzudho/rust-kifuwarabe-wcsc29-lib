@@ -53,11 +53,7 @@ impl HalfPlayerPhaseObject {
         }
     }
 
-    pub fn from_value(init_value: HalfPlayerPhaseValue, app: &Application) -> Self {
-        if app.is_debug() {
-            app.comm.println("[#phase.from_value]");
-        }
-
+    pub fn from_value(init_value: HalfPlayerPhaseValue) -> Self {
         HalfPlayerPhaseObject { state: init_value }
     }
 

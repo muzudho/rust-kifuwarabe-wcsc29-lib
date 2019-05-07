@@ -54,5 +54,5 @@ pub fn main() {
     KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
 
     // Write.
-    deck.write_leaning_tape_fragment(position.get_board_size(), &app);
+    deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
 }

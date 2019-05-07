@@ -10,7 +10,7 @@
 
 ### ［テープ］
     棋譜。１対局分。
-    拡張子 .tapefrag のテキストファイルに保存される。
+    拡張子 .tapesfrag のテキストファイルに保存される。
     JSON形式でない不完全なファイルであることを強調して、「テープ・フラグメント」と呼ぶことがある。
     ファイル名はランダムに生成される。
 
@@ -140,6 +140,7 @@ cls
  
 ### Compile.
 set RUST_BACKTRACE=1
+cargo update
 cargo clippy --example main
 cargo build --release
  

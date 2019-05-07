@@ -232,9 +232,9 @@ impl CassetteDeck {
     }
 
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）
-    pub fn write_leaning_tape_fragment(&mut self, board_size: BoardSize, app: &Application) {
+    pub fn write_leaning_tapes_fragment(&mut self, board_size: BoardSize, app: &Application) {
         if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
-            tape_box.write_current_tape_fragment(board_size, &app);
+            tape_box.write_current_tapes_fragment(board_size, &app);
         } else {
             panic!("tape box none.");
         }
