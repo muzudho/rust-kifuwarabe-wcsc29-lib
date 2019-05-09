@@ -204,9 +204,9 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn step_in(&self, app: &Application) -> i16 {
+    pub fn step_in_of_tape(&self) -> i16 {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.step_in(&app.comm)
+            self.tapes[tape_index].caret.step_in()
         } else {
             panic!("Please choice listening tape.");
         }
@@ -317,17 +317,17 @@ impl CassetteTapeBox {
     }
 
     // キャレットがピークを指しているか☆（＾～＾）
-    pub fn is_peak(&self, app: &Application) -> bool {
+    pub fn is_peak_of_current_tape(&self) -> bool {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].is_peak(&app)
+            self.tapes[tape_index].is_peak()
         } else {
             panic!("Please choice listening tape.");
         }
     }
     // キャレットが次、オーバーフローするか☆（＾～＾）
-    pub fn is_before_caret_overflow(&self, app: &Application) -> bool {
+    pub fn is_before_caret_overflow_of_tape(&self) -> bool {
         if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].is_before_caret_overflow(&app)
+            self.tapes[tape_index].is_before_caret_overflow()
         } else {
             panic!("Please choice listening tape.");
         }

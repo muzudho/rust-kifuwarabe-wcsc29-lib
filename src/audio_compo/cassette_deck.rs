@@ -290,11 +290,11 @@ impl CassetteDeck {
         }
     }
 
-    pub fn step_in(&self, slot: Slot, app: &Application) -> i16 {
+    pub fn step_in_of_tape(&self, slot: Slot) -> i16 {
         if let Some(tape_box) = &self.slots[slot as usize].tape_box {
-            tape_box.step_in(&app)
+            tape_box.step_in_of_tape()
         } else {
-            panic!("Step in fail.");
+            panic!("Step in of tape fail.");
         }
     }
 
@@ -375,7 +375,7 @@ impl CassetteDeck {
             if -1 < rmove.get_end() {
                 // ０、または 正のテープ。
                 // 次にオーバーフローするか判断。
-                if tape_box.is_before_caret_overflow(&app) {
+                if tape_box.is_before_caret_overflow_of_tape() {
                     // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_positive_of_current_tape(note);
                     tape_box.seek_to_next(&app);
@@ -391,7 +391,7 @@ impl CassetteDeck {
             } else {
                 // 負のテープ。
                 // 最先端かどうか判断。
-                if tape_box.is_before_caret_overflow(&app) {
+                if tape_box.is_before_caret_overflow_of_tape() {
                     // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                     tape_box.push_note_to_negative_of_current_tape(note);
                     tape_box.seek_to_next(&app);

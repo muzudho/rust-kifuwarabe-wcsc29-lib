@@ -1,6 +1,5 @@
 use studio::application::Application;
 use studio::common::closed_interval::ClosedInterval;
-use studio::communication::*;
 
 /// 負の方のキャレット番地を符号を反転して１引いて配列のインデックスを作る補正に使う☆（＾～＾）
 pub const MINUS_ZERO_LEN: usize = 1;
@@ -25,6 +24,8 @@ pub fn caret_number_to_length(caret_number: i16) -> usize {
 
 // 意識。キャレットを go_to_next すると作成される。
 pub struct Awareness {
+    // 予想する移動後のキャレットの位置。
+    pub expected_caret_number: i16,
     // 配列のインデックス。
     pub index: usize,
     // 負の方の配列か。
@@ -81,19 +82,7 @@ impl Caret {
             }
         }
 
-        awareness = if old_negative {
-            // 負の方の配列にいたのだった場合。
-            Awareness {
-                index: (-self.unconscious_number - 1) as usize,
-                negative: true,
-            }
-        } else {
-            // 正の方の配列にいたのだった場合。
-            Awareness {
-                index: self.unconscious_number as usize,
-                negative: true,
-            }
-        };
+        let old_number = self.unconscious_number;
 
         if self.facing_left {
             // 左向き。
@@ -102,6 +91,22 @@ impl Caret {
             // 右向き。
             self.unconscious_number += 1;
         }
+
+        awareness = if old_negative {
+            // 負の方の配列にいたのだった場合。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: (-old_number - 1) as usize,
+                negative: true,
+            }
+        } else {
+            // 正の方の配列にいたのだった場合。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: old_number as usize,
+                negative: true,
+            }
+        };
 
         /*
         // ログ出力☆（＾～＾）
@@ -119,16 +124,15 @@ impl Caret {
         awareness
     }
 
-    /// 足踏みする☆（＾～＾）
-    /// ミュータブルにしたくない場合だけ使う☆（＾～＾）なるべく go_to_next を使えだぜ☆（＾～＾）
-    pub fn step_in(&self, _comm: &Communication) -> i16 {
+    /// 足踏みする（step in）☆（＾～＾）
+    /// キャレットの現在番地が欲しいケースがけっこうある☆（＾～＾）
+    /// 思想上、なるべく go_to_next() を使えだぜ☆（＾～＾）
+    pub fn step_in(&self) -> i16 {
         self.unconscious_number
     }
 
     /// TODO ちょっと戻りたいときに☆（＾～＾）できれば使わない方がいい☆（＾～＾）
     pub fn go_back(&mut self, _app: &Application) -> Awareness {
-        let awareness;
-
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
         let old_negative;
@@ -152,19 +156,7 @@ impl Caret {
             }
         }
 
-        awareness = if old_negative {
-            // 負の方の配列にいたのだった場合。
-            Awareness {
-                index: (-self.unconscious_number - 1) as usize,
-                negative: true,
-            }
-        } else {
-            // 正の方の配列にいたのだった場合。
-            Awareness {
-                index: self.unconscious_number as usize,
-                negative: true,
-            }
-        };
+        let old_number = self.unconscious_number;
 
         // 逆方向に進む☆（＾～＾）
         if self.facing_left {
@@ -175,7 +167,21 @@ impl Caret {
             self.unconscious_number -= 1;
         }
 
-        awareness
+        if old_negative {
+            // 負の方の配列にいたのだった場合。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: (-old_number - 1) as usize,
+                negative: true,
+            }
+        } else {
+            // 正の方の配列にいたのだった場合。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: old_number as usize,
+                negative: true,
+            }
+        }
     }
 
     pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {

@@ -55,7 +55,7 @@ impl ShogiMove {
 
         // 次のフェーズ・チェンジまで読み進める。
         'j_loop: loop {
-            if tape_box.is_before_caret_overflow(&app) {
+            if tape_box.is_before_caret_overflow_of_tape() {
                 // トラックの終わり。
                 //comm.print("Break: End of track.");
                 break 'j_loop;
@@ -481,8 +481,7 @@ impl ShogiMove {
         let mut text = String::new();
         if app.is_debug() {
             app.comm.println(&format!(
-                "OpeStr step in: ({},{}).",
-                caret.step_in(&app.comm),
+                "OpeStr step in: ({}).",
                 self.caret_closed_interval.get_start()
             )); // TODO
         }
@@ -506,8 +505,7 @@ impl ShogiMove {
         let mut text = String::new();
         if app.is_debug() {
             app.comm.println(&format!(
-                "IdStr (step in: {},{})",
-                caret.step_in(&app.comm),
+                "IdStr ({})",
                 self.caret_closed_interval.get_start()
             )); // TODO
         }
@@ -545,9 +543,8 @@ impl ShogiMove {
                 Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
             if app.is_debug() {
                 app.comm.print(&format!(
-                    "{} (Step in:{}, {})",
+                    "{} ({})",
                     text,
-                    other_caret.step_in(&app.comm),
                     self.caret_closed_interval.get_start()
                 ));
             }

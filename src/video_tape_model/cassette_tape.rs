@@ -129,8 +129,8 @@ impl CassetteTape {
     }
 
     // キャレットがピークを指しているか☆（＾～＾）
-    pub fn is_peak(&self, app: &Application) -> bool {
-        let old = self.caret.step_in(&app.comm);
+    pub fn is_peak(&self) -> bool {
+        let old = self.caret.step_in();
         if -1 < old {
             // 正の数の方で動く☆（＾～＾）
             if self.caret.is_facing_left() {
@@ -152,8 +152,8 @@ impl CassetteTape {
         }
     }
     // キャレットが次、オーバーフローするか☆（＾～＾）
-    pub fn is_before_caret_overflow(&self, app: &Application) -> bool {
-        let old = self.caret.step_in(&app.comm);
+    pub fn is_before_caret_overflow(&self) -> bool {
+        let old = self.caret.step_in();
         if -1 < old {
             // 正の数の方で動く☆（＾～＾）
             if self.caret.is_facing_left() {

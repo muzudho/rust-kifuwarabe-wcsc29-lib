@@ -112,8 +112,8 @@ impl IntegerNoteVec {
         // とりあえず、キャレットを１つ進める。
         let awareness = caret.go_to_next(&app);
         let note_move = ShogiMove::from_closed_interval(ClosedInterval::from_all(
-            caret.step_in(&app.comm),
-            caret.step_in(&app.comm),
+            awareness.expected_caret_number,
+            awareness.expected_caret_number,
             caret.is_facing_left(),
         ));
 
@@ -209,11 +209,11 @@ impl IntegerNoteVec {
             // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
             // ここで、 awareness.index は 2。
             nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, caret.step_in(&app.comm)));
+            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
             posi_v.push(note);
             if awareness.index < self.positive_notes.len() {
                 posi_v.extend_from_slice(&self.slice(
-                    caret.step_in(&app.comm) + 1,
+                    awareness.expected_caret_number + 1,
                     self.positive_notes.len() as i16,
                 ));
             }
@@ -224,11 +224,11 @@ impl IntegerNoteVec {
             // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
 
             // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, caret.step_in(&app.comm)));
+            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
             nega_v.push(note);
             if awareness.index < self.negative_notes.len() {
                 nega_v.extend_from_slice(&self.slice(
-                    caret.step_in(&app.comm) + 1,
+                    awareness.expected_caret_number + 1,
                     self.negative_notes.len() as i16,
                 ));
             }
