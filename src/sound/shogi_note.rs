@@ -65,18 +65,18 @@ impl ShogiNote {
         let mut closed_interval = ClosedInterval::new_facing_right();
 
         // 数字を返却してから、キャレットを移動。
-        let n0 = note_caret.go_to_next(&app);
+        let n0 = note_caret.go_to_next(&app).index;
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (sub_closed_interval, note_ope) = if let (sub_closed_interval, Some(note_ope)) =
-            ShogiNoteOpe::parse_1ope(&ope_vec[n0 as usize], &mut token_caret, board_size, &app)
+            ShogiNoteOpe::parse_1ope(&ope_vec[n0], &mut token_caret, board_size, &app)
         {
             (sub_closed_interval, note_ope)
         } else {
-            panic!("Unexpected operation note token. {}", ope_vec[n0 as usize])
+            panic!("Unexpected operation note token. {}", ope_vec[n0])
         };
 
-        let pnum: i8 = id_vec[n0 as usize]
+        let pnum: i8 = id_vec[n0]
             .parse()
             .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))));
         let pid_opt = if pnum == -1 {
@@ -86,7 +86,7 @@ impl ShogiNote {
             PieceIdentify::from_number(pnum)
         };
 
-        closed_interval.intersect_caret_number(n0);
+        closed_interval.intersect_caret_number(note_caret.step_in(&app.comm));
         closed_interval.intersect_caret_number(sub_closed_interval.get_minimum_caret_number());
         closed_interval.intersect_caret_number(sub_closed_interval.get_maximum_caret_number());
 

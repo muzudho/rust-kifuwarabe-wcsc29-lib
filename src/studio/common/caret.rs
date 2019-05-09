@@ -4,12 +4,31 @@ use studio::communication::*;
 
 /// 負の方のキャレット番地を符号を反転して１引いて配列のインデックスを作る補正に使う☆（＾～＾）
 pub const MINUS_ZERO_LEN: usize = 1;
+/// Obsolute.
 pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
     if -1 < caret_number {
         caret_number as usize
     } else {
         -caret_number as usize + MINUS_ZERO_LEN
     }
+}
+
+/// ゼロおよび正の数では、（キャレット番号＋１）と、（要素の個数）は等しい。
+/// 負の数では、（キャレット番号の絶対値）と、（要素の個数）は等しい。
+pub fn caret_number_to_length(caret_number: i16) -> usize {
+    if -1 < caret_number {
+        (caret_number + 1) as usize
+    } else {
+        -caret_number as usize
+    }
+}
+
+// 意識。キャレットを go_to_next すると作成される。
+pub struct Awareness {
+    // 配列のインデックス。
+    pub index: usize,
+    // 負の方の配列か。
+    pub negative: bool,
 }
 
 /// 余談。
@@ -19,7 +38,8 @@ pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
 /// できるか、できないかではない、これは　そうであるべき　という　思想　だぜ☆（*＾～＾*）
 pub struct Caret {
     facing_left: bool,
-    number: i16,
+    // キャレットの位置。
+    unconscious_number: i16,
 }
 impl Caret {
     pub fn new_facing_right_caret() -> Self {
@@ -29,19 +49,58 @@ impl Caret {
     pub fn new_facing_right_caret_with_number(init_num: i16) -> Self {
         Caret {
             facing_left: false,
-            number: init_num,
+            unconscious_number: init_num,
         }
     }
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, _app: &Application) -> i16 {
-        let old = self.number;
+    pub fn go_to_next(&mut self, _app: &Application) -> Awareness {
+        let awareness;
+
+        // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
+        // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
+        let old_negative;
+        if self.facing_left {
+            // 左向き。
+            if -1 < self.unconscious_number {
+                // 正の方の配列にいたのだった場合。
+                old_negative = false;
+            } else {
+                // 負の方の配列にいたのだった場合。
+                old_negative = true;
+            }
+        } else {
+            // 右向き。
+            if self.unconscious_number < 0 {
+                // 負の方の配列にいたのだった場合。
+                old_negative = true;
+            } else {
+                // 正の方の配列にいたのだった場合。
+                old_negative = false;
+            }
+        }
+
+        awareness = if old_negative {
+            // 負の方の配列にいたのだった場合。
+            Awareness {
+                index: (-self.unconscious_number - 1) as usize,
+                negative: true,
+            }
+        } else {
+            // 正の方の配列にいたのだった場合。
+            Awareness {
+                index: self.unconscious_number as usize,
+                negative: true,
+            }
+        };
 
         if self.facing_left {
-            self.number -= 1;
+            // 左向き。
+            self.unconscious_number -= 1;
         } else {
-            self.number += 1;
+            // 右向き。
+            self.unconscious_number += 1;
         }
 
         /*
@@ -57,44 +116,71 @@ impl Caret {
         }
          */
 
-        old
+        awareness
     }
 
     /// 足踏みする☆（＾～＾）
     /// ミュータブルにしたくない場合だけ使う☆（＾～＾）なるべく go_to_next を使えだぜ☆（＾～＾）
     pub fn step_in(&self, _comm: &Communication) -> i16 {
-        self.number
+        self.unconscious_number
     }
 
-    /// ちょっと戻りたいときに☆（＾～＾）
-    pub fn go_back(&mut self, _app: &Application) -> i16 {
-        let old = self.number;
+    /// TODO ちょっと戻りたいときに☆（＾～＾）できれば使わない方がいい☆（＾～＾）
+    pub fn go_back(&mut self, _app: &Application) -> Awareness {
+        let awareness;
 
+        // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
+        // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
+        let old_negative;
         if self.facing_left {
-            self.number += 1;
-        } else {
-            self.number -= 1;
-        }
-
-        /*
-        // ログ出力☆（＾～＾）
-        {
-            if self.is_facing_left() {
-                app.comm
-                    .print(&format!("[CaretBK: {}<--{}]", self.number, old).to_string());
+            // 左向き。
+            if -1 < self.unconscious_number {
+                // 正の方の配列にいたのだった場合。
+                old_negative = false;
             } else {
-                app.comm
-                    .print(&format!("[CaretBK: {}-->{}]", old, self.number).to_string());
+                // 負の方の配列にいたのだった場合。
+                old_negative = true;
+            }
+        } else {
+            // 右向き。
+            if self.unconscious_number < 0 {
+                // 負の方の配列にいたのだった場合。
+                old_negative = true;
+            } else {
+                // 正の方の配列にいたのだった場合。
+                old_negative = false;
             }
         }
-        */
 
-        old
+        awareness = if old_negative {
+            // 負の方の配列にいたのだった場合。
+            Awareness {
+                index: (-self.unconscious_number - 1) as usize,
+                negative: true,
+            }
+        } else {
+            // 正の方の配列にいたのだった場合。
+            Awareness {
+                index: self.unconscious_number as usize,
+                negative: true,
+            }
+        };
+
+        // 逆方向に進む☆（＾～＾）
+        if self.facing_left {
+            // 左向き。
+            self.unconscious_number += 1;
+        } else {
+            // 右向き。
+            self.unconscious_number -= 1;
+        }
+
+        awareness
     }
 
     pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {
-        closed_interval.get_minimum_caret_number() <= self.number
-            && self.number <= closed_interval.get_maximum_caret_number()
+        closed_interval.get_minimum_caret_number() <= self.unconscious_number
+            && self.unconscious_number <= closed_interval.get_maximum_caret_number()
     }
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
@@ -138,11 +224,11 @@ impl Caret {
 
     /// 等しい。
     pub fn equals(&self, target: i16) -> bool {
-        self.number == target
+        self.unconscious_number == target
     }
     /// target 以上。
     pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
-        target <= self.number
+        target <= self.unconscious_number
     }
     pub fn while_to(&self, target: &ClosedInterval, _app: &Application) -> bool {
         if self.is_facing_left() {
@@ -153,7 +239,7 @@ impl Caret {
                 self.number
             ));
             */
-            target.get_minimum_caret_number() < self.number
+            target.get_minimum_caret_number() < self.unconscious_number
         } else {
             /*
             app.comm.print(&format!(
@@ -162,7 +248,7 @@ impl Caret {
                 target.get_maximum_caret_number(),
             ));
             */
-            self.number < target.get_maximum_caret_number()
+            self.unconscious_number < target.get_maximum_caret_number()
         }
     }
 
@@ -181,21 +267,21 @@ impl Caret {
         // 正と負で、0 の扱い方が異なることに注意。
         if self.is_facing_left() {
             // 負の無限大の方を向いているとき。
-            if self.number <= 0 {
+            if self.unconscious_number <= 0 {
                 // 0以下の左隣は負
-                (false, get_index_from_caret_numbers(self.number))
+                (false, get_index_from_caret_numbers(self.unconscious_number))
             } else {
                 // 1以上の左隣は正。
-                (true, get_index_from_caret_numbers(self.number))
+                (true, get_index_from_caret_numbers(self.unconscious_number))
             }
         } else {
             // 正の無限大の方を向いているとき。
-            if self.number >= 0 {
+            if self.unconscious_number >= 0 {
                 // 0以上の右隣は正。
-                (true, get_index_from_caret_numbers(self.number))
+                (true, get_index_from_caret_numbers(self.unconscious_number))
             } else {
                 // 0未満の右隣は負。
-                (false, get_index_from_caret_numbers(self.number))
+                (false, get_index_from_caret_numbers(self.unconscious_number))
             }
         }
     }
@@ -203,9 +289,9 @@ impl Caret {
     /// デバッグ表示用。
     pub fn to_human_presentable(&self, _app: &Application) -> String {
         if self.is_facing_left() {
-            format!("[Caret: <--{}]", self.number).to_string()
+            format!("[Caret: <--{}]", self.unconscious_number).to_string()
         } else {
-            format!("[Caret: {}-->]", self.number).to_string()
+            format!("[Caret: {}-->]", self.unconscious_number).to_string()
         }
     }
 }

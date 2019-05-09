@@ -196,7 +196,8 @@ impl CassetteDeck {
                 app.comm.println("Change learning tape.");
             }
 
-            learning_box.change_tape_brandnew(&app);
+            learning_box.add_brandnew_tape(&app);
+
             self.slots[Slot::Learning as usize].ply = 1;
         } else {
             panic!("Get l_box none.")
@@ -209,9 +210,9 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// (成功)
-    pub fn change_next_if_training_tape_exists(&mut self, app: &Application) -> bool {
+    pub fn seek_tape(&mut self, app: &Application) -> bool {
         if let Some(ref mut training_tape_box) = &mut self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.change_tape_if_next_exists(&app)
+            training_tape_box.seek_tape(&app)
         } else {
             false
         }

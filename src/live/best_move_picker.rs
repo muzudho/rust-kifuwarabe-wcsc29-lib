@@ -97,7 +97,7 @@ impl BestMovePicker {
         if app.is_debug() {
             // RPMを検索。
             println!(
-                "#get_mut_best_move start. Phase: {:?}",
+                "[#get_mut_best_move start. Phase: {:?}]",
                 position.get_phase().get_state()
             );
         }
@@ -120,7 +120,7 @@ impl BestMovePicker {
             if app.is_debug() {
                 // トレーニング・テープ・ボックスを１箱選択。
                 app.comm.println(&format!(
-                    "#Tape-box: {}. Phase: {:?}.",
+                    "[#Tape-box: {}. Phase: {:?}]",
                     deck.to_human_presentable_of_tape_box(Slot::Training),
                     position.get_phase().get_state()
                 ));
@@ -159,7 +159,7 @@ impl BestMovePicker {
             let mut debug_tape_count = -1;
             // テープをセット☆（＾～＾）
             // 局面は、平手初期局面に戻っているはずだぜ☆（＾～＾）
-            while deck.change_next_if_training_tape_exists(&app) {
+            while deck.seek_tape(&app) {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
                     // このテープだけテストするぜ☆（＾～＾）
@@ -191,7 +191,6 @@ impl BestMovePicker {
                 // 駒（0～40個）の番地を全部スキャン。（駒の先後は分からない）
                 // 'piece_loop:
                 for subject_piece_id in PieceIdentify::iterator() {
-                    /*
                     if 29 <= subject_piece_id.get_number() && subject_piece_id.get_number() <= 29 {
                         // この背番号の駒だけテストするぜ☆（＾～＾）
                     } else {
@@ -199,7 +198,6 @@ impl BestMovePicker {
                         app.comm.println("デバッグ中☆（＾～＾）ループを中断。");
                         continue;
                     }
-                    */
 
                     if app.is_debug() {
                         // 駒を１つ選択☆（＾～＾）
@@ -422,11 +420,19 @@ impl BestMovePicker {
                     break 'tape_box_dir_loop;
                 }
 
-                // TODO 平手初期局面に戻したいぜ☆（＾～＾）
-            } // テープのループ。
+                if app.is_debug() {
+                    app.comm.println("[Tape end]");
+                }
+            } // テープ・ボックスのループ。
+
+            if app.is_debug() {
+                app.comm.println("[Tape box end]");
+            }
         } // トレーニング・ディレクトリー内のループ。
 
-        //println!("#match_thread loop end.");
+        if app.is_debug() {
+            app.comm.println("[Search end]");
+        }
 
         // デバッグ表示☆（*＾～＾*）
         {
@@ -674,7 +680,7 @@ impl BestMovePicker {
                     let mut cassette_tape_box_2 = CassetteTapeBox::new_empty(&app);
                     {
                         let mut cassette_tape_2 = CassetteTape::from_1_move(&rmove, &app);
-                        cassette_tape_box_2.change_tape_as_name(cassette_tape_2);
+                        cassette_tape_box_2.add_exists_tape(cassette_tape_2);
                     }
                     */
                     /*

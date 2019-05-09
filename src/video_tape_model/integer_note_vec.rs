@@ -110,83 +110,68 @@ impl IntegerNoteVec {
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
-        let caret_number = caret.go_to_next(&app);
+        let awareness = caret.go_to_next(&app);
         let note_move = ShogiMove::from_closed_interval(ClosedInterval::from_all(
-            caret_number,
-            caret_number,
+            caret.step_in(&app.comm),
+            caret.step_in(&app.comm),
             caret.is_facing_left(),
         ));
 
         if caret.is_facing_left() {
             // 負の無限大 <---- 顔の向き。
-            if caret_number < 0 {
+            if awareness.negative {
                 // [負] 正
-                if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                if self.negative_notes.len() <= awareness.index {
                     // 配列の範囲外。
                     (true, note_move, None)
                 } else {
                     // 配列の範囲内。
-                    (
-                        false,
-                        note_move,
-                        Some(self.negative_notes[caret_number as usize]),
-                    )
+                    (false, note_move, Some(self.negative_notes[awareness.index]))
                 }
             } else {
                 // 負 [正]
-                if self.positive_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                if self.positive_notes.len() <= awareness.index {
                     // 配列の範囲外。
                     (true, note_move, None)
                 } else {
                     // 配列の範囲内。
-                    (
-                        false,
-                        note_move,
-                        Some(self.positive_notes[caret_number as usize]),
-                    )
+                    (false, note_move, Some(self.positive_notes[awareness.index]))
                 }
             }
         } else {
             // 顔の向き ----> 正の無限大。
-            if -1 < caret_number {
+            if !awareness.negative {
                 // 負 [正]
-                if self.positive_notes.len() <= caret_number as usize {
+                if self.positive_notes.len() <= awareness.index {
                     // 配列の範囲外。
                     (true, note_move, None)
                 } else {
                     // 配列の範囲内。
-                    (
-                        false,
-                        note_move,
-                        Some(self.positive_notes[caret_number as usize]),
-                    )
+                    (false, note_move, Some(self.positive_notes[awareness.index]))
                 }
             } else {
                 // [負] 正
-                if self.negative_notes.len() <= get_index_from_caret_numbers(caret_number) {
+                if self.negative_notes.len() <= awareness.index {
                     // 配列の範囲外。
                     (true, note_move, None)
                 } else {
                     // 配列の範囲内。
-                    (
-                        false,
-                        note_move,
-                        Some(self.negative_notes[caret_number as usize]),
-                    )
+                    (false, note_move, Some(self.negative_notes[awareness.index]))
                 }
             }
         }
     }
 
+    /// start and end is caret.
     /// start <= end.
+    /// Endは含めず、Startは含めます。
     pub fn slice(&self, start: i16, end: i16) -> Vec<ShogiNote> {
-        //let len = end - start;
         let mut v = Vec::new();
 
         if start < 0 {
             // 負のテープ。正のテープに及ぶこともある。
             if end < 0 {
-                // 負のテープだけで収まります。Endは含めず、Startは含めます。
+                // 負のテープだけで収まります。
                 let s = &self.negative_notes[(-end + 1) as usize..(-start + 1) as usize];
                 v.extend_from_slice(s);
             } else {
@@ -211,21 +196,26 @@ impl IntegerNoteVec {
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
     pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
         // とりあえず、キャレットを進めてみる。
-        let caret_number = caret.go_to_next(&app);
+        let awareness = caret.go_to_next(&app);
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        if -1 < caret_number {
+        if !awareness.negative {
             // 正のテープ。
-            // こりゃカンタンだ☆（＾～＾）
+            // [0, 1, 2, 3, 4]というデータが入っているテープの場合、
+            // キャレットが 3 なら
+            // [0, 1, 2 | 3, 4] を意味し、キャレットのある場所にデータを挿入するので、
+            // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
+            // ここで、 awareness.index は 2。
             nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, caret_number));
+            posi_v.extend_from_slice(&self.slice(0, caret.step_in(&app.comm)));
             posi_v.push(note);
-            if caret_number < self.positive_notes.len() as i16 {
-                posi_v.extend_from_slice(
-                    &self.slice(caret_number + 1, self.positive_notes.len() as i16),
-                );
+            if awareness.index < self.positive_notes.len() {
+                posi_v.extend_from_slice(&self.slice(
+                    caret.step_in(&app.comm) + 1,
+                    self.positive_notes.len() as i16,
+                ));
             }
         } else {
             // 負のテープだけ。
@@ -234,13 +224,11 @@ impl IntegerNoteVec {
             // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
 
             // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(
-                &self.slice(0, get_index_from_caret_numbers(caret_number) as i16),
-            );
+            nega_v.extend_from_slice(&self.slice(0, caret.step_in(&app.comm)));
             nega_v.push(note);
-            if get_index_from_caret_numbers(caret_number) < self.negative_notes.len() as usize {
+            if awareness.index < self.negative_notes.len() {
                 nega_v.extend_from_slice(&self.slice(
-                    get_index_from_caret_numbers(caret_number) as i16 + 1,
+                    caret.step_in(&app.comm) + 1,
                     self.negative_notes.len() as i16,
                 ));
             }

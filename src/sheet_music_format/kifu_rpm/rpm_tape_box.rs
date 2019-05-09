@@ -136,7 +136,7 @@ impl RpmTapeBox {
         for tape_j in &self.tape_box {
             // テープを追加中。
             let tape = tape_j.to_object(board_size, &app);
-            tape_box.change_tape_as_name(tape, &app);
+            tape_box.add_exists_tape(tape, &app);
         }
 
         // カーソルが進んでしまっているので戻すぜ☆（＾～＾）テープ箱が空っぽだと None を指すぜ☆（＾～＾）
