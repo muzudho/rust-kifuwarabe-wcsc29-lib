@@ -257,7 +257,7 @@ impl BestMovePicker {
                             'sequence_thread: loop {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
-                                        "\n--------------------------------------------------------------------------------#Note scan: Tape span: {}. [Before pattern match: Caret: {}]",
+                                        "\n--------------------------------------------------------------------------------#Note scan: Training tape span: {}. Training caret: {}.",
                                         deck.get_current_tape_span(Slot::Training).len(),
                                         deck.to_human_presentable_of_caret_of_current_tape(
                                             Slot::Training, &app

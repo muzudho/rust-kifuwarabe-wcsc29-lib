@@ -84,6 +84,7 @@ impl ClosedInterval {
         }
     }
 
+    /// 閉区間を広げるぜ☆（＾～＾）
     pub fn intersect_closed_interval(&mut self, closed_interval: ClosedInterval) {
         if closed_interval.minimum < self.minimum {
             self.minimum = closed_interval.minimum;

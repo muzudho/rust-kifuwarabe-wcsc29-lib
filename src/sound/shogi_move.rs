@@ -128,36 +128,6 @@ impl ShogiMove {
         }
     }
 
-    /*
-    /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
-    ///
-    /// # Returns
-    ///
-    /// (どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
-    pub fn to_first_touch_piece_id(
-        &self,
-        tape_box: &CassetteTapeBox,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> (
-        PieceIdentify,
-        Address,
-        Option<PieceIdentify>,
-        Option<Address>,
-    ) {
-        // とりあえず USI move に変換するついでに、欲しい情報を得る。
-        // (_umove, subject_pid, subject_addr, object_pid_opt, object_address_opt)
-        let best_move = self.to_usi_move(&tape_box, board_size, &app);
-
-        (
-            best_move.subject_pid,
-            best_move.subject_addr,
-            best_move.capture_pid,
-            best_move.capture_addr,
-        )
-    }
-    */
-
     // #####
     // # T #
     // #####
@@ -594,7 +564,6 @@ impl ShogiMove {
         board_size: BoardSize,
         app: &Application,
     ) -> String {
-        let tape_box = &deck.slots[slot as usize];
         let mut text = String::new();
         let mut other_caret =
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
@@ -608,7 +577,7 @@ impl ShogiMove {
 
         while other_caret.while_to(&self.caret_closed_interval, &app) {
             if let (_taken_overflow, _rmove, Some(note)) =
-                tape_box.seek_to_next_with_othre_caret(&mut other_caret, &app)
+                deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut other_caret, &app)
             {
                 text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
             } else {

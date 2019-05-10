@@ -365,16 +365,31 @@ impl CassetteDeck {
         }
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
+        if 0 < rmove.len() {
+            panic!(
+                "[#Deck.Seek a move: Rmoveが最初から長さが0より大きかったら、おかしい☆（＾～＾）Rmove len:{}]",
+                rmove.len());
+        }
 
         let mut is_rollback = false;
         let mut closed = false;
 
         'caret_loop: loop {
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#Deck.Seek a move: Slot:{:?}, Caret:{}]",
+                    slot,
+                    self.to_human_presentable_of_caret_of_current_tape(slot, &app)
+                ))
+            }
+
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match self.seek_next_note(slot, &app) {
-                (_taken_overflow, note_move, Some(rnote)) => {
-                    if app.is_debug() {
-                        app.comm.println("[#seek_a_move: ノート読めてる]");
+                (_taken_overflow, one_note, Some(rnote)) => {
+                    if one_note.len() != 1 {
+                        panic!(
+                            "[#Deck.Seek a move: 長さが１ではない１ノートは、おかしい☆（＾～＾）]"
+                        );
                     }
 
                     // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
@@ -382,7 +397,18 @@ impl CassetteDeck {
                     // あとで、ルック・バックする範囲☆（＾～＾）
                     rmove
                         .caret_closed_interval
-                        .intersect_closed_interval(note_move.caret_closed_interval);
+                        .intersect_closed_interval(one_note.caret_closed_interval);
+
+                    if 1 == rmove.len() && !rnote.is_phase_change() {
+                        // １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）
+                        panic!(
+                            "[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Rnote:{}]",
+                            rnote.to_human_presentable(position.get_board_size(),&app));
+                    } else if rnote.is_phase_change() && 1 < rmove.len() && rmove.len() < 4 {
+                        panic!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）]");
+                    } else if app.is_debug() {
+                        app.comm.println("[#seek_a_move: ノート読めてる]");
+                    }
 
                     if position.try_beautiful_touch(&self, &rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
@@ -395,19 +421,12 @@ impl CassetteDeck {
                         ));
                         */
 
-                        if 1 == rmove.len() && !rnote.is_phase_change() {
-                            // １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）
-                            panic!("[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）]");
-                        } else if rnote.is_phase_change() {
-                            if 1 < rmove.len() && rmove.len() < 4 {
-                                panic!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）]");
-                            } else if 3 < rmove.len() {
-                                // ２回目のフェーズ切り替えで終了。
-                                // 指し手は　２つ以上のノートを含むので、４つ目以降にあるはず。
-                                // print!("[Phase-change-break try_read_1move:{}]", rnote);
-                                closed = true;
-                                break 'caret_loop;
-                            }
+                        if rnote.is_phase_change() && 3 < rmove.len() {
+                            // ２回目のフェーズ切り替えで終了。
+                            // 指し手は　２つ以上のノートを含むので、４つ目以降にあるはず。
+                            // print!("[Phase-change-break try_read_1move:{}]", rnote);
+                            closed = true;
+                            break 'caret_loop;
                         }
                     } else {
                         // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）

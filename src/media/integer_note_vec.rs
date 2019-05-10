@@ -210,16 +210,16 @@ impl IntegerNoteVec {
         caret: &mut Caret,
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
+        // キャレットの始点を取っておく。
+        let ci = ClosedInterval::from_all(caret.step_in(), caret.step_in(), caret.is_facing_left());
         // とりあえず、キャレットを１つ進める。
         let awareness = caret.go_to_next(&app);
-        let ci = ClosedInterval::from_all(
-            awareness.expected_caret_number,
-            awareness.expected_caret_number,
-            caret.is_facing_left(),
-        );
         if app.is_debug() {
-            app.comm
-                .println(&format!("[#Seek next note: {}]", ci.to_human_presentable()));
+            app.comm.println(&format!(
+                "[#Seek next note: CI:{}, Awareness:{:?}]",
+                ci.to_human_presentable(),
+                awareness
+            ));
         }
         let one_note = ShogiMove::from_closed_interval(ci);
 

@@ -23,8 +23,9 @@ impl OhashiPlayer {
         rank: i8,
         pid: PieceIdentify,
         bs: BoardSize,
-    ) -> (ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe) {
+    ) -> (ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe) {
         (
+            ShogiNoteOpe::change_phase(ply),
             ShogiNoteOpe::from_address(Address::from_hand_pi(Piece::from_ph_pid(phase_value, pid))),
             ShogiNoteOpe::from_address(Address::from_cell(Cell::from_file_rank(file, rank), bs)),
             ShogiNoteOpe::change_phase(ply),
@@ -45,7 +46,7 @@ impl OhashiPlayer {
         // しかし きふわらべ は駒台から逆順に駒を取っていくので（スタック構造のポップ）、
         // 局面作成の時点で、駒台の駒は　背番号の逆順に追加しておいてください。
         let bs = position.get_board_size();
-        let array: [(ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe); 40] = [
+        let array: [(ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe, ShogiNoteOpe); 40] = [
             OhashiPlayer::init_note(-39, Second, 5, 1, K00, bs),
             OhashiPlayer::init_note(-38, First, 5, 9, K01, bs),
             OhashiPlayer::init_note(-37, Second, 4, 1, G02, bs),
@@ -89,8 +90,7 @@ impl OhashiPlayer {
         ];
 
         for element in array.iter() {
-            // 大橋流で指しているところはログを省略☆（＾～＾）１手に３ノート使う☆（＾～＾）
-
+            // 大橋流で指しているところはログを省略☆（＾～＾）１手に４ノート使う☆（＾～＾）
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
                 deck.seek_next_note(Slot::Learning, &app);
@@ -105,6 +105,11 @@ impl OhashiPlayer {
             {
                 deck.seek_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
+            }
+
+            {
+                deck.seek_next_note(Slot::Learning, &app);
+                position.touch_1note_ope_no_log(deck, &element.3, false, bs, &app);
             }
         }
     }
