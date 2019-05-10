@@ -225,6 +225,8 @@ impl LibSub {
 
     pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
+
+        // ラーニング・テープ作成。
         let mut tape = CassetteTape::new_facing_right(&app);
         tape.set_file_full_name_without_extension(
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
