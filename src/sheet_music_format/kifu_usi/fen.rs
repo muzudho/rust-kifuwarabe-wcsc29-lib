@@ -96,6 +96,7 @@ impl Fen {
                             ),
                             &app,
                         );
+                        deck.seek_of_next_tape(Slot::Learning, &app);
                     }
                     OhashiPlayer::learn_ohashi_starting(position, deck, &app);
                     true

@@ -1,5 +1,7 @@
 use human::human_interface::*;
 use instrument::position::*;
+use media::cassette_tape::*;
+use media::cassette_tape_box::*;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
@@ -7,8 +9,6 @@ use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::closed_interval::ClosedInterval;
-use media::cassette_tape::*;
-use media::cassette_tape_box::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Slot {
@@ -35,12 +35,14 @@ impl CassetteDeck {
         let learning_file_name_without_extension =
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
         learning_tape_box.set_file_name_without_extension(learning_file_name_without_extension);
+        /*
         learning_tape_box.add_exists_tape(
             CassetteTape::new_facing_right_with_file(
                 format!("{}.tapesfrag", learning_file_name_without_extension).to_string(),
             ),
             &app,
         );
+        */
 
         CassetteDeck {
             slots: [training_tape_box, learning_tape_box],
@@ -155,8 +157,8 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// (成功)
-    pub fn seek_of_training_tapes(&mut self, app: &Application) -> bool {
-        self.slots[Slot::Training as usize].seek_of_tapes(&app)
+    pub fn seek_of_next_tape(&mut self, slot: Slot, app: &Application) -> bool {
+        self.slots[slot as usize].seek_of_tapes(&app)
     }
 
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）

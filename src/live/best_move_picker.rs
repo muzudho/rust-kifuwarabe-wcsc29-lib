@@ -161,7 +161,7 @@ impl BestMovePicker {
             let mut debug_tape_count = -1;
             // テープをセット☆（＾～＾）
             // 局面は、平手初期局面に戻っているはずだぜ☆（＾～＾）
-            while deck.seek_of_training_tapes(&app) {
+            while deck.seek_of_next_tape(Slot::Training, &app) {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
                     // このテープだけテストするぜ☆（＾～＾）
