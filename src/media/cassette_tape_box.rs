@@ -1,5 +1,6 @@
 extern crate rand;
 use audio_compo::cassette_deck::Slot;
+use media::cassette_tape::*;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
@@ -10,7 +11,6 @@ use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Awareness;
 use studio::common::caret::Caret;
 use studio::common::closed_interval::ClosedInterval;
-use video_tape_model::cassette_tape::*;
 
 /// 保存したいときは RPM棋譜 に変換して、そっちで保存しろだぜ☆（＾～＾）
 pub struct CassetteTapeBox {

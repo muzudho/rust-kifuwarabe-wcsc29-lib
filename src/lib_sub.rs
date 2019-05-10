@@ -170,32 +170,13 @@ impl LibSub {
                 &app,
             );
         }
-        //comm.println("#Position parse end1.");
-        //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
 
         // USI -> RPM 変換を作れていないので、ポジションをもう１回初期局面に戻してから、プレイアウトします。
         // TODO できれば USI -> RPM 変換したい。
-        // comm.println("#Lib: TODO 'position' command(2).");
-        {
-            //comm.println("#Lib: 'position' command(2).");
-            //let mut start = 0;
-
-            /*
-            // 大橋流を指せるところまで、局面を戻す。
-            GamePlayer::clear_to_honshogi_origin(position, deck, &app);
-            if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
-                //comm.println("#Position parsed.");
-            }
-            */
-
-            if let Some(urecord) = urecord_opt {
-                // 差し替え。
-                deck.clear_of_tapes(Slot::Training, &app);
-                UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
-            }
-            //comm.println("#Record converted1.");
-            //HumanInterface::bo(&comm, &rrecord.get_mut_operation_track(), &position);
-            //comm.println("#Record converted2.");
+        if let Some(urecord) = urecord_opt {
+            // 差し替え。
+            deck.clear_of_tapes(Slot::Training, &app);
+            UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
         }
     }
 }

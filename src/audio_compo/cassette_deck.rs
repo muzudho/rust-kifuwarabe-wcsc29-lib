@@ -7,8 +7,8 @@ use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::closed_interval::ClosedInterval;
-use video_tape_model::cassette_tape::*;
-use video_tape_model::cassette_tape_box::*;
+use media::cassette_tape::*;
+use media::cassette_tape_box::*;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Slot {

@@ -1,5 +1,6 @@
 extern crate rand;
 use conf::kifuwarabe_wcsc29_master_config::*;
+use media::integer_note_vec::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
 use sound::shogi_move::ShogiMove;
@@ -13,7 +14,6 @@ use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
-use video_tape_model::integer_note_vec::*;
 
 /// 対局情報。
 pub struct CassetteTapeLabel {

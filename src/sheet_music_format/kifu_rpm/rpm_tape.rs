@@ -1,10 +1,10 @@
+use media::cassette_tape::*;
+use media::integer_note_vec::*;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::RpmTapeTracks;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
-use video_tape_model::cassette_tape::*;
-use video_tape_model::integer_note_vec::*;
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定

@@ -2,6 +2,8 @@ use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
+use media::cassette_tape::*;
+use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_position::*;
 use std::*;
@@ -71,10 +73,31 @@ impl Fen {
         match UsiPosition::parse_startpos_test(line, start, &app.comm) {
             Some(is_startpos) => {
                 if is_startpos {
-                    // 大橋流を指せるところまで、局面を戻す☆（＾～＾）
-                    OhashiPlayer::clear_to_honshogi_origin(position, deck, &app);
+                    // 大橋流を指せるところまで、学習局面を戻す☆（＾～＾）
+                    position.repeat_origin_position(&app);
+
                     // 大橋流で初期局面まで指す☆（＾～＾）
-                    OhashiPlayer::play_ohashi_starting(position, deck, &app);
+                    deck.clear_of_tapes(Slot::Learning, &app);
+                    {
+                        let learning_file_name_without_extension =
+                            &RpmTapeBox::create_file_full_name_without_extension(
+                                &app.kw29_conf,
+                                &app,
+                            );
+                        deck.set_file_name_without_extension_of_tape_box(
+                            Slot::Learning,
+                            learning_file_name_without_extension,
+                        );
+                        deck.add_tape_to_tape_box(
+                            Slot::Learning,
+                            CassetteTape::new_facing_right_with_file(
+                                format!("{}.tapesfrag", learning_file_name_without_extension)
+                                    .to_string(),
+                            ),
+                            &app,
+                        );
+                    }
+                    OhashiPlayer::learn_ohashi_starting(position, deck, &app);
                     true
                 } else {
                     // 指定局面を、初期局面とする☆（＾～＾）

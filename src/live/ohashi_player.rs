@@ -15,17 +15,6 @@ pub const OHASHI_NOTE_LEN: usize = 3 * 40;
 /// 大橋流だけ指してくれるプレイヤー。
 pub struct OhashiPlayer {}
 impl OhashiPlayer {
-    /// 大橋流を指せるように、クリアーするぜ☆（＾～＾）
-    pub fn clear_to_honshogi_origin(
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) {
-        // オリジン局面に戻す☆（＾～＾）
-        deck.clear_of_tapes(Slot::Training, &app);
-        position.repeat_origin_position(&app);
-    }
-
     /// 初期化に使う。
     fn init_note(
         ply: i16,
@@ -44,7 +33,7 @@ impl OhashiPlayer {
 
     /// オリジン・ポジションから、平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
-    pub fn play_ohashi_starting(
+    pub fn learn_ohashi_starting(
         position: &mut Position,
         deck: &mut CassetteDeck,
         app: &Application,
@@ -104,20 +93,17 @@ impl OhashiPlayer {
 
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
-                deck.seek_to_next_note(Slot::Training, &app);
-                // deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
-                deck.seek_to_next_note(Slot::Training, &app);
-                // deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
-                deck.seek_to_next_note(Slot::Training, &app);
-                // deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
         }

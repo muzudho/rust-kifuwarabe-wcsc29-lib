@@ -23,7 +23,7 @@ impl CsaConverter {
         }
 
         // 大橋流を指すところから☆（*＾～＾*）
-        OhashiPlayer::play_ohashi_starting(position, deck, app);
+        OhashiPlayer::learn_ohashi_starting(position, deck, app);
         if app.is_debug() {
             app.comm.println("[#play_out_csa_tape:大橋流終わり]");
             HumanInterface::bo(deck, &position, &app);

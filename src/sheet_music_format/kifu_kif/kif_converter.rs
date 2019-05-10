@@ -20,7 +20,7 @@ impl KifConverter {
         let board_size = position.get_board_size();
 
         // 大橋流を指すところから☆（*＾～＾*）
-        OhashiPlayer::play_ohashi_starting(position, deck, &app);
+        OhashiPlayer::learn_ohashi_starting(position, deck, &app);
 
         let mut ply = 1;
         for kmove in &ktape.items {
