@@ -28,7 +28,7 @@ impl LibSub {
         };
 
         if let Some(rnote) = rnote_opt {
-            if !position.try_beautiful_touch(deck, slot, &rnote, &app) {
+            if !position.try_beautiful_touch(deck, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
         }
@@ -59,12 +59,11 @@ impl LibSub {
     }
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let slot = Slot::Learning;
-        deck.look_back_caret_to_positive(slot, &app);
+        deck.look_back_caret_to_positive(Slot::Learning, &app);
         if let (_taken_overflow, _note_move, Some(rnote)) =
             deck.seek_to_next_note(Slot::Learning, &app)
         {
-            if !position.try_beautiful_touch(&deck, slot, &rnote, &app) {
+            if !position.try_beautiful_touch(&deck, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
         }
@@ -184,7 +183,12 @@ impl LibSub {
         }
     }
 
-    pub fn scan_pid(line: &str, position: &mut Position, app: &Application) {
+    pub fn scan_pid(
+        line: &str,
+        deck: &mut CassetteDeck,
+        position: &mut Position,
+        app: &Application,
+    ) {
         let re = Regex::new(r"scan-pid\s+(\d+)")
             .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
         let matched = re
@@ -192,17 +196,18 @@ impl LibSub {
             .unwrap_or_else(|| panic!(app.comm.panic("Fail. parse.")));
         let pnum_str = matched.get(1).map_or("", |m| m.as_str());
         let pnum: i8 = pnum_str.parse().unwrap();
+        let pid = if let Some(pid) = PieceIdentify::from_number(pnum) {
+            pid
+        } else {
+            app.comm
+                .println(&format!("[#Scan pid fail: Pnum: {}]", pnum));
+            return;
+        };
 
-        if let Some((idp, addr)) = position.scan_pid(
-            position.get_phase().get_state(),
-            if let Some(pid) = PieceIdentify::from_number(pnum) {
-                pid
-            } else {
-                app.comm
-                    .println(&format!("[#Scan pid fail: Pnum: {}]", pnum));
-                return;
-            },
-        ) {
+        // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
+        position.go_next_phase(deck);
+
+        if let Some((idp, addr)) = position.scan_pid(position.get_phase().get_state(), pid) {
             app.comm.println(&format!(
                 "[#Scan pid: Found pnum:{}, Idp:{}, Addr:{}]",
                 pnum,
@@ -213,17 +218,18 @@ impl LibSub {
             app.comm
                 .println(&format!("[#Scan pid: Not found pnum: {}]", pnum));
         }
+
+        // 進めた分を戻すぜ☆（＾～＾）
+        position.back_phase(deck, &app);
     }
 
     pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
-        {
-            let learning_file_name_without_extension =
-                &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
-            let mut tape = CassetteTape::new_facing_right(&app);
-            tape.set_file_full_name_without_extension(&learning_file_name_without_extension);
-            deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
-            deck.seek_of_next_tape(Slot::Learning, &app);
-        }
+        let learning_file_name_without_extension =
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
+        let mut tape = CassetteTape::new_facing_right(&app);
+        tape.set_file_full_name_without_extension(&learning_file_name_without_extension);
+        deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
+        deck.seek_of_next_tape(Slot::Learning, &app);
     }
 }

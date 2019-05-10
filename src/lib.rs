@@ -143,25 +143,25 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            deck.pop_1note(Slot::Learning, &mut position, &app);
+            deck.pop_1note(&mut position, &app);
 
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
-            deck.pop_1move(Slot::Learning, &mut position, &app);
+            deck.pop_1move(&mut position, &app);
 
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                deck.pop_1move(Slot::Learning, &mut position, &app);
+                deck.pop_1move(&mut position, &app);
             }
 
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                deck.pop_1move(Slot::Learning, &mut position, &app);
+                deck.pop_1move(&mut position, &app);
             }
 
             HumanInterface::bo(&deck, &position, &app);
@@ -264,7 +264,7 @@ pub fn main_loop() {
         // # S #
         // #####
         } else if line.starts_with("scan-pid") {
-            LibSub::scan_pid(&line, &mut position, &app);
+            LibSub::scan_pid(&line, &mut deck, &mut position, &app);
 
         // #####
         // # U #

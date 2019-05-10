@@ -201,17 +201,12 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// 削除したノート。
-    pub fn pop_1note(
-        &mut self,
-        slot: Slot,
-        position: &mut Position,
-        app: &Application,
-    ) -> Option<ShogiNote> {
+    pub fn pop_1note(&mut self, position: &mut Position, app: &Application) -> Option<ShogiNote> {
         HumanInterface::show_position(position, &app);
 
-        if let Some(rpm_note) = self.delete_1note(slot, &app) {
+        if let Some(rpm_note) = self.delete_1note(Slot::Learning, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
-                position.try_beautiful_touch_no_log(&self, slot, &rpm_note.get_ope(), &app);
+                position.try_beautiful_touch_no_log(&self, &rpm_note.get_ope(), &app);
             Some(rpm_note)
         } else {
             None
@@ -221,10 +216,10 @@ impl CassetteDeck {
     /// 1手削除する。
     ///
     /// TODO ply が変わる。
-    pub fn pop_1move(&mut self, slot: Slot, position: &mut Position, app: &Application) {
+    pub fn pop_1move(&mut self, position: &mut Position, app: &Application) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(rpm_note) = self.pop_1note(slot, position, app) {
+        while let Some(rpm_note) = self.pop_1note(position, app) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
@@ -319,7 +314,7 @@ impl CassetteDeck {
                 rnote.to_human_presentable(position.get_board_size())
             ));
             */
-            is_legal_touch = position.try_beautiful_touch(&self, slot, &rnote, &app);
+            is_legal_touch = position.try_beautiful_touch(&self, &rnote, &app);
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -426,7 +421,7 @@ impl CassetteDeck {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(&self, slot, &rnote, &app) {
+                if !position.try_beautiful_touch(&self, &rnote, &app) {
                     /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",
@@ -512,7 +507,7 @@ impl CassetteDeck {
                         .caret_closed_interval
                         .intersect_closed_interval(note_move.caret_closed_interval);
 
-                    if position.try_beautiful_touch(&self, slot, &rnote, &app) {
+                    if position.try_beautiful_touch(&self, &rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
                         /*
                         app.comm.println(&format!(

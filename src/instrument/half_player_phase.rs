@@ -73,10 +73,10 @@ impl HalfPlayerPhaseObject {
             || self.state == HalfPlayerPhaseValue::OnePointFive
     }
 
-    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）
-    pub fn go_next_phase_for_position(&mut self, deck: &CassetteDeck, slot: Slot) {
+    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
+    pub fn go_next_phase_for_position(&mut self, deck: &CassetteDeck) {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-        if deck.slots[slot as usize].is_facing_left_of_current_tape() {
+        if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
             self.state = match self.state {
                 ZeroPointFive => Second,
                 First => ZeroPointFive,
@@ -91,6 +91,15 @@ impl HalfPlayerPhaseObject {
                 Second => ZeroPointFive,
             };
         }
+    }
+    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
+    pub fn back_phase_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
+        self.look_back_phase_for_position(deck, &app);
+        self.go_next_phase_for_position(&deck);
+        self.look_back_phase_for_position(deck, &app);
+    }
+    pub fn look_back_phase_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
+        deck.slots[Slot::Learning as usize].look_back_caret_to_opponent(&app);
     }
 
     /// 点対称に回転☆（＾ｑ＾）！

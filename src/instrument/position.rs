@@ -516,8 +516,11 @@ impl Position {
         }
     }
 
-    pub fn go_next_phase(&mut self, deck: &CassetteDeck, slot: Slot) {
-        self.phase.go_next_phase_for_position(&deck, slot)
+    pub fn go_next_phase(&mut self, deck: &CassetteDeck) {
+        self.phase.go_next_phase_for_position(&deck)
+    }
+    pub fn back_phase(&mut self, deck: &mut CassetteDeck, app: &Application) {
+        self.phase.back_phase_for_position(deck, &app)
     }
 
     /// Operation トラック文字列読取。
@@ -594,7 +597,7 @@ impl Position {
         let slot = Slot::Learning;
 
         // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-        let id = match self.try_beautiful_touch_no_log(&deck, slot, &rnote_ope, &app) {
+        let id = match self.try_beautiful_touch_no_log(&deck, &rnote_ope, &app) {
             (is_legal_touch, Some(piece_identify)) => {
                 if !is_legal_touch && !is_ok_illegal {
                     panic!(
@@ -637,7 +640,6 @@ impl Position {
     pub fn try_beautiful_touch(
         &mut self,
         deck: &CassetteDeck,
-        slot: Slot,
         rnote: &ShogiNote,
         app: &Application,
     ) -> bool {
@@ -648,7 +650,7 @@ impl Position {
             ));
         }
         let (is_legal_touch, _piece_identify_opt) =
-            self.try_beautiful_touch_no_log(&deck, slot, &rnote.get_ope(), &app);
+            self.try_beautiful_touch_no_log(&deck, &rnote.get_ope(), &app);
         HumanInterface::show_position(self, &app);
 
         is_legal_touch
@@ -668,7 +670,6 @@ impl Position {
     pub fn try_beautiful_touch_no_log(
         &mut self,
         deck: &CassetteDeck,
-        slot: Slot,
         rnote_ope: &ShogiNoteOpe,
         app: &Application,
     ) -> (bool, Option<IdentifiedPiece>) {
@@ -787,7 +788,7 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.go_next_phase(&deck, slot);
+                    self.go_next_phase(&deck);
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[#フェーズチェンジ {:?}]",
@@ -832,7 +833,18 @@ impl Position {
         &self,
         phase_value: HalfPlayerPhaseValue,
         pid: PieceIdentify,
+        //app: &Application,
     ) -> Option<(IdentifiedPiece, Address)> {
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Scan pid: BOARD_START:{}, Len:{}]",
+                BOARD_START,
+                self.board_size.len()
+            ));
+        }
+        */
+
         // 盤上のスキャン。
         for addr in BOARD_START..self.board_size.len() {
             // Id piece.
@@ -841,7 +853,15 @@ impl Position {
                     // 駒の先後と、背番号が一致したら。
                     let addr_obj = Address::from_raw(addr);
                     return Some((idp, addr_obj));
-                }
+                } /* else if app.is_debug() {
+                      app.comm.println(&format!(
+                          "[#Scan pid: NOT: PositionPhase:{:?}, PiecePhase:{:?}, Addr:{}, Idp:{}]",
+                          phase_value,
+                          idp.get_phase().get_state(),
+                          addr,
+                          idp.to_human_presentable()
+                      ));
+                  }*/
             }
         }
 

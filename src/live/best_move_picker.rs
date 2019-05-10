@@ -221,10 +221,16 @@ impl BestMovePicker {
                         ));
                     }
 
+                    // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
+                    position.go_next_phase(deck);
+
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
                         position.scan_pid(position.get_phase().get_state(), *subject_piece_id)
                     {
+                        // 進めた分、戻すぜ☆（＾～＾）
+                        position.back_phase(deck, &app);
+
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[{}] Recording thread by piece: {}'{}'{}.",
@@ -430,6 +436,9 @@ impl BestMovePicker {
                                 subject_piece_id.to_human_presentable()
                             ));
                         }
+
+                        // 進めた分、戻すぜ☆（＾～＾）
+                        position.back_phase(deck, &app);
                     }
                 } // ピースの for
 
