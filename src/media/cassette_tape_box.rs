@@ -76,6 +76,16 @@ impl CassetteTapeBox {
         self.tapes.clear();
         self.caret_of_tapes.clear_facing_right();
     }
+    pub fn clear_tape_body(&mut self, app: &Application) {
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].clear_tape_body(&app)
+        } else {
+            panic!(
+                "#seek_to_next: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
 
     /// ◆次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）

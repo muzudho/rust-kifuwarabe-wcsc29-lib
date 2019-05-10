@@ -2,8 +2,6 @@ use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::ohashi_player::*;
-use media::cassette_tape::*;
-use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_position::*;
 use std::*;
@@ -77,27 +75,7 @@ impl Fen {
                     position.repeat_origin_position(&app);
 
                     // 大橋流で初期局面まで指す☆（＾～＾）
-                    deck.clear_of_tapes(Slot::Learning, &app);
-                    {
-                        let learning_file_name_without_extension =
-                            &RpmTapeBox::create_file_full_name_without_extension(
-                                &app.kw29_conf,
-                                &app,
-                            );
-                        deck.set_file_name_without_extension_of_tape_box(
-                            Slot::Learning,
-                            learning_file_name_without_extension,
-                        );
-                        deck.add_tape_to_tape_box(
-                            Slot::Learning,
-                            CassetteTape::new_facing_right_with_file(
-                                format!("{}.tapesfrag", learning_file_name_without_extension)
-                                    .to_string(),
-                            ),
-                            &app,
-                        );
-                        deck.seek_of_next_tape(Slot::Learning, &app);
-                    }
+                    deck.clear_of_tape_body(Slot::Learning, &app);
                     OhashiPlayer::learn_ohashi_starting(position, deck, &app);
                     true
                 } else {

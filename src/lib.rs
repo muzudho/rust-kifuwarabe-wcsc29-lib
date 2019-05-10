@@ -266,6 +266,7 @@ pub fn main_loop() {
             app.comm.println("id author Satoshi TAKAHASHI");
             app.comm.println("usiok");
         } else if line == "usinewgame" {
+            LibSub::usi_new_game(&mut deck, &app);
         }
     }
 }

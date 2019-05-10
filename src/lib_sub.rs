@@ -3,6 +3,8 @@ use human::human_interface::*;
 use instrument::half_player_phase::*;
 use instrument::position::*;
 use live::best_move_picker::*;
+use media::cassette_tape::*;
+use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
 use sheet_music_format::kifu_usi::usi_position::*;
@@ -177,6 +179,22 @@ impl LibSub {
             // 差し替え。
             deck.clear_of_tapes(Slot::Training, &app);
             UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
+        }
+    }
+
+    pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
+        // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
+        {
+            let learning_file_name_without_extension =
+                &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
+            deck.add_tape_to_tape_box(
+                Slot::Learning,
+                CassetteTape::new_facing_right_with_file(
+                    format!("{}.tapesfrag", learning_file_name_without_extension).to_string(),
+                ),
+                &app,
+            );
+            deck.seek_of_next_tape(Slot::Learning, &app);
         }
     }
 }

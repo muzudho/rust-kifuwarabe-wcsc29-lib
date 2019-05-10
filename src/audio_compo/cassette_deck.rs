@@ -150,6 +150,9 @@ impl CassetteDeck {
     pub fn clear_of_tapes(&mut self, slot: Slot, app: &Application) {
         self.slots[slot as usize].clear_tape_box(&app)
     }
+    pub fn clear_of_tape_body(&mut self, slot: Slot, app: &Application) {
+        self.slots[slot as usize].clear_tape_body(&app)
+    }
 
     /// 次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）

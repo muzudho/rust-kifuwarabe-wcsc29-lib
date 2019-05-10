@@ -85,6 +85,12 @@ impl CassetteTape {
         }
     }
 
+    /// ラベルを除くクリアー。
+    pub fn clear_tape_body(&mut self, _app: &Application) {
+        self.caret.clear_facing_right();
+        self.tracks.clear();
+    }
+
     /// ランダムにファイル名を付けるぜ☆（*＾～＾*）
     pub fn create_tape_fragment_file_full_name(
         kw29_conf: &KifuwarabeWcsc29MasterConfig,
