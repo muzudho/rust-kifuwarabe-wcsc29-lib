@@ -316,7 +316,7 @@ impl BestMovePicker {
                                 } else {
                                     if app.is_debug() {
                                         app.comm.println(&format!("info [USIにならないぜ☆（＾～＾）棋譜がダメかもしらん☆（＾～＾） Rmove:{}]",
-                                            rmove.to_human_presentable(&deck,Slot::Training,position.get_board_size(),&app)));
+                                            rmove.to_human_presentable(deck,Slot::Training,position.get_board_size(),&app)));
                                         app.comm.println(
                                             "info [かといって巻き戻したいし……☆（＾～＾）]",
                                         );

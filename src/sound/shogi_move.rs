@@ -24,6 +24,10 @@ impl fmt::Display for ShogiMove {
     }
 }
 impl ShogiMove {
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn new_facing_right_move() -> Self {
         ShogiMove {
             caret_closed_interval: ClosedInterval::new_facing_right(),
@@ -35,6 +39,38 @@ impl ShogiMove {
             caret_closed_interval: closed_interval,
         }
     }
+
+    // #####
+    // # G #
+    // #####
+
+    pub fn get_start(&self) -> i16 {
+        self.caret_closed_interval.get_start()
+    }
+
+    pub fn get_end(&self) -> i16 {
+        self.caret_closed_interval.get_end()
+    }
+
+    // #####
+    // # I #
+    // #####
+
+    pub fn is_empty(&self) -> bool {
+        self.caret_closed_interval.is_empty()
+    }
+
+    // #####
+    // # L #
+    // #####
+
+    pub fn len(&self) -> usize {
+        self.caret_closed_interval.len()
+    }
+
+    // #####
+    // # P #
+    // #####
 
     /// 次の1手分解析。
     ///
@@ -92,22 +128,6 @@ impl ShogiMove {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.caret_closed_interval.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.caret_closed_interval.is_empty()
-    }
-
-    pub fn get_start(&self) -> i16 {
-        self.caret_closed_interval.get_start()
-    }
-
-    pub fn get_end(&self) -> i16 {
-        self.caret_closed_interval.get_end()
-    }
-
     /*
     /// この指し手が、どの駒が動いたものによるものなのか、またどこにあった駒なのかを返します。
     ///
@@ -138,6 +158,10 @@ impl ShogiMove {
     }
     */
 
+    // #####
+    // # T #
+    // #####
+
     /// 一手。フェーズ・チェンジ・ノートや「ほこり取り」は含まない。
     /// 決まっている並びをしているものとする。
     ///
@@ -157,7 +181,6 @@ impl ShogiMove {
         if app.is_debug() {
             app.comm.println("[#To best move: Begin]");
         }
-        let tape_box = &mut deck.slots[slot as usize];
         // 動作の主体。
         let mut subject_pid_opt;
         let mut subject_address_opt;
@@ -179,7 +202,7 @@ impl ShogiMove {
         }
 
         let mut note = if let (_taken_overflow, _rmove, Some(note)) =
-            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+            deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
         {
             note
         } else {
@@ -217,7 +240,7 @@ impl ShogiMove {
 
                 // 次は置くだけ。
                 note = if let (_taken_overflow, _rmove, Some(note)) =
-                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                    deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                 {
                     note
                 } else {
@@ -256,7 +279,7 @@ impl ShogiMove {
 
                 // 次。
                 note = if let (_taken_overflow, _rmove, Some(note)) =
-                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                    deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                 {
                     note
                 } else {
@@ -278,7 +301,7 @@ impl ShogiMove {
 
                     // 次。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
-                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                        deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -307,7 +330,7 @@ impl ShogiMove {
 
                     // 次。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
-                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                        deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -326,8 +349,9 @@ impl ShogiMove {
                     // 自分の駒台に置く動き。
                     if let Some(_address) = note.get_ope().address {
                         // 次は、盤上の自駒を触る。
-                        note = if let (_taken_overflow, _rmove, Some(note)) =
-                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                        note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
+                            [slot as usize]
+                            .seek_to_next_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
@@ -348,8 +372,9 @@ impl ShogiMove {
                             subject_address_opt = Some(address);
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
                             // 次。
-                            note = if let (_taken_overflow, _rmove, Some(note)) =
-                                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                            note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
+                                [slot as usize]
+                                .seek_to_next_with_othre_caret(&mut caret, &app)
                             {
                                 note
                             } else {
@@ -381,7 +406,7 @@ impl ShogiMove {
 
                     // 次。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
-                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                        deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -441,7 +466,7 @@ impl ShogiMove {
             panic!(
                 "Unexpected dst. Drop-none, Dst-none, move.len: '{}' > 1, move: '{}'. Slot: {:?}.",
                 self.len(),
-                self,
+                self.to_human_presentable(deck, slot, board_size, &app),
                 slot,
             )
             // , Tape file name: '{}', Tape index: {}.
