@@ -198,6 +198,104 @@ impl IntegerNoteVec {
     // # S #
     // #####
 
+    /// キャレットは必ず１つ進みます。
+    /// 0 は、正の数とします。（マイナスゼロは無いです）
+    /// Noneを返したら、オーバーフローしています。
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn seek_next_note(
+        &self,
+        caret: &mut Caret,
+        app: &Application,
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
+        // とりあえず、キャレットを１つ進める。
+        let awareness = caret.go_to_next(&app);
+        let ci = ClosedInterval::from_all(
+            awareness.expected_caret_number,
+            awareness.expected_caret_number,
+            caret.is_facing_left(),
+        );
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[#Seek next note: {}]", ci.to_human_presentable()));
+        }
+        let one_note = ShogiMove::from_closed_interval(ci);
+
+        if caret.is_facing_left() {
+            // 負の無限大 <---- 顔の向き。
+            if awareness.negative {
+                // 負の方。
+                if self.negative_notes.len() <= awareness.index {
+                    // 配列の範囲外。
+                    if app.is_debug() {
+                        app.comm
+                            .println("[#Seek next note: <-- 負の方、配列の範囲外]");
+                    }
+                    (true, one_note, None)
+                } else {
+                    // 配列の範囲内。
+                    if app.is_debug() {
+                        app.comm.println("[#Seek next note: <-- 負の方]");
+                    }
+                    (false, one_note, Some(self.negative_notes[awareness.index]))
+                }
+            } else {
+                // 正の方。
+                if self.positive_notes.len() <= awareness.index {
+                    // 配列の範囲外。
+                    if app.is_debug() {
+                        app.comm
+                            .println("[#Seek next note: <-- 正の方、配列の範囲外]");
+                    }
+                    (true, one_note, None)
+                } else {
+                    // 配列の範囲内。
+                    if app.is_debug() {
+                        app.comm.println("[#Seek next note: <-- 正の方]");
+                    }
+                    (false, one_note, Some(self.positive_notes[awareness.index]))
+                }
+            }
+        } else {
+            // 顔の向き ----> 正の無限大。
+            if !awareness.negative {
+                // 正の方。
+                if self.positive_notes.len() <= awareness.index {
+                    // 配列の範囲外。
+                    if app.is_debug() {
+                        app.comm
+                            .println("[#Seek next note: --> 正の方、配列の範囲外]");
+                    }
+                    (true, one_note, None)
+                } else {
+                    // 配列の範囲内。
+                    if app.is_debug() {
+                        app.comm.println("[#Seek next note: --> 正の方]");
+                    }
+                    (false, one_note, Some(self.positive_notes[awareness.index]))
+                }
+            } else {
+                // 負の方。
+                if self.negative_notes.len() <= awareness.index {
+                    // 配列の範囲外。
+                    if app.is_debug() {
+                        app.comm
+                            .println("[#Seek next note: --> 負の方、配列の範囲外]");
+                    }
+                    (true, one_note, None)
+                } else {
+                    // 配列の範囲内。
+                    if app.is_debug() {
+                        app.comm.println("[#Seek next note: --> 負の方]");
+                    }
+                    (false, one_note, Some(self.negative_notes[awareness.index]))
+                }
+            }
+        }
+    }
+
     /// 現在の指し手をスキップするぜ☆（＾～＾）
     ///
     /// # Returns
@@ -209,7 +307,7 @@ impl IntegerNoteVec {
 
         loop {
             // とりあえずキャレットを１つ進める。
-            match self.seek_to_next(caret, &app) {
+            match self.seek_next_note(caret, &app) {
                 (taken_overflow, note_move, Some(note)) => {
                     if note.is_phase_change() {
                         rmove
@@ -225,71 +323,6 @@ impl IntegerNoteVec {
                         .caret_closed_interval
                         .intersect_closed_interval(note_move.caret_closed_interval);
                     return (taken_overflow, rmove);
-                }
-            }
-        }
-    }
-
-    /// キャレットは必ず１つ進みます。
-    /// 0 は、正の数とします。（マイナスゼロは無いです）
-    /// Noneを返したら、オーバーフローしています。
-    ///
-    /// # Returns
-    ///
-    /// (taken overflow, move, note)
-    pub fn seek_to_next(
-        &self,
-        caret: &mut Caret,
-        app: &Application,
-    ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        // とりあえず、キャレットを１つ進める。
-        let awareness = caret.go_to_next(&app);
-        let note_move = ShogiMove::from_closed_interval(ClosedInterval::from_all(
-            awareness.expected_caret_number,
-            awareness.expected_caret_number,
-            caret.is_facing_left(),
-        ));
-
-        if caret.is_facing_left() {
-            // 負の無限大 <---- 顔の向き。
-            if awareness.negative {
-                // [負] 正
-                if self.negative_notes.len() <= awareness.index {
-                    // 配列の範囲外。
-                    (true, note_move, None)
-                } else {
-                    // 配列の範囲内。
-                    (false, note_move, Some(self.negative_notes[awareness.index]))
-                }
-            } else {
-                // 負 [正]
-                if self.positive_notes.len() <= awareness.index {
-                    // 配列の範囲外。
-                    (true, note_move, None)
-                } else {
-                    // 配列の範囲内。
-                    (false, note_move, Some(self.positive_notes[awareness.index]))
-                }
-            }
-        } else {
-            // 顔の向き ----> 正の無限大。
-            if !awareness.negative {
-                // 負 [正]
-                if self.positive_notes.len() <= awareness.index {
-                    // 配列の範囲外。
-                    (true, note_move, None)
-                } else {
-                    // 配列の範囲内。
-                    (false, note_move, Some(self.positive_notes[awareness.index]))
-                }
-            } else {
-                // [負] 正
-                if self.negative_notes.len() <= awareness.index {
-                    // 配列の範囲外。
-                    (true, note_move, None)
-                } else {
-                    // 配列の範囲内。
-                    (false, note_move, Some(self.negative_notes[awareness.index]))
                 }
             }
         }

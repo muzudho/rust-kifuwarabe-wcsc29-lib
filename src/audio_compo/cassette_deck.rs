@@ -136,7 +136,7 @@ impl CassetteDeck {
     pub fn clear_of_tapes(&mut self, slot: Slot, app: &Application) {
         self.slots[slot as usize].clear_tape_box(&app)
     }
-    pub fn clear_of_tape_body(&mut self, slot: Slot, app: &Application) {
+    pub fn clear_tape_body(&mut self, slot: Slot, app: &Application) {
         self.slots[slot as usize].clear_tape_body(&app)
     }
 
@@ -235,7 +235,7 @@ impl CassetteDeck {
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         let tape_box = &mut self.slots[slot as usize];
         // とりあえず、キャレットを進めようぜ☆（＾～＾）
-        let (_taken_overflow, rmove, _) = tape_box.seek_to_next_note(&app);
+        let (_taken_overflow, rmove, _) = tape_box.seek_next_note(&app);
 
         if -1 < rmove.get_end() {
             // ０、または 正のテープ。
@@ -243,7 +243,7 @@ impl CassetteDeck {
             if tape_box.is_before_caret_overflow_of_tape() {
                 // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box.push_note_to_positive_of_current_tape(note);
-                tape_box.seek_to_next_note(&app);
+                tape_box.seek_next_note(&app);
             } else {
                 // 先端でなければ、上書き。
                 tape_box.set_note_to_current_tape(rmove.get_end(), note);
@@ -259,7 +259,7 @@ impl CassetteDeck {
             if tape_box.is_before_caret_overflow_of_tape() {
                 // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box.push_note_to_negative_of_current_tape(note);
-                tape_box.seek_to_next_note(&app);
+                tape_box.seek_next_note(&app);
             } else {
                 // 先端でなければ、上書き。
                 tape_box.set_note_to_current_tape(rmove.get_end(), note);
@@ -306,7 +306,7 @@ impl CassetteDeck {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next_note(slot, &app) {
+        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_next_note(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -387,12 +387,12 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn seek_to_next_note(
+    pub fn seek_next_note(
         &mut self,
         slot: Slot,
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.slots[slot as usize].seek_to_next_note(&app)
+        self.slots[slot as usize].seek_next_note(&app)
     }
 
     /// 成立しないタッチをしてしまうことも、おおめに見ます。
@@ -410,7 +410,7 @@ impl CassetteDeck {
             // （１）１ノート進んだ。ついでに拾ったノートを返す。
             // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
             // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next_note(slot, &app) {
+            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_next_note(slot, &app) {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
@@ -498,7 +498,7 @@ impl CassetteDeck {
 
         'caret_loop: loop {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-            match self.seek_to_next_note(slot, &app) {
+            match self.seek_next_note(slot, &app) {
                 (_taken_overflow, note_move, Some(rnote)) => {
                     if app.is_debug() {
                         app.comm.println("[#seek_a_move: ノート読めてる]");
@@ -534,15 +534,15 @@ impl CassetteDeck {
                         break 'caret_loop;
                     }
                 }
-                (_taken_overflow, note_move, None) => {
+                (_taken_overflow, one_note, None) => {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
                     if app.is_debug() {
-                        app.comm.println("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾）]");
+                        app.comm.println(&format!("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾）1Note:{}]",one_note));
                     }
 
                     rmove
                         .caret_closed_interval
-                        .intersect_closed_interval(note_move.caret_closed_interval);
+                        .intersect_closed_interval(one_note.caret_closed_interval);
                     return (SoughtMoveResult::Forever, rmove);
                 }
             }

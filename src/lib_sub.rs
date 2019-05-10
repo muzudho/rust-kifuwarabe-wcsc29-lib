@@ -20,7 +20,7 @@ impl LibSub {
         let rnote_opt = {
             let tape_box = &mut deck.slots[slot as usize];
             tape_box.look_back_caret_to_negative(&app);
-            if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_to_next_note(&app) {
+            if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_next_note(&app) {
                 Some(rnote)
             } else {
                 None
@@ -61,7 +61,7 @@ impl LibSub {
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_positive(Slot::Learning, &app);
         if let (_taken_overflow, _note_move, Some(rnote)) =
-            deck.seek_to_next_note(Slot::Learning, &app)
+            deck.seek_next_note(Slot::Learning, &app)
         {
             if !position.try_beautiful_touch(&deck, &rnote, &app) {
                 app.comm.println("Touch fail.");
@@ -225,10 +225,10 @@ impl LibSub {
 
     pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
-        let learning_file_name_without_extension =
-            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
         let mut tape = CassetteTape::new_facing_right(&app);
-        tape.set_file_full_name_without_extension(&learning_file_name_without_extension);
+        tape.set_file_full_name_without_extension(
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+        );
         deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
         deck.seek_of_next_tape(Slot::Learning, &app);
     }

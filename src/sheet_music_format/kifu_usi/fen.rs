@@ -75,7 +75,7 @@ impl Fen {
                     position.repeat_origin_position(&app);
 
                     // 大橋流で初期局面まで指す☆（＾～＾）
-                    deck.clear_of_tape_body(Slot::Learning, &app);
+                    deck.clear_tape_body(Slot::Learning, &app);
                     OhashiPlayer::learn_ohashi_starting(position, deck, &app);
                     true
                 } else {

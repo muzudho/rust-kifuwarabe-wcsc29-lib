@@ -7,6 +7,10 @@ pub struct ClosedInterval {
     facing_left: bool,
 }
 impl ClosedInterval {
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn new_facing_right() -> Self {
         ClosedInterval {
             minimum: std::i16::MAX,
@@ -15,7 +19,20 @@ impl ClosedInterval {
         }
     }
 
-    pub fn from_all(min: i16, max: i16, facing_left_flag: bool) -> Self {
+    // #####
+    // # F #
+    // #####
+
+    /// # Arguments
+    ///
+    /// * `value0` - min, max を調べるのがめんどくさいんで、どっちでもいい☆（＾～＾）
+    pub fn from_all(value0: i16, value1: i16, facing_left_flag: bool) -> Self {
+        let (min, max) = if value0 <= value1 {
+            (value0, value1)
+        } else {
+            (value1, value0)
+        };
+
         ClosedInterval {
             minimum: min,
             maximum: max,
@@ -23,15 +40,15 @@ impl ClosedInterval {
         }
     }
 
+    // #####
+    // # G #
+    // #####
+
     pub fn get_minimum_caret_number(&self) -> i16 {
         self.minimum
     }
     pub fn get_maximum_caret_number(&self) -> i16 {
         self.maximum
-    }
-
-    pub fn is_facing_left(&self) -> bool {
-        self.facing_left
     }
 
     pub fn get_start(&self) -> i16 {
@@ -47,6 +64,14 @@ impl ClosedInterval {
         } else {
             self.maximum
         }
+    }
+
+    // #####
+    // # I #
+    // #####
+
+    pub fn is_facing_left(&self) -> bool {
+        self.facing_left
     }
 
     pub fn intersect_caret_number(&mut self, caret_number: i16) {
@@ -73,6 +98,10 @@ impl ClosedInterval {
         self.maximum < self.minimum
     }
 
+    // #####
+    // # L #
+    // #####
+
     pub fn len(&self) -> usize {
         if self.is_empty() {
             0
@@ -81,9 +110,13 @@ impl ClosedInterval {
         }
     }
 
+    // #####
+    // # T #
+    // #####
+
     pub fn to_human_presentable(&self) -> String {
         format!(
-            "[CloseInterval({}<{}), Len: {}]",
+            "[CloseInterval({}<={}), Len: {}]",
             self.minimum,
             self.maximum,
             self.len()

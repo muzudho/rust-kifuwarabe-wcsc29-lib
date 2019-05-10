@@ -199,6 +199,17 @@ impl CassetteTape {
     // # S #
     // #####
 
+    /// キャレットは必ず１つ進みます。
+    /// 0 は、正の数とします。（マイナスゼロは無いです）
+    /// Noneを返したら、オーバーフローしています。
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn seek_next_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+        self.tracks.seek_next_note(&mut self.caret, &app)
+    }
+
     pub fn set_file_full_name_without_extension(&mut self, file_name_without_extension: &str) {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
@@ -210,28 +221,17 @@ impl CassetteTape {
         self.tracks.skip_a_move(&mut self.caret, &app)
     }
 
-    /// キャレットは必ず１つ進みます。
-    /// 0 は、正の数とします。（マイナスゼロは無いです）
-    /// Noneを返したら、オーバーフローしています。
-    ///
-    /// # Returns
-    ///
-    /// (taken overflow, move, note)
-    pub fn seek_to_next(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.tracks.seek_to_next(&mut self.caret, &app)
-    }
-
     /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
     ///
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn seek_to_next_with_othre_caret(
+    pub fn seek_next_note_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.tracks.seek_to_next(caret, &app)
+        self.tracks.seek_next_note(caret, &app)
     }
 
     // #####

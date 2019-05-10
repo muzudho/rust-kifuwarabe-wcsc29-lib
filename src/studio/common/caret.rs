@@ -34,6 +34,7 @@ pub fn caret_number_to_length(caret_number: i16) -> usize {
 }
 
 // 意識。キャレットを go_to_next すると作成される。
+#[derive(Debug)]
 pub struct Awareness {
     // 予想する移動後のキャレットの位置。
     pub expected_caret_number: i16,
@@ -54,6 +55,13 @@ pub struct Caret {
     unconscious_number: i16,
 }
 impl Caret {
+    /// マイナスゼロが無いので、負の配列ではインデックスを１小さくします。
+    pub const NEGATIVE_ZERO_LEN: i16 = 1;
+
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn new_facing_right_caret() -> Self {
         Caret::new_facing_right_caret_with_number(0)
     }
@@ -65,145 +73,172 @@ impl Caret {
         }
     }
 
+    // #####
+    // # C #
+    // #####
+
     pub fn clear_facing_right(&mut self) {
         self.facing_left = false;
         self.unconscious_number = 0;
     }
 
-    /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
-    /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, _app: &Application) -> Awareness {
-        let awareness;
+    // #####
+    // # E #
+    // #####
 
-        // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
-        // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
-        let old_negative;
-        if self.facing_left {
-            // 左向き。
-            if -1 < self.unconscious_number {
-                // 正の方の配列にいたのだった場合。
-                old_negative = false;
-            } else {
-                // 負の方の配列にいたのだった場合。
-                old_negative = true;
-            }
-        } else {
-            // 右向き。
-            if self.unconscious_number < 0 {
-                // 負の方の配列にいたのだった場合。
-                old_negative = true;
-            } else {
-                // 正の方の配列にいたのだった場合。
-                old_negative = false;
-            }
-        }
-
-        let old_number = self.unconscious_number;
-
-        if self.facing_left {
-            // 左向き。
-            self.unconscious_number -= 1;
-        } else {
-            // 右向き。
-            self.unconscious_number += 1;
-        }
-
-        awareness = if old_negative {
-            // 負の方の配列にいたのだった場合。
-            Awareness {
-                expected_caret_number: self.unconscious_number,
-                index: (-old_number - 1) as usize,
-                negative: true,
-            }
-        } else {
-            // 正の方の配列にいたのだった場合。
-            Awareness {
-                expected_caret_number: self.unconscious_number,
-                index: old_number as usize,
-                negative: true,
-            }
-        };
-
-        /*
-        // ログ出力☆（＾～＾）
-        {
-            if self.is_facing_left() {
-                app.comm
-                    .print(&format!("[Caret: {}<--{}]", self.number, old).to_string());
-            } else {
-                app.comm
-                    .print(&format!("[Caret: {}-->{}]", old, self.number).to_string());
-            }
-        }
-         */
-
-        awareness
+    /// 等しい。
+    pub fn equals(&self, target: i16) -> bool {
+        self.unconscious_number == target
     }
 
-    /// 足踏みする（step in）☆（＾～＾）
-    /// キャレットの現在番地が欲しいケースがけっこうある☆（＾～＾）
-    /// 思想上、なるべく go_to_next() を使えだぜ☆（＾～＾）
-    pub fn step_in(&self) -> i16 {
-        self.unconscious_number
-    }
+    // #####
+    // # G #
+    // #####
 
     /// TODO ちょっと戻りたいときに☆（＾～＾）できれば使わない方がいい☆（＾～＾）
     pub fn go_back(&mut self, _app: &Application) -> Awareness {
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
-        let old_negative;
+        let aware_index;
+        let aware_negative;
+        if self.facing_left {
+            // バックで右に進む。
+            if self.unconscious_number < 0 {
+                // 負のところを通る。
+                aware_index = (-self.unconscious_number - 1) as usize;
+                self.unconscious_number += 1;
+                aware_negative = true;
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Go back: --> 負のところを通った]")
+            }
+            */
+            } else {
+                // 正のところを通る。
+                aware_index = self.unconscious_number as usize;
+                self.unconscious_number += 1;
+                aware_negative = false;
+                /*
+                if app.is_debug() {
+                    app.comm.println("[#Go back: --> 正のところを通った]")
+                }
+                */
+            }
+        } else {
+            // バックで左に進む。
+            if 0 < self.unconscious_number {
+                // 正のところを通る。
+                aware_index = self.unconscious_number as usize;
+                self.unconscious_number -= 1;
+                aware_negative = false;
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Go back: <-- 正のところを通った]")
+            }
+            */
+            } else {
+                // 負のところを通る。
+                aware_index = (-self.unconscious_number - 1) as usize;
+                self.unconscious_number -= 1;
+                aware_negative = true;
+                /*
+                if app.is_debug() {
+                    app.comm.println("[#Go back: <-- 負のところを通った]")
+                }
+                */
+            }
+        }
+
+        Awareness {
+            expected_caret_number: self.unconscious_number,
+            index: aware_index,
+            negative: aware_negative,
+        }
+    }
+
+    /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
+    /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
+    pub fn go_to_next(&mut self, _app: &Application) -> Awareness {
+        // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
+        // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
+        let aware_index;
+        let aware_negative;
         if self.facing_left {
             // 左向き。
-            if -1 < self.unconscious_number {
-                // 正の方の配列にいたのだった場合。
-                old_negative = false;
+            if 0 < self.unconscious_number {
+                // 正のところを通る。
+                aware_index = self.unconscious_number as usize;
+                self.unconscious_number -= 1;
+                aware_negative = false;
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Go to next: <-- 正のところを通った]")
+            }
+            */
             } else {
-                // 負の方の配列にいたのだった場合。
-                old_negative = true;
+                // 負のところを通る。
+                aware_index = (-self.unconscious_number - 1) as usize;
+                self.unconscious_number -= 1;
+                aware_negative = true;
+                /*
+                if app.is_debug() {
+                    app.comm.println("[#Go to next: <-- 負のところを通った]")
+                }
+                */
             }
         } else {
             // 右向き。
             if self.unconscious_number < 0 {
-                // 負の方の配列にいたのだった場合。
-                old_negative = true;
+                // 負のところを通る。
+                aware_index = (-self.unconscious_number - 1) as usize;
+                self.unconscious_number += 1;
+                aware_negative = true;
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Go to next: --> 負のところを通った]")
+            }
+            */
             } else {
-                // 正の方の配列にいたのだった場合。
-                old_negative = false;
+                // 正のところを通る。
+                aware_index = self.unconscious_number as usize;
+                self.unconscious_number += 1;
+                aware_negative = false;
+                /*
+                if app.is_debug() {
+                    app.comm.println("[#Go to next: --> 正のところを通った]")
+                }
+                */
             }
         }
 
-        let old_number = self.unconscious_number;
-
-        // 逆方向に進む☆（＾～＾）
-        if self.facing_left {
-            // 左向き。
-            self.unconscious_number += 1;
-        } else {
-            // 右向き。
-            self.unconscious_number -= 1;
-        }
-
-        if old_negative {
-            // 負の方の配列にいたのだった場合。
-            Awareness {
-                expected_caret_number: self.unconscious_number,
-                index: (-old_number - 1) as usize,
-                negative: true,
-            }
-        } else {
-            // 正の方の配列にいたのだった場合。
-            Awareness {
-                expected_caret_number: self.unconscious_number,
-                index: old_number as usize,
-                negative: true,
-            }
+        Awareness {
+            expected_caret_number: self.unconscious_number,
+            index: aware_index,
+            negative: aware_negative,
         }
     }
+
+    // #####
+    // # I #
+    // #####
 
     pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {
         closed_interval.get_minimum_caret_number() <= self.unconscious_number
             && self.unconscious_number <= closed_interval.get_maximum_caret_number()
     }
+
+    pub fn is_facing_left(&self) -> bool {
+        self.facing_left
+    }
+
+    /// target 以上。
+    pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
+        target <= self.unconscious_number
+    }
+
+    // #####
+    // # L #
+    // #####
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_negative(&mut self, app: &Application) {
@@ -240,42 +275,20 @@ impl Caret {
         self.go_to_next(&app);
     }
 
-    pub fn is_facing_left(&self) -> bool {
-        self.facing_left
+    // #####
+    // # S #
+    // #####
+
+    /// 足踏みする（step in）☆（＾～＾）
+    /// キャレットの現在番地が欲しいケースがけっこうある☆（＾～＾）
+    /// 思想上、なるべく go_to_next() を使えだぜ☆（＾～＾）
+    pub fn step_in(&self) -> i16 {
+        self.unconscious_number
     }
 
-    /// 等しい。
-    pub fn equals(&self, target: i16) -> bool {
-        self.unconscious_number == target
-    }
-    /// target 以上。
-    pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
-        target <= self.unconscious_number
-    }
-    pub fn while_to(&self, target: &ClosedInterval, _app: &Application) -> bool {
-        if self.is_facing_left() {
-            /*
-            app.comm.print(&format!(
-                "[min:{}, num:{}]",
-                target.get_minimum_caret_number(),
-                self.number
-            ));
-            */
-            target.get_minimum_caret_number() < self.unconscious_number
-        } else {
-            /*
-            app.comm.print(&format!(
-                "[num:{}, max:{}]",
-                self.number,
-                target.get_maximum_caret_number(),
-            ));
-            */
-            self.unconscious_number < target.get_maximum_caret_number()
-        }
-    }
-
-    /// マイナスゼロが無いので、負の配列ではインデックスを１小さくします。
-    pub const NEGATIVE_ZERO_LEN: i16 = 1;
+    // #####
+    // # T #
+    // #####
 
     /// トランケート用に使う。
     ///
@@ -314,6 +327,32 @@ impl Caret {
             format!("[Caret: <--{}]", self.unconscious_number).to_string()
         } else {
             format!("[Caret: {}-->]", self.unconscious_number).to_string()
+        }
+    }
+
+    // #####
+    // # W #
+    // #####
+
+    pub fn while_to(&self, target: &ClosedInterval, _app: &Application) -> bool {
+        if self.is_facing_left() {
+            /*
+            app.comm.print(&format!(
+                "[min:{}, num:{}]",
+                target.get_minimum_caret_number(),
+                self.number
+            ));
+            */
+            target.get_minimum_caret_number() < self.unconscious_number
+        } else {
+            /*
+            app.comm.print(&format!(
+                "[num:{}, max:{}]",
+                self.number,
+                target.get_maximum_caret_number(),
+            ));
+            */
+            self.unconscious_number < target.get_maximum_caret_number()
         }
     }
 }

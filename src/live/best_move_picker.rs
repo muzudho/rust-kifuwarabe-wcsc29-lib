@@ -435,7 +435,7 @@ impl BestMovePicker {
                         deck.look_back_caret_to_opponent(Slot::Training, &app);
 
                         // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）
-                        deck.seek_to_next_note(Slot::Training, &app);
+                        deck.seek_next_note(Slot::Training, &app);
 
                         HumanInterface::bo(deck, &position, &app);
                         if app.is_debug() {

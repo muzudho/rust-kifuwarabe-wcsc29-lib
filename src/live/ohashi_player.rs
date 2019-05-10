@@ -93,17 +93,17 @@ impl OhashiPlayer {
 
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
-                deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
-                deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
-                deck.seek_to_next_note(Slot::Learning, &app);
+                deck.seek_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
         }
