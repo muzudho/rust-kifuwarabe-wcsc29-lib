@@ -63,6 +63,24 @@ impl CassetteTapeBox {
     }
 
     // #####
+    // # B #
+    // #####
+
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn back_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].back_note(&app)
+        } else {
+            panic!(
+                "#back note: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    // #####
     // # C #
     // #####
 
@@ -282,6 +300,10 @@ impl CassetteTapeBox {
     ///
     /// (成功)
     pub fn seek_of_tapes(&mut self, app: &Application) -> bool {
+        if app.is_debug() {
+            app.comm.println("[#Box.seek_of_tapes: 開始]");
+        }
+
         if self.tapes.is_empty() {
             // テープが無いなら。
             if app.is_debug() {
@@ -304,6 +326,11 @@ impl CassetteTapeBox {
                 .println(&format!("[#Seek of tapes: Awareness:{:?}]", awareness));
         }
         self.awareness_of_tapes = Some(awareness);
+
+        if app.is_debug() {
+            app.comm.println("[#Box.seek_of_tapes: 終了]");
+        }
+
         true
     }
 

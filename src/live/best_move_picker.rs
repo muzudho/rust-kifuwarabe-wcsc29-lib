@@ -254,6 +254,16 @@ impl BestMovePicker {
                                 ));
                             }
 
+                            use instrument::half_player_phase::HalfPlayerPhaseValue::*;
+                            match position.get_phase().get_state() {
+                                First | Second => {
+                                    panic!(
+                                        "[#ここで フェーズが先手、後手なのはおかしいぜ☆（＾～＾）]"
+                                    );
+                                }
+                                _ => {}
+                            }
+
                             'sequence_thread: loop {
                                 if app.is_debug() {
                                     app.comm.println(&format!(

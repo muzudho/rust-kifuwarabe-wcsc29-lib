@@ -64,6 +64,33 @@ impl IntegerNoteVec {
     }
 
     // #####
+    // # B #
+    // #####
+
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn back_note(
+        &self,
+        caret: &mut Caret,
+        app: &Application,
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
+        if app.is_debug() {
+            app.comm.println("[#INVec.Back note: 開始]")
+        }
+
+        caret.look_back_to_opponent(&app);
+        let (taken_overflow, rmove, note) = self.seek_next_note(caret, &app);
+        caret.look_back_to_opponent(&app);
+
+        if app.is_debug() {
+            app.comm.println("[#INVec.Back note: 終了]")
+        }
+
+        (taken_overflow, rmove, note)
+    }
+
+    // #####
     // # C #
     // #####
 
@@ -216,7 +243,7 @@ impl IntegerNoteVec {
         let awareness = caret.go_to_next(&app);
         if app.is_debug() {
             app.comm.println(&format!(
-                "[#Seek next note: CI:{}, Awareness:{:?}]",
+                "[#INVec.Seek next note: CI:{}, Awareness:{:?}]",
                 ci.to_human_presentable(),
                 awareness
             ));

@@ -88,6 +88,17 @@ impl CassetteTape {
     }
 
     // #####
+    // # B #
+    // #####
+
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn back_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+        self.tracks.back_note(&mut self.caret, &app)
+    }
+
+    // #####
     // # C #
     // #####
 

@@ -130,6 +130,31 @@ impl CassetteDeck {
     */
 
     // #####
+    // # B #
+    // #####
+
+    /// # Returns
+    ///
+    /// (taken overflow, move, note)
+    pub fn back_note(
+        &mut self,
+        slot: Slot,
+        app: &Application,
+    ) -> (bool, ShogiMove, Option<ShogiNote>) {
+        if app.is_debug() {
+            app.comm.println("[#Deck.Back note: 開始]");
+        }
+
+        let (taken_overflow, rmove, note) = self.slots[slot as usize].back_note(&app);
+
+        if app.is_debug() {
+            app.comm.println("[#Deck.Back note: 終了]");
+        }
+
+        (taken_overflow, rmove, note)
+    }
+
+    // #####
     // # C #
     // #####
 
@@ -429,6 +454,19 @@ impl CassetteDeck {
                             break 'caret_loop;
                         }
                     } else {
+                        // タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）
+                        if app.is_debug() {
+                            app.comm.println(
+                                "[#タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）]",
+                            );
+                        }
+                        self.back_note(slot, &app);
+                        if app.is_debug() {
+                            app.comm.println(
+                                "[#タッチは未着手だったので、キャレットは戻したぜ☆（＾～＾）]",
+                            );
+                        }
+
                         // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
                         // app.comm.println("[$Untouched. Back a caret]");
                         is_rollback = true;

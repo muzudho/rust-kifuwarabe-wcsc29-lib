@@ -96,7 +96,7 @@ impl Caret {
     // #####
 
     /// TODO ちょっと戻りたいときに☆（＾～＾）できれば使わない方がいい☆（＾～＾）
-    pub fn go_back(&mut self, _app: &Application) -> Awareness {
+    pub fn go_back(&mut self, app: &Application) -> Awareness {
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
         let aware_index;
@@ -104,48 +104,48 @@ impl Caret {
         if self.facing_left {
             // バックで右に進む。
             if self.unconscious_number < 0 {
-                // 負のところを通る。
-                aware_index = (-self.unconscious_number - 1) as usize;
+                // 負のところを通る。（逆さ移動）
+                //
+                // -2 [1] -1 [0] 0
+                //
+                // で、-1から0へ移動した場合 [0] ということに注意。移動後のキャレットの絶対値がインデックスになる。
                 self.unconscious_number += 1;
+                aware_index = (-self.unconscious_number) as usize;
                 aware_negative = true;
-            /*
-            if app.is_debug() {
-                app.comm.println("[#Go back: --> 負のところを通った]")
-            }
-            */
+                if app.is_debug() {
+                    app.comm.println("[#Go back: --> 負のところを通った]")
+                }
             } else {
                 // 正のところを通る。
                 aware_index = self.unconscious_number as usize;
                 self.unconscious_number += 1;
                 aware_negative = false;
-                /*
                 if app.is_debug() {
                     app.comm.println("[#Go back: --> 正のところを通った]")
                 }
-                */
             }
         } else {
             // バックで左に進む。
             if 0 < self.unconscious_number {
-                // 正のところを通る。
-                aware_index = self.unconscious_number as usize;
+                // 正のところを通る。（逆さ移動）
+                //
+                // 0 [0] 1 [1] 2
+                //
+                // で、1から0へ移動した場合 [0] ということに注意。移動後のキャレットがインデックスになる。
                 self.unconscious_number -= 1;
+                aware_index = self.unconscious_number as usize;
                 aware_negative = false;
-            /*
-            if app.is_debug() {
-                app.comm.println("[#Go back: <-- 正のところを通った]")
-            }
-            */
+                if app.is_debug() {
+                    app.comm.println("[#Go back: <-- 正のところを通った]")
+                }
             } else {
                 // 負のところを通る。
                 aware_index = (-self.unconscious_number - 1) as usize;
                 self.unconscious_number -= 1;
                 aware_negative = true;
-                /*
                 if app.is_debug() {
                     app.comm.println("[#Go back: <-- 負のところを通った]")
                 }
-                */
             }
         }
 
@@ -158,7 +158,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, _app: &Application) -> Awareness {
+    pub fn go_to_next(&mut self, app: &Application) -> Awareness {
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
         let aware_index;
@@ -166,48 +166,48 @@ impl Caret {
         if self.facing_left {
             // 左向き。
             if 0 < self.unconscious_number {
-                // 正のところを通る。
-                aware_index = self.unconscious_number as usize;
+                // 正のところを通る。（逆さ移動）
+                //
+                // 0 [0] 1 [1] 2
+                //
+                // で、1から0へ移動した場合 [0] ということに注意。移動後のキャレットがインデックスになる。
                 self.unconscious_number -= 1;
+                aware_index = self.unconscious_number as usize;
                 aware_negative = false;
-            /*
-            if app.is_debug() {
-                app.comm.println("[#Go to next: <-- 正のところを通った]")
-            }
-            */
+                if app.is_debug() {
+                    app.comm.println("[#Go to next: <-- 正のところを通った]")
+                }
             } else {
                 // 負のところを通る。
                 aware_index = (-self.unconscious_number - 1) as usize;
                 self.unconscious_number -= 1;
                 aware_negative = true;
-                /*
                 if app.is_debug() {
                     app.comm.println("[#Go to next: <-- 負のところを通った]")
                 }
-                */
             }
         } else {
             // 右向き。
             if self.unconscious_number < 0 {
-                // 負のところを通る。
-                aware_index = (-self.unconscious_number - 1) as usize;
+                // 負のところを通る。（逆さ移動）
+                //
+                // -2 [1] -1 [0] 0
+                //
+                // で、-1から0へ移動した場合 [0] ということに注意。移動後のキャレットの絶対値がインデックスになる。
                 self.unconscious_number += 1;
+                aware_index = (-self.unconscious_number) as usize;
                 aware_negative = true;
-            /*
-            if app.is_debug() {
-                app.comm.println("[#Go to next: --> 負のところを通った]")
-            }
-            */
+                if app.is_debug() {
+                    app.comm.println("[#Go to next: --> 負のところを通った]")
+                }
             } else {
                 // 正のところを通る。
                 aware_index = self.unconscious_number as usize;
                 self.unconscious_number += 1;
                 aware_negative = false;
-                /*
                 if app.is_debug() {
                     app.comm.println("[#Go to next: --> 正のところを通った]")
                 }
-                */
             }
         }
 
@@ -242,37 +242,45 @@ impl Caret {
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_negative(&mut self, app: &Application) {
-        // app.comm.print("[LookBack N]");
         if !self.is_facing_left() {
+            if app.is_debug() {
+                app.comm.println("[#LookBack <--]");
+            }
+
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = true;
 
             // 振り返ってから、１歩前へ☆（＾～＾）
-            self.go_to_next(&app);
+            //self.go_to_next(&app);
         }
     }
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_positive(&mut self, app: &Application) {
-        // app.comm.print("[LookBack P]");
         if self.is_facing_left() {
+            if app.is_debug() {
+                app.comm.println("[#LookBack -->]");
+            }
+
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
             self.facing_left = false;
 
             // 振り返ってから、１歩前へ☆（＾～＾）
-            self.go_to_next(&app);
+            //self.go_to_next(&app);
         }
     }
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
     pub fn look_back_to_opponent(&mut self, app: &Application) {
-        // app.comm.print("[LookBack O]");
+        if app.is_debug() {
+            app.comm.println("[#LookBack opp]");
+        }
 
         // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
         self.facing_left = !self.facing_left;
 
         // 振り返ってから、１歩前へ☆（＾～＾）
-        self.go_to_next(&app);
+        //self.go_to_next(&app);
     }
 
     // #####
