@@ -38,14 +38,14 @@ impl LibSub {
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_negative(Slot::Learning, &app);
-        deck.try_seek_1move(Slot::Learning, position, &app);
+        deck.seek_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_negative(Slot::Learning, &app);
         for _i in 0..10 {
-            deck.try_seek_1move(Slot::Learning, position, &app);
+            deck.seek_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }
@@ -53,7 +53,7 @@ impl LibSub {
     pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_negative(Slot::Learning, &app);
         for _i in 0..400 {
-            deck.try_seek_1move(Slot::Learning, position, &app);
+            deck.seek_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }
@@ -73,14 +73,14 @@ impl LibSub {
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         // 非合法タッチは自動で戻します。
         deck.look_back_caret_to_positive(Slot::Learning, &app);
-        deck.try_seek_1move(Slot::Learning, position, &app);
+        deck.seek_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_positive(Slot::Learning, &app);
         for _i in 0..10 {
-            deck.try_seek_1move(Slot::Learning, position, &app);
+            deck.seek_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }
@@ -88,7 +88,7 @@ impl LibSub {
     pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.look_back_caret_to_positive(Slot::Learning, &app);
         for _i in 0..400 {
-            deck.try_seek_1move(Slot::Learning, position, &app);
+            deck.seek_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }

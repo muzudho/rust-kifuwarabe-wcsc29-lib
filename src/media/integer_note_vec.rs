@@ -27,6 +27,10 @@ impl fmt::Display for IntegerNoteVec {
     }
 }
 impl IntegerNoteVec {
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn default() -> Self {
         IntegerNoteVec {
             positive_notes: Vec::new(),
@@ -41,10 +45,36 @@ impl IntegerNoteVec {
         }
     }
 
+    // #####
+    // # A #
+    // #####
+
+    /// 連結。
+    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut IntegerNoteVec) {
+        self.positive_notes
+            .append(&mut tape_to_empty.negative_notes);
+        self.positive_notes
+            .append(&mut tape_to_empty.positive_notes);
+    }
+    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut IntegerNoteVec) {
+        self.negative_notes
+            .append(&mut tape_to_empty.positive_notes);
+        self.negative_notes
+            .append(&mut tape_to_empty.negative_notes);
+    }
+
+    // #####
+    // # C #
+    // #####
+
     pub fn clear(&mut self) {
         self.positive_notes.clear();
         self.negative_notes.clear();
     }
+
+    // #####
+    // # G #
+    // #####
 
     /// 範囲はキャレット番地で示す☆（＾～＾）
     /// ０に背を向けた２つのキャレットがあると仮定し、両端はピークを指すキャレット☆（＾～＾）
@@ -65,12 +95,115 @@ impl IntegerNoteVec {
         self.positive_notes.len() as i16 - 1
     }
 
-    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
+    pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
+        // とりあえず、キャレットを進めてみる。
+        let awareness = caret.go_to_next(&app);
+
+        let mut posi_v = Vec::new();
+        let mut nega_v = Vec::new();
+
+        if !awareness.negative {
+            // 正のテープ。
+            // [0, 1, 2, 3, 4]というデータが入っているテープの場合、
+            // キャレットが 3 なら
+            // [0, 1, 2 | 3, 4] を意味し、キャレットのある場所にデータを挿入するので、
+            // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
+            // ここで、 awareness.index は 2。
+            nega_v.extend_from_slice(&self.negative_notes[..]);
+            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
+            posi_v.push(note);
+            if awareness.index < self.positive_notes.len() {
+                posi_v.extend_from_slice(&self.slice(
+                    awareness.expected_caret_number + 1,
+                    self.positive_notes.len() as i16,
+                ));
+            }
+        } else {
+            // 負のテープだけ。
+            // 例えば 負のテープに
+            // [-1, -2, -3, -4, -5]
+            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
+
+            // Endは含めず、Startは含めます。
+            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
+            nega_v.push(note);
+            if awareness.index < self.negative_notes.len() {
+                nega_v.extend_from_slice(&self.slice(
+                    awareness.expected_caret_number + 1,
+                    self.negative_notes.len() as i16,
+                ));
+            }
+            posi_v.extend_from_slice(&self.positive_notes[..]);
+        }
+
+        IntegerNoteVec::from_vector(posi_v, nega_v)
+    }
+
+    // #####
+    // # N #
+    // #####
+
+    /// 削除はこれ。
+    /// キャレットから見て、絶対値の大きな方を切り落とした結果を作るぜ☆（＾～＾）
+    /// キャレットは使うが、動かさない☆（＾～＾）
+    ///
+    /// 切り落とした側の、こちらに一番近い要素を返すぜ☆（＾～＾）
+    /// そんな要素がなければ None を返す。
+    ///
+    /// # Returns
+    ///
+    /// (RpmTape, Removed note)
+    pub fn new_truncated_tape(&self, caret: &Caret) -> (Self, Option<ShogiNote>) {
+        let mut posi_v = Vec::new();
+        let mut nega_v = Vec::new();
+
+        let (is_positive, index) = caret.to_index_for_truncation();
+
+        if index == 0 {
+            (IntegerNoteVec::from_vector(posi_v, nega_v), None)
+        } else {
+            let removed_note_opt = if is_positive {
+                // 正のテープ側で切り落とし。
+                // 負の部分はそのまま残して、正の絶対値の大きな方を切り落とす☆（＾～＾）
+                nega_v.extend_from_slice(&self.negative_notes[..]);
+                posi_v.extend_from_slice(&self.slice(0, index as i16));
+
+                if index < self.positive_notes.len() {
+                    Some(self.positive_notes[index])
+                } else {
+                    None
+                }
+            } else {
+                // 負のテープ側で切り落とし。
+                // 正の部分はそのまま残して、負の絶対値の大きな方を切り落とす☆（＾～＾）
+                posi_v.extend_from_slice(&self.positive_notes[..]);
+                nega_v.extend_from_slice(&self.slice(0, index as i16));
+
+                if index < self.negative_notes.len() {
+                    Some(self.negative_notes[index])
+                } else {
+                    None
+                }
+            };
+
+            (
+                IntegerNoteVec::from_vector(posi_v, nega_v),
+                removed_note_opt,
+            )
+        }
+    }
+
+    // #####
+    // # S #
+    // #####
+
+    /// 現在の指し手をスキップするぜ☆（＾～＾）
     ///
     /// # Returns
     ///
     /// (taken overflow, move)
-    pub fn seek_1move(&self, caret: &mut Caret, app: &Application) -> (bool, ShogiMove) {
+    pub fn skip_a_move(&self, caret: &mut Caret, app: &Application) -> (bool, ShogiMove) {
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
 
@@ -193,114 +326,9 @@ impl IntegerNoteVec {
         v
     }
 
-    /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
-        // とりあえず、キャレットを進めてみる。
-        let awareness = caret.go_to_next(&app);
-
-        let mut posi_v = Vec::new();
-        let mut nega_v = Vec::new();
-
-        if !awareness.negative {
-            // 正のテープ。
-            // [0, 1, 2, 3, 4]というデータが入っているテープの場合、
-            // キャレットが 3 なら
-            // [0, 1, 2 | 3, 4] を意味し、キャレットのある場所にデータを挿入するので、
-            // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
-            // ここで、 awareness.index は 2。
-            nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
-            posi_v.push(note);
-            if awareness.index < self.positive_notes.len() {
-                posi_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret_number + 1,
-                    self.positive_notes.len() as i16,
-                ));
-            }
-        } else {
-            // 負のテープだけ。
-            // 例えば 負のテープに
-            // [-1, -2, -3, -4, -5]
-            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
-
-            // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
-            nega_v.push(note);
-            if awareness.index < self.negative_notes.len() {
-                nega_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret_number + 1,
-                    self.negative_notes.len() as i16,
-                ));
-            }
-            posi_v.extend_from_slice(&self.positive_notes[..]);
-        }
-
-        IntegerNoteVec::from_vector(posi_v, nega_v)
-    }
-
-    /// 削除はこれ。
-    /// キャレットから見て、絶対値の大きな方を切り落とした結果を作るぜ☆（＾～＾）
-    /// キャレットは使うが、動かさない☆（＾～＾）
-    ///
-    /// 切り落とした側の、こちらに一番近い要素を返すぜ☆（＾～＾）
-    /// そんな要素がなければ None を返す。
-    ///
-    /// # Returns
-    ///
-    /// (RpmTape, Removed note)
-    pub fn new_truncated_tape(&self, caret: &Caret) -> (Self, Option<ShogiNote>) {
-        let mut posi_v = Vec::new();
-        let mut nega_v = Vec::new();
-
-        let (is_positive, index) = caret.to_index_for_truncation();
-
-        if index == 0 {
-            (IntegerNoteVec::from_vector(posi_v, nega_v), None)
-        } else {
-            let removed_note_opt = if is_positive {
-                // 正のテープ側で切り落とし。
-                // 負の部分はそのまま残して、正の絶対値の大きな方を切り落とす☆（＾～＾）
-                nega_v.extend_from_slice(&self.negative_notes[..]);
-                posi_v.extend_from_slice(&self.slice(0, index as i16));
-
-                if index < self.positive_notes.len() {
-                    Some(self.positive_notes[index])
-                } else {
-                    None
-                }
-            } else {
-                // 負のテープ側で切り落とし。
-                // 正の部分はそのまま残して、負の絶対値の大きな方を切り落とす☆（＾～＾）
-                posi_v.extend_from_slice(&self.positive_notes[..]);
-                nega_v.extend_from_slice(&self.slice(0, index as i16));
-
-                if index < self.negative_notes.len() {
-                    Some(self.negative_notes[index])
-                } else {
-                    None
-                }
-            };
-
-            (
-                IntegerNoteVec::from_vector(posi_v, nega_v),
-                removed_note_opt,
-            )
-        }
-    }
-
-    /// 連結。
-    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut IntegerNoteVec) {
-        self.positive_notes
-            .append(&mut tape_to_empty.negative_notes);
-        self.positive_notes
-            .append(&mut tape_to_empty.positive_notes);
-    }
-    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut IntegerNoteVec) {
-        self.negative_notes
-            .append(&mut tape_to_empty.positive_notes);
-        self.negative_notes
-            .append(&mut tape_to_empty.negative_notes);
-    }
+    // #####
+    // # T #
+    // #####
 
     /// コマンドライン入力形式の棋譜。
     ///

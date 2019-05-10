@@ -520,7 +520,19 @@ impl Position {
         self.phase.go_next_phase_for_position(&deck)
     }
     pub fn back_phase(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        self.phase.back_phase_for_position(deck, &app)
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Back phase(header): Phase:{}]",
+                self.phase.get_state().to_log()
+            ));
+        }
+        self.phase.back_phase_for_position(deck, &app);
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Back phase(trailer): Phase:{}]",
+                self.phase.get_state().to_log()
+            ));
+        }
     }
 
     /// Operation トラック文字列読取。

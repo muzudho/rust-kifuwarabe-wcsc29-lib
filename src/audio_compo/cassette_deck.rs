@@ -8,6 +8,7 @@ use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
+use studio::common::caret::SoughtMoveResult;
 use studio::common::closed_interval::ClosedInterval;
 
 #[derive(Clone, Copy, Debug)]
@@ -366,13 +367,11 @@ impl CassetteDeck {
         self.slots[slot as usize].step_in_of_tape()
     }
 
-    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
-    ///
     /// # Returns
     ///
     /// (taken overflow, move, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&mut self, slot: Slot, app: &Application) -> (bool, ShogiMove) {
-        self.slots[slot as usize].seek_1move(&app)
+    pub fn skip_a_move(&mut self, slot: Slot, app: &Application) -> (bool, ShogiMove) {
+        self.slots[slot as usize].skip_a_move(&app)
     }
 
     /// キャレットは必ず１つ進みます。
@@ -475,31 +474,36 @@ impl CassetteDeck {
 
     /// 1手分進める。（非合法タッチは自動で戻します）
     ///
-    /// 結果は次の４つだぜ☆（＾～＾）
-    /// （１）最後の１手分。局面もキャレットも進んでいる。
-    /// （２）最後ではない１手分。局面もキャレットも進んでいる。
-    /// （３）テープ終わっていた。キャレットを戻す。
-    /// （４）実現しない操作だった。局面とキャレットを戻す。
+    /// 結果は次の３つだぜ☆（＾～＾）
+    /// （１）１手分。局面もキャレットも進んでいる。
+    /// （２）テープ終わっていた。キャレットを動かさなかった状態に戻す。
+    /// （３）実現しない操作だった。局面とキャレットを動かさなかった状態に戻す。
     ///
     /// # Return
     ///
-    /// (taken overflow, move)
-    pub fn try_seek_1move(
+    /// (SoughtMoveResult, move)
+    pub fn seek_a_move(
         &mut self,
         slot: Slot,
         position: &mut Position,
         app: &Application,
-    ) -> (bool, ShogiMove) {
+    ) -> (SoughtMoveResult, ShogiMove) {
+        if app.is_debug() {
+            app.comm.println("[#seek_a_move: 開始]");
+        }
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
 
         let mut is_rollback = false;
-        let mut is_phase_change = false;
 
         'caret_loop: loop {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match self.seek_to_next_note(slot, &app) {
                 (_taken_overflow, note_move, Some(rnote)) => {
+                    if app.is_debug() {
+                        app.comm.println("[#seek_a_move: ノート読めてる]");
+                    }
+
                     // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
                     // このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
                     // あとで、ルック・バックする範囲☆（＾～＾）
@@ -521,7 +525,6 @@ impl CassetteDeck {
                         if 1 < rmove.len() && rnote.is_phase_change() {
                             // フェーズ切り替えしたら終了。（ただし、初回除く）
                             // print!("[Phase-change-break try_read_1move:{}]", rnote);
-                            is_phase_change = true;
                             break 'caret_loop;
                         }
                     } else {
@@ -531,17 +534,16 @@ impl CassetteDeck {
                         break 'caret_loop;
                     }
                 }
-                (taken_overflow, note_move, None) => {
+                (_taken_overflow, note_move, None) => {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
                     if app.is_debug() {
-                        app.comm.println(
-                            "[#オーバーフローのノートを読んでる☆（＾～＾）]",
-                        );
+                        app.comm.println("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾）]");
                     }
+
                     rmove
                         .caret_closed_interval
                         .intersect_closed_interval(note_move.caret_closed_interval);
-                    return (taken_overflow, rmove);
+                    return (SoughtMoveResult::Forever, rmove);
                 }
             }
         }
@@ -550,27 +552,28 @@ impl CassetteDeck {
 
         if is_rollback {
             // キャレットを使って局面を戻す。
-            /*
-            app.comm.println(&format!(
-                "[Try_read_1move: Rollback {} note!:{}]",
-                rmove.len(),
-                rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
-            ));
-            */
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#seek_a_move: 巻き戻そう☆（＾～＾） Rollback {} note! Move:{}]",
+                    rmove.len(),
+                    rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
+                ));
+            }
             self.look_back_caret_to_opponent(slot, &app);
             self.seek_n_notes_permissive(slot, rmove.len(), position, &app);
             self.look_back_caret_to_opponent(slot, &app);
 
-            return (false, ShogiMove::new_facing_right_move());
+            return (SoughtMoveResult::Dream, ShogiMove::new_facing_right_move());
         }
 
-        if is_phase_change {
-            // 1手分。
-            (false, rmove)
-        } else {
-            // 最後の1手なのでフェーズ・チェンジが無かったと考える。
-            (true, rmove)
+        // 1手分。
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#seek_a_move: １手分☆（＾～＾） Move:{}]",
+                rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
+            ));
         }
+        (SoughtMoveResult::Aware, rmove)
     }
 
     // #####

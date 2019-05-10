@@ -203,13 +203,11 @@ impl CassetteTape {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
-    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
-    ///
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
-    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
-        self.tracks.seek_1move(&mut self.caret, &app)
+    pub fn skip_a_move(&mut self, app: &Application) -> (bool, ShogiMove) {
+        self.tracks.skip_a_move(&mut self.caret, &app)
     }
 
     /// キャレットは必ず１つ進みます。

@@ -126,17 +126,15 @@ impl CassetteTapeBox {
         }
     }
 
-    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
-    ///
     /// # Returns
     ///
     /// (taken overflow, move)
-    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
+    pub fn skip_a_move(&mut self, app: &Application) -> (bool, ShogiMove) {
         if let Some(ref awareness) = self.awareness_of_tapes {
-            self.tapes[awareness.index].seek_1move(&app)
+            self.tapes[awareness.index].skip_a_move(&app)
         } else {
             panic!(
-                "#seek_1move: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#skip_a_move: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }

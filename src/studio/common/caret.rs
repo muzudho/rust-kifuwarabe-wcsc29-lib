@@ -1,6 +1,17 @@
 use studio::application::Application;
 use studio::common::closed_interval::ClosedInterval;
 
+/// 指し手をシークした結果は３つだぜ☆（＾～＾）
+#[derive(Debug)]
+pub enum SoughtMoveResult {
+    // シークできた。
+    Aware,
+    // 端っこで、これ以上シークできない、
+    Forever,
+    // 非合法手だったりして、シークしなかった。
+    Dream,
+}
+
 /// 負の方のキャレット番地を符号を反転して１引いて配列のインデックスを作る補正に使う☆（＾～＾）
 pub const MINUS_ZERO_LEN: usize = 1;
 /// Obsolute.
