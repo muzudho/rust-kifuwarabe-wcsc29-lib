@@ -29,11 +29,12 @@ impl Application {
         let path_name = &path.to_str().unwrap_or_else(|| panic!("Fail. path_name.")); // ログ取れない。無限ループ防止で簡素なpanic。
                                                                                       // print!("#Log path_name: '{}'.", path_name);
 
+        // 最初は、デバッグ・フラグをＯｎにして開始☆（＾～＾）標準出力はせず、ログには出す☆（＾～＾）
         Application {
             comm: Communication::from_file(path_name),
             my_conf: my_config,
             kw29_conf: kw29_config,
-            kifuwarabe_flag: false,
+            kifuwarabe_flag: true,
         }
     }
 

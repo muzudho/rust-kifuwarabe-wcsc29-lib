@@ -32,7 +32,7 @@ pub struct CassetteTapeBox {
     pub ply: i16,
 }
 impl CassetteTapeBox {
-    /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
+    // トレーニング・テープ・ボックスと、ラーニング・テープ・ボックスの２つしか作られないはず。
     pub fn new_empty_tape_box(slot: Slot, app: &Application) -> Self {
         if app.is_debug() {
             app.comm

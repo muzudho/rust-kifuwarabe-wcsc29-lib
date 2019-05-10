@@ -75,6 +75,7 @@ pub fn main_loop() {
 
         // Excludes trailing newlines. The surrounding whitespace delete_1notes.
         line = line.trim().parse().expect("info Failed: stdin parse.");
+        app.comm.logln(&format!("------> {}", line));
 
         // #############
         // # 重要なやつ #
@@ -82,9 +83,10 @@ pub fn main_loop() {
         if line == "kw" {
             if app.kifuwarabe_flag {
                 app.kifuwarabe_flag = false;
-                app.comm.println("Debug off!");
+            // app.comm.println("Debug off!");
             } else {
                 app.kifuwarabe_flag = true;
+                app.comm.activate_standard_output(true);
                 app.comm.println("Debug on!");
             }
 
@@ -262,6 +264,7 @@ pub fn main_loop() {
         // # U #
         // #####
         } else if line == "usi" {
+            app.comm.activate_standard_output(true);
             app.comm.println("id name Kifuwarabe Build.23");
             app.comm.println("id author Satoshi TAKAHASHI");
             app.comm.println("usiok");

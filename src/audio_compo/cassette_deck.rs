@@ -26,6 +26,10 @@ pub struct CassetteDeck {
 impl CassetteDeck {
     /// 新規作成と、ラーニング・テープの交換☆（＾～＾）
     pub fn new_empty(app: &Application) -> Self {
+        if app.is_debug() {
+            app.comm.println("[#Deck:new]");
+        }
+
         let mut training_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
         training_tape_box.set_file_name_without_extension(
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
@@ -54,6 +58,10 @@ impl CassetteDeck {
         learning_file_name_without_extension: &str,
         app: &Application,
     ) -> Self {
+        if app.is_debug() {
+            app.comm.println("[#Deck:new conversion]");
+        }
+
         let mut training_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
         training_tape_box.set_file_name_without_extension(
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
