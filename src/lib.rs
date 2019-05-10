@@ -163,6 +163,8 @@ pub fn main_loop() {
             }
 
             HumanInterface::bo(&deck, &position, &app);
+        } else if line == "deck-info" {
+            app.comm.println(&deck.to_human_presentable());
 
         // #####
         // # F #

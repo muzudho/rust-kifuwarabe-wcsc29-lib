@@ -7,6 +7,7 @@ use std::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::get_index_from_caret_numbers;
+use studio::common::caret::Awareness;
 use studio::common::caret::Caret;
 use studio::common::closed_interval::ClosedInterval;
 use video_tape_model::cassette_tape::*;
@@ -16,97 +17,25 @@ pub struct CassetteTapeBox {
     // このテープボックスの役割。
     role_as_slot: Slot,
 
-    file: String,
+    file_name: String,
 
-    /// イテレーターを使いたいので public にしてある。
+    // イテレーターを使いたいので public にしてある。
     pub tapes: Vec<CassetteTape>,
 
-    /// インデックス。現在聴いているテープを指す。聴いていないときは None。最初のテープは 0番。全部聞き終わると、最後のテープの次の存在しない番号を指す。
-    listening_tape_index: Option<usize>,
+    // テープ間のキャレット。
+    caret_of_tapes: Caret,
+    awareness_of_tapes: Option<Awareness>,
 }
 impl CassetteTapeBox {
     /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
-    pub fn new_empty_tape_box(slot: Slot, app: &Application) -> Self {
+    pub fn new_empty_tape_box(slot: Slot) -> Self {
         CassetteTapeBox {
             role_as_slot: slot,
-            file: RpmTapeBox::create_file_full_name(&app.kw29_conf, &app),
+            file_name: "".to_string(),
             tapes: Vec::new(),
-            listening_tape_index: None,
+            caret_of_tapes: Caret::new_facing_right_caret(),
+            awareness_of_tapes: None,
         }
-    }
-
-    /// ファイル名付きで、テープ・ボックスを作成します。
-    pub fn new_with_tape_box_file_name_without_extension(
-        slot: Slot,
-        file_name_without_extension: &str,
-        app: &Application,
-    ) -> Self {
-        if app.is_debug() {
-            app.comm
-                .println("[#cassette_tape_box.new_with_tape_box_file_name]");
-        }
-
-        let mut tapes_vec = Vec::new();
-        tapes_vec.push(CassetteTape::new_facing_right_with_file(
-            format!("{}.tapesfrag", file_name_without_extension).to_string(),
-        ));
-
-        CassetteTapeBox {
-            role_as_slot: slot,
-            file: format!("{}.rtape", file_name_without_extension).to_string(),
-            tapes: tapes_vec,
-            listening_tape_index: Some(0),
-        }
-    }
-
-    /// ◆ファイルを読み込んで、テープ・ボックスを作成します。
-    pub fn from_tape_box_file(file_name: &str, board_size: BoardSize, app: &Application) -> Self {
-        if app.is_debug() {
-            app.comm.println("[#cassette_tape_box.from_tape_box_file]");
-        }
-
-        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
-        rpm_tape_box.to_training_object(board_size, &app)
-    }
-
-    fn set_tape_index(&mut self, index_opt: Option<usize>, app: &Application) {
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#set_tape_index: {}, Slot: '{:?}']",
-                if let Some(index) = index_opt {
-                    index.to_string()
-                } else {
-                    "None".to_string()
-                },
-                self.role_as_slot
-            ));
-        }
-
-        self.listening_tape_index = index_opt;
-    }
-
-    pub fn back_to_first_tape(&mut self, app: &Application) {
-        if self.tapes.is_empty() {
-            if app.is_debug() {
-                app.comm.println("[#back_to_first_tape: Tapes is empty.]");
-            }
-            self.set_tape_index(None, &app);
-        } else {
-            if app.is_debug() {
-                app.comm.println("[#back_to_first_tape: Set 0.]");
-            }
-            self.set_tape_index(Some(0), &app);
-        }
-    }
-
-    /// スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
-    pub fn clear_tape_box(&mut self, app: &Application) {
-        if app.is_debug() {
-            app.comm
-                .println(&format!("[#Clear tape box: {:?}]", self.role_as_slot));
-        }
-        self.tapes.clear();
-        self.set_tape_index(None, &app);
     }
 
     /// ◆新品のテープを追加するぜ☆（＾～＾）
@@ -120,53 +49,67 @@ impl CassetteTapeBox {
         self.tapes.push(tape);
     }
 
-    /// 次のテープを利用するぜ☆（＾～＾）
+    /*
+    /// ◆ファイルを読み込んで、テープを詰め込みます。
+    pub fn add_tapes_from_file(
+        &mut self,
+        file_name: &str,
+        deck: &CassetteDeck,
+        slot: Slot,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm.println("[#CassetteTapeBox.Add tapes from file]");
+        }
+
+        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
+        rpm_tape_box.add_tapes_to_tape_box(&deck, slot, board_size, &app);
+    }
+    */
+
+    pub fn get_file_name(&self) -> String {
+        self.file_name.to_string()
+    }
+    pub fn set_file_name(&mut self, file_name_without_extension: &str) {
+        self.file_name = format!("{}.rtape", file_name_without_extension).to_string()
+    }
+
+    /// ◆スロットに差し込んでいるカセット・テープを抜くぜ☆（＾～＾）
+    pub fn clear_tape_box(&mut self, app: &Application) {
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[#Clear tape box: {:?}]", self.role_as_slot));
+        }
+        self.tapes.clear();
+        self.caret_of_tapes.clear_facing_right();
+    }
+
+    /// ◆次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）
     ///
     /// # Returns
     ///
     /// (成功)
-    pub fn seek_tape(&mut self, app: &Application) -> bool {
+    pub fn seek_of_tapes(&mut self, app: &Application) -> bool {
         if self.tapes.is_empty() {
             // テープが無いなら。
             if app.is_debug() {
                 app.comm.println("[#seek tape:テープが無い]");
             }
-            false
-        } else if let Some(tape_index) = self.listening_tape_index {
-            if tape_index + 1 <= self.tapes.len() {
-                // 今回はテープの終わりなら。
-                if app.is_debug() {
-                    app.comm.println("[#seek tape:今回はテープの終わり]");
-                }
-                return false;
-            }
-            if app.is_debug() {
-                app.comm.println("[#seek tape:今回のテープ]");
-            }
-            self.set_tape_index(Some(tape_index + 1), &app);
-            true
-        } else {
-            // None だったのなら。
-            if app.is_debug() {
-                app.comm.println("[#seek tape:Noneだった]");
-            }
-            self.set_tape_index(Some(0), &app);
-            true
+            return false;
         }
-    }
 
-    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
-    ///
-    /// # Returns
-    ///
-    /// (taken overflow, move)
-    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].seek_1move(&app)
-        } else {
-            panic!("Please choice listening tape.");
+        if self.tapes.len() as i16 <= self.caret_of_tapes.step_in() {
+            // 今回はテープの終わりなら。
+            if app.is_debug() {
+                app.comm.println("[#seek tape:今回はテープの終わり]");
+            }
+            return false;
         }
+
+        self.awareness_of_tapes = Some(self.caret_of_tapes.go_to_next(&app));
+        true
     }
 
     /// キャレットは必ず１つ進みます。
@@ -177,11 +120,27 @@ impl CassetteTapeBox {
     ///
     /// (taken overflow, move, note)
     pub fn seek_to_next(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].seek_to_next(&app)
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].seek_to_next(&app)
         } else {
             panic!(
-                "Please change tape. It is none. Slot: '{:?}'.",
+                "#seek_to_next: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, move)
+    pub fn seek_1move(&mut self, app: &Application) -> (bool, ShogiMove) {
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].seek_1move(&app)
+        } else {
+            panic!(
+                "#seek_1move: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }
@@ -197,49 +156,75 @@ impl CassetteTapeBox {
         caret: &mut Caret,
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].seek_to_next_with_othre_caret(caret, &app)
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].seek_to_next_with_othre_caret(caret, &app)
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#seek_to_next_with_othre_caret: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn step_in_of_tape(&self) -> i16 {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.step_in()
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].caret.step_in()
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#step_in_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     /// -と+方向の長さがある☆（＾～＾）
     pub fn get_current_tape_len(&self) -> ClosedInterval {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].get_span_caret_facing_outward()
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].get_span_caret_facing_outward()
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#get_current_tape_len: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn look_back_caret_to_opponent(&mut self, app: &Application) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.look_back_to_opponent(&app);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index]
+                .caret
+                .look_back_to_opponent(&app);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#look_back_caret_to_opponent: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
+
     pub fn look_back_caret_to_negative(&mut self, app: &Application) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.look_back_to_negative(&app);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index]
+                .caret
+                .look_back_to_negative(&app);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#look_back_caret_to_negative: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
+
     pub fn look_back_caret_to_positive(&mut self, app: &Application) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.look_back_to_positive(&app);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index]
+                .caret
+                .look_back_to_positive(&app);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#look_back_caret_to_positive: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
@@ -247,8 +232,8 @@ impl CassetteTapeBox {
     ///
     /// 削除したノート。
     pub fn delete_1note(&mut self, _app: &Application) -> Option<ShogiNote> {
-        if let Some(tape_index) = self.listening_tape_index {
-            let tape = &mut self.tapes[tape_index];
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            let tape = &mut self.tapes[awareness.index];
 
             let (new_tape, removed_note_opt) = tape.tracks.new_truncated_tape(&tape.caret);
             tape.tracks = new_tape;
@@ -259,94 +244,132 @@ impl CassetteTapeBox {
                 None
             }
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#delete_1note: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn push_note_to_positive_of_current_tape(&mut self, note: ShogiNote) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.positive_notes.push(note);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].tracks.positive_notes.push(note);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#push_note_to_positive_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
+
     pub fn push_note_to_negative_of_current_tape(&mut self, note: ShogiNote) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.negative_notes.push(note);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].tracks.negative_notes.push(note);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#push_note_to_negative_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn set_note_to_current_tape(&mut self, caret_number: i16, note: ShogiNote) {
-        if let Some(tape_index) = self.listening_tape_index {
+        if let Some(ref awareness) = self.awareness_of_tapes {
             if -1 < caret_number {
-                self.tapes[tape_index].tracks.positive_notes[caret_number as usize] = note;
+                self.tapes[awareness.index].tracks.positive_notes[caret_number as usize] = note;
             } else {
-                self.tapes[tape_index].tracks.negative_notes
+                self.tapes[awareness.index].tracks.negative_notes
                     [get_index_from_caret_numbers(caret_number)] = note;
             }
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#set_note_to_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     /// 正の数では、（キャレット番号＋１）と、（要素の個数）は等しい。
     pub fn truncate_positive_of_current_tape(&mut self, len: usize) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.positive_notes.truncate(len);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index]
+                .tracks
+                .positive_notes
+                .truncate(len);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#truncate_positive_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
+
     /// 負の数では、（キャレット番号の絶対値）と、（要素の個数）は等しい。
     pub fn truncate_negative_of_current_tape(&mut self, len: usize) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].tracks.negative_notes.truncate(len);
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index]
+                .tracks
+                .negative_notes
+                .truncate(len);
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#truncate_negative_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn is_facing_left_of_current_tape(&self) -> bool {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].caret.is_facing_left()
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].caret.is_facing_left()
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#is_facing_left_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     // キャレットがピークを指しているか☆（＾～＾）
     pub fn is_peak_of_current_tape(&self) -> bool {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].is_peak()
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].is_peak()
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#is_peak_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
     // キャレットが次、オーバーフローするか☆（＾～＾）
     pub fn is_before_caret_overflow_of_tape(&self) -> bool {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].is_before_caret_overflow()
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].is_before_caret_overflow()
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#is_before_caret_overflow_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     pub fn get_sign_of_current_tape(&self, board_size: BoardSize) -> (String, String) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].to_sign(board_size)
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].to_sign(board_size)
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#get_sign_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
-    pub fn get_file_name(&self) -> String {
-        self.file.to_string()
-    }
-
     pub fn get_tape_index(&self) -> Option<usize> {
-        self.listening_tape_index
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            Some(awareness.index)
+        } else {
+            None
+        }
     }
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
@@ -369,22 +392,25 @@ impl CassetteTapeBox {
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
     pub fn write_current_tapes_fragment(&self, board_size: BoardSize, app: &Application) {
-        if let Some(tape_index) = self.listening_tape_index {
-            self.tapes[tape_index].write_tape_fragment(board_size, &app)
+        if let Some(ref awareness) = self.awareness_of_tapes {
+            self.tapes[awareness.index].write_tape_fragment(board_size, &app)
         } else {
-            panic!("Please choice listening tape.");
+            panic!(
+                "#write_current_tapes_fragment: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
         }
     }
 
     /// このテープ・ボックスを書きだすぜ☆（＾～＾）
     pub fn write_tape_box(&self, board_size: BoardSize, app: &Application) {
         let rpm_tape_box = self.to_rpm(board_size);
-        rpm_tape_box.write(&self.file, &app);
+        rpm_tape_box.write(&self.file_name, &app);
     }
 
     /// このテープ・ボックスのデバッグ情報表示。人間向け。
     pub fn to_human_presentable(&self) -> String {
-        if let Some(tape_index) = self.listening_tape_index {
+        if let Some(ref awareness) = self.awareness_of_tapes {
             use audio_compo::cassette_deck::Slot::*;
             format!(
                 "[{}-Box: File: '{}', Tapes: {}, Tape index: {}]",
@@ -393,13 +419,13 @@ impl CassetteTapeBox {
                     Learning => "Learnig",
                 }
                 .to_string(),
-                self.file,
+                self.file_name,
                 self.tapes.len(),
-                tape_index
+                awareness.index
             )
             .to_string()
         } else {
-            format!("[Box: File: '{}', I have not selected a tape]", self.file).to_string()
+            format!("[Box: File: '{}', I have not seek a tape]", self.file_name).to_string()
         }
     }
 
@@ -409,7 +435,7 @@ impl CassetteTapeBox {
         board_size: BoardSize,
         app: &Application,
     ) -> String {
-        if let Some(tape_index) = self.listening_tape_index {
+        if let Some(ref awareness) = self.awareness_of_tapes {
             use audio_compo::cassette_deck::Slot::*;
             format!(
                 "[{}-Box: Tape index: {}, Tape: {}]",
@@ -418,25 +444,25 @@ impl CassetteTapeBox {
                     Learning => "Learnig",
                 }
                 .to_string(),
-                tape_index,
-                self.tapes[tape_index].to_human_presentable(board_size, &app)
+                awareness.index,
+                self.tapes[awareness.index].to_human_presentable(board_size, &app)
             )
             .to_string()
         } else {
-            "[Box: I have not selected a tape]".to_string()
+            "[Box: I have not seek a tape]".to_string()
         }
     }
 
     /// 現在聴いているテープのキャレットのデバッグ情報表示。人間向け。
     pub fn to_human_presentable_of_caret_of_current_tape(&self, app: &Application) -> String {
-        if let Some(tape_index) = self.listening_tape_index {
+        if let Some(ref awareness) = self.awareness_of_tapes {
             format!(
                 "[Box: Caret: {}]",
-                self.tapes[tape_index].caret.to_human_presentable(&app)
+                self.tapes[awareness.index].caret.to_human_presentable(&app)
             )
             .to_string()
         } else {
-            "[Box: I have not selected a tape]".to_string()
+            "[Box: I have not seek a tape]".to_string()
         }
     }
 }

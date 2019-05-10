@@ -54,6 +54,11 @@ impl Caret {
         }
     }
 
+    pub fn clear_facing_right(&mut self) {
+        self.facing_left = false;
+        self.unconscious_number = 0;
+    }
+
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
     pub fn go_to_next(&mut self, _app: &Application) -> Awareness {

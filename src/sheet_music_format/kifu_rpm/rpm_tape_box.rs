@@ -1,6 +1,5 @@
 extern crate rand;
-use audio_compo::cassette_deck::Slot;
-use conf::kifuwarabe_wcsc29_master_config::*;
+use conf::kifuwarabe_wcsc29_master_config::KifuwarabeWcsc29MasterConfig;
 use rand::Rng;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
@@ -10,8 +9,6 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::Path;
 use studio::application::Application;
-use studio::board_size::*;
-use video_tape_model::cassette_tape_box::*;
 
 /// -rbox.json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
@@ -89,6 +86,24 @@ impl RpmTapeBox {
             .to_string()
     }
 
+    pub fn create_file_full_name_without_extension(
+        kw29_conf: &KifuwarabeWcsc29MasterConfig,
+        app: &Application,
+    ) -> String {
+        let mut rng = rand::thread_rng();
+        let rand1: u64 = rng.gen();
+        let rand2: u64 = rng.gen();
+        let rand3: u64 = rng.gen();
+        let rand4: u64 = rng.gen();
+        let file = format!("{}-{}-{}-{}", rand1, rand2, rand3, rand4).to_string();
+
+        Path::new(&kw29_conf.learning)
+            .join(file)
+            .to_str()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. conf.learning.")))
+            .to_string()
+    }
+
     /// テープ・ボックス単位で書きだすぜ☆（＾～＾）
     pub fn write(&self, file_name: &str, app: &Application) {
         if app.is_debug() {
@@ -123,25 +138,5 @@ impl RpmTapeBox {
         }
 
         // comm.println("#Sheet saved.");
-    }
-
-    /// JSONを、オブジェクトに変換します。（トレーニング・テープを想定☆（＾～＾））
-    pub fn to_training_object(&self, board_size: BoardSize, app: &Application) -> CassetteTapeBox {
-        if app.is_debug() {
-            app.comm.println("[#rpm_tape_box.to_training_object]");
-        }
-
-        let mut tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
-
-        for tape_j in &self.tape_box {
-            // テープを追加中。
-            let tape = tape_j.to_object(board_size, &app);
-            tape_box.add_exists_tape(tape, &app);
-        }
-
-        // カーソルが進んでしまっているので戻すぜ☆（＾～＾）テープ箱が空っぽだと None を指すぜ☆（＾～＾）
-        tape_box.back_to_first_tape(&app);
-
-        tape_box
     }
 }

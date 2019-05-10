@@ -164,7 +164,7 @@ impl LibSub {
         let mut urecord_opt = None;
         let mut start = 0;
 
-        // USIにstartpos があれば、局面をリセットし、大橋流を指し始めるぜ☆（＾～＾）どの道、指定の局面まで進める☆（＾～＾）
+        // 指定局面にリセットするぜ☆（＾～＾）
         if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
             // USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は指定局面から動かさないぜ☆（＾～＾）
             urecord_opt = UsiPosition::parse_usi_line_moves(

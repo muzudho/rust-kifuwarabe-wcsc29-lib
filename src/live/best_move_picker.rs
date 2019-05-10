@@ -107,12 +107,14 @@ impl BestMovePicker {
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
         {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
-            deck.change_training_tape_as_name_box_file(
-                &tape_box_file
-                    .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
-                    .path()
-                    .display()
-                    .to_string(),
+            let box_file_name = &tape_box_file
+                .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
+                .path()
+                .display()
+                .to_string();
+            deck.add_tapes_from_file(
+                box_file_name,
+                Slot::Training,
                 position.get_board_size(),
                 &app,
             );
@@ -159,7 +161,7 @@ impl BestMovePicker {
             let mut debug_tape_count = -1;
             // テープをセット☆（＾～＾）
             // 局面は、平手初期局面に戻っているはずだぜ☆（＾～＾）
-            while deck.seek_tape(&app) {
+            while deck.seek_of_training_tapes(&app) {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
                     // このテープだけテストするぜ☆（＾～＾）
@@ -428,6 +430,8 @@ impl BestMovePicker {
             if app.is_debug() {
                 app.comm.println("[Tape box end]");
             }
+
+            deck.clear_of_tapes(Slot::Training, &app);
         } // トレーニング・ディレクトリー内のループ。
 
         if app.is_debug() {
