@@ -149,7 +149,7 @@ impl ShogiMove {
     /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
     pub fn to_best_move(
         &self,
-        deck: &CassetteDeck,
+        deck: &mut CassetteDeck,
         slot: Slot,
         board_size: BoardSize,
         app: &Application,
@@ -157,102 +157,124 @@ impl ShogiMove {
         if app.is_debug() {
             app.comm.println("[#To best move: Begin]");
         }
-        if let Some(tape_box) = &deck.slots[slot as usize].tape_box {
-            // 動作の主体。
-            let mut subject_pid_opt;
-            let mut subject_address_opt;
-            let mut subject_promotion = false;
-            // 動作に巻き込まれる方。
-            let mut object_pid_opt = None;
-            let mut object_address_opt = None;
-            let mut _object_promotion = false;
-            // 基本情報。
-            let mut src_opt = None;
-            let mut dst_opt = None;
-            let mut drop_opt = None;
+        let tape_box = &mut deck.slots[slot as usize];
+        // 動作の主体。
+        let mut subject_pid_opt;
+        let mut subject_address_opt;
+        let mut subject_promotion = false;
+        // 動作に巻き込まれる方。
+        let mut object_pid_opt = None;
+        let mut object_address_opt = None;
+        let mut _object_promotion = false;
+        // 基本情報。
+        let mut src_opt = None;
+        let mut dst_opt = None;
+        let mut drop_opt = None;
 
-            let mut caret =
-                Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+        let mut caret =
+            Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
+        }
+
+        let mut note = if let (_taken_overflow, _rmove, Some(note)) =
+            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+        {
+            note
+        } else {
             if app.is_debug() {
-                app.comm
-                    .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
+                app.comm.println("Note fail(1).");
             }
+            return None;
+        };
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Note: {}]",
+                note.to_human_presentable(board_size, &app)
+            ));
+        }
 
-            let mut note = if let (_taken_overflow, _rmove, Some(note)) =
-                tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
-            {
-                note
-            } else {
-                if app.is_debug() {
-                    app.comm.println("Note fail(1).");
-                }
-                return None;
-            };
+        // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
+        if let Some(address) = note.get_ope().address {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#Note: {}]",
-                    note.to_human_presentable(board_size, &app)
+                    "[#Address: {}]",
+                    address.to_human_presentable(board_size)
                 ));
             }
 
-            // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
-            if let Some(address) = note.get_ope().address {
+            if let Some(piece) = address.get_hand_piece() {
+                if app.is_debug() {
+                    app.comm
+                        .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
+                }
+
+                // 駒台なら必ず自駒のドロップ。
+                subject_pid_opt = note.get_id();
+                subject_address_opt = Some(address);
+                drop_opt = Some(PieceType::from_piece(piece));
+
+                // 次は置くだけ。
+                note = if let (_taken_overflow, _rmove, Some(note)) =
+                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                {
+                    note
+                } else {
+                    if app.is_debug() {
+                        app.comm.println("Note fail(2).");
+                    }
+                    return None;
+                };
                 if app.is_debug() {
                     app.comm.println(&format!(
-                        "[#Address: {}]",
-                        address.to_human_presentable(board_size)
+                        "[Note: {}]",
+                        note.to_human_presentable(board_size, &app)
                     ));
                 }
 
-                if let Some(piece) = address.get_hand_piece() {
-                    if app.is_debug() {
-                        app.comm
-                            .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
-                    }
-
-                    // 駒台なら必ず自駒のドロップ。
-                    subject_pid_opt = note.get_id();
-                    subject_address_opt = Some(address);
-                    drop_opt = Some(PieceType::from_piece(piece));
-
-                    // 次は置くだけ。
-                    note = if let (_taken_overflow, _rmove, Some(note)) =
-                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
-                    {
-                        note
-                    } else {
-                        if app.is_debug() {
-                            app.comm.println("Note fail(2).");
-                        }
-                        return None;
-                    };
-                    if app.is_debug() {
-                        app.comm.println(&format!(
-                            "[Note: {}]",
-                            note.to_human_presentable(board_size, &app)
-                        ));
-                    }
-
-                    if let Some(address) = note.get_ope().address {
-                        dst_opt = Some(board_size.address_to_cell(address.get_index()));
-                    } else {
-                        panic!(
-                            "Unexpected 1st note of move(30): {}.",
-                            note.to_human_presentable(board_size, &app)
-                        );
-                    }
-
-                // その次は無い。
-
-                // 盤上
+                if let Some(address) = note.get_ope().address {
+                    dst_opt = Some(board_size.address_to_cell(address.get_index()));
                 } else {
-                    // これが盤上の自駒か、相手の駒かは、まだ分からない。仮に入れておく。
-                    subject_pid_opt = note.get_id();
-                    subject_address_opt = Some(address);
-                    src_opt = Some(board_size.address_to_cell(address.get_index()));
+                    panic!(
+                        "Unexpected 1st note of move(30): {}.",
+                        note.to_human_presentable(board_size, &app)
+                    );
+                }
+
+            // その次は無い。
+
+            // 盤上
+            } else {
+                // これが盤上の自駒か、相手の駒かは、まだ分からない。仮に入れておく。
+                subject_pid_opt = note.get_id();
+                subject_address_opt = Some(address);
+                src_opt = Some(board_size.address_to_cell(address.get_index()));
+                if app.is_debug() {
+                    app.comm.println("[Not HandPiece]");
+                }
+
+                // 次。
+                note = if let (_taken_overflow, _rmove, Some(note)) =
+                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                {
+                    note
+                } else {
                     if app.is_debug() {
-                        app.comm.println("[Not HandPiece]");
+                        app.comm.println("Note fail(3).");
                     }
+                    return None;
+                };
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[Note: {}]",
+                        note.to_human_presentable(board_size, &app)
+                    ));
+                }
+
+                if note.get_ope().fingertip_turn {
+                    // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
+                    subject_promotion = true;
 
                     // 次。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
@@ -261,7 +283,36 @@ impl ShogiMove {
                         note
                     } else {
                         if app.is_debug() {
-                            app.comm.println("Note fail(3).");
+                            app.comm.println("Note fail(4).");
+                        }
+                        return None;
+                    };
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "[Note: {}]",
+                            note.to_human_presentable(board_size, &app)
+                        ));
+                    }
+                }
+
+                if note.get_ope().fingertip_rotate {
+                    // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
+                    object_pid_opt = subject_pid_opt;
+                    object_address_opt = subject_address_opt;
+                    _object_promotion = subject_promotion;
+                    subject_pid_opt = None;
+                    subject_address_opt = None;
+                    src_opt = None;
+                    subject_promotion = false;
+
+                    // 次。
+                    note = if let (_taken_overflow, _rmove, Some(note)) =
+                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                    {
+                        note
+                    } else {
+                        if app.is_debug() {
+                            app.comm.println("Note fail(5).");
                         }
                         return None;
                     };
@@ -272,47 +323,16 @@ impl ShogiMove {
                         ));
                     }
 
-                    if note.get_ope().fingertip_turn {
-                        // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
-                        subject_promotion = true;
-
-                        // 次。
+                    // 自分の駒台に置く動き。
+                    if let Some(_address) = note.get_ope().address {
+                        // 次は、盤上の自駒を触る。
                         note = if let (_taken_overflow, _rmove, Some(note)) =
                             tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
                             if app.is_debug() {
-                                app.comm.println("Note fail(4).");
-                            }
-                            return None;
-                        };
-                        if app.is_debug() {
-                            app.comm.println(&format!(
-                                "[Note: {}]",
-                                note.to_human_presentable(board_size, &app)
-                            ));
-                        }
-                    }
-
-                    if note.get_ope().fingertip_rotate {
-                        // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
-                        object_pid_opt = subject_pid_opt;
-                        object_address_opt = subject_address_opt;
-                        _object_promotion = subject_promotion;
-                        subject_pid_opt = None;
-                        subject_address_opt = None;
-                        src_opt = None;
-                        subject_promotion = false;
-
-                        // 次。
-                        note = if let (_taken_overflow, _rmove, Some(note)) =
-                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
-                        {
-                            note
-                        } else {
-                            if app.is_debug() {
-                                app.comm.println("Note fail(5).");
+                                app.comm.println("Note fail(6).");
                             }
                             return None;
                         };
@@ -323,16 +343,18 @@ impl ShogiMove {
                             ));
                         }
 
-                        // 自分の駒台に置く動き。
-                        if let Some(_address) = note.get_ope().address {
-                            // 次は、盤上の自駒を触る。
+                        if let Some(address) = note.get_ope().address {
+                            subject_pid_opt = note.get_id();
+                            subject_address_opt = Some(address);
+                            src_opt = Some(board_size.address_to_cell(address.get_index()));
+                            // 次。
                             note = if let (_taken_overflow, _rmove, Some(note)) =
                                 tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
                             {
                                 note
                             } else {
                                 if app.is_debug() {
-                                    app.comm.println("Note fail(6).");
+                                    app.comm.println("Note fail(7).");
                                 }
                                 return None;
                             };
@@ -342,130 +364,106 @@ impl ShogiMove {
                                     note.to_human_presentable(board_size, &app)
                                 ));
                             }
-
-                            if let Some(address) = note.get_ope().address {
-                                subject_pid_opt = note.get_id();
-                                subject_address_opt = Some(address);
-                                src_opt = Some(board_size.address_to_cell(address.get_index()));
-                                // 次。
-                                note = if let (_taken_overflow, _rmove, Some(note)) =
-                                    tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
-                                {
-                                    note
-                                } else {
-                                    if app.is_debug() {
-                                        app.comm.println("Note fail(7).");
-                                    }
-                                    return None;
-                                };
-                                if app.is_debug() {
-                                    app.comm.println(&format!(
-                                        "[Note: {}]",
-                                        note.to_human_presentable(board_size, &app)
-                                    ));
-                                }
-                            }
-                        } else {
-                            panic!(
-                                "Unexpected 1st note of move(70): {}.",
-                                note.to_human_presentable(board_size, &app)
-                            );
                         }
                     } else {
-                        // 盤上の自駒を触ったのだと確定した。
+                        panic!(
+                            "Unexpected 1st note of move(70): {}.",
+                            note.to_human_presentable(board_size, &app)
+                        );
                     }
+                } else {
+                    // 盤上の自駒を触ったのだと確定した。
+                }
 
-                    if note.get_ope().fingertip_turn {
-                        // +。盤上の自駒が成った。
-                        subject_promotion = true;
+                if note.get_ope().fingertip_turn {
+                    // +。盤上の自駒が成った。
+                    subject_promotion = true;
 
-                        // 次。
-                        note = if let (_taken_overflow, _rmove, Some(note)) =
-                            tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
-                        {
-                            note
-                        } else {
-                            if app.is_debug() {
-                                app.comm.println("Note fail(8).");
-                            }
-                            return None;
-                        };
+                    // 次。
+                    note = if let (_taken_overflow, _rmove, Some(note)) =
+                        tape_box.seek_to_next_with_othre_caret(&mut caret, &app)
+                    {
+                        note
+                    } else {
                         if app.is_debug() {
-                            app.comm.println(&format!(
-                                "[Note: {}]",
-                                note.to_human_presentable(board_size, &app)
-                            ));
+                            app.comm.println("Note fail(8).");
                         }
-                    }
-
-                    if let Some(address) = note.get_ope().address {
-                        // 行き先に盤上の自駒を進めた。
-                        dst_opt = Some(board_size.address_to_cell(address.get_index()));
-
-                        // これで終わり。
+                        return None;
+                    };
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "[Note: {}]",
+                            note.to_human_presentable(board_size, &app)
+                        ));
                     }
                 }
-            } else {
-                panic!(
-                    "Unexpected 1st note of move(100): {}.",
-                    note.to_human_presentable(board_size, &app)
-                );
-            }
 
-            /*
-            if i + 1 < self.notes.len() {
-                panic!(
-                    "Unexpected 1st note of move(110): 余り。 {}/{}, {}",
-                    i,
-                    self.notes.len(),
-                    self.to_human_presentable(board_size)
-                );
-            }
-            */
+                if let Some(address) = note.get_ope().address {
+                    // 行き先に盤上の自駒を進めた。
+                    dst_opt = Some(board_size.address_to_cell(address.get_index()));
 
-            let umove = if let Some(drop) = drop_opt {
-                UsiMove::create_drop(
-                    dst_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. dst_opt."))),
-                    drop,
-                    board_size,
-                )
-            } else if let Some(dst) = dst_opt {
-                UsiMove::create_walk(
-                    src_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. src_opt."))),
-                    dst,
-                    subject_promotion,
-                    board_size,
-                )
-            } else {
-                // 目的地の分からない指し手☆（＾～＾）
-                panic!(
-                    "Unexpected dst. Drop-none, Dst-none, move.len: '{}' > 1, move: '{}'. Slot: {:?}, Tape file name: '{}', Tape index: {}.",
-                    self.len(),
-                    self,
-                    slot,
-                    deck.get_file_name_of_tape_box(slot),
-                    match deck.get_tape_index(slot){Some(tape_index)=>{tape_index.to_string()},None=>{"".to_string()}}
-                )
-            };
-
-            // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
-            if let Some(subject_idp) = subject_pid_opt {
-                if app.is_debug() {
-                    app.comm.println("[#To best move: End]");
+                    // これで終わり。
                 }
-                Some(BestMove {
-                    usi_move: umove,
-                    subject_pid: subject_idp,
-                    subject_addr: subject_address_opt
-                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. subject_address_opt."))),
-                    capture_pid: object_pid_opt,
-                    capture_addr: object_address_opt,
-                })
-            } else {
-                panic!("Unexpected rpm move. id fail.")
             }
         } else {
-            panic!("Tape box fail.")
+            panic!(
+                "Unexpected 1st note of move(100): {}.",
+                note.to_human_presentable(board_size, &app)
+            );
+        }
+
+        /*
+        if i + 1 < self.notes.len() {
+            panic!(
+                "Unexpected 1st note of move(110): 余り。 {}/{}, {}",
+                i,
+                self.notes.len(),
+                self.to_human_presentable(board_size)
+            );
+        }
+        */
+
+        let umove = if let Some(drop) = drop_opt {
+            UsiMove::create_drop(
+                dst_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. dst_opt."))),
+                drop,
+                board_size,
+            )
+        } else if let Some(dst) = dst_opt {
+            UsiMove::create_walk(
+                src_opt.unwrap_or_else(|| panic!(app.comm.panic("Fail. src_opt."))),
+                dst,
+                subject_promotion,
+                board_size,
+            )
+        } else {
+            // 目的地の分からない指し手☆（＾～＾）
+            panic!(
+                "Unexpected dst. Drop-none, Dst-none, move.len: '{}' > 1, move: '{}'. Slot: {:?}.",
+                self.len(),
+                self,
+                slot,
+            )
+            // , Tape file name: '{}', Tape index: {}.
+            //deck.get_file_name_of_tape_box(slot),
+            //match deck.get_tape_index(slot){Some(tape_index)=>{tape_index.to_string()},None=>{"".to_string()}}
+        };
+
+        // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
+        if let Some(subject_idp) = subject_pid_opt {
+            if app.is_debug() {
+                app.comm.println("[#To best move: End]");
+            }
+            Some(BestMove {
+                usi_move: umove,
+                subject_pid: subject_idp,
+                subject_addr: subject_address_opt
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. subject_address_opt."))),
+                capture_pid: object_pid_opt,
+                capture_addr: object_address_opt,
+            })
+        } else {
+            panic!("Unexpected rpm move. id fail.")
         }
     }
 
@@ -537,36 +535,33 @@ impl ShogiMove {
         board_size: BoardSize,
         app: &Application,
     ) -> String {
-        if let Some(tape_box) = &deck.slots[slot as usize].tape_box {
-            let mut text = String::new();
-            let mut other_caret =
-                Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
-            if app.is_debug() {
-                app.comm.print(&format!(
-                    "{} ({})",
-                    text,
-                    self.caret_closed_interval.get_start()
-                ));
-            }
-
-            while other_caret.while_to(&self.caret_closed_interval, &app) {
-                if let (_taken_overflow, _rmove, Some(note)) =
-                    tape_box.seek_to_next_with_othre_caret(&mut other_caret, &app)
-                {
-                    text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
-                } else {
-                    break;
-                }
-            }
-
-            // TODO スタートが181で、エンドが1だったりするのはなんでだぜ☆（＾～＾）？
-            format!(
-                "[Move:{}{}]",
-                self.caret_closed_interval.to_human_presentable(),
-                text
-            )
-        } else {
-            panic!("None tape box.")
+        let tape_box = &deck.slots[slot as usize];
+        let mut text = String::new();
+        let mut other_caret =
+            Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+        if app.is_debug() {
+            app.comm.print(&format!(
+                "{} ({})",
+                text,
+                self.caret_closed_interval.get_start()
+            ));
         }
+
+        while other_caret.while_to(&self.caret_closed_interval, &app) {
+            if let (_taken_overflow, _rmove, Some(note)) =
+                tape_box.seek_to_next_with_othre_caret(&mut other_caret, &app)
+            {
+                text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
+            } else {
+                break;
+            }
+        }
+
+        // TODO スタートが181で、エンドが1だったりするのはなんでだぜ☆（＾～＾）？
+        format!(
+            "[Move:{}{}]",
+            self.caret_closed_interval.to_human_presentable(),
+            text
+        )
     }
 }

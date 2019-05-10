@@ -72,7 +72,7 @@ pub fn main() {
         app.comm.println("Position parsed.");
     }
 
-    deck.change_training_tape(None, position.get_board_size(), &app);
+    //deck.change_training_tape(None, position.get_board_size(), &app);
     UsiConverter::play_out_usi_tape(&mut position, &utape, &mut deck, &app);
     HumanInterface::bo(&mut deck, &position, &app);
 }

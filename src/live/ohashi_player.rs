@@ -22,7 +22,7 @@ impl OhashiPlayer {
         app: &Application,
     ) {
         // オリジン局面に戻す☆（＾～＾）
-        deck.change_training_tape(None, position.get_board_size(), &app);
+        deck.clear_of_tapes(Slot::Training, &app);
         position.repeat_origin_position(&app);
     }
 
@@ -104,32 +104,20 @@ impl OhashiPlayer {
 
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
+                deck.seek_to_next_note(Slot::Training, &app);
+                // deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
+                deck.seek_to_next_note(Slot::Training, &app);
+                // deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Training as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
-                if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-                    tape_box.seek_to_next(&app);
-                }
+                deck.seek_to_next_note(Slot::Training, &app);
+                // deck.seek_to_next_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
         }

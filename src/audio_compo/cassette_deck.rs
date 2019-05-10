@@ -18,129 +18,56 @@ pub enum Slot {
     Learning,
 }
 
-pub struct CassetteSlot {
-    /// このスロットの役割。デバッグ表示用。
-    slot_as_role: Slot,
-
-    /// 何も指していない状態で 1。
-    /// TODO 本将棋の大橋流の最初の玉は Ply=-39 にしたい。
-    /// トレーニング・テープの 手目。
-    pub ply: i16,
-
-    /// テープ・ボックス。
-    /// 選んでいるテープを示すインデックスを持つ。
-    pub tape_box: Option<CassetteTapeBox>,
-}
-impl CassetteSlot {
-    pub fn new_empty_training_tape_box() -> Self {
-        CassetteSlot {
-            slot_as_role: Slot::Training,
-            ply: 1,
-            tape_box: None,
-        }
-    }
-
-    pub fn new_learning_tape_box(app: &Application) -> Self {
-        let mut tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Learning);
-        tape_box.set_file_name(&RpmTapeBox::create_file_full_name(&app.kw29_conf, &app));
-
-        CassetteSlot {
-            slot_as_role: Slot::Learning,
-            ply: 1,
-            tape_box: Some(tape_box),
-        }
-    }
-
-    pub fn new_learning_with_file_name_without_extension(
-        file_name_without_extension: &str,
-        app: &Application,
-    ) -> Self {
-        if app.is_debug() {
-            app.comm
-                .println("[#cassette_deck.new_learning_with_file_name_without_extension]");
-        }
-
-        let mut tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Learning);
-        tape_box.set_file_name(file_name_without_extension);
-        tape_box.add_exists_tape(
-            CassetteTape::new_facing_right_with_file(
-                format!("{}.tapesfrag", file_name_without_extension).to_string(),
-            ),
-            &app,
-        );
-
-        CassetteSlot {
-            slot_as_role: Slot::Learning,
-            ply: 1,
-            tape_box: Some(tape_box),
-        }
-    }
-
-    /*
-    pub fn new_learning_from_tape_box_file(
-        file_name: &str,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> Self {
-        if app.is_debug() {
-            app.comm
-                .println("[#cassette_deck.new_learning_from_tape_box_file]");
-        }
-
-        CassetteSlot {
-            slot_as_role: Slot::Learning,
-            ply: 1,
-            tape_box: Some(CassetteTapeBox::from_tape_box_file(
-                file_name, board_size, &app,
-            )),
-        }
-    }
-    */
-
-    pub fn to_human_presentable(&self) -> String {
-        format!(
-            "[Slot: {:?}, Ply: {}, Exists: {}]",
-            self.slot_as_role,
-            self.ply,
-            if let Some(ref _tape_box) = self.tape_box {
-                "Exists"
-            } else {
-                "None"
-            }
-            .to_string()
-        )
-    }
-}
-
 /// カセット・デッキ。
 pub struct CassetteDeck {
     // カセットのスロット。トレーニング、ラーニングの順。
-    pub slots: [CassetteSlot; 2],
+    pub slots: [CassetteTapeBox; 2],
 }
 impl CassetteDeck {
     /// 新規作成と、ラーニング・テープの交換☆（＾～＾）
     pub fn new_empty(app: &Application) -> Self {
+        let mut training_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
+        training_tape_box.set_file_name_without_extension(
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+        );
+
+        let mut learning_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Learning, &app);
+        let learning_file_name_without_extension =
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
+        learning_tape_box.set_file_name_without_extension(learning_file_name_without_extension);
+        learning_tape_box.add_exists_tape(
+            CassetteTape::new_facing_right_with_file(
+                format!("{}.tapesfrag", learning_file_name_without_extension).to_string(),
+            ),
+            &app,
+        );
+
         CassetteDeck {
-            slots: [
-                CassetteSlot::new_empty_training_tape_box(),
-                CassetteSlot::new_learning_tape_box(&app),
-            ],
+            slots: [training_tape_box, learning_tape_box],
         }
     }
 
     /// TODO 任意の棋譜１つを、１つのテープ・フラグメントに変換するときに使うカセット・デッキ☆（＾～＾）
     pub fn new_for_tape_conversion(
-        learning_tape_file_name_without_extension: &str,
+        learning_file_name_without_extension: &str,
         app: &Application,
     ) -> Self {
+        let mut training_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Training, &app);
+        training_tape_box.set_file_name_without_extension(
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+        );
+
+        let mut learning_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Learning, &app);
+        learning_tape_box.set_file_name_without_extension(learning_file_name_without_extension);
+        learning_tape_box.add_exists_tape(
+            CassetteTape::new_facing_right_with_file(
+                format!("{}.tapesfrag", learning_file_name_without_extension).to_string(),
+            ),
+            &app,
+        );
+
         CassetteDeck {
-            slots: [
-                CassetteSlot::new_empty_training_tape_box(),
-                CassetteSlot::new_learning_with_file_name_without_extension(
-                    learning_tape_file_name_without_extension,
-                    &app,
-                ),
-            ],
+            slots: [training_tape_box, learning_tape_box],
         }
     }
 
@@ -152,121 +79,74 @@ impl CassetteDeck {
         board_size: BoardSize,
         app: &Application,
     ) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            let rpm_tape_box = RpmTapeBox::from_box_file(&box_file_name, &app);
+        let tape_box = &mut self.slots[slot as usize];
+        let rpm_tape_box = RpmTapeBox::from_box_file(&box_file_name, &app);
 
-            // 仮のテープ・ボックス・ファイル名。
-            tape_box.set_file_name(&RpmTapeBox::create_file_full_name_without_extension(
-                &app.kw29_conf,
-                &app,
-            ));
+        // 仮のテープ・ボックス・ファイル名。
+        tape_box.set_file_name_without_extension(
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+        );
 
-            for tape_j in &rpm_tape_box.tape_box {
-                // テープを追加中。テープを追加しても、キャレットは進まない☆（*＾～＾*）
-                let tape = tape_j.to_object(board_size, &app);
-                tape_box.add_exists_tape(tape, &app);
-            }
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("#Add tapes from fail. Slot: {:?}.", slot);
+        for tape_j in &rpm_tape_box.tape_box {
+            // テープを追加中。テープを追加しても、キャレットは進まない☆（*＾～＾*）
+            let tape = tape_j.to_object(board_size, &app);
+            tape_box.add_exists_tape(tape, &app);
         }
     }
 
     pub fn add_tape_to_tape_box(&mut self, slot: Slot, tape: CassetteTape, app: &Application) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.add_exists_tape(tape, &app);
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("#Add tape to tape box fail. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].add_exists_tape(tape, &app);
     }
 
     /*
-    // ベストムーブを探すときに使う☆（＾～＾）
-    // JSONファイルを元に トレーニング・テープをオブジェクト化して、デッキに差し込むぜ☆（＾～＾）
-    pub fn change_training_tape_as_name_box_file(
-        &mut self,
-        file_name: &str,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        if app.is_debug() {
-            app.comm
-                .println("[#cassette_deck.change_training_tape_as_name_box_file]");
-        }
-
-        self.clear_of_tapes(Slot::Training, &app);
-        // self.add_tape_to_tape_box(Slot::Training, tape: CassetteTape, &app)
-
-        let training_tape_box =
-            CassetteTapeBox::from_training_tape_box_file(&file_name, board_size, &app);
-        self.change_training_tape(Some(training_tape_box), board_size, &app);
-    }
-    */
-
     /// トレーニング・テープを交換するぜ☆（＾～＾）
     ///
     /// 棋譜読取の際は、テープ・ボックスの中にテープ・インデックスが指定されてある☆（＾～＾）
-    pub fn change_training_tape(
-        &mut self,
-        training_tape_box_opt: Option<CassetteTapeBox>,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
+    pub fn change_training_tape(&mut self, board_size: BoardSize, app: &Application) {
         if app.is_debug() {
             app.comm.println("[#Change learning tape box]");
         }
 
         // トレーニング・テープは読み取り専用なんで、べつに保存とかしない☆（＾～＾）
-        self.set_tape_box(Slot::Training, training_tape_box_opt, &app);
+        // self.set_tape_box(Slot::Training, training_tape_box_opt, &app);
         self.slots[Slot::Training as usize].ply = 1;
 
         let mut full = false;
-        if let Some(ref learning_box) = self.slots[Slot::Learning as usize].tape_box {
-            // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
-            let file_name = learning_box.get_file_name();
-            learning_box.to_rpm(board_size).write(&file_name, &app);
+        let learning_box = &self.slots[Slot::Learning as usize];
+        // ラーニング・テープの、テープ・ボックスを外部ファイルに保存する（今までのラーニング・テープは、このテープ・ボックスに入っている）。
+        let file_name = learning_box.get_file_name();
+        learning_box.to_rpm(board_size).write(&file_name, &app);
 
-            if 499 < learning_box.len_tapes() {
-                // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
-                full = true;
-            }
-        } else {
-            panic!("Get l_box none.")
+        if 499 < learning_box.len_tapes() {
+            // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
+            full = true;
         }
 
         if full {
+            // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
             if app.is_debug() {
                 app.comm.println("Change learning tape box.");
             }
 
-            let mut tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Learning);
-            tape_box.set_file_name(&RpmTapeBox::create_file_full_name(&app.kw29_conf, &app));
-
-            // TODO 満杯になったら次のボックスを新しく作りたい☆（＾～＾）
-            self.set_tape_box(Slot::Learning, Some(tape_box), &app);
+            self.clear_of_tapes(Slot::Learning, &app);
+            self.set_file_name_without_extension_of_tape_box(
+                Slot::Learning,
+                &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+            );
         }
 
         // 新しいラーニング・テープに差し替える。
-        if let Some(ref mut learning_box) = self.slots[Slot::Learning as usize].tape_box {
-            if app.is_debug() {
-                app.comm.println("Change learning tape.");
-            }
-
-            learning_box.add_brandnew_tape(&app);
-
-            self.slots[Slot::Learning as usize].ply = 1;
-        } else {
-            panic!("Get l_box none.")
+        if app.is_debug() {
+            app.comm.println("Change learning tape.");
         }
+
+        self.slots[Slot::Learning as usize].add_brandnew_tape(&app);
+        self.slots[Slot::Learning as usize].ply = 1;
     }
+    */
 
     pub fn clear_of_tapes(&mut self, slot: Slot, app: &Application) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.clear_tape_box(&app)
-        } else {
-            panic!("Clear fail. Not found training tape box.");
-        }
+        self.slots[slot as usize].clear_tape_box(&app)
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）
@@ -276,42 +156,16 @@ impl CassetteDeck {
     ///
     /// (成功)
     pub fn seek_of_training_tapes(&mut self, app: &Application) -> bool {
-        if let Some(ref mut training_tape_box) = &mut self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.seek_of_tapes(&app)
-        } else {
-            false
-        }
-    }
-
-    pub fn set_tape_box(
-        &mut self,
-        slot: Slot,
-        tape_box: Option<CassetteTapeBox>,
-        app: &Application,
-    ) {
-        if app.is_debug() {
-            app.comm
-                .println(&format!("Set tape box: Slot: {:?}.", slot));
-        }
-
-        self.slots[slot as usize].tape_box = tape_box;
+        self.slots[Slot::Training as usize].seek_of_tapes(&app)
     }
 
     /// テープ・フラグメント単位で書き込めるぜ☆（*＾～＾*）スロットは ラーニング限定☆（＾～＾）
     pub fn write_leaning_tapes_fragment(&mut self, board_size: BoardSize, app: &Application) {
-        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
-            tape_box.write_current_tapes_fragment(board_size, &app);
-        } else {
-            panic!("tape box none.");
-        }
+        self.slots[Slot::Learning as usize].write_current_tapes_fragment(board_size, &app);
     }
 
     pub fn write_tape_box(&mut self, board_size: BoardSize, app: &Application) {
-        if let Some(ref tape_box) = self.slots[Slot::Learning as usize].tape_box {
-            tape_box.write_tape_box(board_size, &app);
-        } else {
-            panic!("tape box none.");
-        }
+        self.slots[Slot::Learning as usize].write_tape_box(board_size, &app);
     }
 
     pub fn get_ply(&self, slot: Slot) -> i16 {
@@ -319,60 +173,32 @@ impl CassetteDeck {
     }
 
     pub fn get_sign_of_current_tape(&self, slot: Slot, board_size: BoardSize) -> (String, String) {
-        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
-            tape_box.get_sign_of_current_tape(board_size)
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in go to next. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].get_sign_of_current_tape(board_size)
     }
 
     pub fn get_file_name_of_tape_box(&self, slot: Slot) -> String {
-        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
-            tape_box.get_file_name()
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box file name fail. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].get_file_name()
     }
     pub fn set_file_name_without_extension_of_tape_box(
         &mut self,
         slot: Slot,
         tape_box_file_name_without_extension: &str,
     ) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.set_file_name(tape_box_file_name_without_extension);
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("#Set tape box file name fail. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize]
+            .set_file_name_without_extension(tape_box_file_name_without_extension);
     }
 
     pub fn get_tape_index(&self, slot: Slot) -> Option<usize> {
-        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
-            tape_box.get_tape_index()
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("Get tape index fail. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].get_tape_index()
     }
 
     /// -と+方向の長さがある☆（＾～＾）
     pub fn get_current_tape_span(&self, slot: Slot) -> ClosedInterval {
-        if let Some(ref tape_box) = self.slots[slot as usize].tape_box {
-            tape_box.get_current_tape_len()
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("Get tape len fail. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].get_current_tape_len()
     }
 
     pub fn step_in_of_tape(&self, slot: Slot) -> i16 {
-        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
-            tape_box.step_in_of_tape()
-        } else {
-            panic!("Step in of tape fail.");
-        }
+        self.slots[slot as usize].step_in_of_tape()
     }
 
     /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
@@ -381,12 +207,7 @@ impl CassetteDeck {
     ///
     /// (taken overflow, move, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)
     pub fn seek_1move(&mut self, slot: Slot, app: &Application) -> (bool, ShogiMove) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.seek_1move(&app)
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in go 1move forcely. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].seek_1move(&app)
     }
 
     /// キャレットは必ず１つ進みます。
@@ -402,88 +223,63 @@ impl CassetteDeck {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn seek_to_next(
+    pub fn seek_to_next_note(
         &mut self,
         slot: Slot,
         app: &Application,
     ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.seek_to_next(&app)
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in go to next. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].seek_to_next_note(&app)
     }
 
     /// 指定のスロットの テープボックスの中の、現在のテープの、キャレットの向きを反対にします。
     pub fn look_back_caret_to_opponent(&mut self, slot: Slot, app: &Application) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            tape_box.look_back_caret_to_opponent(&app);
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in turn caret to opponent. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].look_back_caret_to_opponent(&app);
     }
     pub fn look_back_caret_to_positive(&mut self, slot: Slot, app: &Application) {
-        let cassette_slot = &mut self.slots[slot as usize];
-        if let Some(ref mut tape_box) = cassette_slot.tape_box {
-            tape_box.look_back_caret_to_positive(&app);
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in turn caret to positive. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].look_back_caret_to_positive(&app);
     }
     pub fn look_back_caret_to_negative(&mut self, slot: Slot, app: &Application) {
-        let cassette_slot = &mut self.slots[slot as usize];
-        if let Some(ref mut tape_box) = cassette_slot.tape_box {
-            tape_box.look_back_caret_to_negative(&app);
-        } else {
-            // 指定のスロットの テープボックスの中の、現在のテープ が無いエラー。
-            panic!("tape box none in turn caret to negative. Slot: {:?}.", slot);
-        }
+        self.slots[slot as usize].look_back_caret_to_negative(&app);
     }
 
     /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
-        if let Some(ref mut tape_box) = &mut self.slots[slot as usize].tape_box {
-            // とりあえず、キャレットを進めようぜ☆（＾～＾）
-            let (_taken_overflow, rmove, _) = tape_box.seek_to_next(&app);
+        let tape_box = &mut self.slots[slot as usize];
+        // とりあえず、キャレットを進めようぜ☆（＾～＾）
+        let (_taken_overflow, rmove, _) = tape_box.seek_to_next_note(&app);
 
-            if -1 < rmove.get_end() {
-                // ０、または 正のテープ。
-                // 次にオーバーフローするか判断。
-                if tape_box.is_before_caret_overflow_of_tape() {
-                    // 正の絶対値が大きい方の新しい要素を追加しようとしている。
-                    tape_box.push_note_to_positive_of_current_tape(note);
-                    tape_box.seek_to_next(&app);
-                } else {
-                    // 先端でなければ、上書き。
-                    tape_box.set_note_to_current_tape(rmove.get_end(), note);
-
-                    // 仮のおわり を更新。
-                    tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
-                        rmove.get_end(),
-                    ));
-                }
+        if -1 < rmove.get_end() {
+            // ０、または 正のテープ。
+            // 次にオーバーフローするか判断。
+            if tape_box.is_before_caret_overflow_of_tape() {
+                // 正の絶対値が大きい方の新しい要素を追加しようとしている。
+                tape_box.push_note_to_positive_of_current_tape(note);
+                tape_box.seek_to_next_note(&app);
             } else {
-                // 負のテープ。
-                // 最先端かどうか判断。
-                if tape_box.is_before_caret_overflow_of_tape() {
-                    // 負の絶対値が大きい方の新しい要素を追加しようとしている。
-                    tape_box.push_note_to_negative_of_current_tape(note);
-                    tape_box.seek_to_next(&app);
-                } else {
-                    // 先端でなければ、上書き。
-                    tape_box.set_note_to_current_tape(rmove.get_end(), note);
-                    // 仮のおわり を更新。
-                    tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
-                        rmove.get_end(),
-                    ));
-                }
+                // 先端でなければ、上書き。
+                tape_box.set_note_to_current_tape(rmove.get_end(), note);
+
+                // 仮のおわり を更新。
+                tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
+                    rmove.get_end(),
+                ));
             }
         } else {
-            panic!("Recording tape is none.")
-        };
+            // 負のテープ。
+            // 最先端かどうか判断。
+            if tape_box.is_before_caret_overflow_of_tape() {
+                // 負の絶対値が大きい方の新しい要素を追加しようとしている。
+                tape_box.push_note_to_negative_of_current_tape(note);
+                tape_box.seek_to_next_note(&app);
+            } else {
+                // 先端でなければ、上書き。
+                tape_box.set_note_to_current_tape(rmove.get_end(), note);
+                // 仮のおわり を更新。
+                tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
+                    rmove.get_end(),
+                ));
+            }
+        }
     }
 
     /// # Returns
@@ -491,12 +287,7 @@ impl CassetteDeck {
     ///
     /// 削除したノート。
     pub fn delete_1note(&mut self, slot: Slot, app: &Application) -> Option<ShogiNote> {
-        let cassette_slot = &mut self.slots[slot as usize];
-        if let Some(ref mut tape_box) = cassette_slot.tape_box {
-            tape_box.delete_1note(&app)
-        } else {
-            None
-        }
+        self.slots[slot as usize].delete_1note(&app)
     }
 
     /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
@@ -564,7 +355,7 @@ impl CassetteDeck {
 
         'caret_loop: loop {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-            match self.seek_to_next(slot, &app) {
+            match self.seek_to_next_note(slot, &app) {
                 (_taken_overflow, note_move, Some(rnote)) => {
                     // タッチに成功するか、しないかに関わらず、このノートはムーブに含める☆（＾～＾）
                     // このムーブの長さが、進めたノートの数と等しいぜ☆（＾～＾）
@@ -670,7 +461,7 @@ impl CassetteDeck {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next(slot, &app) {
+        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next_note(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -719,7 +510,7 @@ impl CassetteDeck {
             // （１）１ノート進んだ。ついでに拾ったノートを返す。
             // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
             // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next(slot, &app) {
+            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_to_next_note(slot, &app) {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
@@ -766,6 +557,20 @@ impl CassetteDeck {
         let mut i = 0;
         for slot in &self.slots {
             text = format!("{}  Slot[{}]: {}\n", text, i, slot.to_human_presentable());
+            /*
+            format!(
+                "[Slot: {:?}, Ply: {}, Exists: {}]",
+                self.slot_as_role,
+                self.ply,
+                if let Some(ref _tape_box) = self.tape_box {
+                    "Exists"
+                } else {
+                    "None"
+                }
+                .to_string()
+            )
+            */
+
             i += 1;
         }
 
@@ -776,28 +581,16 @@ impl CassetteDeck {
         board_size: BoardSize,
         app: &Application,
     ) -> String {
-        if let Some(training_tape_box) = &self.slots[Slot::Training as usize].tape_box {
-            training_tape_box.to_human_presentable_of_current_tape(board_size, &app)
-        } else {
-            "None-t-tape-box".to_string()
-        }
+        self.slots[Slot::Training as usize].to_human_presentable_of_current_tape(board_size, &app)
     }
     pub fn to_human_presentable_of_caret_of_current_tape(
         &self,
         slot: Slot,
         app: &Application,
     ) -> String {
-        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
-            tape_box.to_human_presentable_of_caret_of_current_tape(&app)
-        } else {
-            "None-t-tape-box".to_string()
-        }
+        self.slots[slot as usize].to_human_presentable_of_caret_of_current_tape(&app)
     }
     pub fn to_human_presentable_of_tape_box(&self, slot: Slot) -> String {
-        if let Some(tape_box) = &self.slots[slot as usize].tape_box {
-            tape_box.to_human_presentable()
-        } else {
-            "None-t-tape-box".to_string()
-        }
+        self.slots[slot as usize].to_human_presentable()
     }
 }

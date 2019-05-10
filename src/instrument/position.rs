@@ -581,7 +581,8 @@ impl Position {
     }
 
     /// 棋譜を作る☆（＾～＾）
-    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
+    /// 盤に触れて、
+    /// ラーニング・テープに　棋譜も書くぜ☆（＾～＾）
     pub fn touch_1note_ope_no_log(
         &mut self,
         deck: &mut CassetteDeck,

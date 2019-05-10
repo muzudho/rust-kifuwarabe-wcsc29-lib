@@ -31,23 +31,19 @@ impl HumanInterface {
     /// 棋譜の表示。
     pub fn kifu(deck: &CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         if app.is_debug() {
-            if let Some(ref tape_box) = deck.slots[slot as usize].tape_box {
-                let (_numbers, operations) =
-                    &tape_box.get_sign_of_current_tape(position.get_board_size());
+            let (_numbers, operations) =
+                &deck.slots[slot as usize].get_sign_of_current_tape(position.get_board_size());
 
-                use audio_compo::cassette_deck::Slot::*;
-                app.comm.println(&format!(
-                    "{}-Score: {}",
-                    match slot {
-                        Training => "T",
-                        Learning => "L",
-                    }
-                    .to_string(),
-                    operations
-                ));
-            } else {
-                panic!("tape_box none.")
-            }
+            use audio_compo::cassette_deck::Slot::*;
+            app.comm.println(&format!(
+                "{}-Score: {}",
+                match slot {
+                    Training => "T",
+                    Learning => "L",
+                }
+                .to_string(),
+                operations
+            ));
         }
     }
 

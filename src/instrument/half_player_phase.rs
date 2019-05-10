@@ -75,25 +75,21 @@ impl HalfPlayerPhaseObject {
 
     /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）
     pub fn go_next_phase_for_position(&mut self, deck: &CassetteDeck, slot: Slot) {
-        if let Some(ref tape_box) = &deck.slots[slot as usize].tape_box {
-            use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-            if tape_box.is_facing_left_of_current_tape() {
-                self.state = match self.state {
-                    ZeroPointFive => Second,
-                    First => ZeroPointFive,
-                    OnePointFive => First,
-                    Second => OnePointFive,
-                };
-            } else {
-                self.state = match self.state {
-                    ZeroPointFive => First,
-                    First => OnePointFive,
-                    OnePointFive => Second,
-                    Second => ZeroPointFive,
-                };
-            }
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
+        if deck.slots[slot as usize].is_facing_left_of_current_tape() {
+            self.state = match self.state {
+                ZeroPointFive => Second,
+                First => ZeroPointFive,
+                OnePointFive => First,
+                Second => OnePointFive,
+            };
         } else {
-            panic!("Please choice tape box.");
+            self.state = match self.state {
+                ZeroPointFive => First,
+                First => OnePointFive,
+                OnePointFive => Second,
+                Second => ZeroPointFive,
+            };
         }
     }
 

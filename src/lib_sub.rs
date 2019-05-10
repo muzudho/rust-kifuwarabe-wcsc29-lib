@@ -13,19 +13,18 @@ pub struct LibSub {}
 impl LibSub {
     pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let slot = Slot::Learning;
-        let rnote_opt = if let Some(ref mut tape_box) = &mut deck.slots[slot as usize].tape_box {
+        let rnote_opt = {
+            let tape_box = &mut deck.slots[slot as usize];
             tape_box.look_back_caret_to_negative(&app);
-            if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_to_next(&app) {
+            if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_to_next_note(&app) {
                 Some(rnote)
             } else {
                 None
             }
-        } else {
-            panic!("Tape box none.");
         };
 
         if let Some(rnote) = rnote_opt {
-            if !position.try_beautiful_touch(&deck, slot, &rnote, &app) {
+            if !position.try_beautiful_touch(deck, slot, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
         }
@@ -58,7 +57,8 @@ impl LibSub {
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let slot = Slot::Learning;
         deck.look_back_caret_to_positive(slot, &app);
-        if let (_taken_overflow, _note_move, Some(rnote)) = deck.seek_to_next(Slot::Learning, &app)
+        if let (_taken_overflow, _note_move, Some(rnote)) =
+            deck.seek_to_next_note(Slot::Learning, &app)
         {
             if !position.try_beautiful_touch(&deck, slot, &rnote, &app) {
                 app.comm.println("Touch fail.");
@@ -98,11 +98,7 @@ impl LibSub {
     ) {
         let board_size = position.get_board_size();
 
-        if let Some(ref mut tape_box) = &mut deck.slots[Slot::Learning as usize].tape_box {
-            tape_box.look_back_caret_to_positive(&app);
-        } else {
-            panic!("Tape box none.");
-        }
+        deck.slots[Slot::Learning as usize].look_back_caret_to_positive(&app);
 
         let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
         // Examples.
@@ -194,7 +190,7 @@ impl LibSub {
 
             if let Some(urecord) = urecord_opt {
                 // 差し替え。
-                deck.change_training_tape(None, position.get_board_size(), &app);
+                deck.clear_of_tapes(Slot::Training, &app);
                 UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
             }
             //comm.println("#Record converted1.");

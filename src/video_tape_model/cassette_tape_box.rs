@@ -25,16 +25,27 @@ pub struct CassetteTapeBox {
     // テープ間のキャレット。
     caret_of_tapes: Caret,
     awareness_of_tapes: Option<Awareness>,
+
+    /// 何も指していない状態で 1。
+    /// TODO 本将棋の大橋流の最初の玉は Ply=-39 にしたい。
+    /// トレーニング・テープの 手目。
+    pub ply: i16,
 }
 impl CassetteTapeBox {
     /// 他にも JSONファイルを読み込んで、あっちから このオブジェクトを作る方法もある。
-    pub fn new_empty_tape_box(slot: Slot) -> Self {
+    pub fn new_empty_tape_box(slot: Slot, app: &Application) -> Self {
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[#New tape box: Slot:{:?}]", slot))
+        }
+
         CassetteTapeBox {
             role_as_slot: slot,
             file_name: "".to_string(),
             tapes: Vec::new(),
             caret_of_tapes: Caret::new_facing_right_caret(),
             awareness_of_tapes: None,
+            ply: 1,
         }
     }
 
@@ -49,29 +60,10 @@ impl CassetteTapeBox {
         self.tapes.push(tape);
     }
 
-    /*
-    /// ◆ファイルを読み込んで、テープを詰め込みます。
-    pub fn add_tapes_from_file(
-        &mut self,
-        file_name: &str,
-        deck: &CassetteDeck,
-        slot: Slot,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        if app.is_debug() {
-            app.comm.println("[#CassetteTapeBox.Add tapes from file]");
-        }
-
-        let rpm_tape_box = RpmTapeBox::from_box_file(&file_name, &app);
-        rpm_tape_box.add_tapes_to_tape_box(&deck, slot, board_size, &app);
-    }
-    */
-
     pub fn get_file_name(&self) -> String {
         self.file_name.to_string()
     }
-    pub fn set_file_name(&mut self, file_name_without_extension: &str) {
+    pub fn set_file_name_without_extension(&mut self, file_name_without_extension: &str) {
         self.file_name = format!("{}.rtape", file_name_without_extension).to_string()
     }
 
@@ -119,7 +111,7 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn seek_to_next(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+    pub fn seek_to_next_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
         if let Some(ref awareness) = self.awareness_of_tapes {
             self.tapes[awareness.index].seek_to_next(&app)
         } else {
