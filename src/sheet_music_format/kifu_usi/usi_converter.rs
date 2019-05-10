@@ -42,8 +42,12 @@ impl UsiConverter {
     ) -> Vec<ShogiNoteOpe> {
         let mut rpm_move = Vec::new();
 
-        // change-phase
-        rpm_move.push(ShogiNoteOpe::change_phase(ply));
+        // ####################
+        // # (0) Change phase #
+        // ####################
+        {
+            rpm_move.push(ShogiNoteOpe::change_phase(ply));
+        }
 
         if umove.is_resign() {
             rpm_move.push(ShogiNoteOpe::resign());
@@ -62,72 +66,110 @@ impl UsiConverter {
 
         match umove.get_drop() {
             Some(drop) => {
-                // 駒を打つ動きの場合
+                // 1,4 は駒を打つ(drop)動きの場合
 
-                // hand-off
-                let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                    position.get_phase().get_state(),
-                    drop,
-                ));
-                rpm_move.push(hand_off);
+                // #################
+                // # (1d) Hand off #
+                // #################
+                {
+                    let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
+                        position.get_phase().get_state(),
+                        drop,
+                    ));
+                    rpm_move.push(hand_off);
+                }
 
-                // hand-on
-                let hand_on = ShogiNoteOpe::from_address(destination_address);
-                rpm_move.push(hand_on);
+                // ################
+                // # (4d) Hand on #
+                // ################
+                {
+                    let hand_on = ShogiNoteOpe::from_address(destination_address);
+                    rpm_move.push(hand_on);
+                }
             }
             None => {
                 // 駒を進める動きの場合
                 if let Some(id_piece) =
                     position.get_id_piece_by_address(destination_address.get_index())
                 {
-                    // 駒を取る動きが入る場合
+                    // 1～4は、駒を取る(capture)動き。
 
-                    // hand-off
-                    let hand_off = ShogiNoteOpe::from_address(destination_address);
-                    rpm_move.push(hand_off);
+                    // #################
+                    // # (1c) Hand off #
+                    // #################
+                    {
+                        let hand_off = ShogiNoteOpe::from_address(destination_address);
+                        rpm_move.push(hand_off);
+                    }
 
-                    // hand-rotate
-                    let hand_rotate = ShogiNoteOpe::rotate();
-                    rpm_move.push(hand_rotate);
-
-                    // hand-turn
+                    // #################
+                    // # (2) Hand turn #
+                    // #################
                     if id_piece.is_promoted() {
                         let hand_turn = ShogiNoteOpe::turn_over();
                         rpm_move.push(hand_turn);
                     }
 
-                    // hand-on
-                    let up = id_piece.get_type();
-                    let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                        position.get_phase().get_state(),
-                        up,
-                    ));
-                    rpm_move.push(hand_on);
+                    // ###################
+                    // # (3) Hand rotate #
+                    // ###################
+                    {
+                        let hand_rotate = ShogiNoteOpe::rotate();
+                        rpm_move.push(hand_rotate);
+                    }
+
+                    // ################
+                    // # (4c) Hand on #
+                    // ################
+                    {
+                        let up = id_piece.get_type();
+                        let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
+                            position.get_phase().get_state(),
+                            up,
+                        ));
+                        rpm_move.push(hand_on);
+                    }
                 }
 
-                // board-off
-                let board_off = ShogiNoteOpe::from_address(Address::from_cell(
-                    umove
-                        .source
-                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.source."))),
-                    position.get_board_size(),
-                ));
-                rpm_move.push(board_off);
+                // 5～7は、盤上の駒を進める動き。
 
-                // board-turn-over
+                // #################
+                // # (5) Board off #
+                // #################
+                {
+                    let board_off = ShogiNoteOpe::from_address(Address::from_cell(
+                        umove
+                            .source
+                            .unwrap_or_else(|| panic!(app.comm.panic("Fail. umove.source."))),
+                        position.get_board_size(),
+                    ));
+                    rpm_move.push(board_off);
+                }
+
+                // #######################
+                // # (6) Board turn over #
+                // #######################
                 if umove.promotion {
                     let board_turn = ShogiNoteOpe::turn_over();
                     rpm_move.push(board_turn);
                 }
 
-                // board-on
-                let board_on = ShogiNoteOpe::from_address(destination_address);
-                rpm_move.push(board_on);
+                // ################
+                // # (7) Board on #
+                // ################
+                {
+                    let board_on = ShogiNoteOpe::from_address(destination_address);
+                    rpm_move.push(board_on);
+                }
             }
         }
 
-        // change-phase
-        rpm_move.push(ShogiNoteOpe::change_phase(ply));
+        // ####################
+        // # (8) Change phase #
+        // ####################
+        {
+            rpm_move.push(ShogiNoteOpe::change_phase(ply));
+        }
 
         rpm_move
     }

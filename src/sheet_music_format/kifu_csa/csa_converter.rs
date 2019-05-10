@@ -66,7 +66,9 @@ impl CsaConverter {
 
         let board_size = position.get_board_size();
 
-        // change-phase
+        // ####################
+        // # (0) Change phase #
+        // ####################
         {
             let change_phase = ShogiNoteOpe::change_phase(ply);
 
@@ -102,9 +104,11 @@ impl CsaConverter {
         let destination_address = Address::from_cell(cmove.destination, position.get_board_size());
 
         if let Some(drop) = cmove.get_drop() {
-            // 駒を打つ動きの場合
+            // 1,4 は駒を打つ(drop)動きの場合
 
-            // hand-off
+            // #################
+            // # (1d) Hand off #
+            // #################
             {
                 let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
                     position.get_phase().get_state(),
@@ -118,7 +122,9 @@ impl CsaConverter {
                 */
             }
 
-            // hand-on
+            // ################
+            // # (4d) Hand on #
+            // ################
             {
                 let hand_on = ShogiNoteOpe::from_address(destination_address);
                 position.touch_1note_ope(deck, &hand_on, false, board_size, &app);
@@ -133,9 +139,11 @@ impl CsaConverter {
             if let Some(capture_id_piece) =
                 position.get_id_piece_by_address(destination_address.get_index())
             {
-                // 駒を取る動きが入る場合
+                // 1～4は、駒を取る(capture)動き。
 
-                // hand-off
+                // #################
+                // # (1c) Hand off #
+                // #################
                 {
                     let hand_off = ShogiNoteOpe::from_address(destination_address);
                     position.touch_1note_ope(deck, &hand_off, false, board_size, &app);
@@ -146,18 +154,9 @@ impl CsaConverter {
                     */
                 }
 
-                // hand-rotate
-                {
-                    let hand_rotate = ShogiNoteOpe::rotate();
-                    position.touch_1note_ope(deck, &hand_rotate, false, board_size, &app);
-                    /*
-                    if app.is_debug() {
-                        HumanInterface::bo(deck, &position, &app);
-                    }
-                    */
-                }
-
-                // hand-turn
+                // #################
+                // # (2) Hand turn #
+                // #################
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
                     position.touch_1note_ope(deck, &hand_turn, false, board_size, &app);
@@ -168,7 +167,22 @@ impl CsaConverter {
                     */
                 }
 
-                // hand-on
+                // ###################
+                // # (3) Hand rotate #
+                // ###################
+                {
+                    let hand_rotate = ShogiNoteOpe::rotate();
+                    position.touch_1note_ope(deck, &hand_rotate, false, board_size, &app);
+                    /*
+                    if app.is_debug() {
+                        HumanInterface::bo(deck, &position, &app);
+                    }
+                    */
+                }
+
+                // ################
+                // # (4c) Hand on #
+                // ################
                 {
                     let up = capture_id_piece.get_type();
                     let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
@@ -201,7 +215,11 @@ impl CsaConverter {
             }
             */
 
-            // board-off
+            // 5～7は、盤上の駒を進める動き。
+
+            // #################
+            // # (5) Board off #
+            // #################
             {
                 // 盤上の駒の番地。
                 let board_off = ShogiNoteOpe::from_address(Address::from_cell(
@@ -218,7 +236,9 @@ impl CsaConverter {
                 */
             }
 
-            // board-turn-over
+            // #######################
+            // # (6) Board turn over #
+            // #######################
             // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
             let pre_promoted = if let Some(id_piece) = position.get_id_piece(
                 cmove
@@ -240,7 +260,9 @@ impl CsaConverter {
                 */
             }
 
-            // board-on
+            // ################
+            // # (7) Board on #
+            // ################
             {
                 let board_on = ShogiNoteOpe::from_address(destination_address);
                 position.touch_1note_ope(deck, &board_on, false, board_size, &app);
@@ -261,7 +283,9 @@ impl CsaConverter {
         }
         */
 
-        // change-phase
+        // ####################
+        // # (8) Change phase #
+        // ####################
         {
             let change_phase = ShogiNoteOpe::change_phase(ply);
             /*

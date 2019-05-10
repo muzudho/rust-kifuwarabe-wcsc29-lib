@@ -185,10 +185,10 @@ impl ShogiMove {
         let mut subject_pid_opt;
         let mut subject_address_opt;
         let mut subject_promotion = false;
-        // 動作に巻き込まれる方。
-        let mut object_pid_opt = None;
-        let mut object_address_opt = None;
-        let mut _object_promotion = false;
+        // 動作に巻き込まれる（駒を取られる）方。
+        let mut captured_pid_opt = None;
+        let mut captured_address_opt = None;
+        let mut _captured_promotion = false;
         // 基本情報。
         let mut src_opt = None;
         let mut dst_opt = None;
@@ -201,6 +201,7 @@ impl ShogiMove {
                 .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
         }
 
+        // ノートを取る。
         let mut note = if let (_taken_overflow, _rmove, Some(note)) =
             deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
         {
@@ -234,11 +235,15 @@ impl ShogiMove {
                 }
 
                 // 駒台なら必ず自駒のドロップ。
+
+                // #################
+                // # (1d) Hand off #
+                // #################
                 subject_pid_opt = note.get_id();
                 subject_address_opt = Some(address);
                 drop_opt = Some(PieceType::from_piece(piece));
 
-                // 次は置くだけ。
+                // ノートを取る。
                 note = if let (_taken_overflow, _rmove, Some(note)) =
                     deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                 {
@@ -256,6 +261,9 @@ impl ShogiMove {
                     ));
                 }
 
+                // ################
+                // # (4d) Hand on #
+                // ################
                 if let Some(address) = note.get_ope().address {
                     dst_opt = Some(board_size.address_to_cell(address.get_index()));
                 } else {
@@ -270,6 +278,10 @@ impl ShogiMove {
             // 盤上
             } else {
                 // これが盤上の自駒か、相手の駒かは、まだ分からない。仮に入れておく。
+
+                // #################    #################
+                // # (1c) Hand off # or # (5) Board off #
+                // #################    #################
                 subject_pid_opt = note.get_id();
                 subject_address_opt = Some(address);
                 src_opt = Some(board_size.address_to_cell(address.get_index()));
@@ -277,7 +289,7 @@ impl ShogiMove {
                     app.comm.println("[Not HandPiece]");
                 }
 
-                // 次。
+                // ノートを取る。
                 note = if let (_taken_overflow, _rmove, Some(note)) =
                     deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                 {
@@ -295,6 +307,9 @@ impl ShogiMove {
                     ));
                 }
 
+                // #################    #######################
+                // # (2) Hand turn # or # (6) Board turn over #
+                // #################    #######################
                 if note.get_ope().fingertip_turn {
                     // +。駒を裏返した。自駒を成ったのか、取った成り駒を表返したのかは、まだ分からない。仮に成ったことにしておく。
                     subject_promotion = true;
@@ -318,17 +333,20 @@ impl ShogiMove {
                     }
                 }
 
+                // ###################
+                // # (3) Hand rotate #
+                // ###################
                 if note.get_ope().fingertip_rotate {
                     // -。向きを変えているようなら、相手の駒を取ったようだ。いろいろキャンセルする。
-                    object_pid_opt = subject_pid_opt;
-                    object_address_opt = subject_address_opt;
-                    _object_promotion = subject_promotion;
+                    captured_pid_opt = subject_pid_opt;
+                    captured_address_opt = subject_address_opt;
+                    _captured_promotion = subject_promotion;
                     subject_pid_opt = None;
                     subject_address_opt = None;
                     src_opt = None;
                     subject_promotion = false;
 
-                    // 次。
+                    // ノートを取る。
                     note = if let (_taken_overflow, _rmove, Some(note)) =
                         deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
                     {
@@ -346,9 +364,12 @@ impl ShogiMove {
                         ));
                     }
 
-                    // 自分の駒台に置く動き。
+                    // ################
+                    // # (4c) Hand on #
+                    // ################
+                    // 自分の駒台に置く動きは USI符号に書かれない。
                     if let Some(_address) = note.get_ope().address {
-                        // 次は、盤上の自駒を触る。
+                        // ノートを取る。
                         note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
                             [slot as usize]
                             .seek_to_next_with_othre_caret(&mut caret, &app)
@@ -367,11 +388,17 @@ impl ShogiMove {
                             ));
                         }
 
+                        // 5～7は、盤上の駒を進める動き。
+
+                        // #################
+                        // # (5) Board off #
+                        // #################
                         if let Some(address) = note.get_ope().address {
                             subject_pid_opt = note.get_id();
                             subject_address_opt = Some(address);
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
-                            // 次。
+
+                            // ノートを取る。
                             note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
                                 [slot as usize]
                                 .seek_to_next_with_othre_caret(&mut caret, &app)
@@ -380,6 +407,33 @@ impl ShogiMove {
                             } else {
                                 if app.is_debug() {
                                     app.comm.println("Note fail(7).");
+                                }
+                                return None;
+                            };
+                            if app.is_debug() {
+                                app.comm.println(&format!(
+                                    "[Note: {}]",
+                                    note.to_human_presentable(board_size, &app)
+                                ));
+                            }
+                        }
+
+                        // #######################
+                        // # (6) Board turn over #
+                        // #######################
+                        if note.get_ope().fingertip_turn {
+                            // +。盤上の自駒が成った。
+                            subject_promotion = true;
+
+                            // ノートを取る。
+                            note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
+                                [slot as usize]
+                                .seek_to_next_with_othre_caret(&mut caret, &app)
+                            {
+                                note
+                            } else {
+                                if app.is_debug() {
+                                    app.comm.println("Note fail(8).");
                                 }
                                 return None;
                             };
@@ -400,29 +454,9 @@ impl ShogiMove {
                     // 盤上の自駒を触ったのだと確定した。
                 }
 
-                if note.get_ope().fingertip_turn {
-                    // +。盤上の自駒が成った。
-                    subject_promotion = true;
-
-                    // 次。
-                    note = if let (_taken_overflow, _rmove, Some(note)) =
-                        deck.slots[slot as usize].seek_to_next_with_othre_caret(&mut caret, &app)
-                    {
-                        note
-                    } else {
-                        if app.is_debug() {
-                            app.comm.println("Note fail(8).");
-                        }
-                        return None;
-                    };
-                    if app.is_debug() {
-                        app.comm.println(&format!(
-                            "[Note: {}]",
-                            note.to_human_presentable(board_size, &app)
-                        ));
-                    }
-                }
-
+                // ################
+                // # (7) Board on #
+                // ################
                 if let Some(address) = note.get_ope().address {
                     // 行き先に盤上の自駒を進めた。
                     dst_opt = Some(board_size.address_to_cell(address.get_index()));
@@ -484,8 +518,8 @@ impl ShogiMove {
                 subject_pid: subject_idp,
                 subject_addr: subject_address_opt
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. subject_address_opt."))),
-                capture_pid: object_pid_opt,
-                capture_addr: object_address_opt,
+                capture_pid: captured_pid_opt,
+                capture_addr: captured_address_opt,
             })
         } else {
             panic!("Unexpected rpm move. id fail.")

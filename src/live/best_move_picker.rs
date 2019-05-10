@@ -377,7 +377,7 @@ impl BestMovePicker {
                                 // 今探している駒の指し手のような感じはするみたいだな☆（＾～＾）
                                 if app.is_debug() {
                                     app.comm.println(&format!(
-                                    "\n----------------------------------------[Hit note! sought_move_result: {:?}, Move {} --> Best move: {}. Caret: {}]",
+                                    "\n----------------------------------------[#Hit note! sought_move_result: {:?}, Move {} --> Best move: {}. Caret: {}]",
                                     sought_move_result,
                                     rmove.to_human_presentable(
                                         deck,
@@ -391,11 +391,12 @@ impl BestMovePicker {
                                 ));
                                 }
 
+                                // 手筋の１手に追加☆（＾～＾）
                                 self.best_thread_buffer.push_move(best_move);
-                                // TODO 手筋のループは続行だぜ☆（＾～＾）
 
-                                // TODO といいたいところだが１手の手筋にする☆（＾～＾）抜ける☆（＾～＾）
-                                break 'sequence_thread;
+                                // TODO 手筋の次の手を探したいが、ループがおかしいので抜けるぜ☆（＾～＾）
+                                self.change_thread(*subject_piece_id, &app);
+                                continue 'sequence_thread;
                             } // Sequence thread.
 
                             // スレッドを差し替えろだぜ☆（＾～＾）

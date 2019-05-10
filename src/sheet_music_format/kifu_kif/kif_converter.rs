@@ -43,8 +43,12 @@ impl KifConverter {
     ) -> Vec<ShogiNoteOpe> {
         let mut rmoves = Vec::new();
 
-        // change-phase
-        rmoves.push(ShogiNoteOpe::change_phase(ply));
+        // ####################
+        // # (0) Change phase #
+        // ####################
+        {
+            rmoves.push(ShogiNoteOpe::change_phase(ply));
+        }
 
         let destination_address = Address::from_cell(
             kmove
@@ -54,88 +58,129 @@ impl KifConverter {
         );
 
         if kmove.is_drop {
-            // 駒を打つ動きの場合
-            let piece_type = jsa_piece_type_to_perfect(kmove.piece);
-            let piece = Piece::from_ph_pt(
-                position.get_phase().get_state(),
-                piece_type.unwrap_or_else(|| panic!(app.comm.panic("Fail. piece_type."))),
-            );
-            let drop = position.peek_hand(piece);
+            // 1,4 は駒を打つ(drop)動きの場合
 
-            // hand-off
-            let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                position.get_phase().get_state(),
-                drop.unwrap_or_else(|| panic!(app.comm.panic("Fail. drop.")))
-                    .get_type(),
-            ));
-            rmoves.push(hand_off);
+            // #################
+            // # (1d) Hand off #
+            // #################
+            {
+                let piece_type = jsa_piece_type_to_perfect(kmove.piece);
+                let piece = Piece::from_ph_pt(
+                    position.get_phase().get_state(),
+                    piece_type.unwrap_or_else(|| panic!(app.comm.panic("Fail. piece_type."))),
+                );
+                let drop = position.peek_hand(piece);
 
-            // hand-on
-            let hand_on = ShogiNoteOpe::from_address(destination_address);
-            rmoves.push(hand_on);
+                let hand_off = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
+                    position.get_phase().get_state(),
+                    drop.unwrap_or_else(|| panic!(app.comm.panic("Fail. drop.")))
+                        .get_type(),
+                ));
+                rmoves.push(hand_off);
+            }
+
+            // ################
+            // # (4d) Hand on #
+            // ################
+            {
+                let hand_on = ShogiNoteOpe::from_address(destination_address);
+                rmoves.push(hand_on);
+            }
         } else {
             // 駒を進める動きの場合
             if let Some(capture_id_piece) =
                 position.get_id_piece_by_address(destination_address.get_index())
             {
-                // 駒を取る動きが入る場合
+                // 1～4は、駒を取る(capture)動き。
 
-                // hand-off
-                let hand_off = ShogiNoteOpe::from_address(destination_address);
-                rmoves.push(hand_off);
+                // #################
+                // # (1c) Hand off #
+                // #################
+                {
+                    let hand_off = ShogiNoteOpe::from_address(destination_address);
+                    rmoves.push(hand_off);
+                }
 
-                // hand-rotate
-                let hand_rotate = ShogiNoteOpe::rotate();
-                rmoves.push(hand_rotate);
-
-                // hand-turn
+                // #################
+                // # (2) Hand turn #
+                // #################
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
                     rmoves.push(hand_turn);
                 }
 
-                // hand-on
-                let up = capture_id_piece.get_type();
-                let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
-                    position.get_phase().get_state(),
-                    up,
+                // ###################
+                // # (3) Hand rotate #
+                // ###################
+                {
+                    let hand_rotate = ShogiNoteOpe::rotate();
+                    rmoves.push(hand_rotate);
+                }
+
+                // ################
+                // # (4c) Hand on #
+                // ################
+                {
+                    let up = capture_id_piece.get_type();
+                    let hand_on = ShogiNoteOpe::from_address(Address::from_hand_ph_pt(
+                        position.get_phase().get_state(),
+                        up,
+                    ));
+                    rmoves.push(hand_on);
+                }
+            }
+
+            // 5～7は、盤上の駒を進める動き。
+
+            // #################
+            // # (5) Board off #
+            // #################
+            {
+                let board_off = ShogiNoteOpe::from_address(Address::from_cell(
+                    kmove
+                        .source
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. kmove.source."))),
+                    position.get_board_size(),
                 ));
-                rmoves.push(hand_on);
+                rmoves.push(board_off);
             }
 
-            // board-off
-            let board_off = ShogiNoteOpe::from_address(Address::from_cell(
-                kmove
-                    .source
-                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. kmove.source."))),
-                position.get_board_size(),
-            ));
-            rmoves.push(board_off);
+            // #######################
+            // # (6) Board turn over #
+            // #######################
+            {
+                // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
+                if let Some(id_piece) = position.get_id_piece(
+                    kmove
+                        .source
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. position.get_id_piece."))),
+                ) {
+                    id_piece.is_promoted()
+                } else {
+                    false
+                };
 
-            // board-turn-over
-            // 盤上にある駒が不成で、指し手の駒種類が成り駒なら、今、成った。
-            if let Some(id_piece) = position.get_id_piece(
-                kmove
-                    .source
-                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. position.get_id_piece."))),
-            ) {
-                id_piece.is_promoted()
-            } else {
-                false
-            };
-
-            if kmove.is_promote {
-                let board_turn = ShogiNoteOpe::turn_over();
-                rmoves.push(board_turn);
+                if kmove.is_promote {
+                    let board_turn = ShogiNoteOpe::turn_over();
+                    rmoves.push(board_turn);
+                }
             }
 
-            // board-on
-            let board_on = ShogiNoteOpe::from_address(destination_address);
-            rmoves.push(board_on);
+            // ################
+            // # (7) Board on #
+            // ################
+            {
+                let board_on = ShogiNoteOpe::from_address(destination_address);
+                rmoves.push(board_on);
+            }
         };
 
-        // change-phase
-        rmoves.push(ShogiNoteOpe::change_phase(ply));
+        // ####################
+        // # (8) Change phase #
+        // ####################
+        {
+            rmoves.push(ShogiNoteOpe::change_phase(ply));
+        }
 
         rmoves
     }
