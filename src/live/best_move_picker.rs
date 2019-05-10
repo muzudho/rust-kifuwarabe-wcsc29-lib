@@ -91,9 +91,6 @@ impl BestMovePicker {
         deck: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
-        // 状態を初期位置に設定します。
-        self.init_state();
-
         if app.is_debug() {
             // RPMを検索。
             println!(
@@ -102,7 +99,13 @@ impl BestMovePicker {
             );
         }
 
-        // TODO とりあえず rbox.json ファイルを１個読む。
+        // 状態を初期位置に設定します。
+        self.init_state();
+
+        // 現局面を文字列として持っておく。
+        let cur_pos_text = position.to_text();
+
+        // とりあえず rbox.json ファイルを１個読む。
         'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
         {
@@ -135,23 +138,23 @@ impl BestMovePicker {
                 HumanInterface::show_position(&comm, -1, &position);
                 // 先手玉の番地。
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::First), K00) {
+                    if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::First), K00) {
                         comm.println(&format!("info First-K00: {}.", addr_obj.get_index()));
                     }
                 }
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::First), K01) {
+                    if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::First), K01) {
                         comm.println(&format!("info First-K01: {}.", addr_obj.get_index()));
                     }
                 }
                 // 後手玉の番地。
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::Second), K00) {
+                    if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::Second), K00) {
                         comm.println(&format!("info Second-K00: {}.", addr_obj.get_index()));
                     }
                 }
                 {
-                    if let Some((_idp,addr_obj)) = position.scan_wild(Some(HalfPlayerPhase::Second), K01) {
+                    if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::Second), K01) {
                         comm.println(&format!("info Second-K01: {}.", addr_obj.get_index()));
                     }
                 }
@@ -177,6 +180,15 @@ impl BestMovePicker {
                         app.comm.println("デバッグ中☆（＾～＾）テープを中断。");
                     }
                     continue;
+                }
+
+                // 現局面に戻っているかテスト☆（＾～＾）
+                if position.to_text() != cur_pos_text {
+                    app.comm.println("[#Expected position]");
+                    app.comm.println(&cur_pos_text);
+                    app.comm.println("[#Actual position]");
+                    app.comm.println(&position.to_text());
+                    panic!("初期局面に戻せていないぜ☆（＾～＾）！");
                 }
 
                 if app.is_debug() {
@@ -211,10 +223,9 @@ impl BestMovePicker {
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
-                        position.scan_wild(position.get_phase().get_state(), *subject_piece_id)
+                        position.scan_pid(position.get_phase().get_state(), *subject_piece_id)
                     {
                         if app.is_debug() {
-                            // Display.
                             app.comm.println(&format!(
                                 "[{}] Recording thread by piece: {}'{}'{}.",
                                 deck.get_ply(Slot::Training),
@@ -411,7 +422,15 @@ impl BestMovePicker {
                         if app.is_debug() {
                             app.comm.println("Backed.");
                         }
-                    } // if
+                    } else {
+                        if app.is_debug() {
+                            app.comm.println(&format!(
+                                "[#パターン・マッチ失敗, Phase:{:?}, Pid:{}]",
+                                position.get_phase().get_state(),
+                                subject_piece_id.to_human_presentable()
+                            ));
+                        }
+                    }
                 } // ピースの for
 
                 // いくつか読み取れれば打ち止め。

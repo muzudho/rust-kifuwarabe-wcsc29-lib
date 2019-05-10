@@ -828,7 +828,7 @@ impl Position {
     /// # Returns
     ///
     /// 識別駒、番地。
-    pub fn scan_wild(
+    pub fn scan_pid(
         &self,
         phase_value: HalfPlayerPhaseValue,
         pid: PieceIdentify,

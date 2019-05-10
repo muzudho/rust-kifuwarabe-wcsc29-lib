@@ -49,14 +49,8 @@ impl CassetteTapeBox {
         }
     }
 
-    /// ◆新品のテープを追加するぜ☆（＾～＾）
-    pub fn add_brandnew_tape(&mut self, app: &Application) {
-        let brandnew = CassetteTape::new_facing_right(&app);
-        self.tapes.push(brandnew);
-    }
-
-    /// ◆作ったテープを追加するぜ☆（＾～＾）
-    pub fn add_exists_tape(&mut self, tape: CassetteTape, _app: &Application) {
+    /// ◆テープを追加するぜ☆（＾～＾）
+    pub fn add_tape(&mut self, tape: CassetteTape, _app: &Application) {
         self.tapes.push(tape);
     }
 

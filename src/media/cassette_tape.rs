@@ -52,6 +52,9 @@ pub struct CassetteTape {
     pub tracks: IntegerNoteVec,
 }
 impl CassetteTape {
+    // ###############
+    // # Constructor #
+    // ###############
     pub fn new_facing_right(app: &Application) -> Self {
         CassetteTape {
             fragment_file_name: CassetteTape::create_tape_fragment_file_full_name(
@@ -70,20 +73,23 @@ impl CassetteTape {
         }
     }
 
-    pub fn new_facing_right_with_file(new_file_for_write: String) -> Self {
-        CassetteTape {
-            fragment_file_name: new_file_for_write,
-            caret: Caret::new_facing_right_caret(),
-            label: CassetteTapeLabel {
-                date: "".to_string(),
-                event: "".to_string(),
-                player1: "".to_string(),
-                player2: "".to_string(),
-                source_file: "".to_string(),
-            },
-            tracks: IntegerNoteVec::default(),
-        }
+    // #####
+    // # A #
+    // #####
+
+    /// 連結。
+    pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
+        self.tracks
+            .append_tape_to_right(&mut cassette_tape_to_empty.tracks);
     }
+    pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
+        self.tracks
+            .append_tape_to_left(&mut cassette_tape_to_empty.tracks);
+    }
+
+    // #####
+    // # C #
+    // #####
 
     /// ラベルを除くクリアー。
     pub fn clear_tape_body(&mut self, _app: &Application) {
@@ -110,10 +116,9 @@ impl CassetteTape {
             .to_string()
     }
 
-    /// キャレットが左を向いているか☆（＾～＾）
-    pub fn is_facing_left_of_caret(&self) -> bool {
-        self.caret.is_facing_left()
-    }
+    // #####
+    // # G #
+    // #####
 
     /// 範囲はキャレット番地で示す☆（＾～＾）
     /// ０に背を向けた２つのキャレットがあると仮定し、両端はピークを指すキャレット☆（＾～＾）
@@ -132,6 +137,15 @@ impl CassetteTape {
 
     pub fn get_positive_peak_caret_facing_outward(&self) -> i16 {
         self.tracks.get_positive_peak_caret_facing_outward()
+    }
+
+    // #####
+    // # I #
+    // #####
+
+    /// キャレットが左を向いているか☆（＾～＾）
+    pub fn is_facing_left_of_caret(&self) -> bool {
+        self.caret.is_facing_left()
     }
 
     // キャレットがピークを指しているか☆（＾～＾）
@@ -181,14 +195,12 @@ impl CassetteTape {
         }
     }
 
-    /// 連結。
-    pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
-        self.tracks
-            .append_tape_to_right(&mut cassette_tape_to_empty.tracks);
-    }
-    pub fn append_cassette_tape_to_left(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
-        self.tracks
-            .append_tape_to_left(&mut cassette_tape_to_empty.tracks);
+    // #####
+    // # S #
+    // #####
+
+    pub fn set_file_full_name_without_extension(&mut self, file_name_without_extension: &str) {
+        self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
     /// フェーズ・チェンジか、エンド・オブ・テープを拾うまで進める☆（＾～＾）
@@ -224,6 +236,10 @@ impl CassetteTape {
         self.tracks.seek_to_next(caret, &app)
     }
 
+    // #####
+    // # T #
+    // #####
+
     /// コマンドライン入力形式の棋譜。
     ///
     /// # Returns
@@ -232,6 +248,27 @@ impl CassetteTape {
     pub fn to_sign(&self, board_size: BoardSize) -> (String, String) {
         self.tracks.to_sign(board_size)
     }
+
+    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTape {
+        RpmTape {
+            label: self.label.to_rpm(),
+            tracks: self.tracks.to_rpm_tracks(board_size),
+        }
+    }
+
+    /// Human presentable large log.
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
+        format!(
+            "[Tape: {} {}]",
+            self.caret.to_human_presentable(&app),
+            self.tracks.to_human_presentable(board_size, &app)
+        )
+        .to_string()
+    }
+
+    // #####
+    // # W #
+    // #####
 
     /// このテープを、テープ・フラグメント書式で書きだすぜ☆（＾～＾）
     pub fn write_tape_fragment(&self, board_size: BoardSize, app: &Application) {
@@ -267,22 +304,5 @@ impl CassetteTape {
         }
 
         // comm.println("#Sheet saved.");
-    }
-
-    pub fn to_rpm(&self, board_size: BoardSize) -> RpmTape {
-        RpmTape {
-            label: self.label.to_rpm(),
-            tracks: self.tracks.to_rpm_tracks(board_size),
-        }
-    }
-
-    /// Human presentable large log.
-    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
-        format!(
-            "[Tape: {} {}]",
-            self.caret.to_human_presentable(&app),
-            self.tracks.to_human_presentable(board_size, &app)
-        )
-        .to_string()
     }
 }

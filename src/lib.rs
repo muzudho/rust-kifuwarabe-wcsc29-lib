@@ -261,6 +261,12 @@ pub fn main_loop() {
             break;
 
         // #####
+        // # S #
+        // #####
+        } else if line.starts_with("scan-pid") {
+            LibSub::scan_pid(&line, &mut position, &app);
+
+        // #####
         // # U #
         // #####
         } else if line == "usi" {

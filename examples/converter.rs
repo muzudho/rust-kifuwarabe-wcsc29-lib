@@ -4,6 +4,7 @@ extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
+use kifuwarabe_wcsc29_lib::media::cassette_tape::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_converter::CsaConverter;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_tape::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::KifConverter;
@@ -70,7 +71,10 @@ fn main() {
     let mut position = Position::new_honshogi_origin(&app);
 
     // Deck.
-    let mut deck = CassetteDeck::new_for_tape_conversion(&tape_file_name_without_extension, &app);
+    let mut deck = CassetteDeck::new_empty(&app);
+    let mut tape = CassetteTape::new_facing_right(&app);
+    tape.set_file_full_name_without_extension(&tape_file_name_without_extension);
+    deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
 
     if !in_file.is_empty() {
         // 棋譜解析。

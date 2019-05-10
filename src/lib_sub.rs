@@ -1,9 +1,11 @@
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::half_player_phase::*;
+use instrument::piece_etc::*;
 use instrument::position::*;
 use live::best_move_picker::*;
 use media::cassette_tape::*;
+use regex::Regex;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
@@ -182,18 +184,45 @@ impl LibSub {
         }
     }
 
+    pub fn scan_pid(line: &str, position: &mut Position, app: &Application) {
+        let re = Regex::new(r"scan-pid\s+(\d+)")
+            .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+        let matched = re
+            .captures(line)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. parse.")));
+        let pnum_str = matched.get(1).map_or("", |m| m.as_str());
+        let pnum: i8 = pnum_str.parse().unwrap();
+
+        if let Some((idp, addr)) = position.scan_pid(
+            position.get_phase().get_state(),
+            if let Some(pid) = PieceIdentify::from_number(pnum) {
+                pid
+            } else {
+                app.comm
+                    .println(&format!("[#Scan pid fail: Pnum: {}]", pnum));
+                return;
+            },
+        ) {
+            app.comm.println(&format!(
+                "[#Scan pid: Found pnum:{}, Idp:{}, Addr:{}]",
+                pnum,
+                idp.to_human_presentable(),
+                addr.to_human_presentable(position.get_board_size())
+            ));
+        } else {
+            app.comm
+                .println(&format!("[#Scan pid: Not found pnum: {}]", pnum));
+        }
+    }
+
     pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
         {
             let learning_file_name_without_extension =
                 &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app);
-            deck.add_tape_to_tape_box(
-                Slot::Learning,
-                CassetteTape::new_facing_right_with_file(
-                    format!("{}.tapesfrag", learning_file_name_without_extension).to_string(),
-                ),
-                &app,
-            );
+            let mut tape = CassetteTape::new_facing_right(&app);
+            tape.set_file_full_name_without_extension(&learning_file_name_without_extension);
+            deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
             deck.seek_of_next_tape(Slot::Learning, &app);
         }
     }
