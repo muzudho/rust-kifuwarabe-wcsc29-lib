@@ -43,63 +43,69 @@ pub struct HalfPlayerPhaseObject {
     state: HalfPlayerPhaseValue,
 }
 impl HalfPlayerPhaseObject {
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn new_empty(app: &Application) -> Self {
         if app.is_debug() {
             app.comm.println("[#phase.new]");
         }
 
-        HalfPlayerPhaseObject {
+        Self {
             state: HalfPlayerPhaseValue::ZeroPointFive,
         }
     }
 
     pub fn from_value(init_value: HalfPlayerPhaseValue) -> Self {
-        HalfPlayerPhaseObject { state: init_value }
+        Self { state: init_value }
     }
 
-    pub fn repeat_phase(&mut self, app: &Application) {
-        if app.is_debug() {
-            app.comm.println("[#phase.repeat_phase]");
-        }
-        self.state = HalfPlayerPhaseValue::ZeroPointFive;
+    // #####
+    // # B #
+    // #####
+
+    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
+    pub fn back_walk_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
+        self.look_back_for_position(deck, &app);
+        self.seek_a_player_for_position(&deck, &app);
+        self.look_back_for_position(deck, &app);
     }
+
+    // #####
+    // # G #
+    // #####
 
     pub fn get_state(self) -> HalfPlayerPhaseValue {
         self.state
     }
+
+    // #####
+    // # I #
+    // #####
 
     pub fn is_half(self) -> bool {
         self.state == HalfPlayerPhaseValue::ZeroPointFive
             || self.state == HalfPlayerPhaseValue::OnePointFive
     }
 
-    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
-    pub fn go_next_phase_for_position(&mut self, deck: &CassetteDeck) {
-        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-        if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
-            self.state = match self.state {
-                ZeroPointFive => Second,
-                First => ZeroPointFive,
-                OnePointFive => First,
-                Second => OnePointFive,
-            };
-        } else {
-            self.state = match self.state {
-                ZeroPointFive => First,
-                First => OnePointFive,
-                OnePointFive => Second,
-                Second => ZeroPointFive,
-            };
-        }
-    }
-    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
-    pub fn back_phase_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        self.look_back_phase_for_position(deck, &app);
-        self.go_next_phase_for_position(&deck);
-        self.look_back_phase_for_position(deck, &app);
-    }
-    pub fn look_back_phase_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
+    // #####
+    // # L #
+    // #####
+
+    pub fn look_back_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
         deck.slots[Slot::Learning as usize].look_back_caret(&app);
+    }
+
+    // #####
+    // # R #
+    // #####
+
+    pub fn repeat_phase(&mut self, app: &Application) {
+        if app.is_debug() {
+            app.comm.println("[#phase.repeat_phase]");
+        }
+        self.state = HalfPlayerPhaseValue::ZeroPointFive;
     }
 
     /// 点対称に回転☆（＾ｑ＾）！
@@ -115,5 +121,39 @@ impl HalfPlayerPhaseObject {
             OnePointFive => ZeroPointFive,
             Second => First,
         };
+    }
+
+    // #####
+    // # S #
+    // #####
+
+    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
+    pub fn seek_a_player_for_position(&mut self, deck: &CassetteDeck, app: &Application) {
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#HalfPlayerPhase: フェーズチェンジ {:?}, Caret:{}]",
+                self.get_state(),
+                deck.to_human_presentable_of_caret(Slot::Learning, &app)
+            ));
+        }
+
+        use instrument::half_player_phase::HalfPlayerPhaseValue::*;
+        if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
+            // 左向きのとき。
+            self.state = match self.state {
+                ZeroPointFive => Second,
+                First => ZeroPointFive,
+                OnePointFive => First,
+                Second => OnePointFive,
+            };
+        } else {
+            // 右向きのとき。
+            self.state = match self.state {
+                ZeroPointFive => First,
+                First => OnePointFive,
+                OnePointFive => Second,
+                Second => ZeroPointFive,
+            };
+        }
     }
 }

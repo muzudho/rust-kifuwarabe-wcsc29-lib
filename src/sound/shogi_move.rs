@@ -148,9 +148,11 @@ impl ShogiMove {
         board_size: BoardSize,
         app: &Application,
     ) -> Option<BestMove> {
+        /*
         if app.is_debug() {
             app.comm.println("[#To best move: Begin]");
         }
+        */
         // 動作の主体。
         let mut subject_pid_opt;
         let mut subject_address_opt;
@@ -166,10 +168,12 @@ impl ShogiMove {
 
         let mut caret =
             Caret::new_facing_right_caret_with_number(self.caret_closed_interval.get_start());
+        /*
         if app.is_debug() {
             app.comm
                 .println(&format!("[Caret: {}]", caret.to_human_presentable(&app)));
         }
+        */
 
         // ノートを取る。
         let mut note = if let (_taken_overflow, _awareness, Some(note)) =
@@ -182,12 +186,14 @@ impl ShogiMove {
             }
             return None;
         };
+        /*
         if app.is_debug() {
             app.comm.println(&format!(
-                "[#Note: {}]",
+                "[#Move.Note: {}]",
                 note.to_human_presentable(board_size, &app)
             ));
         }
+        */
 
         // ####################
         // # (0) Change phase #
@@ -204,32 +210,40 @@ impl ShogiMove {
         {
             note
         } else {
+            /*
             if app.is_debug() {
                 app.comm.println("Note fail(1b).");
             }
+            */
             return None;
         };
+        /*
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#Note: {}]",
                 note.to_human_presentable(board_size, &app)
             ));
         }
+        */
 
         // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
         if let Some(address) = note.get_ope().address {
+            /*
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#Address: {}]",
                     address.to_human_presentable(board_size)
                 ));
             }
+            */
 
             if let Some(piece) = address.get_hand_piece() {
+                /*
                 if app.is_debug() {
                     app.comm
                         .println(&format!("[HandPiece: {}]", piece.to_human_presentable()));
                 }
+                */
 
                 // 駒台なら必ず自駒のドロップ。
 
@@ -246,17 +260,21 @@ impl ShogiMove {
                 {
                     note
                 } else {
+                    /*
                     if app.is_debug() {
                         app.comm.println("Note fail(2).");
                     }
+                    */
                     return None;
                 };
+                /*
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[Note: {}]",
                         note.to_human_presentable(board_size, &app)
                     ));
                 }
+                */
 
                 // ################
                 // # (4d) Hand on #
@@ -282,9 +300,11 @@ impl ShogiMove {
                 subject_pid_opt = note.get_id();
                 subject_address_opt = Some(address);
                 src_opt = Some(board_size.address_to_cell(address.get_index()));
+                /*
                 if app.is_debug() {
                     app.comm.println("[Not HandPiece]");
                 }
+                */
 
                 // ノートを取る。
                 note = if let (_taken_overflow, _awareness, Some(note)) =
@@ -292,17 +312,21 @@ impl ShogiMove {
                 {
                     note
                 } else {
+                    /*
                     if app.is_debug() {
                         app.comm.println("Note fail(3).");
                     }
+                    */
                     return None;
                 };
+                /*
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[Note: {}]",
                         note.to_human_presentable(board_size, &app)
                     ));
                 }
+                */
 
                 // #################    #######################
                 // # (2) Hand turn # or # (6) Board turn over #
@@ -317,17 +341,21 @@ impl ShogiMove {
                     {
                         note
                     } else {
+                        /*
                         if app.is_debug() {
                             app.comm.println("Note fail(4).");
                         }
+                        */
                         return None;
                     };
+                    /*
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[Note: {}]",
                             note.to_human_presentable(board_size, &app)
                         ));
                     }
+                    */
                 }
 
                 // ###################
@@ -349,17 +377,21 @@ impl ShogiMove {
                     {
                         note
                     } else {
+                        /*
                         if app.is_debug() {
                             app.comm.println("Note fail(5).");
                         }
+                        */
                         return None;
                     };
+                    /*
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[Note: {}]",
                             note.to_human_presentable(board_size, &app)
                         ));
                     }
+                    */
 
                     // ################
                     // # (4c) Hand on #
@@ -372,17 +404,21 @@ impl ShogiMove {
                         {
                             note
                         } else {
+                            /*
                             if app.is_debug() {
                                 app.comm.println("Note fail(6).");
                             }
+                            */
                             return None;
                         };
+                        /*
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[Note: {}]",
                                 note.to_human_presentable(board_size, &app)
                             ));
                         }
+                        */
 
                         // 5～7は、盤上の駒を進める動き。
 
@@ -401,17 +437,21 @@ impl ShogiMove {
                             {
                                 note
                             } else {
+                                /*
                                 if app.is_debug() {
                                     app.comm.println("Note fail(7).");
                                 }
+                                */
                                 return None;
                             };
+                            /*
                             if app.is_debug() {
                                 app.comm.println(&format!(
                                     "[Note: {}]",
                                     note.to_human_presentable(board_size, &app)
                                 ));
                             }
+                            */
                         }
 
                         // #######################
@@ -428,17 +468,21 @@ impl ShogiMove {
                             {
                                 note
                             } else {
+                                /*
                                 if app.is_debug() {
                                     app.comm.println("Note fail(8).");
                                 }
+                                */
                                 return None;
                             };
+                            /*
                             if app.is_debug() {
                                 app.comm.println(&format!(
                                     "[Note: {}]",
                                     note.to_human_presentable(board_size, &app)
                                 ));
                             }
+                            */
                         }
                     } else {
                         panic!(
@@ -463,17 +507,21 @@ impl ShogiMove {
                     {
                         note
                     } else {
+                        /*
                         if app.is_debug() {
                             app.comm.println("Note fail(7b).");
                         }
+                        */
                         return None;
                     };
+                    /*
                     if app.is_debug() {
                         app.comm.println(&format!(
                             "[Note: {}]",
                             note.to_human_presentable(board_size, &app)
                         ));
                     }
+                    */
                 }
 
                 // ####################
@@ -531,9 +579,11 @@ impl ShogiMove {
 
         // USIの指し手が作れれば、 動作の主体 が分からないことはないはず。
         if let Some(subject_idp) = subject_pid_opt {
+            /*
             if app.is_debug() {
                 app.comm.println("[#To best move: End]");
             }
+            */
             Some(BestMove {
                 usi_move: umove,
                 subject_pid: subject_idp,

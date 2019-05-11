@@ -134,6 +134,8 @@ impl CassetteDeck {
     // # B #
     // #####
 
+    /// ポジションは動かさない☆（＾～＾）
+    ///
     /// # Returns
     ///
     /// (taken overflow, awareness, note)
@@ -143,13 +145,13 @@ impl CassetteDeck {
         app: &Application,
     ) -> (bool, Awareness, Option<ShogiNote>) {
         if app.is_debug() {
-            app.comm.println("[#Deck.Back note: 開始]");
+            app.comm.println("[#Deck.Back walk a note: 開始]");
         }
 
         let (taken_overflow, awareness, note) = self.slots[slot as usize].back_walk_a_note(&app);
 
         if app.is_debug() {
-            app.comm.println("[#Deck.Back note: 終了]");
+            app.comm.println("[#Deck.Back walk a note: 終了]");
         }
 
         (taken_overflow, awareness, note)
@@ -405,7 +407,7 @@ impl CassetteDeck {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#Deck.Seek a move, Caret:{}]",
-                    self.to_human_presentable_of_caret_of_current_tape(slot, &app)
+                    self.to_human_presentable_of_caret(slot, &app)
                 ))
             }
 
@@ -450,18 +452,22 @@ impl CassetteDeck {
                             break 'caret_loop;
                         }
                     } else {
-                        // タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）
+                        // タッチは未着手だったので、ポジションは動いてない☆（＾～＾）キャレットは戻すぜ☆（＾～＾）
+                        /*
                         if app.is_debug() {
                             app.comm.println(
-                                "[#タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）]",
+                                "[#Deck.Seek a move: タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）]",
                             );
                         }
+                        */
                         self.back_walk_a_note(slot, &app);
+                        /*
                         if app.is_debug() {
                             app.comm.println(
-                                "[#タッチは未着手だったので、キャレットは戻したぜ☆（＾～＾）]",
+                                "[#Deck.Seek a move: タッチは未着手だったので、キャレットは戻したぜ☆（＾～＾）]",
                             );
                         }
+                        */
 
                         // 未着手なタッチならループを抜けて、今回進めた分を全部逆戻りさせるループへ進むぜ☆（＾～＾）
                         // app.comm.println("[$Untouched. Back a caret]");
@@ -498,14 +504,17 @@ impl CassetteDeck {
             // キャレットを使って局面を戻す。
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#seek_a_move: 巻き戻そう☆（＾～＾） Rollback {} note! Move:{}]",
+                    "[#Deck.Seek a move: 巻き戻そう☆（＾～＾） Rollback {} note! Slot:{:?}, Move:{}]",
                     rmove.len(),
+                    slot,
                     rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
                 ));
             }
-            self.look_back_caret(slot, &app);
-            self.seek_n_notes_permissive(slot, rmove.len(), position, &app);
-            self.look_back_caret(slot, &app);
+            self.look_back_caret(Slot::Training, &app);
+            self.look_back_caret(Slot::Learning, &app);
+            self.synchronized_seek_and_touch_n_notes(rmove.len(), position, &app);
+            self.look_back_caret(Slot::Training, &app);
+            self.look_back_caret(Slot::Learning, &app);
 
             return (SoughtMoveResult::Dream, ShogiMove::new_facing_right_move());
         }
@@ -550,16 +559,6 @@ impl CassetteDeck {
         self.slots[slot as usize].skip_a_move(&app)
     }
 
-    /// キャレットは必ず１つ進みます。
-    /// 0 は、正の数とします。（マイナスゼロは無いです）
-    /// Noneを返したら、オーバーフローしています。
-    ///
-    /// だから、結果は３つ☆（＾～＾）
-    ///
-    /// （１）１ノート進んだ。ついでに拾ったノートを返す。
-    /// （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
-    /// （３）スロットにテープがささっていなかったので強制終了。
-    ///
     /// # Returns
     ///
     /// (taken overflow, awareness, note)
@@ -571,26 +570,105 @@ impl CassetteDeck {
         self.slots[slot as usize].seek_a_note(&app)
     }
 
-    /// 成立しないタッチをしてしまうことも、おおめに見ます。
-    pub fn seek_n_notes_permissive(
+    /// トレーニング・テープと、ラーニング・テープを同時に n ノート シークします。
+    /// また、盤面へのタッチも行います。
+    pub fn synchronized_seek_and_touch_n_notes(
         &mut self,
-        slot: Slot,
         repeat: usize,
         position: &mut Position,
         app: &Application,
     ) {
         if app.is_debug() {
-            app.comm.println("[#seek_n_notes_permissive 開始]");
+            app.comm
+                .println("[#synchronized_seek_and_touch_n_notes 開始]");
+        }
+
+        for _i in 0..repeat {
+            // トレーニング・テープをシークする☆（＾～＾）結果は要らない☆（＾～＾）
+            let (taken_overflow_t, awareness_t, note_opt_t) =
+                self.seek_a_note(Slot::Training, &app);
+            if let Some(_note) = note_opt_t {
+
+            } else {
+                if app.is_debug() {
+                    app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: トレーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
+                        taken_overflow_t,
+                        awareness_t),
+                    );
+                }
+            }
+
+            // ラーニング・テープをシークする☆（＾～＾）結果は、盤面を巻き戻すのに使う☆（＾～＾）
+            let (taken_overflow_l, awareness_l, note_opt_l) =
+                self.seek_a_note(Slot::Learning, &app);
+            if let Some(note) = note_opt_l {
+                /*
+                app.comm.println(&format!(
+                    "<Go-force:{}/{} {}>",
+                    i,
+                    repeat,
+                    rnote.to_human_presentable(position.get_board_size())
+                ));
+                */
+                if !position.try_beautiful_touch(&self, &note, &app) {
+                    /*
+                    app.comm.println(&format!(
+                        "Touch fail, permissive. Note: {}, Caret: {}.",
+                        rnote.to_human_presentable(position.get_board_size()),
+                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                    ));
+                    */
+                }
+            } else {
+                if app.is_debug() {
+                    app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: ラーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
+                        taken_overflow_l,
+                        awareness_l),
+                    );
+                }
+                // オーバーフローした☆（＾～＾）テープの終了だが、テープを終了したあとにバックすればもう１回終了するし☆（＾～＾）
+                // 気にせずループを続行しろだぜ☆（＾～＾）
+
+                /*
+                if i + 1 == repeat {
+                    // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
+                    break;
+                } else {
+                    panic!(
+                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {} notes.",
+                        self.to_human_presentable_of_caret_of_current_tape(slot, &app),
+                        i,
+                        repeat
+                    );
+                }
+                */
+            }
+        }
+
+        if app.is_debug() {
+            app.comm
+                .println("[#synchronized_seek_and_touch_n_notes 終了]");
+        }
+    }
+
+    /// ラーニング・テープを n ノート シークします。
+    /// また、タッチも行います。成立しないタッチをしてしまうことも、おおめに見ます。
+    pub fn seek_and_touch_learning_n_notes_permissive(
+        &mut self,
+        repeat: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm
+                .println("[#seek_and_touch_learning_n_notes_permissive 開始]");
         }
 
         for _i in 0..repeat {
             // キャレットは必ず進めろだぜ☆（＾～＾）
-            // 結果は３つ☆（＾～＾）
-            //
-            // （１）１ノート進んだ。ついでに拾ったノートを返す。
-            // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
-            // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_taken_overflow, _awareness, Some(rnote)) = self.seek_a_note(slot, &app) {
+            if let (_taken_overflow, _awareness, Some(rnote)) =
+                self.seek_a_note(Slot::Learning, &app)
+            {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(
@@ -630,7 +708,8 @@ impl CassetteDeck {
         }
 
         if app.is_debug() {
-            app.comm.println("[#seek_n_notes_permissive 終了]");
+            app.comm
+                .println("[#seek_and_touch_learning_n_notes_permissive 終了]");
         }
     }
 
@@ -645,12 +724,8 @@ impl CassetteDeck {
     ) -> String {
         self.slots[Slot::Training as usize].to_human_presentable_of_current_tape(board_size, &app)
     }
-    pub fn to_human_presentable_of_caret_of_current_tape(
-        &self,
-        slot: Slot,
-        app: &Application,
-    ) -> String {
-        self.slots[slot as usize].to_human_presentable_of_caret_of_current_tape(&app)
+    pub fn to_human_presentable_of_caret(&self, slot: Slot, app: &Application) -> String {
+        self.slots[slot as usize].to_human_presentable_of_caret(&app)
     }
     pub fn to_human_presentable_of_tape_box(&self, slot: Slot) -> String {
         self.slots[slot as usize].to_human_presentable()

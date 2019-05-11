@@ -63,14 +63,18 @@ pub struct Position {
     pub fingertip: Option<Fingertip>,
 }
 impl Position {
+    // ###############
+    // # Constructor #
+    // ###############
+
     /// 本将棋用に初期化します。駒を並べる前の局面です。
-    pub fn new_honshogi_origin(app: &Application) -> Position {
+    pub fn new_honshogi_origin(app: &Application) -> Self {
         if app.is_debug() {
             app.comm.println("[#Position.new_honshogi_origin]")
         }
 
         // このあと すぐリセットする。
-        let mut instance = Position {
+        let mut instance = Self {
             phase: HalfPlayerPhaseObject::new_empty(&app),
             board_size: BoardSize::create_hon_shogi(),
             board: [None; DEFAULT_BOARD_SIZE],
@@ -106,6 +110,131 @@ impl Position {
         instance.repeat_origin_position(&app);
         instance
     }
+
+    // #####
+    // # A #
+    // #####
+
+    pub fn add_hand(&mut self, id_piece_opt: Option<IdentifiedPiece>) {
+        if let Some(id_piece) = id_piece_opt {
+            let hand_index = hand_id_piece_to_hand_index(id_piece);
+            self.hands[hand_index].push(id_piece)
+        }
+    }
+
+    /// USI position 読込時に使う。使ってない駒を盤上に置く。
+    pub fn activate_piece(&mut self, piece_opt: Option<Piece>, cell: Cell, app: &Application) {
+        if let Some(piece) = piece_opt {
+            let disactivate_piece = piece.to_disactivate();
+            let hand_index_obj = HandIndex::from_piece(disactivate_piece);
+            let id_piece = self.hands[hand_index_obj.get_index()]
+                .pop()
+                .unwrap_or_else(|| panic!(app.comm.panic("Fail. activate_piece.")));
+
+            let destination = self.board_size.cell_to_address(cell);
+            self.board[destination] = Some(id_piece);
+        }
+    }
+
+    // #####
+    // # B #
+    // #####
+
+    pub fn back_walk_player_phase(&mut self, deck: &mut CassetteDeck, app: &Application) {
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Back phase(header): Phase:{}]",
+                self.phase.get_state().to_log()
+            ));
+        }
+        */
+        self.phase.back_walk_for_position(deck, &app);
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Back phase(trailer): Phase:{}]",
+                self.phase.get_state().to_log()
+            ));
+        }
+        */
+    }
+
+    // #####
+    // # G #
+    // #####
+
+    pub fn get_phase(&self) -> HalfPlayerPhaseObject {
+        self.phase
+    }
+
+    pub fn get_board_size(&self) -> BoardSize {
+        self.board_size
+    }
+
+    pub fn get_id_piece(&self, cell: Cell) -> Option<IdentifiedPiece> {
+        let address = self.board_size.cell_to_address(cell);
+        self.board[address]
+    }
+
+    pub fn get_id_piece_by_address(&self, address: usize) -> Option<IdentifiedPiece> {
+        self.board[address]
+    }
+
+    pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
+        if address.is_fingertip() {
+            // Fingertip升に表示するもの。
+            if let Some(prev) = self.get_fingertip_prev() {
+                // 持っている駒を表示。
+                CellDisplay::from_idp_prev(self.get_fingertip_idp(), prev)
+            } else {
+                CellDisplay::from_empty_fingertip()
+            }
+        } else {
+            CellDisplay::from_idp(self.board[address.get_index()])
+        }
+    }
+
+    pub fn get_hand_count(&self, piece: Piece) -> i8 {
+        let hand_index_obj = HandIndex::from_piece(piece);
+        self.hands[hand_index_obj.get_index()].len() as i8
+    }
+
+    /// 指先の何か。
+    pub fn get_fingertip_idp(&self) -> Option<IdentifiedPiece> {
+        if let Some(ref fingertip) = self.fingertip {
+            Some(fingertip.get_idp())
+        } else {
+            None
+        }
+    }
+
+    /// 指先の何かが元有った場所。
+    pub fn get_fingertip_prev(&self) -> Option<Address> {
+        if let Some(ref fingertip) = self.fingertip {
+            Some(fingertip.get_prev())
+        } else {
+            None
+        }
+    }
+
+    // #####
+    // # P #
+    // #####
+
+    pub fn peek_hand(&self, piece: Piece) -> Option<IdentifiedPiece> {
+        let hand_index_obj = HandIndex::from_piece(piece);
+        let stack = &self.hands[hand_index_obj.get_index()];
+        if stack.is_empty() {
+            None
+        } else {
+            Some(stack[stack.len() - 1])
+        }
+    }
+
+    // #####
+    // # R #
+    // #####
 
     /// 自分の駒を持ち駒として持っているところから始めます。
     pub fn repeat_origin_position(&mut self, app: &Application) {
@@ -355,36 +484,116 @@ impl Position {
         }
     }
 
-    pub fn get_phase(&self) -> HalfPlayerPhaseObject {
-        self.phase
+    /// TODO 識別子を消していいのか？
+    pub fn remove_id_piece(&mut self, cell: Cell) -> Option<IdentifiedPiece> {
+        let address = self.get_board_size().cell_to_address(cell);
+        let id_piece = self.board[address];
+        self.set_id_piece(cell, None);
+        id_piece
     }
 
-    pub fn get_board_size(&self) -> BoardSize {
-        self.board_size
+    pub fn remove_hand(&mut self, piece: Piece, app: &Application) -> IdentifiedPiece {
+        let hand_index_obj = HandIndex::from_piece(piece);
+        self.hands[hand_index_obj.get_index()]
+            .pop()
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. remove_hand.")))
     }
 
-    pub fn get_id_piece(&self, cell: Cell) -> Option<IdentifiedPiece> {
+    // #####
+    // # S #
+    // #####
+
+    pub fn seek_a_player(&mut self, deck: &CassetteDeck, app: &Application) {
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#フェーズチェンジ {:?}]",
+                self.phase.get_state()
+            ));
+        }
+        */
+        self.phase.seek_a_player_for_position(&deck, &app)
+    }
+
+    /// TODO 識別子を追加していいのか？
+    /// Obsolute. new --> add().
+    pub fn set_id_piece(&mut self, cell: Cell, id_piece: Option<IdentifiedPiece>) {
         let address = self.board_size.cell_to_address(cell);
-        self.board[address]
+        self.board[address] = id_piece;
     }
 
-    pub fn get_id_piece_by_address(&self, address: usize) -> Option<IdentifiedPiece> {
-        self.board[address]
-    }
+    pub fn search_hand(
+        &self,
+        phase_value: HalfPlayerPhaseValue,
+        pid: PieceIdentify,
+    ) -> Option<IdentifiedPiece> {
+        let pt = pid.get_piece_type();
+        let pi = Piece::from_ph_pt(phase_value, pt);
 
-    pub fn get_cell_display_by_address(&self, address: Address) -> CellDisplay {
-        if address.is_fingertip() {
-            // Fingertip升に表示するもの。
-            if let Some(prev) = self.get_fingertip_prev() {
-                // 持っている駒を表示。
-                CellDisplay::from_idp_prev(self.get_fingertip_idp(), prev)
-            } else {
-                CellDisplay::from_empty_fingertip()
+        let hand_index_obj = HandIndex::from_piece(pi);
+
+        for idp in &self.hands[hand_index_obj.get_index()] {
+            if idp.get_id() == pid {
+                return Some(*idp);
             }
+        }
+
+        None
+    }
+
+    /// 駒の検索。
+    ///
+    /// # Returns
+    ///
+    /// 識別駒、番地。
+    pub fn scan_pid(
+        &self,
+        phase_value: HalfPlayerPhaseValue,
+        pid: PieceIdentify,
+        //app: &Application,
+    ) -> Option<(IdentifiedPiece, Address)> {
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Scan pid: BOARD_START:{}, Len:{}]",
+                BOARD_START,
+                self.board_size.len()
+            ));
+        }
+        */
+
+        // 盤上のスキャン。
+        for addr in BOARD_START..self.board_size.len() {
+            // Id piece.
+            if let Some(idp) = self.board[addr] {
+                if idp.get_phase().get_state() == phase_value && idp.get_id() == pid {
+                    // 駒の先後と、背番号が一致したら。
+                    let addr_obj = Address::from_raw(addr);
+                    return Some((idp, addr_obj));
+                } /* else if app.is_debug() {
+                      app.comm.println(&format!(
+                          "[#Scan pid: NOT: PositionPhase:{:?}, PiecePhase:{:?}, Addr:{}, Idp:{}]",
+                          phase_value,
+                          idp.get_phase().get_state(),
+                          addr,
+                          idp.to_human_presentable()
+                      ));
+                  }*/
+            }
+        }
+
+        // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
+        if let Some(idp) = self.search_hand(phase_value, pid) {
+            let addr_obj = Address::from_hand_ph_pt(phase_value, idp.get_type());
+            Some((idp, addr_obj))
         } else {
-            CellDisplay::from_idp(self.board[address.get_index()])
+            None
         }
     }
+
+    // #####
+    // # T #
+    // #####
 
     /// 駒台の駒を、指へ☆（＾～＾）
     pub fn try_move_hand_to_fingertip(
@@ -418,120 +627,6 @@ impl Position {
                 ));
             }
             false
-        }
-    }
-
-    /// TODO 識別子を追加していいのか？
-    /// Obsolute. new --> add().
-    pub fn set_id_piece(&mut self, cell: Cell, id_piece: Option<IdentifiedPiece>) {
-        let address = self.board_size.cell_to_address(cell);
-        self.board[address] = id_piece;
-    }
-
-    /// TODO 識別子を消していいのか？
-    pub fn remove_id_piece(&mut self, cell: Cell) -> Option<IdentifiedPiece> {
-        let address = self.get_board_size().cell_to_address(cell);
-        let id_piece = self.board[address];
-        self.set_id_piece(cell, None);
-        id_piece
-    }
-
-    pub fn get_hand_count(&self, piece: Piece) -> i8 {
-        let hand_index_obj = HandIndex::from_piece(piece);
-        self.hands[hand_index_obj.get_index()].len() as i8
-    }
-
-    pub fn search_hand(
-        &self,
-        phase_value: HalfPlayerPhaseValue,
-        pid: PieceIdentify,
-    ) -> Option<IdentifiedPiece> {
-        let pt = pid.get_piece_type();
-        let pi = Piece::from_ph_pt(phase_value, pt);
-
-        let hand_index_obj = HandIndex::from_piece(pi);
-
-        for idp in &self.hands[hand_index_obj.get_index()] {
-            if idp.get_id() == pid {
-                return Some(*idp);
-            }
-        }
-
-        None
-    }
-
-    pub fn add_hand(&mut self, id_piece_opt: Option<IdentifiedPiece>) {
-        if let Some(id_piece) = id_piece_opt {
-            let hand_index = hand_id_piece_to_hand_index(id_piece);
-            self.hands[hand_index].push(id_piece)
-        }
-    }
-
-    pub fn remove_hand(&mut self, piece: Piece, app: &Application) -> IdentifiedPiece {
-        let hand_index_obj = HandIndex::from_piece(piece);
-        self.hands[hand_index_obj.get_index()]
-            .pop()
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. remove_hand.")))
-    }
-
-    pub fn peek_hand(&self, piece: Piece) -> Option<IdentifiedPiece> {
-        let hand_index_obj = HandIndex::from_piece(piece);
-        let stack = &self.hands[hand_index_obj.get_index()];
-        if stack.is_empty() {
-            None
-        } else {
-            Some(stack[stack.len() - 1])
-        }
-    }
-
-    /// USI position 読込時に使う。使ってない駒を盤上に置く。
-    pub fn activate_piece(&mut self, piece_opt: Option<Piece>, cell: Cell, app: &Application) {
-        if let Some(piece) = piece_opt {
-            let disactivate_piece = piece.to_disactivate();
-            let hand_index_obj = HandIndex::from_piece(disactivate_piece);
-            let id_piece = self.hands[hand_index_obj.get_index()]
-                .pop()
-                .unwrap_or_else(|| panic!(app.comm.panic("Fail. activate_piece.")));
-
-            let destination = self.board_size.cell_to_address(cell);
-            self.board[destination] = Some(id_piece);
-        }
-    }
-
-    /// 指先の何か。
-    pub fn get_fingertip_idp(&self) -> Option<IdentifiedPiece> {
-        if let Some(ref fingertip) = self.fingertip {
-            Some(fingertip.get_idp())
-        } else {
-            None
-        }
-    }
-
-    /// 指先の何かが元有った場所。
-    pub fn get_fingertip_prev(&self) -> Option<Address> {
-        if let Some(ref fingertip) = self.fingertip {
-            Some(fingertip.get_prev())
-        } else {
-            None
-        }
-    }
-
-    pub fn go_next_phase(&mut self, deck: &CassetteDeck) {
-        self.phase.go_next_phase_for_position(&deck)
-    }
-    pub fn back_phase(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Back phase(header): Phase:{}]",
-                self.phase.get_state().to_log()
-            ));
-        }
-        self.phase.back_phase_for_position(deck, &app);
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Back phase(trailer): Phase:{}]",
-                self.phase.get_state().to_log()
-            ));
         }
     }
 
@@ -640,11 +735,8 @@ impl Position {
         deck.put_1note(slot, rnote, app);
     }
 
-    /// go_1noteなんとかメソッドと一緒に使う。
-    ///
+    /// seek_a_note メソッドと一緒に使う。
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
-    /// Next も Back も違いはない。キャレットは使わない。
-    /// 動かせなかったなら、Noneを返す。
     ///
     /// # Returns
     ///
@@ -800,13 +892,7 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.go_next_phase(&deck);
-                    if app.is_debug() {
-                        app.comm.println(&format!(
-                            "[#フェーズチェンジ {:?}]",
-                            self.phase.get_state()
-                        ));
-                    }
+                    self.seek_a_player(&deck, &app);
                     // （完遂） phase change.
                     (true, None)
                 } else if let Some(ref mut fingertip) = self.fingertip {
@@ -833,56 +919,6 @@ impl Position {
                     (false, None)
                 }
             }
-        }
-    }
-
-    /// 駒の検索。
-    ///
-    /// # Returns
-    ///
-    /// 識別駒、番地。
-    pub fn scan_pid(
-        &self,
-        phase_value: HalfPlayerPhaseValue,
-        pid: PieceIdentify,
-        //app: &Application,
-    ) -> Option<(IdentifiedPiece, Address)> {
-        /*
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Scan pid: BOARD_START:{}, Len:{}]",
-                BOARD_START,
-                self.board_size.len()
-            ));
-        }
-        */
-
-        // 盤上のスキャン。
-        for addr in BOARD_START..self.board_size.len() {
-            // Id piece.
-            if let Some(idp) = self.board[addr] {
-                if idp.get_phase().get_state() == phase_value && idp.get_id() == pid {
-                    // 駒の先後と、背番号が一致したら。
-                    let addr_obj = Address::from_raw(addr);
-                    return Some((idp, addr_obj));
-                } /* else if app.is_debug() {
-                      app.comm.println(&format!(
-                          "[#Scan pid: NOT: PositionPhase:{:?}, PiecePhase:{:?}, Addr:{}, Idp:{}]",
-                          phase_value,
-                          idp.get_phase().get_state(),
-                          addr,
-                          idp.to_human_presentable()
-                      ));
-                  }*/
-            }
-        }
-
-        // TODO 駒台のスタックの先頭かどうか分からない。あとで直すことにして　とりあえず。
-        if let Some(idp) = self.search_hand(phase_value, pid) {
-            let addr_obj = Address::from_hand_ph_pt(phase_value, idp.get_type());
-            Some((idp, addr_obj))
-        } else {
-            None
         }
     }
 

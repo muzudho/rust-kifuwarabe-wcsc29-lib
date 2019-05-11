@@ -31,12 +31,19 @@ impl fmt::Display for ShogiNote {
     }
 }
 impl ShogiNote {
-    pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: ShogiNoteOpe) -> ShogiNote {
-        ShogiNote {
+    // ###############
+    // # Constructor #
+    // ###############
+    pub fn from_id_ope(pid: Option<PieceIdentify>, operation_note: ShogiNoteOpe) -> Self {
+        Self {
             identify: pid,
             operation: operation_note,
         }
     }
+
+    // #####
+    // # G #
+    // #####
 
     pub fn get_ope(&self) -> ShogiNoteOpe {
         self.operation
@@ -46,9 +53,17 @@ impl ShogiNote {
         self.identify
     }
 
+    // #####
+    // # I #
+    // #####
+
     pub fn is_phase_change(&self) -> bool {
         self.operation.is_phase_change()
     }
+
+    // #####
+    // # P #
+    // #####
 
     /// 次のノート１つ読取。操作と、駒番号を解析。レコードの終端なら None を返す。
     ///
@@ -99,7 +114,10 @@ impl ShogiNote {
         )
     }
 
-    /// For log.
+    // #####
+    // # T #
+    // #####
+
     pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         format!(
             "'{}'{}",
@@ -109,5 +127,19 @@ impl ShogiNote {
             },
             self.operation.to_human_presentable(board_size, &app)
         )
+    }
+
+    pub fn to_human_presentable_vec(
+        vec: Vec<ShogiNote>,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
+        let mut text = String::new();
+
+        for note in vec {
+            text = format!("{} {}", text, note.to_human_presentable(board_size, &app));
+        }
+
+        text
     }
 }

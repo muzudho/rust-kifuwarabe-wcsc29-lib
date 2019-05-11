@@ -107,6 +107,46 @@ impl Caret {
     }
 
     // #####
+    // # G #
+    // #####
+
+    /// キャレットのあるところから見て、０に近い方の隣の要素のインデックスを返します。
+    /// キャレットが　０　にあるときは　インデックスは　None 　になりますが、
+    /// 正、負　は　キャレットの向きに合わさります。
+    ///
+    /// # Returns
+    ///
+    /// (awareness)
+    pub fn get_peak(&self) -> Awareness {
+        if self.unconscious_number == 0 {
+            // キャレットが 0番地 にあるとき。
+
+            Awareness {
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
+                index: None,
+                negative: self.is_facing_left(),
+            }
+        } else if self.unconscious_number < 0 {
+            // キャレットが 負の方にあるとき。
+            Awareness {
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
+                index: Some((-self.unconscious_number - 1) as usize),
+                negative: true,
+            }
+        } else {
+            // キャレットが 正の方にあるとき。
+            Awareness {
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
+                index: Some((self.unconscious_number - 1) as usize),
+                negative: false,
+            }
+        }
+    }
+
+    // #####
     // # I #
     // #####
 
@@ -129,10 +169,12 @@ impl Caret {
     // #####
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
-    pub fn look_back(&mut self, app: &Application) {
+    pub fn look_back(&mut self, _app: &Application) {
+        /*
         if app.is_debug() {
             app.comm.println("[#LookBack]");
         }
+        */
 
         // 向きを変えるだけ。
         self.facing_left = !self.facing_left;
@@ -144,7 +186,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn seek_a_note(&mut self, app: &Application) -> Awareness {
+    pub fn seek_a_note(&mut self, _app: &Application) -> Awareness {
         let passed = self.unconscious_number;
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
@@ -161,17 +203,21 @@ impl Caret {
                 self.unconscious_number -= 1;
                 aware_index = self.unconscious_number as usize;
                 aware_negative = false;
-                if app.is_debug() {
-                    app.comm.println("[#Go to next: <-- 正のところを通った]")
-                }
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Seek a note: <-- 正のところを通った]")
+            }
+            */
             } else {
                 // 負のところを通る。
                 aware_index = (-self.unconscious_number - 1) as usize;
                 self.unconscious_number -= 1;
                 aware_negative = true;
+                /*
                 if app.is_debug() {
-                    app.comm.println("[#Go to next: <-- 負のところを通った]")
+                    app.comm.println("[#Seek a note: <-- 負のところを通った]")
                 }
+                */
             }
         } else {
             // 右向き。
@@ -184,17 +230,21 @@ impl Caret {
                 self.unconscious_number += 1;
                 aware_index = (-self.unconscious_number) as usize;
                 aware_negative = true;
-                if app.is_debug() {
-                    app.comm.println("[#Go to next: --> 負のところを通った]")
-                }
+            /*
+            if app.is_debug() {
+                app.comm.println("[#Seek a note: --> 負のところを通った]")
+            }
+            */
             } else {
                 // 正のところを通る。
                 aware_index = self.unconscious_number as usize;
                 self.unconscious_number += 1;
                 aware_negative = false;
+                /*
                 if app.is_debug() {
-                    app.comm.println("[#Go to next: --> 正のところを通った]")
+                    app.comm.println("[#Seek a note: --> 正のところを通った]")
                 }
+                */
             }
         }
 
@@ -238,42 +288,6 @@ impl Caret {
 
             // 向きを変えるだけ。
             self.facing_left = false;
-        }
-    }
-
-    /// キャレットのあるところから見て、０に近い方の隣の要素のインデックスを返します。
-    /// キャレットが　０　にあるときは　インデックスは　None 　になりますが、
-    /// 正、負　は　キャレットの向きに合わさります。
-    ///
-    /// # Returns
-    ///
-    /// (awareness)
-    pub fn get_peak(&self) -> Awareness {
-        if self.unconscious_number == 0 {
-            // キャレットが 0番地 にあるとき。
-
-            Awareness {
-                passed_caret: self.unconscious_number,
-                expected_caret: self.unconscious_number,
-                index: None,
-                negative: self.is_facing_left(),
-            }
-        } else if self.unconscious_number < 0 {
-            // キャレットが 負の方にあるとき。
-            Awareness {
-                passed_caret: self.unconscious_number,
-                expected_caret: self.unconscious_number,
-                index: Some((-self.unconscious_number - 1) as usize),
-                negative: true,
-            }
-        } else {
-            // キャレットが 正の方にあるとき。
-            Awareness {
-                passed_caret: self.unconscious_number,
-                expected_caret: self.unconscious_number,
-                index: Some((self.unconscious_number - 1) as usize),
-                negative: false,
-            }
         }
     }
 

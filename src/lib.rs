@@ -267,6 +267,12 @@ pub fn main_loop() {
             LibSub::scan_pid(&line, &mut deck, &mut position, &app);
 
         // #####
+        // # T #
+        // #####
+        } else if line.starts_with("test-2heads-vec") {
+            LibSub::test_2heads_vec(position.get_board_size(), &app);
+
+        // #####
         // # U #
         // #####
         } else if line == "usi" {

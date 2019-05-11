@@ -5,16 +5,25 @@ use instrument::piece_etc::*;
 use instrument::position::*;
 use live::best_move_picker::*;
 use media::cassette_tape::*;
+use media::two_heads_vec::*;
 use regex::Regex;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
 use sheet_music_format::kifu_usi::usi_position::*;
+use sound::shogi_note::*;
+use sound::shogi_note_operation::*;
+use studio::address::*;
 use studio::application::*;
 use studio::board_size::*;
+use studio::common::caret::*;
 
 pub struct LibSub {}
 impl LibSub {
+    // #####
+    // # B #
+    // #####
+
     pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         let slot = Slot::Learning;
         let rnote_opt = {
@@ -58,6 +67,10 @@ impl LibSub {
         HumanInterface::bo(deck, &position, &app);
     }
 
+    // #####
+    // # F #
+    // #####
+
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
@@ -90,6 +103,10 @@ impl LibSub {
         }
         HumanInterface::bo(deck, &position, &app);
     }
+
+    // #####
+    // # G #
+    // #####
 
     pub fn go(
         best_move_picker: &mut BestMovePicker,
@@ -125,6 +142,10 @@ impl LibSub {
         deck.write_tape_box(board_size, &app);
     }
 
+    // #####
+    // # H #
+    // #####
+
     pub fn hand1(position: &Position, app: &Application) {
         // TODO 先手の持ち駒を表示。
         let (line0, line1, line2, line3) = position.to_hand_4lines(HalfPlayerPhaseValue::First);
@@ -150,6 +171,10 @@ impl LibSub {
         app.comm.println(&line2);
         app.comm.println(&line3);
     }
+
+    // #####
+    // # P #
+    // #####
 
     pub fn position(
         line: String,
@@ -181,6 +206,10 @@ impl LibSub {
         }
     }
 
+    // #####
+    // # S #
+    // #####
+
     pub fn scan_pid(
         line: &str,
         deck: &mut CassetteDeck,
@@ -203,7 +232,7 @@ impl LibSub {
         };
 
         // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
-        position.go_next_phase(deck);
+        position.seek_a_player(deck, &app);
 
         if let Some((idp, addr)) = position.scan_pid(position.get_phase().get_state(), pid) {
             app.comm.println(&format!(
@@ -218,8 +247,105 @@ impl LibSub {
         }
 
         // 進めた分を戻すぜ☆（＾～＾）
-        position.back_phase(deck, &app);
+        position.back_walk_player_phase(deck, &app);
     }
+
+    // #####
+    // # T #
+    // #####
+
+    pub fn test_2heads_vec(board_size: BoardSize, app: &Application) {
+        let tvec = TwoHeadsVec::new();
+
+        let mut caret = Caret::new_facing_right_caret();
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Test: 最初:{}, {}]",
+                caret.to_human_presentable(&app),
+                tvec.to_human_presentable(board_size, &app),
+            ))
+        }
+
+        // １つ目
+        let tvec = tvec.insert(
+            &mut caret,
+            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
+            board_size,
+            &app,
+        );
+        caret.seek_a_note(&app);
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Test: １つ目:{}, {}]",
+                caret.to_human_presentable(&app),
+                tvec.to_human_presentable(board_size, &app)
+            ))
+        }
+
+        // ２つ目
+        let tvec = tvec.insert(
+            &mut caret,
+            ShogiNote::from_id_ope(
+                Some(PieceIdentify::K00),
+                ShogiNoteOpe::from_address(Address::from_cell(
+                    Cell::from_file_rank(5, 1),
+                    board_size,
+                )),
+            ),
+            board_size,
+            &app,
+        );
+        caret.seek_a_note(&app);
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Test: 2つ目:{}, {}]",
+                caret.to_human_presentable(&app),
+                tvec.to_human_presentable(board_size, &app)
+            ))
+        }
+
+        // ３つ目
+        let tvec = tvec.insert(
+            &mut caret,
+            ShogiNote::from_id_ope(
+                Some(PieceIdentify::K00),
+                ShogiNoteOpe::from_address(Address::from_cell(
+                    Cell::from_file_rank(6, 2),
+                    board_size,
+                )),
+            ),
+            board_size,
+            &app,
+        );
+        caret.seek_a_note(&app);
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Test: 3つ目:{}, {}]",
+                caret.to_human_presentable(&app),
+                tvec.to_human_presentable(board_size, &app)
+            ))
+        }
+
+        // ４つ目
+        let tvec = tvec.insert(
+            &mut caret,
+            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
+            board_size,
+            &app,
+        );
+        caret.seek_a_note(&app);
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Test: 4つ目:{}, {}]",
+                caret.to_human_presentable(&app),
+                tvec.to_human_presentable(board_size, &app)
+            ))
+        }
+    }
+
+    // #####
+    // # U #
+    // #####
 
     pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）

@@ -31,7 +31,7 @@ impl TwoHeadsVec {
     // # Constructor #
     // ###############
 
-    pub fn default() -> Self {
+    pub fn new() -> Self {
         Self {
             positive_notes: Vec::new(),
             negative_notes: Vec::new(),
@@ -75,17 +75,21 @@ impl TwoHeadsVec {
         caret: &mut Caret,
         app: &Application,
     ) -> (bool, Awareness, Option<ShogiNote>) {
+        /*
         if app.is_debug() {
             app.comm.println("[#INVec.Back note: 開始]")
         }
+        */
 
         caret.look_back(&app);
         let (taken_overflow, awareness, note) = self.seek_a_note(caret, &app);
         caret.look_back(&app);
 
+        /*
         if app.is_debug() {
             app.comm.println("[#INVec.Back note: 終了]")
         }
+        */
 
         (taken_overflow, awareness, note)
     }
@@ -122,46 +126,112 @@ impl TwoHeadsVec {
         self.positive_notes.len() as i16 - 1
     }
 
-    /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
-    pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
-        // とりあえず、キャレットを進めてみる。
-        let awareness = caret.seek_a_note(&app);
+    // #####
+    // # I #
+    // #####
+
+    /// キャレット位置にノートを挿入した新しいオブジェクトを返します。
+    pub fn insert(
+        &self,
+        caret: &mut Caret,
+        note: ShogiNote,
+        _board_size: BoardSize,
+        app: &Application,
+    ) -> Self {
+        // ピークを取得。
+        let awareness = caret.get_peak();
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#2H vec.insert: 挿入位置 Caret:{}]",
+                awareness.expected_caret
+            ));
+        }
+        */
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        if !awareness.negative {
-            // 正のテープ。
-            // [0, 1, 2, 3, 4]というデータが入っているテープの場合、
-            // キャレットが 3 なら
-            // [0, 1, 2 | 3, 4] を意味し、キャレットのある場所にデータを挿入するので、
-            // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
-            // ここで、 awareness.index は 2。
-            nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret));
-            posi_v.push(note);
-            if awareness.index < Some(self.positive_notes.len()) {
-                posi_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret + 1,
-                    self.positive_notes.len() as i16,
-                ));
-            }
-        } else {
-            // 負のテープだけ。
-            // 例えば 負のテープに
-            // [-1, -2, -3, -4, -5]
-            // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
+        if awareness.negative {
+            // 負のテープへ挿入。
 
-            // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret));
+            // 正のテープは丸コピー。
+            let v0 = &self.positive_notes[..];
+            posi_v.extend_from_slice(v0);
+
+            // 要素その１。
+            let v1 = self.slice_by_caret(0, awareness.expected_caret, &app);
+            nega_v.extend_from_slice(&v1);
+
+            // オーバー位置から挿入。
             nega_v.push(note);
-            if awareness.index < Some(self.negative_notes.len()) {
-                nega_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret + 1,
-                    self.negative_notes.len() as i16,
+
+            // 余りがあれば挿入。
+            //let mut v2 = Vec::new();
+            if let Some(index) = awareness.index {
+                if index < self.negative_notes.len() {
+                    let v2 = self.slice_by_caret(
+                        index as i16 + 1,
+                        self.negative_notes.len() as i16,
+                        &app,
+                    );
+                    nega_v.extend_from_slice(&v2);
+                }
+            }
+
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#2H vec.insert: 負のテープへ挿入。 v0:[{}], v1:[{}]], note:[{}], v2:[{}], Nega:[{}], Posi:[{}]",
+                ShogiNote::to_human_presentable_vec(v0.to_vec(), board_size, &app),
+                ShogiNote::to_human_presentable_vec(v1.to_vec(), board_size, &app),
+                note.to_human_presentable(board_size, &app),
+                ShogiNote::to_human_presentable_vec(v2.to_vec(), board_size, &app),
+                ShogiNote::to_human_presentable_vec(nega_v.to_vec(), board_size, &app),
+                ShogiNote::to_human_presentable_vec(posi_v.to_vec(), board_size, &app)
+            ));
+        }
+        */
+        } else {
+            // 正のテープへ挿入。
+
+            // 負のテープは丸コピー。
+            let v0 = &self.negative_notes[..];
+            nega_v.extend_from_slice(v0);
+
+            // 要素その１。
+            let v1 = self.slice_by_caret(0, awareness.expected_caret, &app);
+            posi_v.extend_from_slice(&v1);
+
+            // オーバー位置から挿入。
+            posi_v.push(note);
+
+            // 余りがあれば挿入。
+            //let mut v2 = Vec::new();
+            if let Some(index) = awareness.index {
+                if index < self.positive_notes.len() {
+                    let v2 = self.slice_by_caret(
+                        index as i16 + 1,
+                        self.positive_notes.len() as i16,
+                        &app,
+                    );
+                    posi_v.extend_from_slice(&v2);
+                }
+            }
+
+            /*
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#2H vec.insert: 正のテープへ挿入。 v0:[{}], v1:[{}]], note:[{}], v2:[{}], Nega:[{}], Posi:[{}]",
+                    ShogiNote::to_human_presentable_vec(v0.to_vec(), board_size, &app),
+                    ShogiNote::to_human_presentable_vec(v1.to_vec(), board_size, &app),
+                    note.to_human_presentable(board_size, &app),
+                    ShogiNote::to_human_presentable_vec(v2.to_vec(), board_size, &app),
+                    ShogiNote::to_human_presentable_vec(nega_v.to_vec(), board_size, &app),
+                    ShogiNote::to_human_presentable_vec(posi_v.to_vec(), board_size, &app)
                 ));
             }
-            posi_v.extend_from_slice(&self.positive_notes[..]);
+            */
         }
 
         Self::from_vector(posi_v, nega_v)
@@ -203,7 +273,7 @@ impl TwoHeadsVec {
                 // 正のテープ側で切り落とし。
                 // 負の部分はそのまま残して、正の絶対値の大きな方を切り落とす☆（＾～＾）
                 nega_v.extend_from_slice(&self.negative_notes[..]);
-                posi_v.extend_from_slice(&self.slice(0, index as i16));
+                posi_v.extend_from_slice(&self.slice_by_caret(0, index as i16, &app));
 
                 if index < self.positive_notes.len() {
                     Some(self.positive_notes[index])
@@ -214,7 +284,7 @@ impl TwoHeadsVec {
                 // 負のテープ側で切り落とし。
                 // 正の部分はそのまま残して、負の絶対値の大きな方を切り落とす☆（＾～＾）
                 posi_v.extend_from_slice(&self.positive_notes[..]);
-                nega_v.extend_from_slice(&self.slice(0, index as i16));
+                nega_v.extend_from_slice(&self.slice_by_caret(0, index as i16, &app));
 
                 if index < self.negative_notes.len() {
                     Some(self.negative_notes[index])
@@ -245,10 +315,12 @@ impl TwoHeadsVec {
     ) -> (bool, Awareness, Option<ShogiNote>) {
         // とりあえず、キャレットを１つ進める。
         let awareness = caret.seek_a_note(&app);
+        /*
         if app.is_debug() {
             app.comm
                 .print(&format!("[#INVec.Seek a note: Awareness:{:?}]", awareness));
         }
+        */
 
         if caret.is_facing_left() {
             // 負の無限大 <---- 顔の向き。
@@ -256,16 +328,20 @@ impl TwoHeadsVec {
                 // 負の方。
                 if Some(self.negative_notes.len()) <= awareness.index {
                     // 配列の範囲外。
+                    /*
                     if app.is_debug() {
                         app.comm
                             .println("[#Seek next note: <-- 負の方、配列の範囲外]");
                     }
+                    */
                     (true, awareness, None)
                 } else {
                     // 配列の範囲内。
+                    /*
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: <-- 負の方]");
                     }
+                    */
 
                     let note = if let Some(index) = awareness.index {
                         Some(self.negative_notes[index])
@@ -279,16 +355,21 @@ impl TwoHeadsVec {
                 // 正の方。
                 if Some(self.positive_notes.len()) <= awareness.index {
                     // 配列の範囲外。
+                    /*
                     if app.is_debug() {
                         app.comm
                             .println("[#Seek next note: <-- 正の方、配列の範囲外]");
                     }
+                    */
+
                     (true, awareness, None)
                 } else {
                     // 配列の範囲内。
+                    /*
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: <-- 正の方]");
                     }
+                    */
 
                     let note = if let Some(index) = awareness.index {
                         Some(self.positive_notes[index])
@@ -305,16 +386,21 @@ impl TwoHeadsVec {
                 // 正の方。
                 if Some(self.positive_notes.len()) <= awareness.index {
                     // 配列の範囲外。
+                    /*
                     if app.is_debug() {
                         app.comm
                             .println("[#Seek next note: --> 正の方、配列の範囲外]");
                     }
+                    */
+
                     (true, awareness, None)
                 } else {
                     // 配列の範囲内。
+                    /*
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: --> 正の方]");
                     }
+                    */
 
                     let note = if let Some(index) = awareness.index {
                         Some(self.positive_notes[index])
@@ -328,16 +414,21 @@ impl TwoHeadsVec {
                 // 負の方。
                 if Some(self.negative_notes.len()) <= awareness.index {
                     // 配列の範囲外。
+                    /*
                     if app.is_debug() {
                         app.comm
                             .println("[#Seek next note: --> 負の方、配列の範囲外]");
                     }
+                    */
+
                     (true, awareness, None)
                 } else {
                     // 配列の範囲内。
+                    /*
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: --> 負の方]");
                     }
+                    */
 
                     let note = if let Some(index) = awareness.index {
                         Some(self.negative_notes[index])
@@ -383,31 +474,71 @@ impl TwoHeadsVec {
         }
     }
 
-    /// start and end is caret.
+    /// 2つのキャレットで、欲しい範囲を挟んでください。
     /// start <= end.
-    /// Endは含めず、Startは含めます。
-    pub fn slice(&self, start: i16, end: i16) -> Vec<ShogiNote> {
+    pub fn slice_by_caret(
+        &self,
+        start_caret: i16,
+        end_caret: i16,
+        app: &Application,
+    ) -> Vec<ShogiNote> {
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#2H vec.Slice: [Caret {}:{}]]",
+                start_caret, end_caret
+            ));
+        }
+        */
         let mut v = Vec::new();
 
-        if start < 0 {
-            // 負のテープ。正のテープに及ぶこともある。
-            if end < 0 {
-                // 負のテープだけで収まります。
-                let s = &self.negative_notes[(-end + 1) as usize..(-start + 1) as usize];
+        if start_caret < 0 {
+            // 負のテープを含む。
+            if end_caret <= 0 {
+                // 負のテープだけで範囲が収まります。
+                let start_ix = (-end_caret + 1) as usize;
+                let end_ix = (-start_caret + 1) as usize;
+                /*
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[#2H vec.Slice: 負のテープだけで範囲が収まります。 [Index {}:{}]]",
+                        start_ix, end_ix
+                    ));
+                }
+                */
+                let s = &self.negative_notes[start_ix..end_ix];
                 v.extend_from_slice(s);
             } else {
+                /*
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[#2H vec.Slice: 負のテープ全てと、正のテープの途中まで。 [Posi end {}]]",
+                        end_caret
+                    ));
+                }
+                */
                 // ひとまず、負のテープすべて。
                 let s1 = &self.negative_notes[..];
                 v.extend_from_slice(s1);
 
                 // 正のテープの 0 から End まで。
-                let s2 = &self.positive_notes[..end as usize];
+                let s2 = &self.positive_notes[..end_caret as usize];
                 v.extend_from_slice(s2);
             }
         } else {
             // 正のテープだけ。
+            let start_ix = start_caret as usize;
+            let end_ix = end_caret as usize;
+            /*
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#2H vec.Slice: 正のテープだけで範囲が収まります。 [Index {}:{}]]",
+                    start_ix, end_ix
+                ));
+            }
+            */
             // こりゃカンタンだ☆（＾～＾）
-            let s = &self.positive_notes[start as usize..end as usize];
+            let s = &self.positive_notes[start_ix..end_ix];
             v.extend_from_slice(s);
         }
 

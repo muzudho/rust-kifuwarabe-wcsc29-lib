@@ -329,10 +329,6 @@ impl CassetteTapeBox {
         true
     }
 
-    /// キャレットは必ず１つ進みます。
-    /// 0 は、正の数とします。（マイナスゼロは無いです）
-    /// Noneを返したら、オーバーフローしています。
-    ///
     /// # Returns
     ///
     /// (taken overflow, awareness, note)
@@ -492,10 +488,11 @@ impl CassetteTapeBox {
     }
 
     /// 現在聴いているテープのキャレットのデバッグ情報表示。人間向け。
-    pub fn to_human_presentable_of_caret_of_current_tape(&self, app: &Application) -> String {
+    pub fn to_human_presentable_of_caret(&self, app: &Application) -> String {
         if let Some(index) = self.awareness_of_tapes.index {
             format!(
-                "[Box: Caret: {}]",
+                "[{:?}-Box: Caret: {}]",
+                self.role_as_slot,
                 self.tapes[index].caret.to_human_presentable(&app)
             )
             .to_string()

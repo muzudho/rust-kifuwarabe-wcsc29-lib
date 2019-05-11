@@ -50,8 +50,12 @@ impl fmt::Display for ShogiNoteOpe {
     }
 }
 impl ShogiNoteOpe {
+    // ###############
+    // # Constructor #
+    // ###############
+
     pub fn from_address(address: Address) -> Self {
-        ShogiNoteOpe {
+        Self {
             address: Some(address),
             fingertip_turn: false,
             fingertip_rotate: false,
@@ -61,7 +65,7 @@ impl ShogiNoteOpe {
     }
 
     pub fn turn_over() -> Self {
-        ShogiNoteOpe {
+        Self {
             address: None,
             fingertip_turn: true,
             fingertip_rotate: false,
@@ -71,7 +75,7 @@ impl ShogiNoteOpe {
     }
 
     pub fn rotate() -> Self {
-        ShogiNoteOpe {
+        Self {
             address: None,
             fingertip_turn: false,
             fingertip_rotate: true,
@@ -81,7 +85,7 @@ impl ShogiNoteOpe {
     }
 
     pub fn change_phase(ply: i16) -> Self {
-        ShogiNoteOpe {
+        Self {
             address: None,
             fingertip_turn: false,
             fingertip_rotate: false,
@@ -91,7 +95,7 @@ impl ShogiNoteOpe {
     }
 
     pub fn resign() -> Self {
-        ShogiNoteOpe {
+        Self {
             address: None,
             fingertip_turn: false,
             fingertip_rotate: false,
@@ -99,6 +103,18 @@ impl ShogiNoteOpe {
             resign: true,
         }
     }
+
+    // #####
+    // # G #
+    // #####
+
+    pub fn get_phase_change(&self) -> Option<i16> {
+        self.phase_change
+    }
+
+    // #####
+    // # I #
+    // #####
 
     pub fn is_phase_change(&self) -> bool {
         if let Some(_ply) = self.phase_change {
@@ -113,75 +129,9 @@ impl ShogiNoteOpe {
         self.resign
     }
 
-    pub fn get_phase_change(&self) -> Option<i16> {
-        self.phase_change
-    }
-
-    /// Human presentable.
-    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
-        match self.address {
-            Some(address) => {
-                // 人に読みやすいセル表記にします。
-                if address.is_fingertip() {
-                    "FT".to_string()
-                } else if address.is_on_board(board_size) {
-                    board_size
-                        .address_to_cell(address.get_index())
-                        .to_human_presentable()
-                } else if address.is_hand() {
-                    address
-                        .get_hand_piece()
-                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
-                        .to_human_presentable()
-                } else {
-                    panic!(
-                        "Unexpected address: {}.",
-                        address.to_human_presentable(board_size)
-                    )
-                }
-            }
-            None => {
-                if self.fingertip_turn {
-                    "+".to_string()
-                } else if self.fingertip_rotate {
-                    "-".to_string()
-                } else if let Some(ply) = self.phase_change {
-                    if ply > -1 {
-                        format!("[{}]", ply).to_string()
-                    } else {
-                        "|".to_string()
-                    }
-                } else if self.resign {
-                    "%resign".to_string()
-                } else {
-                    "PANIC!".to_string()
-                }
-            }
-        }
-    }
-
-    pub fn to_sign(&self, board_size: BoardSize) -> String {
-        match self.address {
-            Some(address) => address.to_physical_sign(board_size),
-            None => {
-                if self.fingertip_turn {
-                    "+".to_string()
-                } else if self.fingertip_rotate {
-                    "-".to_string()
-                } else if let Some(ply) = self.phase_change {
-                    if ply > -1 {
-                        format!("[{}]", ply)
-                    } else {
-                        "|".to_string()
-                    }
-                } else if self.resign {
-                    "%resign".to_string()
-                } else {
-                    panic!("Unexpected physical move print.")
-                }
-            }
-        }
-    }
+    // #####
+    // # P #
+    // #####
 
     /// 次のノート１つ読取☆（＾～＾）
     ///
@@ -325,6 +275,76 @@ impl ShogiNoteOpe {
             _ => {
                 let last = line.len();
                 panic!("Unexpected line '{}'.", &line[n0..last]);
+            }
+        }
+    }
+
+    // #####
+    // # T #
+    // #####
+
+    /// Human presentable.
+    pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
+        match self.address {
+            Some(address) => {
+                // 人に読みやすいセル表記にします。
+                if address.is_fingertip() {
+                    "FT".to_string()
+                } else if address.is_on_board(board_size) {
+                    board_size
+                        .address_to_cell(address.get_index())
+                        .to_human_presentable()
+                } else if address.is_hand() {
+                    address
+                        .get_hand_piece()
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
+                        .to_human_presentable()
+                } else {
+                    panic!(
+                        "Unexpected address: {}.",
+                        address.to_human_presentable(board_size)
+                    )
+                }
+            }
+            None => {
+                if self.fingertip_turn {
+                    "+".to_string()
+                } else if self.fingertip_rotate {
+                    "-".to_string()
+                } else if let Some(ply) = self.phase_change {
+                    if ply > -1 {
+                        format!("[{}]", ply).to_string()
+                    } else {
+                        "|".to_string()
+                    }
+                } else if self.resign {
+                    "%resign".to_string()
+                } else {
+                    "PANIC!".to_string()
+                }
+            }
+        }
+    }
+
+    pub fn to_sign(&self, board_size: BoardSize) -> String {
+        match self.address {
+            Some(address) => address.to_physical_sign(board_size),
+            None => {
+                if self.fingertip_turn {
+                    "+".to_string()
+                } else if self.fingertip_rotate {
+                    "-".to_string()
+                } else if let Some(ply) = self.phase_change {
+                    if ply > -1 {
+                        format!("[{}]", ply)
+                    } else {
+                        "|".to_string()
+                    }
+                } else if self.resign {
+                    "%resign".to_string()
+                } else {
+                    panic!("Unexpected physical move print.")
+                }
             }
         }
     }

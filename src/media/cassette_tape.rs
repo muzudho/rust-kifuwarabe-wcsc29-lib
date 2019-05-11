@@ -210,10 +210,6 @@ impl CassetteTape {
     // # S #
     // #####
 
-    /// キャレットは必ず１つ進みます。
-    /// 0 は、正の数とします。（マイナスゼロは無いです）
-    /// Noneを返したら、オーバーフローしています。
-    ///
     /// # Returns
     ///
     /// (taken overflow, awareness, note)

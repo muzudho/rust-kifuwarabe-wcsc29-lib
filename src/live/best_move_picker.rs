@@ -222,7 +222,7 @@ impl BestMovePicker {
                     }
 
                     // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
-                    position.go_next_phase(deck);
+                    position.seek_a_player(deck, &app);
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
@@ -240,7 +240,7 @@ impl BestMovePicker {
                         }
 
                         // 進めた分、戻すぜ☆（＾～＾）
-                        position.back_phase(deck, &app);
+                        position.back_walk_player_phase(deck, &app);
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
@@ -269,7 +269,7 @@ impl BestMovePicker {
                                     app.comm.println(&format!(
                                         "\n--------------------------------------------------------------------------------#Note scan: Training tape span: {}. Training caret: {}.",
                                         deck.get_current_tape_span(Slot::Training).len(),
-                                        deck.to_human_presentable_of_caret_of_current_tape(
+                                        deck.to_human_presentable_of_caret(
                                             Slot::Training, &app
                                         ),
                                     ));
@@ -289,12 +289,12 @@ impl BestMovePicker {
                                             // テープの終わりなら仕方ない☆（＾～＾）手筋は終わりだぜ☆（＾～＾）
                                             if app.is_debug() {
                                                 app.comm.println(&format!(
-                                                "[End of tape of Piece loop: Caret: {}]",
-                                                deck.to_human_presentable_of_caret_of_current_tape(
-                                                    Slot::Training,
-                                                    &app
-                                                ),
-                                            ));
+                                                    "[End of tape of Piece loop: Caret: {}]",
+                                                    deck.to_human_presentable_of_caret(
+                                                        Slot::Training,
+                                                        &app
+                                                    ),
+                                                ));
                                             }
                                             break 'sequence_thread;
                                         }
@@ -395,7 +395,7 @@ impl BestMovePicker {
                                         position.get_board_size(),
                                         &app),
                                     best_move.to_human_presentable(position.get_board_size(), &app),
-                                    deck.to_human_presentable_of_caret_of_current_tape(
+                                    deck.to_human_presentable_of_caret(
                                         Slot::Training, &app
                                     ),
                                 ));
@@ -440,9 +440,7 @@ impl BestMovePicker {
                             ));
                         }
                         deck.look_back_caret(Slot::Training, &app);
-                        {
-                            deck.seek_n_notes_permissive(Slot::Training, repeats, position, &app);
-                        }
+                        deck.seek_and_touch_learning_n_notes_permissive(repeats, position, &app);
                         deck.look_back_caret(Slot::Training, &app);
 
                         // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）
@@ -462,7 +460,7 @@ impl BestMovePicker {
                         }
 
                         // 進めた分、戻すぜ☆（＾～＾）
-                        position.back_phase(deck, &app);
+                        position.back_walk_player_phase(deck, &app);
                     }
                 } // ピースの for
 
