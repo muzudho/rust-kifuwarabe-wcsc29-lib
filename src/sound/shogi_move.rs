@@ -97,8 +97,8 @@ impl ShogiMove {
                 break 'j_loop;
             }
 
-            let note = if let (_taken_overflow, _rmove, Some(note)) =
-                tape_box.seek_next_note_with_othre_caret(caret, &app)
+            let note = if let (_taken_overflow, _awareness, Some(note)) =
+                tape_box.seek_a_note_with_othre_caret(caret, &app)
             {
                 note
             } else {
@@ -172,8 +172,8 @@ impl ShogiMove {
         }
 
         // ノートを取る。
-        let mut note = if let (_taken_overflow, _rmove, Some(note)) =
-            deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut caret, &app)
+        let mut note = if let (_taken_overflow, _awareness, Some(note)) =
+            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
         {
             note
         } else {
@@ -219,8 +219,8 @@ impl ShogiMove {
                 drop_opt = Some(PieceType::from_piece(piece));
 
                 // ノートを取る。
-                note = if let (_taken_overflow, _rmove, Some(note)) =
-                    deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut caret, &app)
+                note = if let (_taken_overflow, _awareness, Some(note)) =
+                    deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
                 {
                     note
                 } else {
@@ -265,8 +265,8 @@ impl ShogiMove {
                 }
 
                 // ノートを取る。
-                note = if let (_taken_overflow, _rmove, Some(note)) =
-                    deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut caret, &app)
+                note = if let (_taken_overflow, _awareness, Some(note)) =
+                    deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
                 {
                     note
                 } else {
@@ -290,8 +290,8 @@ impl ShogiMove {
                     subject_promotion = true;
 
                     // 次。
-                    note = if let (_taken_overflow, _rmove, Some(note)) =
-                        deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut caret, &app)
+                    note = if let (_taken_overflow, _awareness, Some(note)) =
+                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -322,8 +322,8 @@ impl ShogiMove {
                     subject_promotion = false;
 
                     // ノートを取る。
-                    note = if let (_taken_overflow, _rmove, Some(note)) =
-                        deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut caret, &app)
+                    note = if let (_taken_overflow, _awareness, Some(note)) =
+                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
                     {
                         note
                     } else {
@@ -345,9 +345,8 @@ impl ShogiMove {
                     // 自分の駒台に置く動きは USI符号に書かれない。
                     if let Some(_address) = note.get_ope().address {
                         // ノートを取る。
-                        note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
-                            [slot as usize]
-                            .seek_next_note_with_othre_caret(&mut caret, &app)
+                        note = if let (_taken_overflow, _awareness, Some(note)) =
+                            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
                         {
                             note
                         } else {
@@ -374,9 +373,9 @@ impl ShogiMove {
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
 
                             // ノートを取る。
-                            note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
+                            note = if let (_taken_overflow, _awareness, Some(note)) = deck.slots
                                 [slot as usize]
-                                .seek_next_note_with_othre_caret(&mut caret, &app)
+                                .seek_a_note_with_othre_caret(&mut caret, &app)
                             {
                                 note
                             } else {
@@ -401,9 +400,9 @@ impl ShogiMove {
                             subject_promotion = true;
 
                             // ノートを取る。
-                            note = if let (_taken_overflow, _rmove, Some(note)) = deck.slots
+                            note = if let (_taken_overflow, _awareness, Some(note)) = deck.slots
                                 [slot as usize]
-                                .seek_next_note_with_othre_caret(&mut caret, &app)
+                                .seek_a_note_with_othre_caret(&mut caret, &app)
                             {
                                 note
                             } else {
@@ -518,8 +517,8 @@ impl ShogiMove {
             )); // TODO
         }
         while caret.while_to(&self.caret_closed_interval, &app) {
-            if let (_taken_overflow, _rmove, Some(note)) =
-                tape_box.seek_next_note_with_othre_caret(&mut caret, &app)
+            if let (_taken_overflow, _awareness, Some(note)) =
+                tape_box.seek_a_note_with_othre_caret(&mut caret, &app)
             {
                 text = format!("{} {}", text, &note.get_ope().to_sign(board_size));
             } else {
@@ -542,8 +541,8 @@ impl ShogiMove {
             )); // TODO
         }
         while caret.while_to(&self.caret_closed_interval, &app) {
-            if let (_taken_overflow, _rmove, Some(note)) =
-                tape_box.seek_next_note_with_othre_caret(&mut caret, &app)
+            if let (_taken_overflow, _awareness, Some(note)) =
+                tape_box.seek_a_note_with_othre_caret(&mut caret, &app)
             {
                 text = format!(
                     "{} {}",
@@ -581,8 +580,8 @@ impl ShogiMove {
         }
 
         while other_caret.while_to(&self.caret_closed_interval, &app) {
-            if let (_taken_overflow, _rmove, Some(note)) =
-                deck.slots[slot as usize].seek_next_note_with_othre_caret(&mut other_caret, &app)
+            if let (_taken_overflow, _awareness, Some(note)) =
+                deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut other_caret, &app)
             {
                 text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
             } else {

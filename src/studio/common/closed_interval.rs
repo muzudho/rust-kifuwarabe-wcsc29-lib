@@ -95,6 +95,23 @@ impl ClosedInterval {
         }
     }
 
+    /// 閉区間を広げるぜ☆（＾～＾）
+    pub fn intersect_2_values(&mut self, value0: i16, value1: i16) {
+        let (min, max) = if value0 <= value1 {
+            (value0, value1)
+        } else {
+            (value1, value0)
+        };
+
+        if min < self.minimum {
+            self.minimum = min;
+        }
+
+        if self.maximum < max {
+            self.maximum = max;
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
         self.maximum < self.minimum
     }
@@ -107,7 +124,7 @@ impl ClosedInterval {
         if self.is_empty() {
             0
         } else {
-            (self.maximum - self.minimum + 1) as usize
+            (self.maximum - self.minimum) as usize
         }
     }
 

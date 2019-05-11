@@ -8,6 +8,7 @@ use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::get_index_from_caret_numbers;
+use studio::common::caret::Awareness;
 use studio::common::caret::SoughtMoveResult;
 use studio::common::closed_interval::ClosedInterval;
 
@@ -135,23 +136,23 @@ impl CassetteDeck {
 
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn back_note(
+    /// (taken overflow, awareness, note)
+    pub fn back_walk_a_note(
         &mut self,
         slot: Slot,
         app: &Application,
-    ) -> (bool, ShogiMove, Option<ShogiNote>) {
+    ) -> (bool, Awareness, Option<ShogiNote>) {
         if app.is_debug() {
             app.comm.println("[#Deck.Back note: 開始]");
         }
 
-        let (taken_overflow, rmove, note) = self.slots[slot as usize].back_note(&app);
+        let (taken_overflow, awareness, note) = self.slots[slot as usize].back_walk_a_note(&app);
 
         if app.is_debug() {
             app.comm.println("[#Deck.Back note: 終了]");
         }
 
-        (taken_overflow, rmove, note)
+        (taken_overflow, awareness, note)
     }
 
     // #####
@@ -260,22 +261,22 @@ impl CassetteDeck {
     pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
         let tape_box = &mut self.slots[slot as usize];
         // とりあえず、キャレットを進めようぜ☆（＾～＾）
-        let (_taken_overflow, rmove, _) = tape_box.seek_next_note(&app);
+        let (_taken_overflow, awareness, _) = tape_box.seek_a_note(&app);
 
-        if -1 < rmove.get_end() {
+        if !awareness.negative {
             // ０、または 正のテープ。
             // 次にオーバーフローするか判断。
             if tape_box.is_before_caret_overflow_of_tape() {
                 // 正の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box.push_note_to_positive_of_current_tape(note);
-                tape_box.seek_next_note(&app);
+                tape_box.seek_a_note(&app);
             } else {
                 // 先端でなければ、上書き。
-                tape_box.set_note_to_current_tape(rmove.get_end(), note);
+                tape_box.set_note_to_current_tape(awareness.expected_caret, note);
 
                 // 仮のおわり を更新。
                 tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
-                    rmove.get_end(),
+                    awareness.expected_caret,
                 ));
             }
         } else {
@@ -284,13 +285,13 @@ impl CassetteDeck {
             if tape_box.is_before_caret_overflow_of_tape() {
                 // 負の絶対値が大きい方の新しい要素を追加しようとしている。
                 tape_box.push_note_to_negative_of_current_tape(note);
-                tape_box.seek_next_note(&app);
+                tape_box.seek_a_note(&app);
             } else {
                 // 先端でなければ、上書き。
-                tape_box.set_note_to_current_tape(rmove.get_end(), note);
+                tape_box.set_note_to_current_tape(awareness.expected_caret, note);
                 // 仮のおわり を更新。
                 tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
-                    rmove.get_end(),
+                    awareness.expected_caret,
                 ));
             }
         }
@@ -331,7 +332,7 @@ impl CassetteDeck {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_taken_overflow, _note_move, Some(rnote)) = self.seek_next_note(slot, &app) {
+        while let (_taken_overflow, _awareness, Some(rnote)) = self.seek_a_note(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -386,7 +387,8 @@ impl CassetteDeck {
         app: &Application,
     ) -> (SoughtMoveResult, ShogiMove) {
         if app.is_debug() {
-            app.comm.println("[#seek_a_move: 開始]");
+            app.comm
+                .println(&format!("[#seek_a_move: 開始, Slot:{:?}]", slot));
         }
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
@@ -402,21 +404,14 @@ impl CassetteDeck {
         'caret_loop: loop {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#Deck.Seek a move: Slot:{:?}, Caret:{}]",
-                    slot,
+                    "[#Deck.Seek a move, Caret:{}]",
                     self.to_human_presentable_of_caret_of_current_tape(slot, &app)
                 ))
             }
 
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-            match self.seek_next_note(slot, &app) {
-                (_taken_overflow, one_note, Some(rnote)) => {
-                    if one_note.len() != 1 {
-                        panic!(
-                            "[#Deck.Seek a move: 長さが１ではない１ノートは、おかしい☆（＾～＾）]"
-                        );
-                    }
-
+            match self.seek_a_note(slot, &app) {
+                (_taken_overflow, awareness, Some(rnote)) => {
                     if position.try_beautiful_touch(&self, &rnote, &app) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
                         /*
@@ -433,15 +428,16 @@ impl CassetteDeck {
                         // あとで、ルック・バックする範囲☆（＾～＾）
                         rmove
                             .caret_closed_interval
-                            .intersect_closed_interval(one_note.caret_closed_interval);
+                            .intersect_2_values(awareness.passed_caret, awareness.expected_caret);
 
                         if 1 == rmove.len() && !rnote.is_phase_change() {
                             // １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）
                             panic!(
-                            "[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Rnote:{}]",
+                            "[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Move len:{}, Rnote:{}]",
+                            rmove.len(),
                             rnote.to_human_presentable(position.get_board_size(),&app));
                         } else if rnote.is_phase_change() && 1 < rmove.len() && rmove.len() < 4 {
-                            panic!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）]");
+                            panic!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）Move len:{}]",rmove.len());
                         } else if app.is_debug() {
                             app.comm.println("[#seek_a_move: ノート読めてる]");
                         }
@@ -460,7 +456,7 @@ impl CassetteDeck {
                                 "[#タッチは未着手だったので、キャレットは戻すぜ☆（＾～＾）]",
                             );
                         }
-                        self.back_note(slot, &app);
+                        self.back_walk_a_note(slot, &app);
                         if app.is_debug() {
                             app.comm.println(
                                 "[#タッチは未着手だったので、キャレットは戻したぜ☆（＾～＾）]",
@@ -473,16 +469,16 @@ impl CassetteDeck {
                         break 'caret_loop;
                     }
                 }
-                (_taken_overflow, one_note, None) => {
+                (_taken_overflow, awareness, None) => {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
                     if rmove.is_empty() {
                         if app.is_debug() {
-                            app.comm.println(&format!("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾）1Note:{}]",one_note));
+                            app.comm.println(&format!("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾） Awareness:{:?}]",awareness));
                         }
 
                         rmove
                             .caret_closed_interval
-                            .intersect_closed_interval(one_note.caret_closed_interval);
+                            .intersect_2_values(awareness.passed_caret, awareness.expected_caret);
                         return (SoughtMoveResult::Forever, rmove);
                     } else {
                         panic!("[#Deck.Seek a move: 指し手を読んでる途中でオーバーフローが現れた場合、指し手が閉じられてない☆（＾～＾）棋譜がおかしい☆（＾～＾）]");
@@ -566,13 +562,13 @@ impl CassetteDeck {
     ///
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn seek_next_note(
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note(
         &mut self,
         slot: Slot,
         app: &Application,
-    ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.slots[slot as usize].seek_next_note(&app)
+    ) -> (bool, Awareness, Option<ShogiNote>) {
+        self.slots[slot as usize].seek_a_note(&app)
     }
 
     /// 成立しないタッチをしてしまうことも、おおめに見ます。
@@ -594,7 +590,7 @@ impl CassetteDeck {
             // （１）１ノート進んだ。ついでに拾ったノートを返す。
             // （２）１ノート進んだ。オーバーフローしていてノートは拾えなかった。
             // （３）スロットにテープがささっていなかったので強制終了。
-            if let (_taken_overflow, _note_move, Some(rnote)) = self.seek_next_note(slot, &app) {
+            if let (_taken_overflow, _awareness, Some(rnote)) = self.seek_a_note(slot, &app) {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
                 app.comm.println(&format!(

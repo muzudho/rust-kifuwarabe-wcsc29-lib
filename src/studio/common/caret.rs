@@ -299,7 +299,7 @@ impl Caret {
                 self.number
             ));
             */
-            target.get_minimum_caret_number() <= self.unconscious_number
+            target.get_minimum_caret_number() < self.unconscious_number
         } else {
             /*
             app.comm.print(&format!(
@@ -308,7 +308,7 @@ impl Caret {
                 target.get_maximum_caret_number(),
             ));
             */
-            self.unconscious_number <= target.get_maximum_caret_number()
+            self.unconscious_number < target.get_maximum_caret_number()
         }
     }
 }

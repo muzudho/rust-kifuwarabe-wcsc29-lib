@@ -93,22 +93,22 @@ impl OhashiPlayer {
             // 大橋流で指しているところはログを省略☆（＾～＾）１手に４ノート使う☆（＾～＾）
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
-                deck.seek_next_note(Slot::Learning, &app);
+                deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
             }
 
             {
-                deck.seek_next_note(Slot::Learning, &app);
+                deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
             }
 
             {
-                deck.seek_next_note(Slot::Learning, &app);
+                deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
             }
 
             {
-                deck.seek_next_note(Slot::Learning, &app);
+                deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.3, false, bs, &app);
             }
         }

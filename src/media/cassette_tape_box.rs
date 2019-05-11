@@ -69,9 +69,9 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn back_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+    pub fn back_walk_a_note(&mut self, app: &Application) -> (bool, Awareness, Option<ShogiNote>) {
         if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].back_note(&app)
+            self.tapes[index].back_walk_a_note(&app)
         } else {
             panic!(
                 "#back note: Please seek tapes. It is none. Slot: '{:?}'.",
@@ -335,10 +335,10 @@ impl CassetteTapeBox {
     ///
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn seek_next_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note(&mut self, app: &Application) -> (bool, Awareness, Option<ShogiNote>) {
         if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].seek_next_note(&app)
+            self.tapes[index].seek_a_note(&app)
         } else {
             panic!(
                 "#seek_to_next: Please seek tapes. It is none. Slot: '{:?}'.",
@@ -365,14 +365,14 @@ impl CassetteTapeBox {
     ///
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn seek_next_note_with_othre_caret(
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
-    ) -> (bool, ShogiMove, Option<ShogiNote>) {
+    ) -> (bool, Awareness, Option<ShogiNote>) {
         if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].seek_next_note_with_othre_caret(caret, &app)
+            self.tapes[index].seek_a_note_with_othre_caret(caret, &app)
         } else {
             panic!(
                 "#seek_next_note_with_othre_caret: Please seek tapes. It is none. Slot: '{:?}'.",

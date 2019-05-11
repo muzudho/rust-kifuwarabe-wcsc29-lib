@@ -94,8 +94,8 @@ impl CassetteTape {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn back_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.tracks.back_note(&mut self.caret, &app)
+    pub fn back_walk_a_note(&mut self, app: &Application) -> (bool, Awareness, Option<ShogiNote>) {
+        self.tracks.back_walk_a_note(&mut self.caret, &app)
     }
 
     // #####
@@ -216,9 +216,9 @@ impl CassetteTape {
     ///
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn seek_next_note(&mut self, app: &Application) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.tracks.seek_next_note(&mut self.caret, &app)
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note(&mut self, app: &Application) -> (bool, Awareness, Option<ShogiNote>) {
+        self.tracks.seek_a_note(&mut self.caret, &app)
     }
 
     pub fn set_file_full_name_without_extension(&mut self, file_name_without_extension: &str) {
@@ -236,13 +236,13 @@ impl CassetteTape {
     ///
     /// # Returns
     ///
-    /// (taken overflow, move, note)
-    pub fn seek_next_note_with_othre_caret(
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
-    ) -> (bool, ShogiMove, Option<ShogiNote>) {
-        self.tracks.seek_next_note(caret, &app)
+    ) -> (bool, Awareness, Option<ShogiNote>) {
+        self.tracks.seek_a_note(caret, &app)
     }
 
     // #####

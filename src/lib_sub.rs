@@ -20,7 +20,7 @@ impl LibSub {
         let rnote_opt = {
             let tape_box = &mut deck.slots[slot as usize];
             tape_box.turn_caret_towards_negative_infinity(&app);
-            if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_next_note(&app) {
+            if let (_taken_overflow, _awareness, Some(rnote)) = tape_box.seek_a_note(&app) {
                 Some(rnote)
             } else {
                 None
@@ -60,9 +60,7 @@ impl LibSub {
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        if let (_taken_overflow, _note_move, Some(rnote)) =
-            deck.seek_next_note(Slot::Learning, &app)
-        {
+        if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
             if !position.try_beautiful_touch(&deck, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
