@@ -23,16 +23,6 @@ pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
     }
 }
 
-/// ゼロおよび正の数では、（キャレット番号＋１）と、（要素の個数）は等しい。
-/// 負の数では、（キャレット番号の絶対値）と、（要素の個数）は等しい。
-pub fn caret_number_to_length(caret_number: i16) -> usize {
-    if -1 < caret_number {
-        (caret_number + 1) as usize
-    } else {
-        -caret_number as usize
-    }
-}
-
 // 意識。キャレットを go_to_next すると作成される。
 #[derive(Debug)]
 pub struct Awareness {
@@ -141,11 +131,8 @@ impl Caret {
             app.comm.println("[#LookBack]");
         }
 
-        // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
+        // 向きを変えるだけ。
         self.facing_left = !self.facing_left;
-
-        // 振り返ってから、１歩前へ☆（＾～＾）
-        //self.go_to_next(&app);
     }
 
     // #####
@@ -232,11 +219,8 @@ impl Caret {
                 app.comm.println("[#Turn towards <--]");
             }
 
-            // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
+            // 向きを変えるだけ。
             self.facing_left = true;
-
-            // 振り返ってから、１歩前へ☆（＾～＾）
-            //self.go_to_next(&app);
         }
     }
 
@@ -247,41 +231,40 @@ impl Caret {
                 app.comm.println("[#Turn towards -->]");
             }
 
-            // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
+            // 向きを変えるだけ。
             self.facing_left = false;
-
-            // 振り返ってから、１歩前へ☆（＾～＾）
-            //self.go_to_next(&app);
         }
     }
 
-    /// トランケート用に使う。
-    ///
-    /// 向いている方向に関わらず、正か負かを返します。
-    /// インデックスを返します。負の配列では 数を 0 側に 1 つ寄せます。
+    /// キャレットのあるところから見て、０に近い方の隣の要素のインデックスを返します。
+    /// キャレットが　０　にあるときは　インデックスは　None 　になりますが、
+    /// 正、負　は　キャレットの向きに合わさります。
     ///
     /// # Returns
     ///
-    /// (is_positive, index)
-    pub fn to_index_for_truncation(&self) -> (bool, usize) {
-        // 正と負で、0 の扱い方が異なることに注意。
-        if self.is_facing_left() {
-            // 負の無限大の方を向いているとき。
-            if self.unconscious_number <= 0 {
-                // 0以下の左隣は負
-                (false, get_index_from_caret_numbers(self.unconscious_number))
-            } else {
-                // 1以上の左隣は正。
-                (true, get_index_from_caret_numbers(self.unconscious_number))
+    /// (awareness)
+    pub fn get_peak(&self) -> Awareness {
+        if self.unconscious_number == 0 {
+            // キャレットが 0番地 にあるとき。
+
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: None,
+                negative: self.is_facing_left(),
+            }
+        } else if self.unconscious_number < 0 {
+            // キャレットが 負の方にあるとき。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: Some((-self.unconscious_number - 1) as usize),
+                negative: true,
             }
         } else {
-            // 正の無限大の方を向いているとき。
-            if self.unconscious_number >= 0 {
-                // 0以上の右隣は正。
-                (true, get_index_from_caret_numbers(self.unconscious_number))
-            } else {
-                // 0未満の右隣は負。
-                (false, get_index_from_caret_numbers(self.unconscious_number))
+            // キャレットが 正の方にあるとき。
+            Awareness {
+                expected_caret_number: self.unconscious_number,
+                index: Some((self.unconscious_number - 1) as usize),
+                negative: false,
             }
         }
     }

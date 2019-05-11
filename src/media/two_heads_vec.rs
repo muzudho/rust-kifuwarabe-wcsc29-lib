@@ -181,16 +181,25 @@ impl TwoHeadsVec {
     /// # Returns
     ///
     /// (RpmTape, Removed note)
-    pub fn new_truncated_tape(&self, caret: &Caret) -> (Self, Option<ShogiNote>) {
+    pub fn new_truncated_tape(
+        &self,
+        caret: &Caret,
+        app: &Application,
+    ) -> (Self, Option<ShogiNote>) {
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
 
-        let (is_positive, index) = caret.to_index_for_truncation();
+        let awareness = caret.get_peak();
 
-        if index == 0 {
+        if awareness.expected_caret_number == 0 {
+            // キャレットが０番地のときに切り落とすと、正の方、負の方の全部なくなる☆（＾～＾）
             (Self::from_vector(posi_v, nega_v), None)
         } else {
-            let removed_note_opt = if is_positive {
+            let index = awareness
+                .index
+                .unwrap_or_else(|| panic!(app.comm.panic("Index fail.")));
+
+            let removed_note_opt = if !awareness.negative {
                 // 正のテープ側で切り落とし。
                 // 負の部分はそのまま残して、正の絶対値の大きな方を切り落とす☆（＾～＾）
                 nega_v.extend_from_slice(&self.negative_notes[..]);

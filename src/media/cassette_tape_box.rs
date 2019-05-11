@@ -111,11 +111,11 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// 削除したノート。
-    pub fn delete_1note(&mut self, _app: &Application) -> Option<ShogiNote> {
+    pub fn delete_1note(&mut self, app: &Application) -> Option<ShogiNote> {
         if let Some(index) = self.awareness_of_tapes.index {
             let tape = &mut self.tapes[index];
 
-            let (new_tape, removed_note_opt) = tape.tracks.new_truncated_tape(&tape.caret);
+            let (new_tape, removed_note_opt) = tape.tracks.new_truncated_tape(&tape.caret, &app);
             tape.tracks = new_tape;
 
             if let Some(removed_note) = removed_note_opt {
