@@ -4,6 +4,7 @@ use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use live::best_move_picker::*;
+use live::ohashi_player::*;
 use media::cassette_tape::*;
 use media::two_heads_vec::*;
 use regex::Regex;
@@ -24,7 +25,7 @@ impl LibSub {
     // # B #
     // #####
 
-    pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn back_1_note(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         if app.is_debug() {
             app.comm.println("[#back_1_note]")
         }
@@ -72,24 +73,36 @@ impl LibSub {
         deck.look_back_caret(Slot::Learning, &app);
     }
 
-    pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn back_1_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
-        deck.seek_a_move(Slot::Learning, position, &app);
+        deck.replay_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
-    pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn back_10_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
         for _i in 0..10 {
-            deck.seek_a_move(Slot::Learning, position, &app);
+            let (sought_move_result, _rmove) = deck.replay_a_move(Slot::Learning, position, &app);
+            match sought_move_result {
+                SoughtMoveResult::Aware => {}
+                _ => {
+                    break;
+                }
+            }
         }
         HumanInterface::bo(deck, &position, &app);
     }
 
-    pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn back_400_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
         for _i in 0..400 {
-            deck.seek_a_move(Slot::Learning, position, &app);
+            let (sought_move_result, _rmove) = deck.replay_a_move(Slot::Learning, position, &app);
+            match sought_move_result {
+                SoughtMoveResult::Aware => {}
+                _ => {
+                    break;
+                }
+            }
         }
         HumanInterface::bo(deck, &position, &app);
     }
@@ -98,25 +111,25 @@ impl LibSub {
     // # F #
     // #####
 
-    pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn forward_1_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         // 非合法タッチは自動で戻します。
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        deck.seek_a_move(Slot::Learning, position, &app);
+        deck.replay_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
-    pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn forward_10_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         for _i in 0..10 {
-            deck.seek_a_move(Slot::Learning, position, &app);
+            deck.replay_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }
 
-    pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn forward_400_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         for _i in 0..400 {
-            deck.seek_a_move(Slot::Learning, position, &app);
+            deck.replay_a_move(Slot::Learning, position, &app);
         }
         HumanInterface::bo(deck, &position, &app);
     }
@@ -127,8 +140,8 @@ impl LibSub {
 
     pub fn go(
         best_move_picker: &mut BestMovePicker,
-        position: &mut Position,
         deck: &mut CassetteDeck,
+        position: &mut Position,
         app: &Application,
     ) {
         let board_size = position.get_board_size();
@@ -154,7 +167,7 @@ impl LibSub {
         }
     }
 
-    pub fn gameover(board_size: BoardSize, deck: &mut CassetteDeck, app: &Application) {
+    pub fn gameover(deck: &mut CassetteDeck, board_size: BoardSize, app: &Application) {
         // TODO とりあえず、テープが１個入った　テープ・ボックス形式で書きだし☆（＾～＾）
         deck.write_tape_box(board_size, &app);
     }
@@ -198,13 +211,21 @@ impl LibSub {
     }
 
     // #####
+    // # O #
+    // #####
+
+    pub fn ohashi(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
+        OhashiPlayer::learn_ohashi_starting(position, deck, &app)
+    }
+
+    // #####
     // # P #
     // #####
 
     pub fn position(
         line: String,
-        position: &mut Position,
         deck: &mut CassetteDeck,
+        position: &mut Position,
         app: &Application,
     ) {
         // 相手が指したあとの局面まで進める。
@@ -235,7 +256,7 @@ impl LibSub {
     // # S #
     // #####
 
-    pub fn seek_a_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+    pub fn seek_a_note(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
             if !position.try_beautiful_touch(&deck, &rnote, &app) {
@@ -306,7 +327,7 @@ impl LibSub {
         // １つ目
         let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
-            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
+            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0), false),
             board_size,
             &app,
         );
@@ -328,6 +349,7 @@ impl LibSub {
                     Cell::from_file_rank(5, 1),
                     board_size,
                 )),
+                false,
             ),
             board_size,
             &app,
@@ -350,6 +372,7 @@ impl LibSub {
                     Cell::from_file_rank(6, 2),
                     board_size,
                 )),
+                false,
             ),
             board_size,
             &app,
@@ -366,7 +389,7 @@ impl LibSub {
         // ４つ目
         let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
-            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
+            ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0), false),
             board_size,
             &app,
         );

@@ -618,11 +618,39 @@ impl TwoHeadsVec {
             }
         }
 
+        // 向きトラック。
+        let mut facing_left = "".to_string();
+        for sign in 0..2 {
+            let mut notes = if sign == 0 {
+                &self.negative_notes
+            } else {
+                &self.positive_notes
+            };
+
+            let mut is_first = true;
+            for note in notes {
+                if is_first {
+                    // 最初。
+                    facing_left = ShogiNote::to_facing_left_str(note.is_facing_left());
+                } else {
+                    // ２つ目からスペース区切り。
+                    facing_left = format!(
+                        "{} {}",
+                        facing_left,
+                        ShogiNote::to_facing_left_str(note.is_facing_left())
+                    );
+                }
+
+                is_first = false;
+            }
+        }
+
         RpmTapeTracks {
             // 駒の背番号は、半角スペース１個区切り。
             id: numbers.trim_start().to_string(),
             // 操作は、半角スペース１個区切り。
             ope: operations.trim_start().to_string(),
+            facing: facing_left.to_string(),
         }
     }
 

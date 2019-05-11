@@ -703,7 +703,11 @@ impl Position {
             }
         };
 
-        let rnote = ShogiNote::from_id_ope(id, *rnote_ope);
+        let rnote = ShogiNote::from_id_ope(
+            id,
+            *rnote_ope,
+            deck.is_facing_left_of_current_tape(Slot::Learning, &app),
+        );
 
         // ラーニング・テープに１ノート挿入します。
         deck.insert_note(Slot::Learning, rnote, board_size, app);

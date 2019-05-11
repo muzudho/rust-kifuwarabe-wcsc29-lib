@@ -284,7 +284,7 @@ impl BestMovePicker {
                                 // （２）テープをオーバーしていた。キャレットを動かさなかった状態に戻す。
                                 // （３）実現しない操作だった。局面とキャレットを動かさなかった状態に戻す。
                                 let (sought_move_result, rmove) =
-                                    deck.seek_a_move(Slot::Training, position, &app);
+                                    deck.replay_a_move(Slot::Training, position, &app);
                                 moved_notes += rmove.len();
 
                                 if rmove.is_empty() {

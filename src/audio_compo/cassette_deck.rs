@@ -178,6 +178,25 @@ impl CassetteDeck {
     }
 
     // #####
+    // # I #
+    // #####
+
+    /// キャレット位置に、ノートを挿入するぜ☆（＾～＾）
+    pub fn insert_note(
+        &mut self,
+        slot: Slot,
+        note: ShogiNote,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        self.slots[slot as usize].insert_note(note, board_size, &app);
+    }
+
+    pub fn is_facing_left_of_current_tape(&mut self, slot: Slot, _app: &Application) -> bool {
+        self.slots[slot as usize].is_facing_left_of_current_tape()
+    }
+
+    // #####
     // # L #
     // #####
 
@@ -229,17 +248,6 @@ impl CassetteDeck {
             // それ以外は繰り返す。
             count += 1;
         }
-    }
-
-    /// キャレット位置に、ノートを挿入するぜ☆（＾～＾）
-    pub fn insert_note(
-        &mut self,
-        slot: Slot,
-        note: ShogiNote,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        self.slots[slot as usize].insert_note(note, board_size, &app);
     }
 
     // #####
@@ -317,15 +325,10 @@ impl CassetteDeck {
 
     /// 1手分進める。（非合法タッチは自動で戻します）
     ///
-    /// 結果は次の３つだぜ☆（＾～＾）
-    /// （１）１手分。局面もキャレットも進んでいる。
-    /// （２）テープ終わっていた。キャレットを動かさなかった状態に戻す。
-    /// （３）実現しない操作だった。局面とキャレットを動かさなかった状態に戻す。
-    ///
     /// # Return
     ///
     /// (SoughtMoveResult, move)
-    pub fn seek_a_move(
+    pub fn replay_a_move(
         &mut self,
         slot: Slot,
         position: &mut Position,
@@ -333,13 +336,13 @@ impl CassetteDeck {
     ) -> (SoughtMoveResult, ShogiMove) {
         if app.is_debug() {
             app.comm
-                .println(&format!("[#seek_a_move: 開始, Slot:{:?}]", slot));
+                .println(&format!("[#Deck.ReplayM: 開始, Slot:{:?}]", slot));
         }
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
         if 0 < rmove.len() {
             panic!(app.comm.panic(&format!(
-                "[#Deck.Seek a move: Rmoveが最初から長さが0より大きかったら、おかしい☆（＾～＾）Rmove len:{}]",
+                "[#Deck.ReplayM: Rmoveが最初から長さが0より大きかったら、おかしい☆（＾～＾）Rmove len:{}]",
                 rmove.len())));
         }
 
@@ -349,7 +352,7 @@ impl CassetteDeck {
         'caret_loop: loop {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#Deck.Seek a move, Caret:{}]",
+                    "[#Deck.ReplayM {}]",
                     self.to_human_presentable_of_caret(slot, &app)
                 ))
             }
@@ -378,13 +381,13 @@ impl CassetteDeck {
                         if 1 == rmove.len() && !rnote.is_phase_change() {
                             // １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）
                             panic!(app.comm.panic(&format!(
-                            "[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Move len:{}, Rnote:{}]",
+                            "[#Deck.ReplayM: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Move len:{}, Rnote:{}]",
                             rmove.len(),
                             rnote.to_human_presentable(position.get_board_size(),&app))));
                         } else if rnote.is_phase_change() && 1 < rmove.len() && rmove.len() < 4 {
-                            panic!(app.comm.panic(&format!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）Move len:{}]",rmove.len())));
+                            panic!(app.comm.panic(&format!("[#Deck.ReplayM: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）Move len:{}]",rmove.len())));
                         } else if app.is_debug() {
-                            app.comm.println("[#seek_a_move: ノート読めてる]");
+                            app.comm.println("[#Deck.ReplayM: ノート読めてる]");
                         }
 
                         if rnote.is_phase_change() && 3 < rmove.len() {
@@ -425,7 +428,7 @@ impl CassetteDeck {
                     // オーバーフローを、読んだということだぜ☆（＾～＾）
                     if rmove.is_empty() {
                         if app.is_debug() {
-                            app.comm.println(&format!("[#seek_a_move: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾） Awareness:{:?}]",awareness));
+                            app.comm.println(&format!("[#Deck.ReplayM: ノート読めない☆ オーバーフローのノートを読んでる☆（＾～＾） Awareness:{:?}]",awareness));
                         }
 
                         rmove
@@ -433,7 +436,7 @@ impl CassetteDeck {
                             .intersect_2_values(awareness.passed_caret, awareness.expected_caret);
                         return (SoughtMoveResult::Forever, rmove);
                     } else {
-                        panic!(app.comm.panic("[#Deck.Seek a move: 指し手を読んでる途中でオーバーフローが現れた場合、指し手が閉じられてない☆（＾～＾）棋譜がおかしい☆（＾～＾）]"));
+                        panic!(app.comm.panic("[#Deck.ReplayM: 指し手を読んでる途中でオーバーフローが現れた場合、指し手が閉じられてない☆（＾～＾）棋譜がおかしい☆（＾～＾）]"));
                     }
                 }
             }
@@ -450,7 +453,7 @@ impl CassetteDeck {
             // キャレットを使って局面を戻す。
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#Deck.Seek a move: 巻き戻そう☆（＾～＾） Rollback {} note! Slot:{:?}, Move:{}]",
+                    "[#Deck.ReplayM: 巻き戻そう☆（＾～＾） Rollback {} note! Slot:{:?}, Move:{}]",
                     rmove.len(),
                     slot,
                     rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
@@ -468,7 +471,7 @@ impl CassetteDeck {
         // 1手分。
         if app.is_debug() {
             app.comm.println(&format!(
-                "[#seek_a_move: １手分☆（＾～＾） Move:{}]",
+                "[#Deck.ReplayM: １手分☆（＾～＾） Move:{}]",
                 rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
             ));
         }

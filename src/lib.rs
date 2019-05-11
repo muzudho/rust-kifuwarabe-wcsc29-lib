@@ -117,13 +117,13 @@ pub fn main_loop() {
         // # B #
         // #####
         } else if line == "b" {
-            LibSub::back_1_note(&mut position, &mut deck, &app);
+            LibSub::back_1_note(&mut deck, &mut position, &app);
         } else if line == "bb" {
-            LibSub::back_1_move(&mut position, &mut deck, &app);
+            LibSub::back_1_move(&mut deck, &mut position, &app);
         } else if line == "bbb" {
-            LibSub::back_10_move(&mut position, &mut deck, &app);
+            LibSub::back_10_move(&mut deck, &mut position, &app);
         } else if line == "bbbb" {
-            LibSub::back_400_move(&mut position, &mut deck, &app);
+            LibSub::back_400_move(&mut deck, &mut position, &app);
         } else if line.starts_with("bo") {
             // Board.
 
@@ -170,20 +170,20 @@ pub fn main_loop() {
         // # F #
         // #####
         } else if line == "ff" {
-            LibSub::forward_1_move(&mut position, &mut deck, &app);
+            LibSub::forward_1_move(&mut deck, &mut position, &app);
         } else if line == "fff" {
-            LibSub::forward_10_move(&mut position, &mut deck, &app);
+            LibSub::forward_10_move(&mut deck, &mut position, &app);
         } else if line == "ffff" {
-            LibSub::forward_400_move(&mut position, &mut deck, &app);
+            LibSub::forward_400_move(&mut deck, &mut position, &app);
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
-            LibSub::go(&mut best_move_picker, &mut position, &mut deck, &app);
+            LibSub::go(&mut best_move_picker, &mut deck, &mut position, &app);
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
-            LibSub::gameover(position.get_board_size(), &mut deck, &app);
+            LibSub::gameover(&mut deck, position.get_board_size(), &app);
         // #####
         // # H #
         // #####
@@ -238,6 +238,13 @@ pub fn main_loop() {
             // Look back training
             LibSub::look_back(&mut deck, Slot::Training, &app);
 
+        // #####
+        // # O #
+        // #####
+        } else if line == "ohashi" {
+            // Ohashi mode.
+            LibSub::ohashi(&mut deck, &mut position, &app);
+
         // #########
         // # Piece #
         // #########
@@ -258,7 +265,7 @@ pub fn main_loop() {
         // #####
         } else if line.starts_with("position") {
             // 相手が指したあとの局面まで進める。
-            LibSub::position(line, &mut position, &mut deck, &app);
+            LibSub::position(line, &mut deck, &mut position, &app);
 
         // #####
         // # Q #
@@ -272,7 +279,7 @@ pub fn main_loop() {
         } else if line.starts_with("scan-pid") {
             LibSub::scan_pid(&line, &mut deck, &mut position, &app);
         } else if line == "sn" {
-            LibSub::seek_a_note(&mut position, &mut deck, &app);
+            LibSub::seek_a_note(&mut deck, &mut position, &app);
 
         // #####
         // # T #
