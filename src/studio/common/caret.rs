@@ -26,8 +26,10 @@ pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
 // 意識。キャレットを go_to_next すると作成される。
 #[derive(Debug)]
 pub struct Awareness {
+    // 移動前のキャレットの位置。
+    pub passed_caret: i16,
     // 予想する移動後のキャレットの位置。
-    pub expected_caret_number: i16,
+    pub expected_caret: i16,
     // 配列のインデックス。オーバーしているときに要素が無い方へシークすると None になる。
     pub index: Option<usize>,
     // 負の方の配列か。
@@ -36,7 +38,8 @@ pub struct Awareness {
 impl Awareness {
     pub fn new() -> Self {
         Self {
-            expected_caret_number: 0,
+            expected_caret: 0,
+            passed_caret: 0,
             index: None,
             negative: false,
         }
@@ -142,6 +145,7 @@ impl Caret {
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
     pub fn seek_a_note(&mut self, app: &Application) -> Awareness {
+        let passed = self.unconscious_number;
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
         let aware_index;
@@ -195,7 +199,8 @@ impl Caret {
         }
 
         Awareness {
-            expected_caret_number: self.unconscious_number,
+            passed_caret: passed,
+            expected_caret: self.unconscious_number,
             index: Some(aware_index),
             negative: aware_negative,
         }
@@ -248,21 +253,24 @@ impl Caret {
             // キャレットが 0番地 にあるとき。
 
             Awareness {
-                expected_caret_number: self.unconscious_number,
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
                 index: None,
                 negative: self.is_facing_left(),
             }
         } else if self.unconscious_number < 0 {
             // キャレットが 負の方にあるとき。
             Awareness {
-                expected_caret_number: self.unconscious_number,
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
                 index: Some((-self.unconscious_number - 1) as usize),
                 negative: true,
             }
         } else {
             // キャレットが 正の方にあるとき。
             Awareness {
-                expected_caret_number: self.unconscious_number,
+                passed_caret: self.unconscious_number,
+                expected_caret: self.unconscious_number,
                 index: Some((self.unconscious_number - 1) as usize),
                 negative: false,
             }

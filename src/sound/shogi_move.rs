@@ -189,6 +189,11 @@ impl ShogiMove {
             ));
         }
 
+        // ####################
+        // # (0) Change phase #
+        // ####################
+        // TODO
+
         // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
         if let Some(address) = note.get_ope().address {
             if app.is_debug() {

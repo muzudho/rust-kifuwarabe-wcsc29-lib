@@ -89,7 +89,7 @@ impl ShogiNote {
             PieceIdentify::from_number(pnum)
         };
 
-        closed_interval.intersect_caret_number(n0.expected_caret_number);
+        closed_interval.intersect_caret_number(n0.expected_caret);
         closed_interval.intersect_caret_number(sub_closed_interval.get_minimum_caret_number());
         closed_interval.intersect_caret_number(sub_closed_interval.get_maximum_caret_number());
 

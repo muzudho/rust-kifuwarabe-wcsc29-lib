@@ -138,11 +138,11 @@ impl TwoHeadsVec {
             // [0, 1, 2] [3, 4] という２つのベクターの間に、要素を１つ入れる操作をしたい。
             // ここで、 awareness.index は 2。
             nega_v.extend_from_slice(&self.negative_notes[..]);
-            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
+            posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret));
             posi_v.push(note);
             if awareness.index < Some(self.positive_notes.len()) {
                 posi_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret_number + 1,
+                    awareness.expected_caret + 1,
                     self.positive_notes.len() as i16,
                 ));
             }
@@ -153,11 +153,11 @@ impl TwoHeadsVec {
             // というデータが入っているとき、start: 2 なら -3 を差し替えることを意味します。
 
             // Endは含めず、Startは含めます。
-            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
+            nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret));
             nega_v.push(note);
             if awareness.index < Some(self.negative_notes.len()) {
                 nega_v.extend_from_slice(&self.slice(
-                    awareness.expected_caret_number + 1,
+                    awareness.expected_caret + 1,
                     self.negative_notes.len() as i16,
                 ));
             }
@@ -191,7 +191,7 @@ impl TwoHeadsVec {
 
         let awareness = caret.get_peak();
 
-        if awareness.expected_caret_number == 0 {
+        if awareness.expected_caret == 0 {
             // キャレットが０番地のときに切り落とすと、正の方、負の方の全部なくなる☆（＾～＾）
             (Self::from_vector(posi_v, nega_v), None)
         } else {
