@@ -1,5 +1,5 @@
 use media::cassette_tape::*;
-use media::integer_note_vec::*;
+use media::two_heads_vec::*;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::RpmTapeTracks;
 use studio::application::Application;
@@ -64,7 +64,7 @@ impl RpmTape {
                 player2: "".to_string(),
                 source_file: "".to_string(),
             },
-            tracks: IntegerNoteVec::from_vector(
+            tracks: TwoHeadsVec::from_vector(
                 self.tracks.to_positive_vec(board_size, &app),
                 Vec::new(),
             ),

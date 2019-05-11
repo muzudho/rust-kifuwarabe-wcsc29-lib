@@ -207,14 +207,14 @@ impl CassetteDeck {
     // #####
 
     /// 指定のスロットの テープボックスの中の、現在のテープの、キャレットの向きを反対にします。
-    pub fn look_back_caret_to_opponent(&mut self, slot: Slot, app: &Application) {
-        self.slots[slot as usize].look_back_caret_to_opponent(&app);
+    pub fn look_back_caret(&mut self, slot: Slot, app: &Application) {
+        self.slots[slot as usize].look_back_caret(&app);
     }
-    pub fn look_back_caret_to_positive(&mut self, slot: Slot, app: &Application) {
-        self.slots[slot as usize].look_back_caret_to_positive(&app);
+    pub fn turn_caret_towards_positive_infinity(&mut self, slot: Slot, app: &Application) {
+        self.slots[slot as usize].turn_caret_towards_positive_infinity(&app);
     }
-    pub fn look_back_caret_to_negative(&mut self, slot: Slot, app: &Application) {
-        self.slots[slot as usize].look_back_caret_to_negative(&app);
+    pub fn turn_caret_towards_negative_infinity(&mut self, slot: Slot, app: &Application) {
+        self.slots[slot as usize].turn_caret_towards_negative_infinity(&app);
     }
 
     // #####
@@ -507,9 +507,9 @@ impl CassetteDeck {
                     rmove.to_human_presentable(self, slot, position.get_board_size(), &app)
                 ));
             }
-            self.look_back_caret_to_opponent(slot, &app);
+            self.look_back_caret(slot, &app);
             self.seek_n_notes_permissive(slot, rmove.len(), position, &app);
-            self.look_back_caret_to_opponent(slot, &app);
+            self.look_back_caret(slot, &app);
 
             return (SoughtMoveResult::Dream, ShogiMove::new_facing_right_move());
         }

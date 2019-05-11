@@ -74,6 +74,19 @@ impl Caret {
     }
 
     // #####
+    // # B #
+    // #####
+
+    /// 向きを変えずにうしろに下がるぜ☆（＾～＾）
+    pub fn back_walk(&mut self, app: &Application) -> Awareness {
+        self.look_back(&app);
+        let awareness = self.seek_a_note(&app);
+        self.look_back(&app);
+
+        awareness
+    }
+
+    // #####
     // # C #
     // #####
 
@@ -92,73 +105,47 @@ impl Caret {
     }
 
     // #####
-    // # G #
+    // # I #
     // #####
 
-    /// TODO ちょっと戻りたいときに☆（＾～＾）できれば使わない方がいい☆（＾～＾）
-    pub fn go_back(&mut self, app: &Application) -> Awareness {
-        // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
-        // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
-        let aware_index;
-        let aware_negative;
-        if self.facing_left {
-            // バックで右に進む。
-            if self.unconscious_number < 0 {
-                // 負のところを通る。（逆さ移動）
-                //
-                // -2 [1] -1 [0] 0
-                //
-                // で、-1から0へ移動した場合 [0] ということに注意。移動後のキャレットの絶対値がインデックスになる。
-                self.unconscious_number += 1;
-                aware_index = (-self.unconscious_number) as usize;
-                aware_negative = true;
-                if app.is_debug() {
-                    app.comm.println("[#Go back: --> 負のところを通った]")
-                }
-            } else {
-                // 正のところを通る。
-                aware_index = self.unconscious_number as usize;
-                self.unconscious_number += 1;
-                aware_negative = false;
-                if app.is_debug() {
-                    app.comm.println("[#Go back: --> 正のところを通った]")
-                }
-            }
-        } else {
-            // バックで左に進む。
-            if 0 < self.unconscious_number {
-                // 正のところを通る。（逆さ移動）
-                //
-                // 0 [0] 1 [1] 2
-                //
-                // で、1から0へ移動した場合 [0] ということに注意。移動後のキャレットがインデックスになる。
-                self.unconscious_number -= 1;
-                aware_index = self.unconscious_number as usize;
-                aware_negative = false;
-                if app.is_debug() {
-                    app.comm.println("[#Go back: <-- 正のところを通った]")
-                }
-            } else {
-                // 負のところを通る。
-                aware_index = (-self.unconscious_number - 1) as usize;
-                self.unconscious_number -= 1;
-                aware_negative = true;
-                if app.is_debug() {
-                    app.comm.println("[#Go back: <-- 負のところを通った]")
-                }
-            }
+    pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {
+        closed_interval.get_minimum_caret_number() <= self.unconscious_number
+            && self.unconscious_number <= closed_interval.get_maximum_caret_number()
+    }
+
+    pub fn is_facing_left(&self) -> bool {
+        self.facing_left
+    }
+
+    /// target 以上。
+    pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
+        target <= self.unconscious_number
+    }
+
+    // #####
+    // # L #
+    // #####
+
+    /// その場で、向きだけ変えるぜ☆（＾～＾）
+    pub fn look_back(&mut self, app: &Application) {
+        if app.is_debug() {
+            app.comm.println("[#LookBack]");
         }
 
-        Awareness {
-            expected_caret_number: self.unconscious_number,
-            index: aware_index,
-            negative: aware_negative,
-        }
+        // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
+        self.facing_left = !self.facing_left;
+
+        // 振り返ってから、１歩前へ☆（＾～＾）
+        //self.go_to_next(&app);
     }
+
+    // #####
+    // # S #
+    // #####
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn go_to_next(&mut self, app: &Application) -> Awareness {
+    pub fn seek_a_note(&mut self, app: &Application) -> Awareness {
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
         let aware_index;
@@ -218,33 +205,22 @@ impl Caret {
         }
     }
 
-    // #####
-    // # I #
-    // #####
-
-    pub fn is_internal_of(&self, closed_interval: ClosedInterval) -> bool {
-        closed_interval.get_minimum_caret_number() <= self.unconscious_number
-            && self.unconscious_number <= closed_interval.get_maximum_caret_number()
-    }
-
-    pub fn is_facing_left(&self) -> bool {
-        self.facing_left
-    }
-
-    /// target 以上。
-    pub fn is_greater_than_or_equal_to(&self, target: i16) -> bool {
-        target <= self.unconscious_number
+    /// 足踏みする（step in）☆（＾～＾）
+    /// キャレットの現在番地が欲しいケースがけっこうある☆（＾～＾）
+    /// 思想上、なるべく go_to_next() を使えだぜ☆（＾～＾）
+    pub fn step_in(&self) -> i16 {
+        self.unconscious_number
     }
 
     // #####
-    // # L #
+    // # T #
     // #####
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
-    pub fn look_back_to_negative(&mut self, app: &Application) {
+    pub fn turn_towards_negative_infinity(&mut self, app: &Application) {
         if !self.is_facing_left() {
             if app.is_debug() {
-                app.comm.println("[#LookBack <--]");
+                app.comm.println("[#Turn towards <--]");
             }
 
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
@@ -256,10 +232,10 @@ impl Caret {
     }
 
     /// その場で、向きだけ変えるぜ☆（＾～＾）
-    pub fn look_back_to_positive(&mut self, app: &Application) {
+    pub fn turn_towards_positive_infinity(&mut self, app: &Application) {
         if self.is_facing_left() {
             if app.is_debug() {
-                app.comm.println("[#LookBack -->]");
+                app.comm.println("[#Turn towards -->]");
             }
 
             // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
@@ -269,34 +245,6 @@ impl Caret {
             //self.go_to_next(&app);
         }
     }
-
-    /// その場で、向きだけ変えるぜ☆（＾～＾）
-    pub fn look_back_to_opponent(&mut self, app: &Application) {
-        if app.is_debug() {
-            app.comm.println("[#LookBack opp]");
-        }
-
-        // 向きを変えるだけでは、回転テーブル・ターン☆（＾～＾）
-        self.facing_left = !self.facing_left;
-
-        // 振り返ってから、１歩前へ☆（＾～＾）
-        //self.go_to_next(&app);
-    }
-
-    // #####
-    // # S #
-    // #####
-
-    /// 足踏みする（step in）☆（＾～＾）
-    /// キャレットの現在番地が欲しいケースがけっこうある☆（＾～＾）
-    /// 思想上、なるべく go_to_next() を使えだぜ☆（＾～＾）
-    pub fn step_in(&self) -> i16 {
-        self.unconscious_number
-    }
-
-    // #####
-    // # T #
-    // #####
 
     /// トランケート用に使う。
     ///

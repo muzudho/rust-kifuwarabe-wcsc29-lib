@@ -439,11 +439,11 @@ impl BestMovePicker {
                                 deck.to_human_presentable()
                             ));
                         }
-                        deck.look_back_caret_to_opponent(Slot::Training, &app);
+                        deck.look_back_caret(Slot::Training, &app);
                         {
                             deck.seek_n_notes_permissive(Slot::Training, repeats, position, &app);
                         }
-                        deck.look_back_caret_to_opponent(Slot::Training, &app);
+                        deck.look_back_caret(Slot::Training, &app);
 
                         // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）
                         deck.seek_next_note(Slot::Training, &app);

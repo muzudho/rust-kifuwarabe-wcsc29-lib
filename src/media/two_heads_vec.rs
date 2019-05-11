@@ -12,11 +12,11 @@ const NONE_VALUE: i8 = -1;
 /// Reversible physical move.
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 #[derive(Default)]
-pub struct IntegerNoteVec {
+pub struct TwoHeadsVec {
     pub positive_notes: Vec<ShogiNote>,
     pub negative_notes: Vec<ShogiNote>,
 }
-impl fmt::Display for IntegerNoteVec {
+impl fmt::Display for TwoHeadsVec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -26,20 +26,20 @@ impl fmt::Display for IntegerNoteVec {
         )
     }
 }
-impl IntegerNoteVec {
+impl TwoHeadsVec {
     // ###############
     // # Constructor #
     // ###############
 
     pub fn default() -> Self {
-        IntegerNoteVec {
+        Self {
             positive_notes: Vec::new(),
             negative_notes: Vec::new(),
         }
     }
 
     pub fn from_vector(positive_v: Vec<ShogiNote>, negative_v: Vec<ShogiNote>) -> Self {
-        IntegerNoteVec {
+        Self {
             positive_notes: positive_v,
             negative_notes: negative_v,
         }
@@ -50,13 +50,13 @@ impl IntegerNoteVec {
     // #####
 
     /// 連結。
-    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut IntegerNoteVec) {
+    pub fn append_tape_to_right(&mut self, tape_to_empty: &mut Self) {
         self.positive_notes
             .append(&mut tape_to_empty.negative_notes);
         self.positive_notes
             .append(&mut tape_to_empty.positive_notes);
     }
-    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut IntegerNoteVec) {
+    pub fn append_tape_to_left(&mut self, tape_to_empty: &mut Self) {
         self.negative_notes
             .append(&mut tape_to_empty.positive_notes);
         self.negative_notes
@@ -79,9 +79,9 @@ impl IntegerNoteVec {
             app.comm.println("[#INVec.Back note: 開始]")
         }
 
-        caret.look_back_to_opponent(&app);
+        caret.look_back(&app);
         let (taken_overflow, rmove, note) = self.seek_next_note(caret, &app);
-        caret.look_back_to_opponent(&app);
+        caret.look_back(&app);
 
         if app.is_debug() {
             app.comm.println("[#INVec.Back note: 終了]")
@@ -125,7 +125,7 @@ impl IntegerNoteVec {
     /// 先端への　足し継ぎ　も、中ほどの　リプレース　もこれで。
     pub fn go_overwrite_note(&self, caret: &mut Caret, note: ShogiNote, app: &Application) -> Self {
         // とりあえず、キャレットを進めてみる。
-        let awareness = caret.go_to_next(&app);
+        let awareness = caret.seek_a_note(&app);
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -164,7 +164,7 @@ impl IntegerNoteVec {
             posi_v.extend_from_slice(&self.positive_notes[..]);
         }
 
-        IntegerNoteVec::from_vector(posi_v, nega_v)
+        Self::from_vector(posi_v, nega_v)
     }
 
     // #####
@@ -188,7 +188,7 @@ impl IntegerNoteVec {
         let (is_positive, index) = caret.to_index_for_truncation();
 
         if index == 0 {
-            (IntegerNoteVec::from_vector(posi_v, nega_v), None)
+            (Self::from_vector(posi_v, nega_v), None)
         } else {
             let removed_note_opt = if is_positive {
                 // 正のテープ側で切り落とし。
@@ -214,10 +214,7 @@ impl IntegerNoteVec {
                 }
             };
 
-            (
-                IntegerNoteVec::from_vector(posi_v, nega_v),
-                removed_note_opt,
-            )
+            (Self::from_vector(posi_v, nega_v), removed_note_opt)
         }
     }
 
@@ -240,7 +237,7 @@ impl IntegerNoteVec {
         // キャレットの始点を取っておく。
         let ci = ClosedInterval::from_all(caret.step_in(), caret.step_in(), caret.is_facing_left());
         // とりあえず、キャレットを１つ進める。
-        let awareness = caret.go_to_next(&app);
+        let awareness = caret.seek_a_note(&app);
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#INVec.Seek next note: CI:{}, Awareness:{:?}]",

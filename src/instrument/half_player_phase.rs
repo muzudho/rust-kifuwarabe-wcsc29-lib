@@ -99,7 +99,7 @@ impl HalfPlayerPhaseObject {
         self.look_back_phase_for_position(deck, &app);
     }
     pub fn look_back_phase_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        deck.slots[Slot::Learning as usize].look_back_caret_to_opponent(&app);
+        deck.slots[Slot::Learning as usize].look_back_caret(&app);
     }
 
     /// 点対称に回転☆（＾ｑ＾）！

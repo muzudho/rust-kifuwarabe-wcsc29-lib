@@ -216,11 +216,9 @@ impl CassetteTapeBox {
     // # L #
     // #####
 
-    pub fn look_back_caret_to_opponent(&mut self, app: &Application) {
+    pub fn look_back_caret(&mut self, app: &Application) {
         if let Some(ref awareness) = self.awareness_of_tapes {
-            self.tapes[awareness.index]
-                .caret
-                .look_back_to_opponent(&app);
+            self.tapes[awareness.index].caret.look_back(&app);
         } else {
             panic!(
                 "#look_back_caret_to_opponent: Please seek tapes. It is none. Slot: '{:?}'.",
@@ -229,27 +227,27 @@ impl CassetteTapeBox {
         }
     }
 
-    pub fn look_back_caret_to_negative(&mut self, app: &Application) {
+    pub fn turn_caret_towards_negative_infinity(&mut self, app: &Application) {
         if let Some(ref awareness) = self.awareness_of_tapes {
             self.tapes[awareness.index]
                 .caret
-                .look_back_to_negative(&app);
+                .turn_towards_negative_infinity(&app);
         } else {
             panic!(
-                "#look_back_caret_to_negative: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#turn_caret_towards_negative_infinity: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }
     }
 
-    pub fn look_back_caret_to_positive(&mut self, app: &Application) {
+    pub fn turn_caret_towards_positive_infinity(&mut self, app: &Application) {
         if let Some(ref awareness) = self.awareness_of_tapes {
             self.tapes[awareness.index]
                 .caret
-                .look_back_to_positive(&app);
+                .turn_towards_positive_infinity(&app);
         } else {
             panic!(
-                "#look_back_caret_to_positive: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#turn_caret_towards_positive_infinity: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }
@@ -320,7 +318,7 @@ impl CassetteTapeBox {
             return false;
         }
 
-        let awareness = self.caret_of_tapes.go_to_next(&app);
+        let awareness = self.caret_of_tapes.seek_a_note(&app);
         if app.is_debug() {
             app.comm
                 .println(&format!("[#Seek of tapes: Awareness:{:?}]", awareness));
@@ -371,7 +369,7 @@ impl CassetteTapeBox {
     /// # Returns
     ///
     /// (taken overflow, move, note)
-    pub fn seek_to_next_with_othre_caret(
+    pub fn seek_next_note_with_othre_caret(
         &self,
         caret: &mut Caret,
         app: &Application,
@@ -380,7 +378,7 @@ impl CassetteTapeBox {
             self.tapes[awareness.index].seek_next_note_with_othre_caret(caret, &app)
         } else {
             panic!(
-                "#seek_to_next_with_othre_caret: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#seek_next_note_with_othre_caret: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }

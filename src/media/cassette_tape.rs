@@ -1,6 +1,6 @@
 extern crate rand;
 use conf::kifuwarabe_wcsc29_master_config::*;
-use media::integer_note_vec::*;
+use media::two_heads_vec::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
 use sound::shogi_move::ShogiMove;
@@ -49,7 +49,7 @@ pub struct CassetteTape {
     pub fragment_file_name: String,
     pub caret: Caret,
     pub label: CassetteTapeLabel,
-    pub tracks: IntegerNoteVec,
+    pub tracks: TwoHeadsVec,
 }
 impl CassetteTape {
     // ###############
@@ -69,7 +69,7 @@ impl CassetteTape {
                 player2: "".to_string(),
                 source_file: "".to_string(),
             },
-            tracks: IntegerNoteVec::default(),
+            tracks: TwoHeadsVec::default(),
         }
     }
 

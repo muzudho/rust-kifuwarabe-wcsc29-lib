@@ -19,7 +19,7 @@ impl LibSub {
         let slot = Slot::Learning;
         let rnote_opt = {
             let tape_box = &mut deck.slots[slot as usize];
-            tape_box.look_back_caret_to_negative(&app);
+            tape_box.turn_caret_towards_negative_infinity(&app);
             if let (_taken_overflow, _note_move, Some(rnote)) = tape_box.seek_next_note(&app) {
                 Some(rnote)
             } else {
@@ -37,13 +37,13 @@ impl LibSub {
     }
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_negative(Slot::Learning, &app);
+        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
         deck.seek_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn back_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_negative(Slot::Learning, &app);
+        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
         for _i in 0..10 {
             deck.seek_a_move(Slot::Learning, position, &app);
         }
@@ -51,7 +51,7 @@ impl LibSub {
     }
 
     pub fn back_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_negative(Slot::Learning, &app);
+        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
         for _i in 0..400 {
             deck.seek_a_move(Slot::Learning, position, &app);
         }
@@ -59,7 +59,7 @@ impl LibSub {
     }
 
     pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_positive(Slot::Learning, &app);
+        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         if let (_taken_overflow, _note_move, Some(rnote)) =
             deck.seek_next_note(Slot::Learning, &app)
         {
@@ -72,13 +72,13 @@ impl LibSub {
 
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         // 非合法タッチは自動で戻します。
-        deck.look_back_caret_to_positive(Slot::Learning, &app);
+        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         deck.seek_a_move(Slot::Learning, position, &app);
         HumanInterface::bo(deck, &position, &app);
     }
 
     pub fn forward_10_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_positive(Slot::Learning, &app);
+        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         for _i in 0..10 {
             deck.seek_a_move(Slot::Learning, position, &app);
         }
@@ -86,7 +86,7 @@ impl LibSub {
     }
 
     pub fn forward_400_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.look_back_caret_to_positive(Slot::Learning, &app);
+        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         for _i in 0..400 {
             deck.seek_a_move(Slot::Learning, position, &app);
         }
@@ -101,7 +101,7 @@ impl LibSub {
     ) {
         let board_size = position.get_board_size();
 
-        deck.slots[Slot::Learning as usize].look_back_caret_to_positive(&app);
+        deck.slots[Slot::Learning as usize].turn_caret_towards_positive_infinity(&app);
 
         let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
         // Examples.
