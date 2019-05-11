@@ -200,7 +200,10 @@ impl ShogiNoteOpe {
     ) -> (ClosedInterval, Option<ShogiNoteOpe>) {
         let mut closed_interval = ClosedInterval::new_facing_right();
 
-        let mut n0 = caret.seek_a_note(&app).index;
+        let mut n0 = caret
+            .seek_a_note(&app)
+            .index
+            .unwrap_or_else(|| panic!(app.comm.panic("n0 fail.")));
         closed_interval.intersect_caret_number(n0 as i16);
 
         let mut ch0 = line[n0..=n0]
@@ -211,7 +214,10 @@ impl ShogiNoteOpe {
             ' ' => (closed_interval, None),
             '0' => {
                 // 駒台。
-                let mut n1 = caret.seek_a_note(&app).index;
+                let mut n1 = caret
+                    .seek_a_note(&app)
+                    .index
+                    .unwrap_or_else(|| panic!(app.comm.panic("n1 fail.")));
                 let mut ch1 = line[n1..=n1]
                     .chars()
                     .nth(0)
@@ -223,7 +229,10 @@ impl ShogiNoteOpe {
                             // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
                             // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
 
-                            n1 = caret.seek_a_note(&app).index;
+                            n1 = caret
+                                .seek_a_note(&app)
+                                .index
+                                .unwrap_or_else(|| panic!(app.comm.panic("n1 fail.")));
                             ch1 = line[n1..=n1]
                                 .chars()
                                 .nth(0)
@@ -246,7 +255,10 @@ impl ShogiNoteOpe {
             }
             '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
                 // セル
-                let mut n1 = caret.seek_a_note(&app).index;
+                let mut n1 = caret
+                    .seek_a_note(&app)
+                    .index
+                    .unwrap_or_else(|| panic!(app.comm.panic("n1 fail.")));
                 let mut ch1 = line[n1..=n1]
                     .chars()
                     .nth(0)
@@ -286,7 +298,10 @@ impl ShogiNoteOpe {
                         break;
                     }
 
-                    n0 = caret.seek_a_note(&app).index;
+                    n0 = caret
+                        .seek_a_note(&app)
+                        .index
+                        .unwrap_or_else(|| panic!(app.comm.panic("n0 fail.")));
                     ch0 = line[n0..=n0]
                         .chars()
                         .nth(0)

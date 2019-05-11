@@ -66,17 +66,20 @@ impl ShogiNote {
 
         // 数字を返却してから、キャレットを移動。
         let n0 = note_caret.seek_a_note(&app);
+        let n0index = n0
+            .index
+            .unwrap_or_else(|| panic!(app.comm.panic("n0 fail.")));
 
         let mut token_caret = Caret::new_facing_right_caret();
         let (sub_closed_interval, note_ope) = if let (sub_closed_interval, Some(note_ope)) =
-            ShogiNoteOpe::parse_1ope(&ope_vec[n0.index], &mut token_caret, board_size, &app)
+            ShogiNoteOpe::parse_1ope(&ope_vec[n0index], &mut token_caret, board_size, &app)
         {
             (sub_closed_interval, note_ope)
         } else {
-            panic!("Unexpected operation note token. {}", ope_vec[n0.index])
+            panic!("Unexpected operation note token. {}", ope_vec[n0index])
         };
 
-        let pnum: i8 = id_vec[n0.index]
+        let pnum: i8 = id_vec[n0index]
             .parse()
             .unwrap_or_else(|err| panic!(app.comm.println(&format!("{}", err))));
         let pid_opt = if pnum == -1 {

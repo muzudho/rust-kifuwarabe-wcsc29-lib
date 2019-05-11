@@ -38,10 +38,19 @@ pub fn caret_number_to_length(caret_number: i16) -> usize {
 pub struct Awareness {
     // 予想する移動後のキャレットの位置。
     pub expected_caret_number: i16,
-    // 配列のインデックス。
-    pub index: usize,
+    // 配列のインデックス。オーバーしているときに要素が無い方へシークすると None になる。
+    pub index: Option<usize>,
     // 負の方の配列か。
     pub negative: bool,
+}
+impl Awareness {
+    pub fn new() -> Self {
+        Self {
+            expected_caret_number: 0,
+            index: None,
+            negative: false,
+        }
+    }
 }
 
 /// 余談。
@@ -200,7 +209,7 @@ impl Caret {
 
         Awareness {
             expected_caret_number: self.unconscious_number,
-            index: aware_index,
+            index: Some(aware_index),
             negative: aware_negative,
         }
     }

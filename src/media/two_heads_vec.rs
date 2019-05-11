@@ -140,7 +140,7 @@ impl TwoHeadsVec {
             nega_v.extend_from_slice(&self.negative_notes[..]);
             posi_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
             posi_v.push(note);
-            if awareness.index < self.positive_notes.len() {
+            if awareness.index < Some(self.positive_notes.len()) {
                 posi_v.extend_from_slice(&self.slice(
                     awareness.expected_caret_number + 1,
                     self.positive_notes.len() as i16,
@@ -155,7 +155,7 @@ impl TwoHeadsVec {
             // Endは含めず、Startは含めます。
             nega_v.extend_from_slice(&self.slice(0, awareness.expected_caret_number));
             nega_v.push(note);
-            if awareness.index < self.negative_notes.len() {
+            if awareness.index < Some(self.negative_notes.len()) {
                 nega_v.extend_from_slice(&self.slice(
                     awareness.expected_caret_number + 1,
                     self.negative_notes.len() as i16,
@@ -251,7 +251,7 @@ impl TwoHeadsVec {
             // 負の無限大 <---- 顔の向き。
             if awareness.negative {
                 // 負の方。
-                if self.negative_notes.len() <= awareness.index {
+                if Some(self.negative_notes.len()) <= awareness.index {
                     // 配列の範囲外。
                     if app.is_debug() {
                         app.comm
@@ -263,11 +263,19 @@ impl TwoHeadsVec {
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: <-- 負の方]");
                     }
-                    (false, one_note, Some(self.negative_notes[awareness.index]))
+                    (
+                        false,
+                        one_note,
+                        if let Some(index) = awareness.index {
+                            Some(self.negative_notes[index])
+                        } else {
+                            None
+                        },
+                    )
                 }
             } else {
                 // 正の方。
-                if self.positive_notes.len() <= awareness.index {
+                if Some(self.positive_notes.len()) <= awareness.index {
                     // 配列の範囲外。
                     if app.is_debug() {
                         app.comm
@@ -279,14 +287,22 @@ impl TwoHeadsVec {
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: <-- 正の方]");
                     }
-                    (false, one_note, Some(self.positive_notes[awareness.index]))
+                    (
+                        false,
+                        one_note,
+                        if let Some(index) = awareness.index {
+                            Some(self.positive_notes[index])
+                        } else {
+                            None
+                        },
+                    )
                 }
             }
         } else {
             // 顔の向き ----> 正の無限大。
             if !awareness.negative {
                 // 正の方。
-                if self.positive_notes.len() <= awareness.index {
+                if Some(self.positive_notes.len()) <= awareness.index {
                     // 配列の範囲外。
                     if app.is_debug() {
                         app.comm
@@ -298,11 +314,19 @@ impl TwoHeadsVec {
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: --> 正の方]");
                     }
-                    (false, one_note, Some(self.positive_notes[awareness.index]))
+                    (
+                        false,
+                        one_note,
+                        if let Some(index) = awareness.index {
+                            Some(self.positive_notes[index])
+                        } else {
+                            None
+                        },
+                    )
                 }
             } else {
                 // 負の方。
-                if self.negative_notes.len() <= awareness.index {
+                if Some(self.negative_notes.len()) <= awareness.index {
                     // 配列の範囲外。
                     if app.is_debug() {
                         app.comm
@@ -314,7 +338,15 @@ impl TwoHeadsVec {
                     if app.is_debug() {
                         app.comm.println("[#Seek next note: --> 負の方]");
                     }
-                    (false, one_note, Some(self.negative_notes[awareness.index]))
+                    (
+                        false,
+                        one_note,
+                        if let Some(index) = awareness.index {
+                            Some(self.negative_notes[index])
+                        } else {
+                            None
+                        },
+                    )
                 }
             }
         }
