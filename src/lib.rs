@@ -117,7 +117,7 @@ pub fn main_loop() {
         // # B #
         // #####
         } else if line == "b" {
-            LibSub::back_1_note(&mut position, &mut deck, &app);
+            LibSub::back_walk_a_note_and_touch(&mut position, &mut deck, &app);
         } else if line == "bb" {
             LibSub::back_1_move(&mut position, &mut deck, &app);
         } else if line == "bbb" {
@@ -171,9 +171,6 @@ pub fn main_loop() {
         // #####
         // # F #
         // #####
-        } else if line == "f" {
-            LibSub::forward_1_note(&mut position, &mut deck, &app);
-        // Forward 1note.
         } else if line == "ff" {
             LibSub::forward_1_move(&mut position, &mut deck, &app);
         } else if line == "fff" {
@@ -232,6 +229,16 @@ pub fn main_loop() {
             HumanInterface::kifu(&deck, Slot::Training, &position, &app);
             HumanInterface::kifu(&deck, Slot::Learning, &position, &app);
 
+        // #####
+        // # L #
+        // #####
+        } else if line == "lbl" {
+            // Look back learing
+            LibSub::look_back(&mut deck, Slot::Learning, &app);
+        } else if line == "lbt" {
+            // Look back training
+            LibSub::look_back(&mut deck, Slot::Training, &app);
+
         // #########
         // # Piece #
         // #########
@@ -265,6 +272,8 @@ pub fn main_loop() {
         // #####
         } else if line.starts_with("scan-pid") {
             LibSub::scan_pid(&line, &mut deck, &mut position, &app);
+        } else if line == "sn" {
+            LibSub::seek_a_note(&mut position, &mut deck, &app);
 
         // #####
         // # T #

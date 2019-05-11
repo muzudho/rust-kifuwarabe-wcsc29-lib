@@ -480,7 +480,7 @@ impl TwoHeadsVec {
         &self,
         start_caret: i16,
         end_caret: i16,
-        app: &Application,
+        _app: &Application,
     ) -> Vec<ShogiNote> {
         /*
         if app.is_debug() {

@@ -44,6 +44,25 @@ impl Awareness {
             negative: false,
         }
     }
+
+    pub fn to_human_presentable(&self) -> String {
+        format!(
+            "Aware {}:{}|{}{}",
+            self.passed_caret,
+            self.expected_caret,
+            if self.negative {
+                "-".to_string()
+            } else {
+                "+".to_string()
+            },
+            if let Some(ix) = self.index {
+                ix.to_string()
+            } else {
+                "None".to_string()
+            },
+        )
+        .to_string()
+    }
 }
 
 /// 余談。
@@ -186,7 +205,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn seek_a_note(&mut self, _app: &Application) -> Awareness {
+    pub fn seek_a_note(&mut self, app: &Application) -> Awareness {
         let passed = self.unconscious_number;
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。
@@ -248,12 +267,19 @@ impl Caret {
             }
         }
 
-        Awareness {
+        let awareness = Awareness {
             passed_caret: passed,
             expected_caret: self.unconscious_number,
             index: Some(aware_index),
             negative: aware_negative,
+        };
+
+        if app.is_debug() {
+            app.comm
+                .println(&format!("[#SeekN: {}]", awareness.to_human_presentable()))
         }
+
+        awareness
     }
 
     /// 足踏みする（step in）☆（＾～＾）

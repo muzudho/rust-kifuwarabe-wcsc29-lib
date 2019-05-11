@@ -24,22 +24,36 @@ impl LibSub {
     // # B #
     // #####
 
-    pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        let slot = Slot::Learning;
-        let rnote_opt = {
-            let tape_box = &mut deck.slots[slot as usize];
-            tape_box.turn_caret_towards_negative_infinity(&app);
-            if let (_taken_overflow, _awareness, Some(rnote)) = tape_box.seek_a_note(&app) {
-                Some(rnote)
-            } else {
-                None
-            }
-        };
+    pub fn back_walk_a_note_and_touch(
+        position: &mut Position,
+        deck: &mut CassetteDeck,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm.println("[#back_walk_a_note_and_touch]")
+        }
+
+        let (taken_overflow, awareness, rnote_opt) =
+            deck.slots[Slot::Learning as usize].back_walk_a_note(&app);
 
         if let Some(rnote) = rnote_opt {
+            if app.is_debug() {
+                app.comm.println(&format!(
+                    "[#back_walk_a_note_and_touch: taken_overflow:{}, awareness:{:?}, Rnote:{}]",
+                    taken_overflow,
+                    awareness,
+                    rnote.to_human_presentable(position.get_board_size(), &app)
+                ));
+            }
+
             if !position.try_beautiful_touch(deck, &rnote, &app) {
                 app.comm.println("Touch fail.");
             }
+        } else if app.is_debug() {
+            app.comm.println(&format!(
+                "[#back_walk_a_note_and_touch: taken_overflow:{}, awareness:{:?}, Rnote:None]",
+                taken_overflow, awareness
+            ));
         }
 
         HumanInterface::bo(deck, &position, &app);
@@ -70,16 +84,6 @@ impl LibSub {
     // #####
     // # F #
     // #####
-
-    pub fn forward_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
-        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
-            if !position.try_beautiful_touch(&deck, &rnote, &app) {
-                app.comm.println("Touch fail.");
-            }
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
 
     pub fn forward_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         // 非合法タッチは自動で戻します。
@@ -173,6 +177,14 @@ impl LibSub {
     }
 
     // #####
+    // # L #
+    // #####
+
+    pub fn look_back(deck: &mut CassetteDeck, slot: Slot, app: &Application) {
+        deck.look_back_caret(slot, &app)
+    }
+
+    // #####
     // # P #
     // #####
 
@@ -209,6 +221,16 @@ impl LibSub {
     // #####
     // # S #
     // #####
+
+    pub fn seek_a_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
+        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
+        if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
+            if !position.try_beautiful_touch(&deck, &rnote, &app) {
+                app.comm.println("Touch fail.");
+            }
+        }
+        HumanInterface::bo(deck, &position, &app);
+    }
 
     pub fn scan_pid(
         line: &str,
