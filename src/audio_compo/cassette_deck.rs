@@ -7,7 +7,6 @@ use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
-use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Awareness;
 use studio::common::caret::SoughtMoveResult;
 use studio::common::closed_interval::ClosedInterval;
@@ -259,44 +258,15 @@ impl CassetteDeck {
         }
     }
 
-    /// キャレット位置に、ノートを上書き、または追加をするぜ☆（＾～＾）
-    pub fn put_1note(&mut self, slot: Slot, note: ShogiNote, app: &Application) {
-        let tape_box = &mut self.slots[slot as usize];
-        // とりあえず、キャレットを進めようぜ☆（＾～＾）
-        let (_taken_overflow, awareness, _) = tape_box.seek_a_note(&app);
-
-        if !awareness.negative {
-            // ０、または 正のテープ。
-            // 次にオーバーフローするか判断。
-            if tape_box.is_before_caret_overflow_of_tape() {
-                // 正の絶対値が大きい方の新しい要素を追加しようとしている。
-                tape_box.push_note_to_positive_of_current_tape(note);
-                tape_box.seek_a_note(&app);
-            } else {
-                // 先端でなければ、上書き。
-                tape_box.set_note_to_current_tape(awareness.expected_caret, note);
-
-                // 仮のおわり を更新。
-                tape_box.truncate_positive_of_current_tape(get_index_from_caret_numbers(
-                    awareness.expected_caret,
-                ));
-            }
-        } else {
-            // 負のテープ。
-            // 最先端かどうか判断。
-            if tape_box.is_before_caret_overflow_of_tape() {
-                // 負の絶対値が大きい方の新しい要素を追加しようとしている。
-                tape_box.push_note_to_negative_of_current_tape(note);
-                tape_box.seek_a_note(&app);
-            } else {
-                // 先端でなければ、上書き。
-                tape_box.set_note_to_current_tape(awareness.expected_caret, note);
-                // 仮のおわり を更新。
-                tape_box.truncate_negative_of_current_tape(get_index_from_caret_numbers(
-                    awareness.expected_caret,
-                ));
-            }
-        }
+    /// キャレット位置に、ノートを挿入するぜ☆（＾～＾）
+    pub fn insert_note(
+        &mut self,
+        slot: Slot,
+        note: ShogiNote,
+        board_size: BoardSize,
+        app: &Application,
+    ) {
+        self.slots[slot as usize].insert_note(note, board_size, &app);
     }
 
     // #####

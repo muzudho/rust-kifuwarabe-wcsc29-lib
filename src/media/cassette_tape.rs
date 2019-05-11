@@ -154,6 +154,12 @@ impl CassetteTape {
     // # I #
     // #####
 
+    pub fn insert_note(&mut self, note: ShogiNote, board_size: BoardSize, app: &Application) {
+        self.tracks =
+            self.tracks
+                .new_vector_with_inserted_note(&mut self.caret, note, board_size, &app);
+    }
+
     /// キャレットが左を向いているか☆（＾～＾）
     pub fn is_facing_left_of_caret(&self) -> bool {
         self.caret.is_facing_left()

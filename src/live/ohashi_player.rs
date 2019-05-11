@@ -1,5 +1,5 @@
 use audio_compo::cassette_deck::CassetteDeck;
-use audio_compo::cassette_deck::Slot;
+//use audio_compo::cassette_deck::Slot;
 use human::human_interface::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
@@ -94,14 +94,19 @@ impl OhashiPlayer {
             // 大橋流で指している☆（＾～＾）１手に４ノート使う☆（＾～＾）
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
+                /*
                 if app.is_debug() {
                     app.comm.print("大橋0a:");
                 }
                 deck.seek_a_note(Slot::Learning, &app);
+                */
+
+                // タッチすれば、ラーニングに１ノート挿入される。
                 if app.is_debug() {
                     app.comm.print("大橋0b:");
                 }
                 position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
+
                 if app.is_debug() {
                     app.comm.print("大橋0c:");
                 }
@@ -112,7 +117,7 @@ impl OhashiPlayer {
                 if app.is_debug() {
                     app.comm.print("大橋1:");
                 }
-                deck.seek_a_note(Slot::Learning, &app);
+                // deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
                 HumanInterface::bo(deck, position, &app);
             }
@@ -121,7 +126,7 @@ impl OhashiPlayer {
                 if app.is_debug() {
                     app.comm.print("大橋2:");
                 }
-                deck.seek_a_note(Slot::Learning, &app);
+                // deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
                 HumanInterface::bo(deck, position, &app);
             }
@@ -130,7 +135,7 @@ impl OhashiPlayer {
                 if app.is_debug() {
                     app.comm.print("大橋3:");
                 }
-                deck.seek_a_note(Slot::Learning, &app);
+                // deck.seek_a_note(Slot::Learning, &app);
                 position.touch_1note_ope_no_log(deck, &element.3, false, bs, &app);
                 HumanInterface::bo(deck, position, &app);
             }

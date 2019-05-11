@@ -225,8 +225,9 @@ pub fn main_loop() {
         // #####
         // # K #
         // #####
-        } else if line == "kifu" {
+        } else if line == "kifut" {
             HumanInterface::kifu(&deck, Slot::Training, &position, &app);
+        } else if line == "kiful" {
             HumanInterface::kifu(&deck, Slot::Learning, &position, &app);
 
         // #####

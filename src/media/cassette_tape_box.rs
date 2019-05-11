@@ -7,7 +7,6 @@ use sound::shogi_note::ShogiNote;
 use std::*;
 use studio::application::Application;
 use studio::board_size::*;
-use studio::common::caret::get_index_from_caret_numbers;
 use studio::common::caret::Awareness;
 use studio::common::caret::Caret;
 use studio::common::closed_interval::ClosedInterval;
@@ -174,6 +173,17 @@ impl CassetteTapeBox {
     // # I #
     // #####
 
+    pub fn insert_note(&mut self, note: ShogiNote, board_size: BoardSize, app: &Application) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].insert_note(note, board_size, &app);
+        } else {
+            panic!(
+                "#push_note_to_positive_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
     pub fn is_facing_left_of_current_tape(&self) -> bool {
         if let Some(index) = self.awareness_of_tapes.index {
             self.tapes[index].caret.is_facing_left()
@@ -257,6 +267,7 @@ impl CassetteTapeBox {
     // # P #
     // #####
 
+    /*
     pub fn push_note_to_positive_of_current_tape(&mut self, note: ShogiNote) {
         if let Some(index) = self.awareness_of_tapes.index {
             self.tapes[index].tracks.positive_notes.push(note);
@@ -267,7 +278,6 @@ impl CassetteTapeBox {
             );
         }
     }
-
     pub fn push_note_to_negative_of_current_tape(&mut self, note: ShogiNote) {
         if let Some(index) = self.awareness_of_tapes.index {
             self.tapes[index].tracks.negative_notes.push(note);
@@ -278,6 +288,7 @@ impl CassetteTapeBox {
             );
         }
     }
+    */
 
     // #####
     // # S #
@@ -388,6 +399,7 @@ impl CassetteTapeBox {
         }
     }
 
+    /*
     pub fn set_note_to_current_tape(&mut self, caret_number: i16, note: ShogiNote) {
         if let Some(index) = self.awareness_of_tapes.index {
             if -1 < caret_number {
@@ -403,11 +415,13 @@ impl CassetteTapeBox {
             );
         }
     }
+    */
 
     // #####
     // # T #
     // #####
 
+    /*
     /// 正の数では、（キャレット番号＋１）と、（要素の個数）は等しい。
     pub fn truncate_positive_of_current_tape(&mut self, len: usize) {
         if let Some(index) = self.awareness_of_tapes.index {
@@ -419,7 +433,6 @@ impl CassetteTapeBox {
             );
         }
     }
-
     /// 負の数では、（キャレット番号の絶対値）と、（要素の個数）は等しい。
     pub fn truncate_negative_of_current_tape(&mut self, len: usize) {
         if let Some(index) = self.awareness_of_tapes.index {
@@ -431,6 +444,7 @@ impl CassetteTapeBox {
             );
         }
     }
+    */
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
         let mut rbox = RpmTapeBox::new();

@@ -289,7 +289,7 @@ impl LibSub {
         }
 
         // １つ目
-        let tvec = tvec.insert(
+        let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
             ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
             board_size,
@@ -305,7 +305,7 @@ impl LibSub {
         }
 
         // ２つ目
-        let tvec = tvec.insert(
+        let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
             ShogiNote::from_id_ope(
                 Some(PieceIdentify::K00),
@@ -327,7 +327,7 @@ impl LibSub {
         }
 
         // ３つ目
-        let tvec = tvec.insert(
+        let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
             ShogiNote::from_id_ope(
                 Some(PieceIdentify::K00),
@@ -349,7 +349,7 @@ impl LibSub {
         }
 
         // ４つ目
-        let tvec = tvec.insert(
+        let tvec = tvec.new_vector_with_inserted_note(
             &mut caret,
             ShogiNote::from_id_ope(None, ShogiNoteOpe::change_phase(0)),
             board_size,

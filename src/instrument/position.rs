@@ -701,8 +701,6 @@ impl Position {
         board_size: BoardSize,
         app: &Application,
     ) {
-        let slot = Slot::Learning;
-
         // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
         let id = match self.try_beautiful_touch_no_log(&deck, &rnote_ope, &app) {
             (is_legal_touch, Some(piece_identify)) => {
@@ -731,8 +729,36 @@ impl Position {
 
         let rnote = ShogiNote::from_id_ope(id, *rnote_ope);
 
-        // TODO フェーズを操作したい。
-        deck.put_1note(slot, rnote, app);
+        // ラーニング・テープに１ノート挿入します。
+        deck.insert_note(Slot::Learning, rnote, board_size, app);
+        // キャレットを１つ進めます。
+        let (taken_overflow, awareness, note_opt) = deck.seek_a_note(Slot::Learning, &app);
+        // 動作チェック。
+        if let Some(aware_note) = note_opt {
+            if aware_note != rnote {
+                panic!(
+                    "挿入失敗。expected:{}, actual:{}, {}{}.",
+                    rnote,
+                    aware_note,
+                    if taken_overflow {
+                        "Overflow, ".to_string()
+                    } else {
+                        "".to_string()
+                    },
+                    awareness.to_human_presentable()
+                );
+            }
+        } else {
+            panic!(
+                "挿入失敗。None, {}{}.",
+                if taken_overflow {
+                    "Overflow, ".to_string()
+                } else {
+                    "".to_string()
+                },
+                awareness.to_human_presentable()
+            );
+        }
     }
 
     /// seek_a_note メソッドと一緒に使う。
