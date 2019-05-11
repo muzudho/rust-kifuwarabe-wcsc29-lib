@@ -1,6 +1,4 @@
 use audio_compo::cassette_deck::CassetteDeck;
-//use audio_compo::cassette_deck::Slot;
-//use human::human_interface::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
@@ -36,9 +34,9 @@ impl OhashiPlayer {
     /// オリジン・ポジションになっている前提です。
     /// 平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
-    pub fn learn_ohashi_starting(
-        position: &mut Position,
+    pub fn improvise_ohashi_starting(
         deck: &mut CassetteDeck,
+        position: &mut Position,
         app: &Application,
     ) {
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;

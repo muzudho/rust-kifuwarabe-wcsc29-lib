@@ -10,7 +10,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use studio::application::Application;
 
-/// -rbox.json ファイルに対応。
+/// テープ・ボックス json ファイルに対応。
 #[derive(Debug, Deserialize, Default, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTapeBox {
@@ -77,7 +77,7 @@ impl RpmTapeBox {
         let rand2: u64 = rng.gen();
         let rand3: u64 = rng.gen();
         let rand4: u64 = rng.gen();
-        let file = format!("{}-{}-{}-{}.rbox", rand1, rand2, rand3, rand4).to_string();
+        let file = format!("{}-{}-{}-{}-tape-box.json", rand1, rand2, rand3, rand4).to_string();
 
         Path::new(&kw29_conf.learning)
             .join(file)

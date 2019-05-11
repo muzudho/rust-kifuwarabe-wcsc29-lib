@@ -76,7 +76,7 @@ impl Fen {
 
                     // 大橋流で初期局面まで指す☆（＾～＾）
                     deck.clear_tape_body(Slot::Learning, &app);
-                    OhashiPlayer::learn_ohashi_starting(position, deck, &app);
+                    OhashiPlayer::improvise_ohashi_starting(deck, position, &app);
                     true
                 } else {
                     // 指定局面を、初期局面とする☆（＾～＾）

@@ -106,7 +106,7 @@ impl BestMovePicker {
         // 現局面を文字列として持っておく。
         let cur_pos_text = position.to_text();
 
-        // とりあえず rbox.json ファイルを１個読む。
+        // とりあえず テープ・ボックス・ファイルを１個読む。
         'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training)
             .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
         {
@@ -742,7 +742,7 @@ impl BestMovePicker {
                     */
                     /*
                     println!(
-                        "BMP: This move rtape: {}.",
+                        "BMP: This move -tape-box.json: {}.",
                         recorder.to_human_presentable(position.get_board_size())
                     );
                      */

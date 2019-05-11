@@ -215,7 +215,7 @@ impl LibSub {
     // #####
 
     pub fn ohashi(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        OhashiPlayer::learn_ohashi_starting(position, deck, &app)
+        OhashiPlayer::improvise_ohashi_starting(deck, position, &app)
     }
 
     // #####

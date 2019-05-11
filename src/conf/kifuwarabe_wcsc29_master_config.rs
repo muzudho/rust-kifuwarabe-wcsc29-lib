@@ -20,6 +20,7 @@ pub struct KifuwarabeWcsc29MasterConfig {
     pub eating: Kw29Directories,
     pub training: String,
     pub learning: String,
+    pub book: String,
     pub tapes_fragments: String,
     pub kifuwarabe_wcsc29_exe_path_for_read_kifu: String,
 }

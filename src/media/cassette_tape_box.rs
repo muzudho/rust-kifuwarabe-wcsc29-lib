@@ -277,7 +277,7 @@ impl CassetteTapeBox {
     // #####
 
     pub fn set_file_name_without_extension(&mut self, file_name_without_extension: &str) {
-        self.file_name = format!("{}.rtape", file_name_without_extension).to_string()
+        self.file_name = format!("{}-tape-box.json", file_name_without_extension).to_string()
     }
 
     /// ◆次のテープを利用するぜ☆（＾～＾）
@@ -429,13 +429,13 @@ impl CassetteTapeBox {
     */
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
-        let mut rbox = RpmTapeBox::new();
+        let mut tape_box = RpmTapeBox::new();
 
         for tape in &self.tapes {
-            rbox.push(tape.to_rpm(board_size));
+            tape_box.push(tape.to_rpm(board_size));
         }
 
-        rbox
+        tape_box
     }
 
     /// このテープ・ボックスのデバッグ情報表示。人間向け。

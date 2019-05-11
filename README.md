@@ -4,7 +4,7 @@
 ## 用語集
 
 ### ［テープ・ボックス］
-    ０～Ｎ個の棋譜を保存した JSON形式テキスト・ファイル。拡張子は .rbox。
+    ０～Ｎ個の棋譜を保存した JSON形式テキスト・ファイル。接尾辞 -tape-box.json。
     ファイルと テープ・ボックスは　１対１対応　する。
     ファイル名はランダムに生成される。
 
@@ -160,4 +160,21 @@ cargo clippy --example learn
  
 ### Run.
 cargo run --example learn
+```
+
+## How to make ohashi-mode rpm-record?
+
+```Shell
+### Example.
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
+cls
+ 
+### Compile.
+set RUST_BACKTRACE=1
+cargo clippy --example usi_to_rpm
+ 
+### Run.
+### '--' is separator. You can pass arguments to exe.
+### Please change encoding to UTF-8.
+cargo run --example make_ohashi -- --output C:/muzudho/wcsc29-master/shogi-record/book/ohashi
 ```
