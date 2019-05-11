@@ -130,33 +130,6 @@ impl CassetteDeck {
     */
 
     // #####
-    // # B #
-    // #####
-
-    /// ポジションは動かさない☆（＾～＾）
-    ///
-    /// # Returns
-    ///
-    /// (taken overflow, awareness, note)
-    pub fn back_walk_a_note(
-        &mut self,
-        slot: Slot,
-        app: &Application,
-    ) -> (bool, Awareness, Option<ShogiNote>) {
-        if app.is_debug() {
-            app.comm.println("[#Deck.Back walk a note: 開始]");
-        }
-
-        let (taken_overflow, awareness, note) = self.slots[slot as usize].back_walk_a_note(&app);
-
-        if app.is_debug() {
-            app.comm.println("[#Deck.Back walk a note: 終了]");
-        }
-
-        (taken_overflow, awareness, note)
-    }
-
-    // #####
     // # C #
     // #####
 
@@ -230,7 +203,7 @@ impl CassetteDeck {
     ///
     /// 削除したノート。
     pub fn pop_1note(&mut self, position: &mut Position, app: &Application) -> Option<ShogiNote> {
-        HumanInterface::show_position(position, &app);
+        HumanInterface::bo(self, position, &app);
 
         if let Some(rpm_note) = self.delete_1note(Slot::Learning, &app) {
             let (_is_legal_touch, _piece_identify_opt) =
@@ -329,12 +302,12 @@ impl CassetteDeck {
 
         if !is_legal_touch {
             // 非合法タッチは強制終了。
-            panic!("Illegal, go opponent forcely!");
+            panic!(app.comm.panic("Illegal, go opponent forcely!"));
         }
 
         // 1つも読まなかったら強制終了。
         if forwarding_count < 1 {
-            panic!("Illegal, zero foward!");
+            panic!(app.comm.panic("Illegal, zero foward!"));
         }
     }
 
@@ -365,9 +338,9 @@ impl CassetteDeck {
         // 指し手（実際のところ、テープ上の範囲を示したもの）。
         let mut rmove = ShogiMove::new_facing_right_move();
         if 0 < rmove.len() {
-            panic!(
+            panic!(app.comm.panic(&format!(
                 "[#Deck.Seek a move: Rmoveが最初から長さが0より大きかったら、おかしい☆（＾～＾）Rmove len:{}]",
-                rmove.len());
+                rmove.len())));
         }
 
         let mut is_rollback = false;
@@ -404,12 +377,12 @@ impl CassetteDeck {
 
                         if 1 == rmove.len() && !rnote.is_phase_change() {
                             // １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）
-                            panic!(
+                            panic!(app.comm.panic(&format!(
                             "[#Deck.Seek a move: １つ目で、フェーズ切り替えでなかった場合、読み取り位置がおかしい☆（＾～＾）Move len:{}, Rnote:{}]",
                             rmove.len(),
-                            rnote.to_human_presentable(position.get_board_size(),&app));
+                            rnote.to_human_presentable(position.get_board_size(),&app))));
                         } else if rnote.is_phase_change() && 1 < rmove.len() && rmove.len() < 4 {
-                            panic!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）Move len:{}]",rmove.len());
+                            panic!(app.comm.panic(&format!("[#Deck.Seek a move: ２つ目と３つ目に　フェーズ切り替え　が現れた場合、棋譜がおかしい☆（＾～＾）Move len:{}]",rmove.len())));
                         } else if app.is_debug() {
                             app.comm.println("[#seek_a_move: ノート読めてる]");
                         }
@@ -430,7 +403,10 @@ impl CassetteDeck {
                             );
                         }
                         */
-                        self.back_walk_a_note(slot, &app);
+                        self.look_back_caret(slot, &app);
+                        self.seek_a_note(slot, &app);
+                        // ポジションは動かしてない☆（＾～＾）
+                        self.look_back_caret(slot, &app);
                         /*
                         if app.is_debug() {
                             app.comm.println(
@@ -457,7 +433,7 @@ impl CassetteDeck {
                             .intersect_2_values(awareness.passed_caret, awareness.expected_caret);
                         return (SoughtMoveResult::Forever, rmove);
                     } else {
-                        panic!("[#Deck.Seek a move: 指し手を読んでる途中でオーバーフローが現れた場合、指し手が閉じられてない☆（＾～＾）棋譜がおかしい☆（＾～＾）]");
+                        panic!(app.comm.panic("[#Deck.Seek a move: 指し手を読んでる途中でオーバーフローが現れた場合、指し手が閉じられてない☆（＾～＾）棋譜がおかしい☆（＾～＾）]"));
                     }
                 }
             }

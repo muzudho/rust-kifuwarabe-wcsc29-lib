@@ -6,15 +6,7 @@ use studio::application::Application;
 
 pub struct HumanInterface {}
 impl HumanInterface {
-    /// 盤面と持ち駒だけ表示。
-    pub fn show_position(position: &Position, app: &Application) {
-        if app.is_debug() {
-            // 盤面。
-            app.comm.println(&position.to_text());
-        }
-    }
-
-    /// 指定スロットの局面の表示。
+    /// 局面の表示。
     pub fn bo(deck: &CassetteDeck, position: &Position, app: &Application) {
         if app.is_debug() {
             // 何手目か。
@@ -24,7 +16,7 @@ impl HumanInterface {
                 deck.get_ply(Slot::Learning),
             ));
             // 局面。
-            HumanInterface::show_position(position, &app);
+            app.comm.println(&position.to_text());
         }
     }
 
@@ -52,7 +44,7 @@ impl HumanInterface {
     pub fn bo_with_tape(deck: &CassetteDeck, slot: Slot, position: &Position, app: &Application) {
         if app.is_debug() {
             // 局面。
-            HumanInterface::show_position(position, &app);
+            HumanInterface::bo(deck, position, &app);
 
             // 棋譜。
             let (_numbers, operations) =

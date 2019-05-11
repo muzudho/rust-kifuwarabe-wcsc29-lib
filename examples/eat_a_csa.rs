@@ -15,7 +15,7 @@ struct Args {
     path: Option<String>,
 }
 
-fn parse_args() -> Args {
+fn parse_args(app: &Application) -> Args {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -23,7 +23,7 @@ fn parse_args() -> Args {
 
     let matches = opts
         .parse(&args[1..])
-        .unwrap_or_else(|f| panic!(f.to_string()));
+        .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
 
     Args {
         path: matches.opt_str("path"),
@@ -31,11 +31,11 @@ fn parse_args() -> Args {
 }
 
 pub fn main() {
-    // Command line arguments.
-    let args = parse_args();
-
     // The application contains all immutable content.
     let app = Application::new();
+
+    // Command line arguments.
+    let args = parse_args(&app);
 
     let path = args
         .path

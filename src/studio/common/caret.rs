@@ -95,19 +95,6 @@ impl Caret {
     }
 
     // #####
-    // # B #
-    // #####
-
-    /// 向きを変えずにうしろに下がるぜ☆（＾～＾）
-    pub fn back_walk(&mut self, app: &Application) -> Awareness {
-        self.look_back(&app);
-        let awareness = self.seek_a_note(&app);
-        self.look_back(&app);
-
-        awareness
-    }
-
-    // #####
     // # C #
     // #####
 
@@ -320,9 +307,9 @@ impl Caret {
     /// デバッグ表示用。
     pub fn to_human_presentable(&self, _app: &Application) -> String {
         if self.is_facing_left() {
-            format!("[Caret: <--{}]", self.unconscious_number).to_string()
+            format!("Caret <--{}", self.unconscious_number).to_string()
         } else {
-            format!("[Caret: {}-->]", self.unconscious_number).to_string()
+            format!("Caret {}-->", self.unconscious_number).to_string()
         }
     }
 

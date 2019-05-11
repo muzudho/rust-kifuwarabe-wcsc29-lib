@@ -22,7 +22,7 @@ pub struct Arguments {
     pub debug: bool,
 }
 impl Arguments {
-    pub fn parse() -> Arguments {
+    pub fn parse(app: &Application) -> Arguments {
         let args: Vec<String> = env::args().collect();
 
         let mut opts = Options::new();
@@ -32,7 +32,7 @@ impl Arguments {
 
         let matches = opts
             .parse(&args[1..])
-            .unwrap_or_else(|f| panic!(f.to_string()));
+            .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
 
         Arguments {
             input_file: matches.opt_str("input"),
@@ -47,11 +47,11 @@ fn get_extension_from_filename(filename: &str) -> Option<&str> {
 }
 
 fn main() {
-    // Command line arguments.
-    let args = Arguments::parse();
-
     // The application contains all immutable content.
     let mut app = Application::new();
+
+    // Command line arguments.
+    let args = Arguments::parse(&app);
 
     let in_file = args
         .input_file

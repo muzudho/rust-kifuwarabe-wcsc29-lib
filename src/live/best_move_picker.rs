@@ -53,7 +53,7 @@ impl BestMovePicker {
         if !self.best_thread_buffer.is_empty() {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[Change thread: subject_piece_id: {}, not empty]",
+                    "[#Change thread: subject:{}, not empty]",
                     subject_piece_id.to_human_presentable(),
                 ));
             }
@@ -67,7 +67,7 @@ impl BestMovePicker {
             self.best_thread_buffer.clear();
         } else if app.is_debug() {
             app.comm.println(&format!(
-                "[Change thread: subject_piece_id: {}, is empty]",
+                "[#Change thread: subject:{}, is empty]",
                 subject_piece_id.to_human_presentable(),
             ));
         }
@@ -136,7 +136,7 @@ impl BestMovePicker {
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
-                HumanInterface::show_position(&comm, -1, &position);
+                HumanInterface::bo(deck, &comm, -1, &position);
                 // 先手玉の番地。
                 {
                     if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::First), K00) {
@@ -188,7 +188,9 @@ impl BestMovePicker {
                     app.comm.println(&cur_pos_text);
                     app.comm.println("[#Actual position]");
                     app.comm.println(&position.to_text());
-                    panic!("初期局面に戻せていないぜ☆（＾～＾）！");
+                    panic!(app
+                        .comm
+                        .panic("初期局面に戻せていないぜ☆（＾～＾）！"));
                 }
 
                 if app.is_debug() {
@@ -239,8 +241,10 @@ impl BestMovePicker {
                             HumanInterface::bo(deck, &position, &app);
                         }
 
-                        // 進めた分、戻すぜ☆（＾～＾）
-                        position.back_walk_player_phase(deck, &app);
+                        // 進めた盤面は、戻すぜ☆（＾～＾）
+                        deck.look_back_caret(Slot::Learning, &app);
+                        position.seek_a_player(deck, &app);
+                        deck.look_back_caret(Slot::Learning, &app);
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
@@ -257,9 +261,9 @@ impl BestMovePicker {
                             use instrument::half_player_phase::HalfPlayerPhaseValue::*;
                             match position.get_phase().get_state() {
                                 First | Second => {
-                                    panic!(
+                                    panic!(app.comm.panic(
                                         "[#ここで フェーズが先手、後手なのはおかしいぜ☆（＾～＾）]"
-                                    );
+                                    ));
                                 }
                                 _ => {}
                             }
@@ -308,7 +312,7 @@ impl BestMovePicker {
                                             break 'sequence_thread;
                                         }
                                         SoughtMoveResult::Aware => {
-                                            panic!("SoughtMoveResult::Aware");
+                                            panic!(app.comm.panic("SoughtMoveResult::Aware"));
                                         }
                                     }
                                 }
@@ -410,9 +414,6 @@ impl BestMovePicker {
                             } // Sequence thread.
 
                             // スレッドを差し替えろだぜ☆（＾～＾）
-                            if app.is_debug() {
-                                app.comm.println("[Change thread]");
-                            }
                             self.change_thread(*subject_piece_id, &app);
 
                             // 無限ループしないように、残っている分は無視して進んで　１手分　終わらせろだぜ☆（＾～＾）
@@ -460,7 +461,9 @@ impl BestMovePicker {
                         }
 
                         // 進めた分、戻すぜ☆（＾～＾）
-                        position.back_walk_player_phase(deck, &app);
+                        deck.look_back_caret(Slot::Learning, &app);
+                        position.seek_a_player(deck, &app);
+                        deck.look_back_caret(Slot::Learning, &app);
                     }
                 } // ピースの for
 
@@ -632,10 +635,10 @@ impl BestMovePicker {
                 }
             } else {
                 // プログラムの不具合。
-                panic!(
+                panic!(app.comm.panic(&format!(
                     "#[IL-盤上以外の駒を取った(1)。{}]",
                     rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-                );
+                )));
             }
         } else {
             // 駒を取らなかった合法手。

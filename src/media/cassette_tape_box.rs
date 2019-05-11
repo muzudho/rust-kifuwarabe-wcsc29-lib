@@ -62,24 +62,6 @@ impl CassetteTapeBox {
     }
 
     // #####
-    // # B #
-    // #####
-
-    /// # Returns
-    ///
-    /// (taken overflow, move, note)
-    pub fn back_walk_a_note(&mut self, app: &Application) -> (bool, Awareness, Option<ShogiNote>) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].back_walk_a_note(&app)
-        } else {
-            panic!(
-                "#back note: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
-    // #####
     // # C #
     // #####
 
@@ -328,8 +310,8 @@ impl CassetteTapeBox {
         self.awareness_of_tapes = self.caret_of_tapes.seek_a_note(&app);
         if app.is_debug() {
             app.comm.println(&format!(
-                "[#Seek of tapes: Awareness:{:?}]",
-                self.awareness_of_tapes
+                "[#Seek of tapes: {}]",
+                self.awareness_of_tapes.to_human_presentable()
             ));
         }
 
@@ -505,13 +487,13 @@ impl CassetteTapeBox {
     pub fn to_human_presentable_of_caret(&self, app: &Application) -> String {
         if let Some(index) = self.awareness_of_tapes.index {
             format!(
-                "[{:?}-Box: Caret: {}]",
+                "{:?}-box {}",
                 self.role_as_slot,
                 self.tapes[index].caret.to_human_presentable(&app)
             )
             .to_string()
         } else {
-            "[Box: I have not seek a tape]".to_string()
+            "[#Tape-box: I have not seek a tape]".to_string()
         }
     }
 

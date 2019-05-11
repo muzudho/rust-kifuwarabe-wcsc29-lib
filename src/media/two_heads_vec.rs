@@ -50,11 +50,12 @@ impl TwoHeadsVec {
         &self,
         caret: &mut Caret,
         note: ShogiNote,
-        board_size: BoardSize,
+        _board_size: BoardSize,
         app: &Application,
     ) -> Self {
         // ピークを取得。
         let awareness = caret.get_peak();
+        /*
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#2H vec.insert: 挿入位置 {} caret, Len-{}+{}]",
@@ -63,6 +64,7 @@ impl TwoHeadsVec {
                 self.negative_notes.len(),
             ));
         }
+        */
 
         let mut posi_v = Vec::new();
         let mut nega_v = Vec::new();
@@ -82,10 +84,10 @@ impl TwoHeadsVec {
             nega_v.push(note);
 
             // 余りがあれば挿入。
-            let mut v2 = Vec::new();
+            //let mut v2 = Vec::new();
             if let Some(index) = awareness.index {
                 if index < self.negative_notes.len() {
-                    v2 = self.slice_by_caret(
+                    let v2 = self.slice_by_caret(
                         index as i16 + 1,
                         self.negative_notes.len() as i16,
                         &app,
@@ -94,17 +96,19 @@ impl TwoHeadsVec {
                 }
             }
 
-            if app.is_debug() {
-                app.comm.println(&format!(
-                "[#2H vec.insert: 負のテープへ挿入。 v0:[{}], v1:[{}]], note:[{}], v2:[{}], Nega:[{}], Posi:[{}]",
-                ShogiNote::to_human_presentable_vec(v0.to_vec(), board_size, &app),
-                ShogiNote::to_human_presentable_vec(v1.to_vec(), board_size, &app),
-                note.to_human_presentable(board_size, &app),
-                ShogiNote::to_human_presentable_vec(v2.to_vec(), board_size, &app),
-                ShogiNote::to_human_presentable_vec(nega_v.to_vec(), board_size, &app),
-                ShogiNote::to_human_presentable_vec(posi_v.to_vec(), board_size, &app)
-            ));
-            }
+        /*
+        if app.is_debug() {
+            app.comm.println(&format!(
+            "[#2H vec.insert: 負のテープへ挿入。 v0:[{}], v1:[{}]], note:[{}], v2:[{}], Nega:[{}], Posi:[{}]",
+            ShogiNote::to_human_presentable_vec(v0.to_vec(), board_size, &app),
+            ShogiNote::to_human_presentable_vec(v1.to_vec(), board_size, &app),
+            note.to_human_presentable(board_size, &app),
+            ShogiNote::to_human_presentable_vec(v2.to_vec(), board_size, &app),
+            ShogiNote::to_human_presentable_vec(nega_v.to_vec(), board_size, &app),
+            ShogiNote::to_human_presentable_vec(posi_v.to_vec(), board_size, &app)
+        ));
+        }
+        */
         } else {
             // 正のテープへ挿入。
 
@@ -120,10 +124,10 @@ impl TwoHeadsVec {
             posi_v.push(note);
 
             // 余りがあれば挿入。
-            let mut v2 = Vec::new();
+            //let mut v2 = Vec::new();
             if let Some(index) = awareness.index {
                 if index < self.positive_notes.len() {
-                    v2 = self.slice_by_caret(
+                    let v2 = self.slice_by_caret(
                         index as i16 + 1,
                         self.positive_notes.len() as i16,
                         &app,
@@ -132,6 +136,7 @@ impl TwoHeadsVec {
                 }
             }
 
+            /*
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#2H vec.insert: 正のテープへ挿入。 v0:[{}], v1:[{}]], note:[{}], v2:[{}], Nega:[{}], Posi:[{}]",
@@ -143,6 +148,7 @@ impl TwoHeadsVec {
                     ShogiNote::to_human_presentable_vec(posi_v.to_vec(), board_size, &app)
                 ));
             }
+            */
         }
 
         Self::from_vector(posi_v, nega_v)
@@ -164,37 +170,6 @@ impl TwoHeadsVec {
             .append(&mut tape_to_empty.positive_notes);
         self.negative_notes
             .append(&mut tape_to_empty.negative_notes);
-    }
-
-    // #####
-    // # B #
-    // #####
-
-    /// # Returns
-    ///
-    /// (taken overflow, awareness, note)
-    pub fn back_walk_a_note(
-        &self,
-        caret: &mut Caret,
-        app: &Application,
-    ) -> (bool, Awareness, Option<ShogiNote>) {
-        /*
-        if app.is_debug() {
-            app.comm.println("[#INVec.Back note: 開始]")
-        }
-        */
-
-        caret.look_back(&app);
-        let (taken_overflow, awareness, note) = self.seek_a_note(caret, &app);
-        caret.look_back(&app);
-
-        /*
-        if app.is_debug() {
-            app.comm.println("[#INVec.Back note: 終了]")
-        }
-        */
-
-        (taken_overflow, awareness, note)
     }
 
     // #####
@@ -472,14 +447,16 @@ impl TwoHeadsVec {
         &self,
         start_caret: i16,
         end_caret: i16,
-        app: &Application,
+        _app: &Application,
     ) -> Vec<ShogiNote> {
+        /*
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#2H vec.Slice: Span {}:{} caret]",
                 start_caret, end_caret
             ));
         }
+        */
         let mut v = Vec::new();
 
         if start_caret < 0 {
@@ -488,21 +465,25 @@ impl TwoHeadsVec {
                 // 負のテープだけで範囲が収まります。
                 let start_ix = (-end_caret + 1) as usize;
                 let end_ix = (-start_caret + 1) as usize;
+                /*
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[#2H vec.Slice: 負のテープだけで範囲が収まります。 [Index {}:{}]]",
                         start_ix, end_ix
                     ));
                 }
+                */
                 let s = &self.negative_notes[start_ix..end_ix];
                 v.extend_from_slice(s);
             } else {
+                /*
                 if app.is_debug() {
                     app.comm.println(&format!(
                         "[#2H vec.Slice: 負のテープ全てと、正のテープの途中まで。 [Posi end {}]]",
                         end_caret
                     ));
                 }
+                */
                 // ひとまず、負のテープすべて。
                 let s1 = &self.negative_notes[..];
                 v.extend_from_slice(s1);
@@ -515,12 +496,14 @@ impl TwoHeadsVec {
             // 正のテープだけ。
             let start_ix = start_caret as usize;
             let end_ix = end_caret as usize;
+            /*
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#2H vec.Slice: 正のテープだけで範囲が収まります。 [Index {}:{}]]",
                     start_ix, end_ix
                 ));
             }
+            */
             // こりゃカンタンだ☆（＾～＾）
             let s = &self.positive_notes[start_ix..end_ix];
             v.extend_from_slice(s);

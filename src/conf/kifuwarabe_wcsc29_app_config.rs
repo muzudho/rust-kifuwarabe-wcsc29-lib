@@ -30,18 +30,18 @@ impl KifuwarabeWcsc29AppConfig {
 
         let mut file = match File::open(path) {
             Ok(x) => x,
-            Err(err) => panic!("File open error. {:?}", err),
+            Err(err) => panic!("File open error. {:?}", err), // ログ取らない。
         };
 
         let mut contents = String::new();
         match file.read_to_string(&mut contents) {
             Ok(x) => x,
-            Err(err) => panic!("File open error. {:?}", err),
+            Err(err) => panic!("File open error. {:?}", err), // ログ取らない。
         };
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected wcsc29 lib config: {}", err),
+            Err(err) => panic!("Unexpected wcsc29 lib config: {}", err), // ログ取らない。
         }
     }
 }

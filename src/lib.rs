@@ -117,7 +117,7 @@ pub fn main_loop() {
         // # B #
         // #####
         } else if line == "b" {
-            LibSub::back_walk_a_note_and_touch(&mut position, &mut deck, &app);
+            LibSub::back_1_note(&mut position, &mut deck, &app);
         } else if line == "bb" {
             LibSub::back_1_move(&mut position, &mut deck, &app);
         } else if line == "bbb" {
@@ -144,12 +144,10 @@ pub fn main_loop() {
         } else if line == "d" {
             // Delete 1mark.
             deck.pop_1note(&mut position, &app);
-
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
             deck.pop_1move(&mut position, &app);
-
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.

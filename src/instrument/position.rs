@@ -137,30 +137,6 @@ impl Position {
     }
 
     // #####
-    // # B #
-    // #####
-
-    pub fn back_walk_player_phase(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        /*
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Back phase(header): Phase:{}]",
-                self.phase.get_state().to_log()
-            ));
-        }
-        */
-        self.phase.back_walk_for_position(deck, &app);
-        /*
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Back phase(trailer): Phase:{}]",
-                self.phase.get_state().to_log()
-            ));
-        }
-        */
-    }
-
-    // #####
     // # G #
     // #####
 
@@ -687,7 +663,7 @@ impl Position {
             rnote.to_human_presentable(board_size)
         ));
          */
-        HumanInterface::show_position(self, &app);
+        HumanInterface::bo(deck, self, &app);
     }
 
     /// 棋譜を作る☆（＾～＾）
@@ -781,7 +757,7 @@ impl Position {
         }
         let (is_legal_touch, _piece_identify_opt) =
             self.try_beautiful_touch_no_log(&deck, &rnote.get_ope(), &app);
-        HumanInterface::show_position(self, &app);
+        HumanInterface::bo(deck, self, &app);
 
         is_legal_touch
     }

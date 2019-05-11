@@ -62,17 +62,6 @@ impl HalfPlayerPhaseObject {
     }
 
     // #####
-    // # B #
-    // #####
-
-    /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
-    pub fn back_walk_for_position(&mut self, deck: &mut CassetteDeck, app: &Application) {
-        self.look_back_for_position(deck, &app);
-        self.seek_a_player_for_position(&deck, &app);
-        self.look_back_for_position(deck, &app);
-    }
-
-    // #####
     // # G #
     // #####
 
@@ -129,31 +118,34 @@ impl HalfPlayerPhaseObject {
 
     /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
     pub fn seek_a_player_for_position(&mut self, deck: &CassetteDeck, app: &Application) {
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#HalfPlayerPhase: フェーズチェンジ {:?}, Caret:{}]",
-                self.get_state(),
-                deck.to_human_presentable_of_caret(Slot::Learning, &app)
-            ));
-        }
+        let old_state = self.get_state();
 
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-        if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
+        self.state = if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
             // 左向きのとき。
-            self.state = match self.state {
+            match self.state {
                 ZeroPointFive => Second,
                 First => ZeroPointFive,
                 OnePointFive => First,
                 Second => OnePointFive,
-            };
+            }
         } else {
             // 右向きのとき。
-            self.state = match self.state {
+            match self.state {
                 ZeroPointFive => First,
                 First => OnePointFive,
                 OnePointFive => Second,
                 Second => ZeroPointFive,
-            };
+            }
+        };
+
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#HalfPlayerPhase: フェーズチェンジ {:?}-->{:?}, L-Caret:{}]",
+                old_state,
+                self.get_state(),
+                deck.to_human_presentable_of_caret(Slot::Learning, &app)
+            ));
         }
     }
 }

@@ -24,39 +24,52 @@ impl LibSub {
     // # B #
     // #####
 
-    pub fn back_walk_a_note_and_touch(
-        position: &mut Position,
-        deck: &mut CassetteDeck,
-        app: &Application,
-    ) {
+    pub fn back_1_note(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
         if app.is_debug() {
-            app.comm.println("[#back_walk_a_note_and_touch]")
+            app.comm.println("[#back_1_note]")
         }
 
+        // ルックバックする。
+        deck.look_back_caret(Slot::Learning, &app);
+
+        // 棋譜上で１つ進む。
         let (taken_overflow, awareness, rnote_opt) =
-            deck.slots[Slot::Learning as usize].back_walk_a_note(&app);
+            deck.slots[Slot::Learning as usize].seek_a_note(&app);
 
         if let Some(rnote) = rnote_opt {
             if app.is_debug() {
                 app.comm.println(&format!(
-                    "[#back_walk_a_note_and_touch: taken_overflow:{}, awareness:{:?}, Rnote:{}]",
-                    taken_overflow,
-                    awareness,
+                    "[#back_1_note: {}{}, Note:{}]",
+                    if taken_overflow {
+                        "Overflow, ".to_string()
+                    } else {
+                        "".to_string()
+                    },
+                    awareness.to_human_presentable(),
                     rnote.to_human_presentable(position.get_board_size(), &app)
                 ));
             }
 
+            // 局面上でそのノートをタッチする。ログも出力する。
             if !position.try_beautiful_touch(deck, &rnote, &app) {
+                // タッチできないのはおかしい。
                 app.comm.println("Touch fail.");
             }
         } else if app.is_debug() {
+            // 戻れなかったというのはおかしい。
             app.comm.println(&format!(
-                "[#back_walk_a_note_and_touch: taken_overflow:{}, awareness:{:?}, Rnote:None]",
-                taken_overflow, awareness
+                "[#back_1_note fail: {}{}, Note:None]",
+                if taken_overflow {
+                    "Overflow, ".to_string()
+                } else {
+                    "".to_string()
+                },
+                awareness.to_human_presentable()
             ));
         }
 
-        HumanInterface::bo(deck, &position, &app);
+        // ルックバックする。
+        deck.look_back_caret(Slot::Learning, &app);
     }
 
     pub fn back_1_move(position: &mut Position, deck: &mut CassetteDeck, app: &Application) {
@@ -269,7 +282,9 @@ impl LibSub {
         }
 
         // 進めた分を戻すぜ☆（＾～＾）
-        position.back_walk_player_phase(deck, &app);
+        deck.look_back_caret(Slot::Learning, &app);
+        position.seek_a_player(deck, &app);
+        deck.look_back_caret(Slot::Learning, &app);
     }
 
     // #####
