@@ -192,7 +192,29 @@ impl ShogiMove {
         // ####################
         // # (0) Change phase #
         // ####################
-        // TODO
+        if !note.is_phase_change() {
+            panic!(
+                "[#１つ目がフェーズ・チェンジでない指し手はエラー☆（＾～＾）]"
+            );
+        }
+
+        // ノートを取る。
+        note = if let (_taken_overflow, _awareness, Some(note)) =
+            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+        {
+            note
+        } else {
+            if app.is_debug() {
+                app.comm.println("Note fail(1b).");
+            }
+            return None;
+        };
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Note: {}]",
+                note.to_human_presentable(board_size, &app)
+            ));
+        }
 
         // 盤上の自駒 or 盤上の相手の駒 or 駒台の自駒
         if let Some(address) = note.get_ope().address {
@@ -435,7 +457,32 @@ impl ShogiMove {
                     // 行き先に盤上の自駒を進めた。
                     dst_opt = Some(board_size.address_to_cell(address.get_index()));
 
-                    // これで終わり。
+                    // ノートを取る。
+                    note = if let (_taken_overflow, _awareness, Some(note)) =
+                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                    {
+                        note
+                    } else {
+                        if app.is_debug() {
+                            app.comm.println("Note fail(7b).");
+                        }
+                        return None;
+                    };
+                    if app.is_debug() {
+                        app.comm.println(&format!(
+                            "[Note: {}]",
+                            note.to_human_presentable(board_size, &app)
+                        ));
+                    }
+                }
+
+                // ####################
+                // # (8) Change phase #
+                // ####################
+                if !note.is_phase_change() {
+                    panic!(
+                        "[#最後がフェーズ・チェンジでない指し手はエラー☆（＾～＾）]"
+                    );
                 }
             }
         } else {
