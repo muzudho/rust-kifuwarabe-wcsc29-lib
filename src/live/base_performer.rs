@@ -1,13 +1,59 @@
+// シークと、タッチの両方を行うメソッドはここです。
 use audio_compo::cassette_deck::*;
+use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
 use regex::Regex;
 use sound::shogi_move::ShogiMove;
+use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::common::caret::SoughtMoveResult;
 
 pub struct BasePerformer {}
 impl BasePerformer {
+    // #####
+    // # P #
+    // #####
+
+    /// 棋譜のカーソルが指している要素を削除して、１つ戻る。
+    /// TODO ply が変わることがある。
+    ///
+    /// # Returns
+    ///
+    /// 削除したノート。
+    pub fn pop_1note(
+        deck: &mut CassetteDeck,
+        position: &mut Position,
+        app: &Application,
+    ) -> Option<ShogiNote> {
+        HumanInterface::bo(deck, position, &app);
+
+        if let Some(rpm_note) = deck.delete_1note(Slot::Learning, &app) {
+            let (_is_legal_touch, _piece_identify_opt) =
+                position.try_beautiful_touch_no_log(&deck, &rpm_note.get_ope(), &app);
+            Some(rpm_note)
+        } else {
+            None
+        }
+    }
+
+    /// 1手削除する。
+    ///
+    /// TODO ply が変わる。
+    pub fn pop_1move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
+        let mut count = 0;
+        // 開始前に達したら終了。
+        while let Some(rpm_note) = BasePerformer::pop_1note(deck, position, app) {
+            if count != 0 && rpm_note.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                break;
+            }
+
+            // それ以外は繰り返す。
+            count += 1;
+        }
+    }
+
     // #####
     // # R #
     // #####
@@ -150,7 +196,7 @@ impl BasePerformer {
             }
             deck.look_back_caret(Slot::Training, &app);
             deck.look_back_caret(Slot::Learning, &app);
-            deck.synchronized_seek_and_touch_n_notes(rmove.len(), position, &app);
+            BasePerformer::synchronized_seek_and_touch_n_notes(deck, rmove.len(), position, &app);
             deck.look_back_caret(Slot::Training, &app);
             deck.look_back_caret(Slot::Learning, &app);
 
@@ -165,6 +211,71 @@ impl BasePerformer {
             ));
         }
         (SoughtMoveResult::Aware, rmove)
+    }
+
+    pub fn read_tape_for_n_moves_forcely(
+        deck: &mut CassetteDeck,
+        slot: Slot,
+        repeats: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        for _i in 0..repeats {
+            BasePerformer::read_tape_for_1move_forcely(deck, slot, position, &app);
+        }
+    }
+
+    /// 必ず1手進める。（非合法タッチがあれば強制終了）
+    pub fn read_tape_for_1move_forcely(
+        deck: &mut CassetteDeck,
+        slot: Slot,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        /*
+        app.comm.println(&format!(
+            "[TOP read_tape_for_1move_forcely:{}:{}]",
+            self.to_human_presentable_of_tape_box(slot),
+            self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app)
+        ));
+        */
+
+        let mut is_legal_touch = true;
+        let mut forwarding_count = 0;
+
+        // 最後尾に達していたのなら終了。
+        while let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(slot, &app) {
+            /*
+            app.comm.println(&format!(
+                "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
+                self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                self.to_human_presentable_of_tape_box(slot),
+                rnote.to_human_presentable(position.get_board_size())
+            ));
+            */
+            is_legal_touch = position.try_beautiful_touch(&deck, &rnote, &app);
+            forwarding_count += 1;
+
+            if !is_legal_touch {
+                break;
+            }
+
+            if forwarding_count != 1 && rnote.is_phase_change() {
+                // フェーズ切り替えしたら終了。（ただし、初回除く）
+                // print!("<NXm1End{} {}>", forwarding_count, rnote);
+                break;
+            }
+        }
+
+        if !is_legal_touch {
+            // 非合法タッチは強制終了。
+            panic!(app.comm.panic("Illegal, go opponent forcely!"));
+        }
+
+        // 1つも読まなかったら強制終了。
+        if forwarding_count < 1 {
+            panic!(app.comm.panic("Illegal, zero foward!"));
+        }
     }
 
     // #####
@@ -217,5 +328,144 @@ impl BasePerformer {
             &app,
         );
         deck.look_back_caret(Slot::Learning, &app);
+    }
+
+    /// トレーニング・テープと、ラーニング・テープを同時に n ノート シークします。
+    /// また、盤面へのタッチも行います。
+    pub fn synchronized_seek_and_touch_n_notes(
+        deck: &mut CassetteDeck,
+        repeat: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm
+                .println("[#synchronized_seek_and_touch_n_notes 開始]");
+        }
+
+        for _i in 0..repeat {
+            // トレーニング・テープをシークする☆（＾～＾）結果は要らない☆（＾～＾）
+            let (taken_overflow_t, awareness_t, note_opt_t) =
+                deck.seek_a_note(Slot::Training, &app);
+            if let Some(_note) = note_opt_t {
+
+            } else if app.is_debug() {
+                app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: トレーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
+                        taken_overflow_t,
+                        awareness_t),
+                    );
+            }
+
+            // ラーニング・テープをシークする☆（＾～＾）結果は、盤面を巻き戻すのに使う☆（＾～＾）
+            let (taken_overflow_l, awareness_l, note_opt_l) =
+                deck.seek_a_note(Slot::Learning, &app);
+            if let Some(note) = note_opt_l {
+                /*
+                app.comm.println(&format!(
+                    "<Go-force:{}/{} {}>",
+                    i,
+                    repeat,
+                    rnote.to_human_presentable(position.get_board_size())
+                ));
+                */
+                if !position.try_beautiful_touch(&deck, &note, &app) {
+                    /*
+                    app.comm.println(&format!(
+                        "Touch fail, permissive. Note: {}, Caret: {}.",
+                        rnote.to_human_presentable(position.get_board_size()),
+                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                    ));
+                    */
+                }
+            } else if app.is_debug() {
+                app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: ラーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
+                        taken_overflow_l,
+                        awareness_l),
+                    );
+                // オーバーフローした☆（＾～＾）テープの終了だが、テープを終了したあとにバックすればもう１回終了するし☆（＾～＾）
+                // 気にせずループを続行しろだぜ☆（＾～＾）
+
+                /*
+                if i + 1 == repeat {
+                    // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
+                    break;
+                } else {
+                    panic!(
+                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {} notes.",
+                        self.to_human_presentable_of_caret_of_current_tape(slot, &app),
+                        i,
+                        repeat
+                    );
+                }
+                */
+            }
+        }
+
+        if app.is_debug() {
+            app.comm
+                .println("[#synchronized_seek_and_touch_n_notes 終了]");
+        }
+    }
+
+    /// ラーニング・テープを n ノート シークします。
+    /// また、タッチも行います。成立しないタッチをしてしまうことも、おおめに見ます。
+    pub fn seek_and_touch_learning_n_notes_permissive(
+        deck: &mut CassetteDeck,
+        repeat: usize,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        if app.is_debug() {
+            app.comm
+                .println("[#seek_and_touch_learning_n_notes_permissive 開始]");
+        }
+
+        for _i in 0..repeat {
+            // キャレットは必ず進めろだぜ☆（＾～＾）
+            if let (_taken_overflow, _awareness, Some(rnote)) =
+                deck.seek_a_note(Slot::Learning, &app)
+            {
+                // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
+                /*
+                app.comm.println(&format!(
+                    "<Go-force:{}/{} {}>",
+                    i,
+                    repeat,
+                    rnote.to_human_presentable(position.get_board_size())
+                ));
+                */
+                if !position.try_beautiful_touch(&deck, &rnote, &app) {
+                    /*
+                    app.comm.println(&format!(
+                        "Touch fail, permissive. Note: {}, Caret: {}.",
+                        rnote.to_human_presentable(position.get_board_size()),
+                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                    ));
+                    */
+                }
+            } else {
+                // オーバーフローした☆（＾～＾）テープの終了だが、テープを終了したあとにバックすればもう１回終了するし☆（＾～＾）
+                // 気にせずループを続行しろだぜ☆（＾～＾）
+
+                /*
+                if i + 1 == repeat {
+                    // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
+                    break;
+                } else {
+                    panic!(
+                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {} notes.",
+                        self.to_human_presentable_of_caret_of_current_tape(slot, &app),
+                        i,
+                        repeat
+                    );
+                }
+                */
+            }
+        }
+
+        if app.is_debug() {
+            app.comm
+                .println("[#seek_and_touch_learning_n_notes_permissive 終了]");
+        }
     }
 }

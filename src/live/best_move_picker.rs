@@ -450,7 +450,9 @@ impl BestMovePicker {
                             ));
                         }
                         deck.look_back_caret(Slot::Training, &app);
-                        deck.seek_and_touch_learning_n_notes_permissive(repeats, position, &app);
+                        BasePerformer::seek_and_touch_learning_n_notes_permissive(
+                            deck, repeats, position, &app,
+                        );
                         deck.look_back_caret(Slot::Training, &app);
 
                         // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）

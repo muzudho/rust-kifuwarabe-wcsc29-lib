@@ -147,23 +147,23 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            deck.pop_1note(&mut position, &app);
+            BasePerformer::pop_1note(&mut deck, &mut position, &app);
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "dd" {
             // Delete 1ply.
-            deck.pop_1move(&mut position, &app);
+            BasePerformer::pop_1move(&mut deck, &mut position, &app);
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                deck.pop_1move(&mut position, &app);
+                BasePerformer::pop_1move(&mut deck, &mut position, &app);
             }
 
             HumanInterface::bo(&deck, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                deck.pop_1move(&mut position, &app);
+                BasePerformer::pop_1move(&mut deck, &mut position, &app);
             }
 
             HumanInterface::bo(&deck, &position, &app);
