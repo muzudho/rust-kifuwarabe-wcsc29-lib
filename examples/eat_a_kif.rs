@@ -2,7 +2,8 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 extern crate regex;
 use getopts::Options;
-use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
+//use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_tape::*;
@@ -45,14 +46,14 @@ pub fn main() {
     let mut position = Position::new_honshogi_origin(&app);
 
     // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
+    let mut rack = AudioRack::new(&app);
 
     // Training data.
     let ktape = KifTape::from_file(&path, &app);
 
     // Play out.
-    KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
+    KifConverter::play_out_kifu_tape(&ktape, &mut rack, &mut position, &app);
 
     // Write.
-    deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
+    rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
 }

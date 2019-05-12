@@ -1,3 +1,4 @@
+use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
@@ -65,7 +66,7 @@ impl Fen {
         line: &str,
         start: &mut usize,
         position: &mut Position,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         app: &Application,
     ) -> bool {
         match UsiPosition::parse_startpos_test(line, start, &app.comm) {
@@ -75,8 +76,8 @@ impl Fen {
                     position.repeat_origin_position(&app);
 
                     // 大橋流で初期局面まで指す☆（＾～＾）
-                    deck.clear_tape_body(Slot::Learning, &app);
-                    OhashiPerformer::improvise_ohashi_starting(deck, position, &app);
+                    rack.clear_tape_body(Slot::Learning, &app);
+                    OhashiPerformer::improvise_ohashi_starting(rack, position, &app);
                     true
                 } else {
                     // 指定局面を、初期局面とする☆（＾～＾）

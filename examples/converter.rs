@@ -2,6 +2,7 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 
 use getopts::Options;
+use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
 use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::media::cassette_tape::*;
@@ -71,10 +72,10 @@ fn main() {
     let mut position = Position::new_honshogi_origin(&app);
 
     // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
+    let mut rack = AudioRack::new(&app);
     let mut tape = CassetteTape::new_facing_right(&app);
     tape.set_file_full_name_without_extension(&tape_file_name_without_extension);
-    deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
+    rack.add_tape_to_tape_box(Slot::Learning, tape, &app);
 
     if !in_file.is_empty() {
         // 棋譜解析。
@@ -88,10 +89,10 @@ fn main() {
                 let ktape = KifTape::from_file(&in_file, &app);
 
                 // Play out.
-                KifConverter::play_out_kifu_tape(&ktape, &mut position, &mut deck, &app);
+                KifConverter::play_out_kifu_tape(&ktape, &mut rack, &mut position, &app);
 
                 // Write.
-                deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
+                rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             "CSA" => {
                 // Training data.
@@ -103,10 +104,10 @@ fn main() {
                 }
 
                 // Play out.
-                CsaConverter::play_out_csa_tape(&ctape, &mut position, &mut deck, &app);
+                CsaConverter::play_out_csa_tape(&ctape, &mut rack, &mut position, &app);
 
                 // Write.
-                deck.write_leaning_tapes_fragment(position.get_board_size(), &app);
+                rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             _ => print!("Pass extension: {}", extension),
         }

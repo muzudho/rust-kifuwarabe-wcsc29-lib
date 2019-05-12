@@ -77,11 +77,6 @@ impl CassetteTape {
     // # A #
     // #####
 
-    /// 正の方のテープの末端にノートを追加。
-    pub fn append_note(&mut self, note: ShogiNote) {
-        self.tracks.append_note(note);
-    }
-
     /// 連結。
     pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
         self.tracks
@@ -204,6 +199,18 @@ impl CassetteTape {
                 self.get_negative_peak_caret_facing_outward() - 1 > old
             }
         }
+    }
+
+    // #####
+    // # P #
+    // #####
+
+    /// 正の方のテープの末端にノートを追加。
+    pub fn push_note(&mut self, note: ShogiNote) {
+        self.tracks.push_note(note);
+    }
+    pub fn pop_note(&mut self) -> Option<ShogiNote> {
+        self.tracks.pop_note()
     }
 
     // #####

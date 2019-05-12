@@ -1,4 +1,4 @@
-use audio_compo::cassette_deck::*;
+use audio_compo::audio_rack::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
@@ -15,20 +15,20 @@ impl KifConverter {
     /// 変換には、初期局面が必要。
     pub fn play_out_kifu_tape(
         ktape: &KifTape,
+        rack: &mut AudioRack,
         position: &mut Position,
-        deck: &mut CassetteDeck,
         app: &Application,
     ) {
         // 大橋流を指すところから☆（*＾～＾*）
-        OhashiPerformer::improvise_ohashi_starting(deck, position, &app);
+        OhashiPerformer::improvise_ohashi_starting(rack, position, &app);
 
         let mut ply = 1;
         for kmove in &ktape.items {
             let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                BasePerformer::improvise_note_ope_no_log(deck, &rnote_ope, false, position, &app);
-                HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &rnote_ope, false, position, &app);
+                HumanInterface::bo(rack, position, &app);
             }
 
             ply += 1;

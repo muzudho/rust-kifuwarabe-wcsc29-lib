@@ -1,4 +1,5 @@
-use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::audio_rack::*;
+//use audio_compo::cassette_deck::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
@@ -36,7 +37,7 @@ impl OhashiPerformer {
     /// 平手初期局面に進めます。
     /// 盤上の局面だけではなく、トレーニング・テープ、ラーニング・テープの両方のキャレットも同期して進めます。
     pub fn improvise_ohashi_starting(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         position: &mut Position,
         app: &Application,
     ) {
@@ -95,23 +96,23 @@ impl OhashiPerformer {
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
                 // タッチすれば、ラーニング・テープに１ノート挿入される。勝手にシークしてくれる☆（＾～＾）
-                BasePerformer::improvise_note_ope_no_log(deck, &element.0, false, position, &app);
-                //HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &element.0, false, position, &app);
+                //HumanInterface::bo(rack, position, &app);
             }
 
             {
-                BasePerformer::improvise_note_ope_no_log(deck, &element.1, false, position, &app);
-                //HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &element.1, false, position, &app);
+                //HumanInterface::bo(rack, position, &app);
             }
 
             {
-                BasePerformer::improvise_note_ope_no_log(deck, &element.2, false, position, &app);
-                //HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &element.2, false, position, &app);
+                //HumanInterface::bo(rack, position, &app);
             }
 
             {
-                BasePerformer::improvise_note_ope_no_log(deck, &element.3, false, position, &app);
-                //HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &element.3, false, position, &app);
+                //HumanInterface::bo(rack, position, &app);
             }
         }
     }

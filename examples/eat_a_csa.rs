@@ -2,7 +2,8 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 extern crate rand;
 use getopts::Options;
-use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
+//use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_converter::*;
@@ -46,16 +47,16 @@ pub fn main() {
     let mut position = Position::new_honshogi_origin(&app);
 
     // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
+    let mut rack = AudioRack::new(&app);
 
     let crecord = CsaTape::from_file(&path, &app);
 
     // Play out.
-    CsaConverter::play_out_csa_tape(&crecord, &mut position, &mut deck, &app);
-    HumanInterface::bo(&mut deck, &position, &app);
+    CsaConverter::play_out_csa_tape(&crecord, &mut rack, &mut position, &app);
+    HumanInterface::bo(&mut rack, &position, &app);
 
     // Save.
-    deck.write_tape_box(position.get_board_size(), &app);
+    rack.write_tape_box(position.get_board_size(), &app);
 
     app.comm.println("Finished.");
 }

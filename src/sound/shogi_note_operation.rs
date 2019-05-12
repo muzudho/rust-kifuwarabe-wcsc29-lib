@@ -1,10 +1,10 @@
+//
+// Rpm棋譜のノートの操作属性。
+//
+// 局面から独立しています。
+//
 use instrument::piece_etc::{PhysicalSign, PieceType};
 use std::fmt;
-///
-/// Rpm棋譜のノートの操作属性。
-///
-/// 局面から独立しています。
-///
 use studio::address::{Address, Cell};
 use studio::application::Application;
 use studio::board_size::BoardSize;

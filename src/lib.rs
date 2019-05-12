@@ -43,6 +43,7 @@ pub mod musician;
 pub mod sheet_music_format;
 pub mod sound;
 pub mod studio;
+use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::position::*;
@@ -64,8 +65,8 @@ pub fn main_loop() {
     // Position.
     let mut position = Position::new_honshogi_origin(&app);
 
-    // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
+    // Audio rack.
+    let mut rack = AudioRack::new(&app);
 
     let mut best_move_picker = BestMovePicker::default();
 
@@ -114,23 +115,23 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            BasePerformer::improvise_by_line(&line, &mut deck, true, &mut position, &app);
+            BasePerformer::improvise_by_line(&line, &mut rack, true, &mut position, &app);
 
         // #####
         // # B #
         // #####
         } else if line == "b" {
-            Tuner::back_1_note(&mut deck, &mut position, &app);
+            Tuner::back_1_note(&mut rack, &mut position, &app);
         } else if line == "bb" {
-            Tuner::back_1_move(&mut deck, &mut position, &app);
+            Tuner::back_1_move(&mut rack, &mut position, &app);
         } else if line == "bbb" {
-            Tuner::back_10_move(&mut deck, &mut position, &app);
+            Tuner::back_10_move(&mut rack, &mut position, &app);
         } else if line == "bbbb" {
-            Tuner::back_400_move(&mut deck, &mut position, &app);
+            Tuner::back_400_move(&mut rack, &mut position, &app);
         } else if line.starts_with("bo") {
             // Board.
 
-            HumanInterface::bo(&deck, &position, &app);
+            HumanInterface::bo(&rack, &position, &app);
 
         /*
         // #####
@@ -146,49 +147,50 @@ pub fn main_loop() {
         // #####
         } else if line == "d" {
             // Delete 1mark.
-            BasePerformer::pop_1note(&mut deck, &mut position, &app);
-            HumanInterface::bo(&deck, &position, &app);
+            BasePerformer::rollback_note(&mut rack, Slot::Training, &mut position, &app);
+        /*
         } else if line == "dd" {
             // Delete 1ply.
-            BasePerformer::pop_1move(&mut deck, &mut position, &app);
-            HumanInterface::bo(&deck, &position, &app);
+            BasePerformer::delete_1move(&mut rack, &mut position, &app);
+            HumanInterface::bo(&rack, &position, &app);
         } else if line == "ddd" {
             // Delete 10ply.
             for _i in 0..10 {
-                BasePerformer::pop_1move(&mut deck, &mut position, &app);
+                BasePerformer::delete_1move(&mut rack, &mut position, &app);
             }
 
-            HumanInterface::bo(&deck, &position, &app);
+            HumanInterface::bo(&rack, &position, &app);
         } else if line == "dddd" {
             // Delete 400ply.
             for _i in 0..400 {
-                BasePerformer::pop_1move(&mut deck, &mut position, &app);
+                BasePerformer::delete_1move(&mut rack, &mut position, &app);
             }
 
-            HumanInterface::bo(&deck, &position, &app);
-        } else if line == "deck-info" {
-            app.comm.println(&deck.to_human_presentable());
+            HumanInterface::bo(&rack, &position, &app);
+            */
+        } else if line == "rack-info" {
+            app.comm.println(&rack.to_human_presentable());
 
         // #####
         // # F #
         // #####
         } else if line == "f" {
-            Tuner::replay_a_note(&mut deck, &mut position, &app);
+            Tuner::replay_a_note(&mut rack, &mut position, &app);
         } else if line == "ff" {
-            Tuner::forward_1_move(&mut deck, &mut position, &app);
+            Tuner::forward_1_move(&mut rack, &mut position, &app);
         } else if line == "fff" {
-            Tuner::forward_10_move(&mut deck, &mut position, &app);
+            Tuner::forward_10_move(&mut rack, &mut position, &app);
         } else if line == "ffff" {
-            Tuner::forward_400_move(&mut deck, &mut position, &app);
+            Tuner::forward_400_move(&mut rack, &mut position, &app);
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
-            ComputerPerformer::go(&mut best_move_picker, &mut deck, &mut position, &app);
+            ComputerPerformer::go(&mut best_move_picker, &mut rack, &mut position, &app);
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
-            LibSub::gameover(&mut deck, position.get_board_size(), &app);
+            LibSub::gameover(&mut rack, position.get_board_size(), &app);
         // #####
         // # H #
         // #####
@@ -229,26 +231,30 @@ pub fn main_loop() {
         // # K #
         // #####
         } else if line == "kifut" {
-            HumanInterface::kifu(&deck, Slot::Training, &position, &app);
+            if !rack.is_none_current_tape(Slot::Training) {
+                HumanInterface::kifu(&rack, Slot::Training, &position, &app);
+            } else {
+                app.comm.println("スロット０が空っぽです。");
+            }
         } else if line == "kiful" {
-            HumanInterface::kifu(&deck, Slot::Learning, &position, &app);
+            HumanInterface::kifu(&rack, Slot::Learning, &position, &app);
 
         // #####
         // # L #
         // #####
         } else if line == "lbl" {
             // Look back learing
-            LibSub::look_back(&mut deck, Slot::Learning, &app);
+            LibSub::look_back(&mut rack, Slot::Learning, &app);
         } else if line == "lbt" {
             // Look back training
-            LibSub::look_back(&mut deck, Slot::Training, &app);
+            LibSub::look_back(&mut rack, Slot::Training, &app);
 
         // #####
         // # O #
         // #####
         } else if line == "ohashi" {
             // Ohashi mode.
-            OhashiPerformer::improvise_ohashi_starting(&mut deck, &mut position, &app)
+            OhashiPerformer::improvise_ohashi_starting(&mut rack, &mut position, &app)
 
         // #########
         // # Piece #
@@ -262,14 +268,14 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            BasePerformer::improvise_by_line(&line, &mut deck, true, &mut position, &app);
+            BasePerformer::improvise_by_line(&line, &mut rack, true, &mut position, &app);
 
         // #####
         // # P #
         // #####
         } else if line.starts_with("position") {
             // 相手が指したあとの局面まで進める。
-            LibSub::position(line, &mut deck, &mut position, &app);
+            LibSub::position(line, &mut rack, &mut position, &app);
 
         // #####
         // # Q #
@@ -281,7 +287,7 @@ pub fn main_loop() {
         // # S #
         // #####
         } else if line.starts_with("scan-pid") {
-            BasePerformer::scan_pid(&line, &mut deck, &mut position, &app);
+            BasePerformer::scan_pid(&line, &mut rack, &mut position, &app);
 
         // #####
         // # T #
@@ -298,7 +304,7 @@ pub fn main_loop() {
             app.comm.println("id author Satoshi TAKAHASHI");
             app.comm.println("usiok");
         } else if line == "usinewgame" {
-            LibSub::usi_new_game(&mut deck, &app);
+            LibSub::usi_new_game(&mut rack, &app);
         }
     }
 }

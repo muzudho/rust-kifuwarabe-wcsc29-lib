@@ -3,6 +3,7 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 
 use getopts::Options;
+use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
 use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::live::ohashi_performer::*;
@@ -52,22 +53,22 @@ fn main() {
     }
 
     // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
-    deck.set_file_name_without_extension_of_tape_box(
+    let mut rack = AudioRack::new(&app);
+    rack.set_file_name_without_extension_of_tape_box(
         Slot::Learning,
         &tape_file_name_without_extension,
     );
     let mut tape = CassetteTape::new_facing_right(&app);
     tape.set_file_full_name_without_extension(&tape_file_name_without_extension);
-    deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
-    deck.seek_of_next_tape(Slot::Learning, &app);
+    rack.add_tape_to_tape_box(Slot::Learning, tape, &app);
+    rack.seek_of_next_tape(Slot::Learning, &app);
 
     // Position.
     let mut position = Position::new_honshogi_origin(&app);
 
     // Play out.
-    OhashiPerformer::improvise_ohashi_starting(&mut deck, &mut position, &app);
+    OhashiPerformer::improvise_ohashi_starting(&mut rack, &mut position, &app);
 
     // Write.
-    deck.write_tape_box(position.get_board_size(), &app);
+    rack.write_tape_box(position.get_board_size(), &app);
 }

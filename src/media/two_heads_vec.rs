@@ -158,11 +158,6 @@ impl TwoHeadsVec {
     // # A #
     // #####
 
-    /// 正の方のテープの末端にノートを追加。
-    pub fn append_note(&mut self, note: ShogiNote) {
-        self.positive_notes.push(note);
-    }
-
     /// 連結。
     pub fn append_tape_to_right(&mut self, tape_to_empty: &mut Self) {
         self.positive_notes
@@ -267,6 +262,20 @@ impl TwoHeadsVec {
 
             (Self::from_vector(posi_v, nega_v), removed_note_opt)
         }
+    }
+
+    // #####
+    // # P #
+    // #####
+
+    /// 正の方のテープの末端にノートを追加。
+    pub fn push_note(&mut self, note: ShogiNote) {
+        self.positive_notes.push(note);
+    }
+
+    /// 正の方のテープの末端のノートを削除。
+    pub fn pop_note(&mut self) -> Option<ShogiNote> {
+        self.positive_notes.pop()
     }
 
     // #####

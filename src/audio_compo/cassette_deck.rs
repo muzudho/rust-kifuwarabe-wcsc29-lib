@@ -6,6 +6,7 @@ use sound::shogi_note::ShogiNote;
 use studio::application::Application;
 use studio::board_size::BoardSize;
 use studio::common::caret::Awareness;
+use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
 
 #[derive(Clone, Copy, Debug)]
@@ -27,7 +28,7 @@ impl CassetteDeck {
     // ###############
 
     /// 新規作成☆（＾～＾）
-    pub fn new_empty(app: &Application) -> Self {
+    pub fn new(app: &Application) -> Self {
         if app.is_debug() {
             app.comm.println("[#Deck:new]");
         }
@@ -50,11 +51,6 @@ impl CassetteDeck {
     // #####
     // # A #
     // #####
-
-    /// 正の方のテープの末端にノートを追加。
-    pub fn append_note(&mut self, slot: Slot, note: ShogiNote) {
-        self.slots[slot as usize].append_note(note);
-    }
 
     /// ◆JSONファイルを読み込んで、テープを詰め込みます。
     pub fn add_tapes_from_file(
@@ -198,6 +194,10 @@ impl CassetteDeck {
         self.slots[slot as usize].is_facing_left_of_current_tape()
     }
 
+    pub fn is_none_current_tape(&self, slot: Slot) -> bool {
+        self.slots[slot as usize].is_none_current_tape()
+    }
+
     // #####
     // # L #
     // #####
@@ -211,6 +211,18 @@ impl CassetteDeck {
     }
     pub fn turn_caret_towards_negative_infinity(&mut self, slot: Slot, app: &Application) {
         self.slots[slot as usize].turn_caret_towards_negative_infinity(&app);
+    }
+
+    // #####
+    // # P #
+    // #####
+
+    /// 正の方のテープの末端にノートを追加。
+    pub fn push_note(&mut self, slot: Slot, note: ShogiNote) {
+        self.slots[slot as usize].push_note(note);
+    }
+    pub fn pop_note(&mut self, slot: Slot) -> Option<ShogiNote> {
+        self.slots[slot as usize].pop_note()
     }
 
     // #####
@@ -256,6 +268,20 @@ impl CassetteDeck {
         app: &Application,
     ) -> (bool, Awareness, Option<ShogiNote>) {
         self.slots[slot as usize].seek_a_note(&app)
+    }
+
+    /// 正負の両端の先端要素を超えたら、キャレットは進めずにNoneを返します。
+    ///
+    /// # Returns
+    ///
+    /// (taken overflow, awareness, note)
+    pub fn seek_a_note_with_othre_caret(
+        &mut self,
+        slot: Slot,
+        caret: &mut Caret,
+        app: &Application,
+    ) -> (bool, Awareness, Option<ShogiNote>) {
+        self.slots[slot as usize].seek_a_note_with_othre_caret(caret, &app)
     }
 
     // #####

@@ -1,7 +1,8 @@
 extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
-use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
+//use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::fen::*;
@@ -51,10 +52,10 @@ pub fn main() {
     let mut utape = UsiTape::default();
 
     // Deck.
-    let mut deck = CassetteDeck::new_empty(&app);
+    let mut rack = AudioRack::new(&app);
 
     let mut start = 0;
-    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
+    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut rack, &app) {
         app.comm.println("Position parsed.");
 
         if let Some(parsed_utape) =
@@ -68,11 +69,11 @@ pub fn main() {
 
     // ポジションをもう１回初期局面に戻す。
     let mut start = 0;
-    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut deck, &app) {
+    if Fen::parse_initial_position(&line, &mut start, &mut position, &mut rack, &app) {
         app.comm.println("Position parsed.");
     }
 
-    //deck.change_training_tape(None, position.get_board_size(), &app);
-    UsiConverter::play_out_usi_tape(&mut position, &utape, &mut deck, &app);
-    HumanInterface::bo(&mut deck, &position, &app);
+    //rack.change_training_tape(None, position.get_board_size(), &app);
+    UsiConverter::play_out_usi_tape(&mut position, &utape, &mut rack, &app);
+    HumanInterface::bo(&mut rack, &position, &app);
 }

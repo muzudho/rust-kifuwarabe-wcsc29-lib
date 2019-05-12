@@ -1,4 +1,5 @@
-use audio_compo::cassette_deck::CassetteDeck;
+use audio_compo::audio_rack::*;
+//use audio_compo::cassette_deck::CassetteDeck;
 use audio_compo::cassette_deck::Slot;
 use instrument::piece_etc::*;
 use media::cassette_tape_box::CassetteTapeBox;
@@ -143,7 +144,7 @@ impl ShogiMove {
     /// (Usi move, どの駒を動かした一手か, どこの駒を動かした一手か, あれば取った駒，取った駒の番地)
     pub fn to_best_move(
         &self,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         board_size: BoardSize,
         app: &Application,
@@ -177,7 +178,7 @@ impl ShogiMove {
 
         // ノートを取る。
         let mut note = if let (_taken_overflow, _awareness, Some(note)) =
-            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+            rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
         {
             note
         } else {
@@ -206,7 +207,7 @@ impl ShogiMove {
 
         // ノートを取る。
         note = if let (_taken_overflow, _awareness, Some(note)) =
-            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+            rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
         {
             note
         } else {
@@ -256,7 +257,7 @@ impl ShogiMove {
 
                 // ノートを取る。
                 note = if let (_taken_overflow, _awareness, Some(note)) =
-                    deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                    rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                 {
                     note
                 } else {
@@ -308,7 +309,7 @@ impl ShogiMove {
 
                 // ノートを取る。
                 note = if let (_taken_overflow, _awareness, Some(note)) =
-                    deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                    rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                 {
                     note
                 } else {
@@ -337,7 +338,7 @@ impl ShogiMove {
 
                     // 次。
                     note = if let (_taken_overflow, _awareness, Some(note)) =
-                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                        rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                     {
                         note
                     } else {
@@ -373,7 +374,7 @@ impl ShogiMove {
 
                     // ノートを取る。
                     note = if let (_taken_overflow, _awareness, Some(note)) =
-                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                        rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                     {
                         note
                     } else {
@@ -400,7 +401,7 @@ impl ShogiMove {
                     if let Some(_address) = note.get_ope().address {
                         // ノートを取る。
                         note = if let (_taken_overflow, _awareness, Some(note)) =
-                            deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                            rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                         {
                             note
                         } else {
@@ -431,9 +432,8 @@ impl ShogiMove {
                             src_opt = Some(board_size.address_to_cell(address.get_index()));
 
                             // ノートを取る。
-                            note = if let (_taken_overflow, _awareness, Some(note)) = deck.slots
-                                [slot as usize]
-                                .seek_a_note_with_othre_caret(&mut caret, &app)
+                            note = if let (_taken_overflow, _awareness, Some(note)) =
+                                rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                             {
                                 note
                             } else {
@@ -462,9 +462,8 @@ impl ShogiMove {
                             subject_promotion = true;
 
                             // ノートを取る。
-                            note = if let (_taken_overflow, _awareness, Some(note)) = deck.slots
-                                [slot as usize]
-                                .seek_a_note_with_othre_caret(&mut caret, &app)
+                            note = if let (_taken_overflow, _awareness, Some(note)) =
+                                rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                             {
                                 note
                             } else {
@@ -503,7 +502,7 @@ impl ShogiMove {
 
                     // ノートを取る。
                     note = if let (_taken_overflow, _awareness, Some(note)) =
-                        deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut caret, &app)
+                        rack.seek_a_note_with_othre_caret(slot, &mut caret, &app)
                     {
                         note
                     } else {
@@ -569,7 +568,7 @@ impl ShogiMove {
             panic!(
                 "Unexpected dst. Drop-none, Dst-none, move.len: '{}' > 1, move: '{}'. Slot: {:?}.",
                 self.len(),
-                self.to_human_presentable(deck, slot, board_size, &app),
+                self.to_human_presentable(rack, slot, board_size, &app),
                 slot,
             )
             // , Tape file name: '{}', Tape index: {}.
@@ -660,7 +659,7 @@ impl ShogiMove {
     /// Human presentable.
     pub fn to_human_presentable(
         &self,
-        deck: &CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         board_size: BoardSize,
         app: &Application,
@@ -678,7 +677,7 @@ impl ShogiMove {
 
         while other_caret.while_to(&self.caret_closed_interval, &app) {
             if let (_taken_overflow, _awareness, Some(note)) =
-                deck.slots[slot as usize].seek_a_note_with_othre_caret(&mut other_caret, &app)
+                rack.seek_a_note_with_othre_caret(slot, &mut other_caret, &app)
             {
                 text = format!("{} {}", text, note.to_human_presentable(board_size, &app))
             } else {

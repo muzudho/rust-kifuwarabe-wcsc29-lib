@@ -1,4 +1,5 @@
-use audio_compo::cassette_deck::*;
+use audio_compo::audio_rack::*;
+//use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::position::*;
 use live::base_performer::*;
@@ -17,7 +18,7 @@ impl UsiConverter {
     pub fn play_out_usi_tape(
         position: &mut Position,
         utape: &UsiTape,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         app: &Application,
     ) {
         // 局面を動かしながら変換していく。
@@ -27,8 +28,8 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                BasePerformer::improvise_note_ope_no_log(deck, &rnote_ope, false, position, &app);
-                HumanInterface::bo(deck, position, &app);
+                BasePerformer::improvise_note_ope_no_log(rack, &rnote_ope, false, position, &app);
+                HumanInterface::bo(rack, position, &app);
             }
 
             ply += 1;

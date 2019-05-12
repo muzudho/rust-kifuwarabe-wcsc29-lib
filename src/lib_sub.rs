@@ -1,3 +1,4 @@
+use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
@@ -17,9 +18,9 @@ use studio::common::caret::*;
 
 pub struct LibSub {}
 impl LibSub {
-    pub fn gameover(deck: &mut CassetteDeck, board_size: BoardSize, app: &Application) {
+    pub fn gameover(rack: &mut AudioRack, board_size: BoardSize, app: &Application) {
         // TODO とりあえず、テープが１個入った　テープ・ボックス形式で書きだし☆（＾～＾）
-        deck.write_tape_box(board_size, &app);
+        rack.write_tape_box(board_size, &app);
     }
 
     // #####
@@ -56,8 +57,8 @@ impl LibSub {
     // # L #
     // #####
 
-    pub fn look_back(deck: &mut CassetteDeck, slot: Slot, app: &Application) {
-        deck.look_back_caret(slot, &app)
+    pub fn look_back(rack: &mut AudioRack, slot: Slot, app: &Application) {
+        rack.look_back_caret(slot, &app)
     }
 
     // #####
@@ -66,7 +67,7 @@ impl LibSub {
 
     pub fn position(
         line: String,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         position: &mut Position,
         app: &Application,
     ) {
@@ -75,7 +76,7 @@ impl LibSub {
         let mut start = 0;
 
         // 指定局面にリセットするぜ☆（＾～＾）
-        if Fen::parse_initial_position(&line, &mut start, position, deck, &app) {
+        if Fen::parse_initial_position(&line, &mut start, position, rack, &app) {
             // USI の moves の文字列を、オブジェクトに直訳するぜ☆（＾～＾）局面は指定局面から動かさないぜ☆（＾～＾）
             urecord_opt = UsiPosition::parse_usi_line_moves(
                 &line,
@@ -89,8 +90,8 @@ impl LibSub {
         // TODO できれば USI -> RPM 変換したい。
         if let Some(urecord) = urecord_opt {
             // 差し替え。
-            deck.clear_of_tapes(Slot::Training, &app);
-            UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
+            rack.clear_of_tapes(Slot::Training, &app);
+            UsiConverter::play_out_usi_tape(position, &urecord, rack, &app);
         }
     }
 
@@ -193,7 +194,7 @@ impl LibSub {
     // # U #
     // #####
 
-    pub fn usi_new_game(deck: &mut CassetteDeck, app: &Application) {
+    pub fn usi_new_game(rack: &mut AudioRack, app: &Application) {
         // 今対局分のラーニング・テープを１つ追加するぜ☆（＾～＾）
 
         // ラーニング・テープ作成。
@@ -201,7 +202,7 @@ impl LibSub {
         tape.set_file_full_name_without_extension(
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
         );
-        deck.add_tape_to_tape_box(Slot::Learning, tape, &app);
-        deck.seek_of_next_tape(Slot::Learning, &app);
+        rack.add_tape_to_tape_box(Slot::Learning, tape, &app);
+        rack.seek_of_next_tape(Slot::Learning, &app);
     }
 }

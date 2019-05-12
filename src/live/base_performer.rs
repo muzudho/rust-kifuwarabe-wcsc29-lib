@@ -1,4 +1,5 @@
 // シークと、タッチの両方を行うメソッドはここです。
+use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
@@ -20,7 +21,7 @@ impl BasePerformer {
     /// Operation トラック文字列読取。
     pub fn improvise_by_line(
         line: &str,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         is_ok_illegal: bool,
         position: &mut Position,
         app: &Application,
@@ -42,14 +43,14 @@ impl BasePerformer {
                     ));
                 }
                 BasePerformer::improvise_note_ope_no_log(
-                    deck,
+                    rack,
                     &rnote_ope,
                     is_ok_illegal,
                     position,
                     &app,
                 );
 
-                HumanInterface::bo(deck, &position, &app);
+                HumanInterface::bo(rack, &position, &app);
             }
         }
     }
@@ -58,15 +59,17 @@ impl BasePerformer {
     /// 盤に触れて、
     /// ラーニング・テープに　棋譜も書くぜ☆（＾～＾）
     pub fn improvise_note_ope_no_log(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         rnote_ope: &ShogiNoteOpe,
         is_ok_illegal: bool,
         position: &mut Position,
         app: &Application,
     ) {
-        // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
+        // ##########
+        // # 盤操作 #
+        // ##########
         let id = match position.touch_ope(
-            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
             &rnote_ope,
             &app,
         ) {
@@ -97,39 +100,13 @@ impl BasePerformer {
         let rnote = ShogiNote::from_id_ope(
             id,
             *rnote_ope,
-            deck.is_facing_left_of_current_tape(Slot::Learning, &app),
+            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
         );
 
-        // ラーニング・テープに１ノート挿入します。
-        deck.insert_note(Slot::Learning, rnote, position.get_board_size(), app);
-        // キャレットを１つ進めます。
-        let (taken_overflow, awareness, note_opt) = deck.seek_a_note(Slot::Learning, &app);
-        // 動作チェック。
-        if let Some(aware_note) = note_opt {
-            if aware_note != rnote {
-                panic!(
-                    "挿入失敗。expected:{}, actual:{}, {}{}.",
-                    rnote,
-                    aware_note,
-                    if taken_overflow {
-                        "Overflow, ".to_string()
-                    } else {
-                        "".to_string()
-                    },
-                    awareness.to_human_presentable()
-                );
-            }
-        } else {
-            panic!(
-                "挿入失敗。None, {}{}.",
-                if taken_overflow {
-                    "Overflow, ".to_string()
-                } else {
-                    "".to_string()
-                },
-                awareness.to_human_presentable()
-            );
-        }
+        // #############
+        // # 末尾に追記 #
+        // #############
+        rack.push_note(Slot::Learning, rnote);
     }
 
     // #####
@@ -142,16 +119,16 @@ impl BasePerformer {
     /// # Returns
     ///
     /// 削除したノート。
-    pub fn pop_1note(
-        deck: &mut CassetteDeck,
+    pub fn delete_1note(
+        rack: &mut AudioRack,
         position: &mut Position,
         app: &Application,
     ) -> Option<ShogiNote> {
-        HumanInterface::bo(deck, position, &app);
+        HumanInterface::bo(rack, position, &app);
 
-        if let Some(rpm_note) = deck.delete_1note(Slot::Learning, &app) {
+        if let Some(rpm_note) = rack.delete_1note(Slot::Learning, &app) {
             let (_is_legal_touch, _piece_identify_opt) = position.touch_ope(
-                deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                 &rpm_note.get_ope(),
                 &app,
             );
@@ -164,10 +141,10 @@ impl BasePerformer {
     /// 1手削除する。
     ///
     /// TODO ply が変わる。
-    pub fn pop_1move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
+    pub fn delete_1move(rack: &mut AudioRack, position: &mut Position, app: &Application) {
         let mut count = 0;
         // 開始前に達したら終了。
-        while let Some(rpm_note) = BasePerformer::pop_1note(deck, position, app) {
+        while let Some(rpm_note) = BasePerformer::delete_1note(rack, position, app) {
             if count != 0 && rpm_note.is_phase_change() {
                 // フェーズ切り替えしたら終了。（ただし、初回除く）
                 break;
@@ -188,7 +165,7 @@ impl BasePerformer {
     ///
     /// (SoughtMoveResult, move)
     pub fn replay_a_move(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         position: &mut Position,
         app: &Application,
@@ -212,15 +189,20 @@ impl BasePerformer {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#Deck.ReplayM {}]",
-                    deck.to_human_presentable_of_caret(slot, &app)
+                    rack.to_human_presentable_of_caret(slot, &app)
                 ))
             }
 
-            // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
-            match deck.seek_a_note(slot, &app) {
+            // ###########
+            // # 棋譜読取 #
+            // ###########
+            match rack.seek_a_note(slot, &app) {
                 (_taken_overflow, awareness, Some(rnote)) => {
+                    // #########
+                    // # 盤操作 #
+                    // #########
                     if let (true, _) = position.touch_ope(
-                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                        rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                         &rnote.get_ope(),
                         &app,
                     ) {
@@ -269,10 +251,13 @@ impl BasePerformer {
                             );
                         }
                         */
-                        deck.look_back_caret(slot, &app);
-                        deck.seek_a_note(slot, &app);
+                        // ###############
+                        // # 棋譜読取取消 #
+                        // ###############
+                        rack.look_back_caret(slot, &app);
+                        rack.seek_a_note(slot, &app);
                         // ポジションは動かしてない☆（＾～＾）
-                        deck.look_back_caret(slot, &app);
+                        rack.look_back_caret(slot, &app);
                         /*
                         if app.is_debug() {
                             app.comm.println(
@@ -313,20 +298,11 @@ impl BasePerformer {
         }
 
         if is_rollback {
-            // キャレットを使って局面を戻す。
-            if app.is_debug() {
-                app.comm.println(&format!(
-                    "[#Deck.ReplayM: 巻き戻そう☆（＾～＾） Rollback {} note! Slot:{:?}, Move:{}]",
-                    rmove.len(),
-                    slot,
-                    rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
-                ));
-            }
-            deck.look_back_caret(Slot::Training, &app);
-            deck.look_back_caret(Slot::Learning, &app);
-            BasePerformer::synchronized_seek_and_touch_n_notes(deck, rmove.len(), position, &app);
-            deck.look_back_caret(Slot::Training, &app);
-            deck.look_back_caret(Slot::Learning, &app);
+            rack.look_back_caret(Slot::Training, &app);
+            rack.look_back_caret(Slot::Learning, &app);
+            BasePerformer::rollback_move(rack, slot, &rmove, position, &app);
+            rack.look_back_caret(Slot::Learning, &app);
+            rack.look_back_caret(Slot::Training, &app);
 
             return (SoughtMoveResult::Dream, ShogiMove::new_facing_right_move());
         }
@@ -335,27 +311,109 @@ impl BasePerformer {
         if app.is_debug() {
             app.comm.println(&format!(
                 "[#Deck.ReplayM: １手分☆（＾～＾） Move:{}]",
-                rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                rmove.to_human_presentable(rack, slot, position.get_board_size(), &app)
             ));
         }
         (SoughtMoveResult::Aware, rmove)
     }
 
+    /// キャレットの向きを変更してから実行すること。
+    pub fn rollback_note(
+        rack: &mut AudioRack,
+        slot_0: Slot,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        // ###############
+        // # 末尾から削除 #
+        // ###############
+        let note_l = rack
+            .pop_note(Slot::Learning)
+            .unwrap_or_else(|| panic!(app.comm.panic("[#RollbackN: note_l fail]")));
+
+        // #########
+        // # 盤操作 #
+        // #########
+        if let (false, _) = position.touch_ope(
+            // 巻き戻しの方向。プレイヤーのターンに影響。
+            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
+            &note_l.get_ope(),
+            &app,
+        ) {
+            panic!(app.comm.panic(&format!(
+                "[#Rollback: 局面をロールバックできなかったぜ☆（＾～＾） {}]",
+                note_l.to_human_presentable(position.get_board_size(), &app),
+            )));
+        }
+        HumanInterface::bo(&rack, &position, &app);
+
+        if !rack.is_none_current_tape(slot_0) {
+            // ###########
+            // # 棋譜読取 #
+            // ###########
+            // スロット０のテープがあれば、シークする☆（＾～＾）
+            match rack.seek_a_note(slot_0, &app) {
+                (_taken_overflow_0, _awareness_0, Some(note_0)) => {
+                    // ２つのノートは一致するはずだぜ☆（＾～＾）
+                    if note_0 != note_l {
+                        panic!(app.comm.panic(&format!(
+                            "[#Rollback: ノートが一致しなかったぜ☆（＾～＾） {}!={}]",
+                            note_0.to_human_presentable(position.get_board_size(), &app),
+                            note_l.to_human_presentable(position.get_board_size(), &app),
+                        )));
+                    }
+                }
+                (taken_overflow_0, awareness_0, None) => {
+                    // スロット０は空っぽでもＯＫ☆（＾～＾）
+                    if app.is_debug() {
+                        app.comm.println(&format!("[#replay_a_move: スロット０のテープは途切れてもＯＫ☆（＾～＾） taken_overflow:{}, Awareness:{:?}]",
+                        taken_overflow_0,
+                        awareness_0),
+                    );
+                    }
+                }
+            }
+        }
+    }
+
+    /// キャレットの向きを変更してから実行すること。
+    pub fn rollback_move(
+        rack: &mut AudioRack,
+        slot_0: Slot,
+        rmove: &ShogiMove,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        // キャレットを使って局面を戻す。
+        if app.is_debug() {
+            app.comm.println(&format!(
+                "[#Deck.RollbackN: 巻き戻そう☆（＾～＾） Rollback {} note! Slot:{:?}, Move:{}]",
+                rmove.len(),
+                slot_0,
+                rmove.to_human_presentable(rack, slot_0, position.get_board_size(), &app)
+            ));
+        }
+
+        for _i in 0..rmove.len() {
+            BasePerformer::rollback_note(rack, slot_0, position, &app);
+        }
+    }
+
     pub fn read_tape_for_n_moves_forcely(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         repeats: usize,
         position: &mut Position,
         app: &Application,
     ) {
         for _i in 0..repeats {
-            BasePerformer::read_tape_for_1move_forcely(deck, slot, position, &app);
+            BasePerformer::read_tape_for_1move_forcely(rack, slot, position, &app);
         }
     }
 
     /// 必ず1手進める。（非合法タッチがあれば強制終了）
     pub fn read_tape_for_1move_forcely(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         position: &mut Position,
         app: &Application,
@@ -372,7 +430,7 @@ impl BasePerformer {
         let mut forwarding_count = 0;
 
         // 最後尾に達していたのなら終了。
-        while let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(slot, &app) {
+        while let (_taken_overflow, _awareness, Some(rnote)) = rack.seek_a_note(slot, &app) {
             /*
             app.comm.println(&format!(
                 "[LOOP read_tape_for_1move_forcely:{}:{}:{}]",
@@ -382,7 +440,7 @@ impl BasePerformer {
             ));
             */
             if let (true, _) = position.touch_ope(
-                deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                 &rnote.get_ope(),
                 &app,
             ) {
@@ -419,12 +477,7 @@ impl BasePerformer {
     // # S #
     // #####
 
-    pub fn scan_pid(
-        line: &str,
-        deck: &mut CassetteDeck,
-        position: &mut Position,
-        app: &Application,
-    ) {
+    pub fn scan_pid(line: &str, rack: &mut AudioRack, position: &mut Position, app: &Application) {
         let re = Regex::new(r"scan-pid\s+(\d+)")
             .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
         let matched = re
@@ -442,7 +495,7 @@ impl BasePerformer {
 
         // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
         position.seek_a_player(
-            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
             &app,
         );
 
@@ -459,99 +512,18 @@ impl BasePerformer {
         }
 
         // 進めた分を戻すぜ☆（＾～＾）
-        deck.look_back_caret(Slot::Learning, &app);
+        rack.look_back_caret(Slot::Learning, &app);
         position.seek_a_player(
-            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
             &app,
         );
-        deck.look_back_caret(Slot::Learning, &app);
-    }
-
-    /// トレーニング・テープと、ラーニング・テープを同時に n ノート シークします。
-    /// また、盤面へのタッチも行います。
-    pub fn synchronized_seek_and_touch_n_notes(
-        deck: &mut CassetteDeck,
-        repeat: usize,
-        position: &mut Position,
-        app: &Application,
-    ) {
-        if app.is_debug() {
-            app.comm
-                .println("[#synchronized_seek_and_touch_n_notes 開始]");
-        }
-
-        for _i in 0..repeat {
-            // トレーニング・テープをシークする☆（＾～＾）結果は要らない☆（＾～＾）
-            let (taken_overflow_t, awareness_t, note_opt_t) =
-                deck.seek_a_note(Slot::Training, &app);
-            if let Some(_note) = note_opt_t {
-
-            } else if app.is_debug() {
-                app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: トレーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
-                        taken_overflow_t,
-                        awareness_t),
-                    );
-            }
-
-            // ラーニング・テープをシークする☆（＾～＾）結果は、盤面を巻き戻すのに使う☆（＾～＾）
-            let (taken_overflow_l, awareness_l, note_opt_l) =
-                deck.seek_a_note(Slot::Learning, &app);
-            if let Some(note) = note_opt_l {
-                /*
-                app.comm.println(&format!(
-                    "<Go-force:{}/{} {}>",
-                    i,
-                    repeat,
-                    rnote.to_human_presentable(position.get_board_size())
-                ));
-                */
-                if let (false, _) = position.touch_ope(
-                    deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                    &note.get_ope(),
-                    &app,
-                ) {
-                    /*
-                    app.comm.println(&format!(
-                        "Touch fail, permissive. Note: {}, Caret: {}.",
-                        rnote.to_human_presentable(position.get_board_size()),
-                        self.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
-                    ));
-                    */
-                }
-            } else if app.is_debug() {
-                app.comm.println(&format!("[#synchronized_seek_and_touch_n_notes: ラーニング・テープが途切れた☆（＾～＾）？ taken_overflow:{}, Awareness:{:?}]",
-                        taken_overflow_l,
-                        awareness_l),
-                    );
-                // オーバーフローした☆（＾～＾）テープの終了だが、テープを終了したあとにバックすればもう１回終了するし☆（＾～＾）
-                // 気にせずループを続行しろだぜ☆（＾～＾）
-
-                /*
-                if i + 1 == repeat {
-                    // 指示したリピートの数と、テープの終了は一致するはずだぜ☆（＾～＾）
-                    break;
-                } else {
-                    panic!(
-                        "テープの長さを超えてリピートしろと指示出してる☆（＾～＾）どっかおかしいのでは☆（＾～＾）？  Caret: {}, i {}, repeat {} notes.",
-                        self.to_human_presentable_of_caret_of_current_tape(slot, &app),
-                        i,
-                        repeat
-                    );
-                }
-                */
-            }
-        }
-
-        if app.is_debug() {
-            app.comm
-                .println("[#synchronized_seek_and_touch_n_notes 終了]");
-        }
+        rack.look_back_caret(Slot::Learning, &app);
     }
 
     /// ラーニング・テープを n ノート シークします。
     /// また、タッチも行います。成立しないタッチをしてしまうことも、おおめに見ます。
     pub fn seek_and_touch_learning_n_notes_permissive(
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         repeat: usize,
         position: &mut Position,
         app: &Application,
@@ -564,7 +536,7 @@ impl BasePerformer {
         for _i in 0..repeat {
             // キャレットは必ず進めろだぜ☆（＾～＾）
             if let (_taken_overflow, _awareness, Some(rnote)) =
-                deck.seek_a_note(Slot::Learning, &app)
+                rack.seek_a_note(Slot::Learning, &app)
             {
                 // 指し手を拾えたのなら、指せだぜ☆（＾～＾）
                 /*
@@ -576,7 +548,7 @@ impl BasePerformer {
                 ));
                 */
                 if let (false, _) = position.touch_ope(
-                    deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                    rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                     &rnote.get_ope(),
                     &app,
                 ) {

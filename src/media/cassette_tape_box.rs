@@ -56,18 +56,6 @@ impl CassetteTapeBox {
     // # A #
     // #####
 
-    /// 正の方のテープの末端にノートを追加。
-    pub fn append_note(&mut self, note: ShogiNote) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].append_note(note)
-        } else {
-            panic!(
-                "#Box.Append note: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
     /// ◆テープを追加するぜ☆（＾～＾）
     pub fn add_tape(&mut self, tape: CassetteTape, _app: &Application) {
         self.tapes.push(tape);
@@ -216,6 +204,10 @@ impl CassetteTapeBox {
         self.tapes.is_empty()
     }
 
+    pub fn is_none_current_tape(&self) -> bool {
+        None == self.awareness_of_tapes.index
+    }
+
     // #####
     // # L #
     // #####
@@ -260,6 +252,30 @@ impl CassetteTapeBox {
     // #####
     // # P #
     // #####
+
+    /// 正の方のテープの末端にノートを追加。
+    pub fn push_note(&mut self, note: ShogiNote) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].push_note(note)
+        } else {
+            panic!(
+                "#Box.Push note: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    /// 正の方のテープの末端にノートを追加。
+    pub fn pop_note(&mut self) -> Option<ShogiNote> {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].pop_note()
+        } else {
+            panic!(
+                "#Box.Pop note: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
 
     /*
     pub fn push_note_to_positive_of_current_tape(&mut self, note: ShogiNote) {

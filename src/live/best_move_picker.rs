@@ -1,3 +1,4 @@
+use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
@@ -89,8 +90,8 @@ impl BestMovePicker {
     /// 最善手を返す。
     pub fn get_mut_best_move(
         &mut self,
+        rack: &mut AudioRack,
         position: &mut Position,
-        deck: &mut CassetteDeck,
         app: &Application,
     ) -> UsiMove {
         if app.is_debug() {
@@ -117,7 +118,7 @@ impl BestMovePicker {
                 .path()
                 .display()
                 .to_string();
-            deck.add_tapes_from_file(
+            rack.add_tapes_from_file(
                 box_file_name,
                 Slot::Training,
                 position.get_board_size(),
@@ -128,7 +129,7 @@ impl BestMovePicker {
                 // トレーニング・テープ・ボックスを１箱選択。
                 app.comm.println(&format!(
                     "[#Tape-box: {}. Phase: {:?}]",
-                    deck.to_human_presentable_of_tape_box(Slot::Training),
+                    rack.to_human_presentable_of_tape_box(Slot::Training),
                     position.get_phase().get_state()
                 ));
             }
@@ -137,7 +138,7 @@ impl BestMovePicker {
             // 確認表示。
             {
                 use piece_etc::PieceIdentify::*;
-                HumanInterface::bo(deck, &comm, -1, &position);
+                HumanInterface::bo(rack, &comm, -1, &position);
                 // 先手玉の番地。
                 {
                     if let Some((_idp,addr_obj)) = position.scan_pid(Some(HalfPlayerPhase::First), K00) {
@@ -165,7 +166,7 @@ impl BestMovePicker {
 
             let mut debug_tape_count = -1;
             // テープを１本シーク☆（＾～＾）
-            while deck.seek_of_next_tape(Slot::Training, &app) {
+            while rack.seek_of_next_tape(Slot::Training, &app) {
                 debug_tape_count += 1;
                 if 0 <= debug_tape_count && debug_tape_count <= 0 {
                     // このテープだけテストするぜ☆（＾～＾）
@@ -198,7 +199,7 @@ impl BestMovePicker {
                     // テープを１本選択☆（＾～＾）
                     app.comm.println(&format!(
                         "#Tape: {}",
-                        deck.to_human_presentable_of_current_tape_of_training_box(
+                        rack.to_human_presentable_of_current_tape_of_training_box(
                             position.get_board_size(),
                             &app
                         )
@@ -226,7 +227,7 @@ impl BestMovePicker {
 
                     // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
                     position.seek_a_player(
-                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                        rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                         &app,
                     );
 
@@ -237,21 +238,21 @@ impl BestMovePicker {
                         if app.is_debug() {
                             app.comm.println(&format!(
                                 "[{}] Pattern matched. Piece: {}'{}'{}.",
-                                deck.get_ply(Slot::Training),
+                                rack.get_ply(Slot::Training),
                                 position.get_phase().get_state().to_log(),
                                 my_idp.to_human_presentable(),
                                 my_addr_obj.to_physical_sign(position.get_board_size())
                             ));
-                            HumanInterface::bo(deck, &position, &app);
+                            HumanInterface::bo(rack, &position, &app);
                         }
 
                         // 進めた盤面は、戻すぜ☆（＾～＾）
-                        deck.look_back_caret(Slot::Learning, &app);
+                        rack.look_back_caret(Slot::Learning, &app);
                         position.seek_a_player(
-                            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                             &app,
                         );
-                        deck.look_back_caret(Slot::Learning, &app);
+                        rack.look_back_caret(Slot::Learning, &app);
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
                         // TODO 次方向と、前方向の両方へスキャンしたい。
@@ -279,8 +280,8 @@ impl BestMovePicker {
                                 if app.is_debug() {
                                     app.comm.println(&format!(
                                         "\n--------------------------------------------------------------------------------#Note scan: Training tape span: {}. Training caret: {}.",
-                                        deck.get_current_tape_span(Slot::Training).len(),
-                                        deck.to_human_presentable_of_caret(
+                                        rack.get_current_tape_span(Slot::Training).len(),
+                                        rack.to_human_presentable_of_caret(
                                             Slot::Training, &app
                                         ),
                                     ));
@@ -288,7 +289,7 @@ impl BestMovePicker {
 
                                 // トレーニング・テープを再生しようぜ☆（＾～＾）
                                 let (sought_move_result, rmove) = BasePerformer::replay_a_move(
-                                    deck,
+                                    rack,
                                     Slot::Training,
                                     position,
                                     &app,
@@ -303,7 +304,7 @@ impl BestMovePicker {
                                             if app.is_debug() {
                                                 app.comm.println(&format!(
                                                     "[End of tape of Piece loop: Caret: {}]",
-                                                    deck.to_human_presentable_of_caret(
+                                                    rack.to_human_presentable_of_caret(
                                                         Slot::Training,
                                                         &app
                                                     ),
@@ -330,7 +331,7 @@ impl BestMovePicker {
 
                                 // ベストムーブを作ろうぜ☆（＾～＾）
                                 let best_move = if let Some(best_move) = rmove.to_best_move(
-                                    deck,
+                                    rack,
                                     Slot::Training,
                                     position.get_board_size(),
                                     &app,
@@ -339,7 +340,7 @@ impl BestMovePicker {
                                 } else {
                                     if app.is_debug() {
                                         app.comm.println(&format!("info [USIにならないぜ☆（＾～＾）棋譜がダメかもしらん☆（＾～＾） Rmove:{}]",
-                                            rmove.to_human_presentable(deck,Slot::Training,position.get_board_size(),&app)));
+                                            rmove.to_human_presentable(rack,Slot::Training,position.get_board_size(),&app)));
                                         app.comm.println(
                                             "info [かといって巻き戻したいし……☆（＾～＾）]",
                                         );
@@ -347,8 +348,8 @@ impl BestMovePicker {
                                             "info [全部放棄して次のステップに進もう☆（＾～＾）]",
                                         );
                                     }
-                                    deck.skip_a_move(Slot::Training, &app);
-                                    HumanInterface::bo(deck, &position, &app);
+                                    rack.skip_a_move(Slot::Training, &app);
+                                    HumanInterface::bo(rack, &position, &app);
                                     self.change_thread(*subject_piece_id, &app);
                                     break 'tape_box_dir_loop;
                                 };
@@ -378,7 +379,7 @@ impl BestMovePicker {
                                 }
 
                                 if !self.match_object_piece(
-                                    deck,
+                                    rack,
                                     Slot::Training,
                                     position,
                                     my_addr_obj,
@@ -392,8 +393,8 @@ impl BestMovePicker {
                                     if app.is_debug() {
                                         app.comm.println("[途切れたぜ☆（＾～＾）]");
                                     }
-                                    deck.skip_a_move(Slot::Training, &app);
-                                    HumanInterface::bo(deck, &position, &app);
+                                    rack.skip_a_move(Slot::Training, &app);
+                                    HumanInterface::bo(rack, &position, &app);
                                     self.change_thread(*subject_piece_id, &app);
                                 }
 
@@ -403,12 +404,12 @@ impl BestMovePicker {
                                     "\n----------------------------------------[#Hit note! sought_move_result: {:?}, Move {} --> Best move: {}. Caret: {}]",
                                     sought_move_result,
                                     rmove.to_human_presentable(
-                                        deck,
+                                        rack,
                                         Slot::Training,
                                         position.get_board_size(),
                                         &app),
                                     best_move.to_human_presentable(position.get_board_size(), &app),
-                                    deck.to_human_presentable_of_caret(
+                                    rack.to_human_presentable_of_caret(
                                         Slot::Training, &app
                                     ),
                                 ));
@@ -426,9 +427,9 @@ impl BestMovePicker {
                             self.change_thread(*subject_piece_id, &app);
 
                             // 無限ループしないように、残っている分は無視して進んで　１手分　終わらせろだぜ☆（＾～＾）
-                            let (taken_overflow, rmove) = deck.skip_a_move(Slot::Training, &app);
+                            let (taken_overflow, rmove) = rack.skip_a_move(Slot::Training, &app);
                             moved_notes += rmove.len();
-                            HumanInterface::bo(deck, &position, &app);
+                            HumanInterface::bo(rack, &position, &app);
 
                             if taken_overflow {
                                 break 'sequence_moves;
@@ -440,25 +441,25 @@ impl BestMovePicker {
 
                         // 棋譜の最後まで行ってるだろ、全部戻せだぜ☆（＾～＾）大橋流を指し終えたところまで戻るだろ☆（＾～＾）
                         // TODO 初期局面に戻してどうするのか、現局面に戻せだぜ☆（＾～＾）
-                        let repeats = moved_notes - OHASHI_NOTE_LEN + 1; // deck.get_ply(Slot::Learning) as usize;
+                        let repeats = moved_notes - OHASHI_NOTE_LEN + 1; // rack.get_ply(Slot::Learning) as usize;
                         if app.is_debug() {
                             app.comm.println(&format!(
-                                "Try outed! Go back {} notes. Training deck box: {}. Deck: {}.",
+                                "Try outed! Go back {} notes. Training rack box: {}. Deck: {}.",
                                 repeats,
-                                deck.to_human_presentable_of_tape_box(Slot::Training),
-                                deck.to_human_presentable()
+                                rack.to_human_presentable_of_tape_box(Slot::Training),
+                                rack.to_human_presentable()
                             ));
                         }
-                        deck.look_back_caret(Slot::Training, &app);
+                        rack.look_back_caret(Slot::Training, &app);
                         BasePerformer::seek_and_touch_learning_n_notes_permissive(
-                            deck, repeats, position, &app,
+                            rack, repeats, position, &app,
                         );
-                        deck.look_back_caret(Slot::Training, &app);
+                        rack.look_back_caret(Slot::Training, &app);
 
                         // 帰りは１歩多く進んでしまう☆（＾～＾）　フェーズ・チェンジまで戻ってしまったので、振り返って１ノート進めだぜ☆（＾～＾）
-                        deck.seek_a_note(Slot::Training, &app);
+                        rack.seek_a_note(Slot::Training, &app);
 
-                        HumanInterface::bo(deck, &position, &app);
+                        HumanInterface::bo(rack, &position, &app);
                         if app.is_debug() {
                             app.comm.println("Backed.");
                         }
@@ -472,12 +473,12 @@ impl BestMovePicker {
                         }
 
                         // 進めた分、戻すぜ☆（＾～＾）
-                        deck.look_back_caret(Slot::Learning, &app);
+                        rack.look_back_caret(Slot::Learning, &app);
                         position.seek_a_player(
-                            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                            rack.is_facing_left_of_current_tape(Slot::Learning, &app),
                             &app,
                         );
-                        deck.look_back_caret(Slot::Learning, &app);
+                        rack.look_back_caret(Slot::Learning, &app);
                     }
                 } // ピースの for
 
@@ -498,7 +499,7 @@ impl BestMovePicker {
                 app.comm.println("[Tape box end]");
             }
 
-            deck.clear_of_tapes(Slot::Training, &app);
+            rack.clear_of_tapes(Slot::Training, &app);
         } // トレーニング・ディレクトリー内のループ。
 
         if app.is_debug() {
@@ -609,7 +610,7 @@ impl BestMovePicker {
     /// この指し手の、取られた駒などが一致しているかの判定。
     pub fn match_object_piece(
         &mut self,
-        deck: &mut CassetteDeck,
+        rack: &mut AudioRack,
         slot: Slot,
         position: &mut Position,
         my_addr_obj: Address,
@@ -628,7 +629,7 @@ impl BestMovePicker {
                             app.comm.println(&format!(
                                 "#[Illegal: 味方の駒を取ってしまう。{}]",
                                 rmove.to_human_presentable(
-                                    deck,
+                                    rack,
                                     slot,
                                     position.get_board_size(),
                                     &app
@@ -642,7 +643,7 @@ impl BestMovePicker {
                         // 現局面では、取ろうとした駒がなかった。
                         app.comm.println(&format!(
                             "#[No-match: 現局面では、取ろうとした駒がなかった。{}]",
-                            rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                            rmove.to_human_presentable(rack, slot, position.get_board_size(), &app)
                         ));
                     }
                     return false;
@@ -651,7 +652,7 @@ impl BestMovePicker {
                 // プログラムの不具合。
                 panic!(app.comm.panic(&format!(
                     "#[IL-盤上以外の駒を取った(1)。{}]",
-                    rmove.to_human_presentable(deck, slot, position.get_board_size(), &app)
+                    rmove.to_human_presentable(rack, slot, position.get_board_size(), &app)
                 )));
             }
         } else {
@@ -674,7 +675,7 @@ impl BestMovePicker {
     /// (is_end_of_tape, move_opt)
     pub fn try_read_training_tape_for_1move(
         &mut self,
-        deck: &mut CassetteDeck,
+        rack: &mut CassetteDeck,
         position: &mut Position,
         ply: i16,
         subject_piece_id: PieceIdentify,
@@ -693,18 +694,18 @@ impl BestMovePicker {
         /// （２）最後ではない１手分。局面もキャレットも進んでいる。
         /// （３）テープ終わっていた。キャレットを戻す。
         /// （４）実現しない操作だった。局面とキャレットを戻す。
-        match GamePlayer::seek_a_move(deck, Slot::Training, position, ply, &app) {
+        match GamePlayer::seek_a_move(rack, Slot::Training, position, ply, &app) {
             (is_end_of_tape, Some(rmove)) => {
                 // テープの通りに、局面をタッチしてみて１手分は　なるほど進んだようだぜ☆（＾～＾）
                 // USI に変換してみようぜ☆（＾～＾）
                 let bmove =
-                    rmove.to_best_move(deck, Slot::Training, position.get_board_size(), &app);
+                    rmove.to_best_move(rack, Slot::Training, position.get_board_size(), &app);
 
                 app.comm.println(&format!(
                     "#{}Rmove:{}. subject('{}'{}){}",
-                    deck.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
+                    rack.to_human_presentable_of_caret_of_current_tape_of_training_box(&app),
                     rmove.to_human_presentable(
-                        deck,
+                        rack,
                         Slot::Training,
                         position.get_board_size(),
                         &app
@@ -729,7 +730,7 @@ impl BestMovePicker {
                 ));
 
                 if self.position_match(
-                    deck,
+                    rack,
                     Slot::Training,
                     position,
                     subject_piece_id,
@@ -768,7 +769,7 @@ impl BestMovePicker {
                     /// （３）テープ終わっていた。キャレットを戻す。
                     /// （４）実現しない操作だった。局面とキャレットを戻す。
                     match GamePlayer::seek_a_move(
-                        deck,
+                        rack,
                         Slot::Training,
                         position,
                         ply, //ply_2,
@@ -784,14 +785,14 @@ impl BestMovePicker {
                                 "Hit and go! ({}) {}",
                                 bmove.subject_pid.to_human_presentable(),
                                 &rmove.to_human_presentable(
-                                    deck,
+                                    rack,
                                     Slot::Training,
                                     position.get_board_size(),
                                     &app
                                 )
                             ));
                             HumanInterface::bo_with_tape(
-                                deck,
+                                rack,
                                 Slot::Training,
                                 ply, //ply_2,
                                 &position,
@@ -804,14 +805,14 @@ impl BestMovePicker {
                             app.comm.println(&format!(
                                 "Canceled: {}.",
                                 rmove.to_human_presentable(
-                                    deck,
+                                    rack,
                                     Slot::Training,
                                     position.get_board_size(),
                                     &app
                                 )
                             ));
                             HumanInterface::bo_with_tape(
-                                deck,
+                                rack,
                                 Slot::Training,
                                 ply, // ply_2,
                                 &position,
