@@ -47,7 +47,11 @@ use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::position::*;
 use lib_sub::*;
+use live::base_performer::*;
 use live::best_move_picker::*;
+use live::computer_performer::*;
+use live::ohashi_performer::*;
+use live::tuner::*;
 use std::io;
 use studio::application::*;
 use studio::common::closed_interval::*;
@@ -117,13 +121,13 @@ pub fn main_loop() {
         // # B #
         // #####
         } else if line == "b" {
-            LibSub::back_1_note(&mut deck, &mut position, &app);
+            Tuner::back_1_note(&mut deck, &mut position, &app);
         } else if line == "bb" {
-            LibSub::back_1_move(&mut deck, &mut position, &app);
+            Tuner::back_1_move(&mut deck, &mut position, &app);
         } else if line == "bbb" {
-            LibSub::back_10_move(&mut deck, &mut position, &app);
+            Tuner::back_10_move(&mut deck, &mut position, &app);
         } else if line == "bbbb" {
-            LibSub::back_400_move(&mut deck, &mut position, &app);
+            Tuner::back_400_move(&mut deck, &mut position, &app);
         } else if line.starts_with("bo") {
             // Board.
 
@@ -169,18 +173,20 @@ pub fn main_loop() {
         // #####
         // # F #
         // #####
+        } else if line == "f" {
+            Tuner::replay_a_note(&mut deck, &mut position, &app);
         } else if line == "ff" {
-            LibSub::forward_1_move(&mut deck, &mut position, &app);
+            Tuner::forward_1_move(&mut deck, &mut position, &app);
         } else if line == "fff" {
-            LibSub::forward_10_move(&mut deck, &mut position, &app);
+            Tuner::forward_10_move(&mut deck, &mut position, &app);
         } else if line == "ffff" {
-            LibSub::forward_400_move(&mut deck, &mut position, &app);
+            Tuner::forward_400_move(&mut deck, &mut position, &app);
 
         // #####
         // # G #
         // #####
         } else if line.starts_with("go") {
-            LibSub::go(&mut best_move_picker, &mut deck, &mut position, &app);
+            ComputerPerformer::go(&mut best_move_picker, &mut deck, &mut position, &app);
         } else if line.starts_with("gameover") {
             // TODO lose とか win とか。
             LibSub::gameover(&mut deck, position.get_board_size(), &app);
@@ -243,7 +249,7 @@ pub fn main_loop() {
         // #####
         } else if line == "ohashi" {
             // Ohashi mode.
-            LibSub::ohashi(&mut deck, &mut position, &app);
+            OhashiPerformer::improvise_ohashi_starting(&mut deck, &mut position, &app)
 
         // #########
         // # Piece #
@@ -277,9 +283,7 @@ pub fn main_loop() {
         // # S #
         // #####
         } else if line.starts_with("scan-pid") {
-            LibSub::scan_pid(&line, &mut deck, &mut position, &app);
-        } else if line == "sn" {
-            LibSub::seek_a_note(&mut deck, &mut position, &app);
+            BasePerformer::scan_pid(&line, &mut deck, &mut position, &app);
 
         // #####
         // # T #

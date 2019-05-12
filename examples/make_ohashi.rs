@@ -5,7 +5,7 @@ extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
-use kifuwarabe_wcsc29_lib::live::ohashi_player::*;
+use kifuwarabe_wcsc29_lib::live::ohashi_performer::*;
 use kifuwarabe_wcsc29_lib::media::cassette_tape::*;
 use kifuwarabe_wcsc29_lib::studio::application::*;
 use std::env;
@@ -66,7 +66,7 @@ fn main() {
     let mut position = Position::new_honshogi_origin(&app);
 
     // Play out.
-    OhashiPlayer::improvise_ohashi_starting(&mut deck, &mut position, &app);
+    OhashiPerformer::improvise_ohashi_starting(&mut deck, &mut position, &app);
 
     // Write.
     deck.write_tape_box(position.get_board_size(), &app);

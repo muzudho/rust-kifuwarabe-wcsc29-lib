@@ -146,8 +146,8 @@ impl ShogiNote {
     // # T #
     // #####
 
-    pub fn to_facing_left_str(is_facing_left: bool) -> String {
-        if is_facing_left { "L" } else { "." }.to_string()
+    pub fn to_facing_left_str(facing_left: bool) -> String {
+        if facing_left { "L" } else { "." }.to_string()
     }
 
     pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
@@ -161,7 +161,7 @@ impl ShogiNote {
         )
     }
 
-    pub fn to_human_presentable_vec(
+    pub fn create_human_presentable_of_vec(
         vec: Vec<ShogiNote>,
         board_size: BoardSize,
         app: &Application,

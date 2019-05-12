@@ -479,16 +479,8 @@ impl Position {
     // # S #
     // #####
 
-    pub fn seek_a_player(&mut self, deck: &CassetteDeck, app: &Application) {
-        /*
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#フェーズチェンジ {:?}]",
-                self.phase.get_state()
-            ));
-        }
-        */
-        self.phase.seek_a_player_for_position(&deck, &app)
+    pub fn seek_a_player(&mut self, is_facing_left: bool, app: &Application) {
+        self.phase.seek_a_player_for_position(is_facing_left, &app)
     }
 
     /// TODO 識別子を追加していいのか？
@@ -898,7 +890,10 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.seek_a_player(&deck, &app);
+                    self.seek_a_player(
+                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                        &app,
+                    );
                     // （完遂） phase change.
                     (true, None)
                 } else if let Some(ref mut fingertip) = self.fingertip {

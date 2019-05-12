@@ -2,7 +2,7 @@ use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
-use live::ohashi_player::*;
+use live::ohashi_performer::*;
 use sheet_music_format::kifu_csa::csa_move::*;
 use sheet_music_format::kifu_csa::csa_tape::*;
 use sound::shogi_note_operation::*;
@@ -23,7 +23,7 @@ impl CsaConverter {
         }
 
         // 大橋流を指すところから☆（*＾～＾*）
-        OhashiPlayer::improvise_ohashi_starting(deck, position, app);
+        OhashiPerformer::improvise_ohashi_starting(deck, position, app);
         if app.is_debug() {
             app.comm.println("[#play_out_csa_tape:大橋流終わり]");
             HumanInterface::bo(deck, &position, &app);

@@ -176,5 +176,5 @@ cargo clippy --example usi_to_rpm
 ### Run.
 ### '--' is separator. You can pass arguments to exe.
 ### Please change encoding to UTF-8.
-cargo run --example make_ohashi -- --output C:/muzudho/wcsc29-master/shogi-record/book/ohashi
+cargo run --example make_ohashi -- --output C:/muzudho/wcsc29-master/shogi-record/book/ohashi-ryu
 ```

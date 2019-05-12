@@ -1,7 +1,7 @@
 use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
-use live::ohashi_player::*;
+use live::ohashi_performer::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_position::*;
 use std::*;
@@ -76,7 +76,7 @@ impl Fen {
 
                     // 大橋流で初期局面まで指す☆（＾～＾）
                     deck.clear_tape_body(Slot::Learning, &app);
-                    OhashiPlayer::improvise_ohashi_starting(deck, position, &app);
+                    OhashiPerformer::improvise_ohashi_starting(deck, position, &app);
                     true
                 } else {
                     // 指定局面を、初期局面とする☆（＾～＾）

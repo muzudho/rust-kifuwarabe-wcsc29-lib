@@ -24,7 +24,7 @@ pub fn get_index_from_caret_numbers(caret_number: i16) -> usize {
 }
 
 // 意識。キャレットを go_to_next すると作成される。
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Awareness {
     // 移動前のキャレットの位置。
     pub passed_caret: i16,

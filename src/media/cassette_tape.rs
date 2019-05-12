@@ -77,6 +77,11 @@ impl CassetteTape {
     // # A #
     // #####
 
+    /// 正の方のテープの末端にノートを追加。
+    pub fn append_note(&mut self, note: ShogiNote) {
+        self.tracks.append_note(note);
+    }
+
     /// 連結。
     pub fn append_cassette_tape_to_right(&mut self, cassette_tape_to_empty: &mut CassetteTape) {
         self.tracks

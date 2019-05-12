@@ -117,11 +117,15 @@ impl HalfPlayerPhaseObject {
     // #####
 
     /// 隣へ☆（＾ｑ＾）！ position用☆（＾～＾）ラーニング・テープと関連付くぜ☆（＾～＾）
-    pub fn seek_a_player_for_position(&mut self, deck: &CassetteDeck, app: &Application) {
+    ///
+    /// # Arguments
+    ///
+    /// * `is_facing_left` - ラーニング・テープのキャレットの向き。
+    pub fn seek_a_player_for_position(&mut self, is_facing_left: bool, app: &Application) {
         let old_state = self.get_state();
 
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
-        self.state = if deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape() {
+        self.state = if is_facing_left {
             // 左向きのとき。
             match self.state {
                 ZeroPointFive => Second,
@@ -140,12 +144,19 @@ impl HalfPlayerPhaseObject {
         };
 
         if app.is_debug() {
-            app.comm.println(&format!(
-                "[#HalfPlayerPhase: フェーズチェンジ {:?}-->{:?}, L-Caret:{}]",
-                old_state,
-                self.get_state(),
-                deck.to_human_presentable_of_caret(Slot::Learning, &app)
-            ));
+            if is_facing_left {
+                app.comm.println(&format!(
+                    "[#HalfPlayerPhase: フェーズチェンジ {:?}<--{:?}]",
+                    self.get_state(),
+                    old_state,
+                ));
+            } else {
+                app.comm.println(&format!(
+                    "[#HalfPlayerPhase: フェーズチェンジ {:?}-->{:?}]",
+                    old_state,
+                    self.get_state(),
+                ));
+            }
         }
     }
 }

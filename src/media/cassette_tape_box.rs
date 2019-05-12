@@ -56,6 +56,18 @@ impl CassetteTapeBox {
     // # A #
     // #####
 
+    /// 正の方のテープの末端にノートを追加。
+    pub fn append_note(&mut self, note: ShogiNote) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].append_note(note)
+        } else {
+            panic!(
+                "#Box.Append note: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
     /// ◆テープを追加するぜ☆（＾～＾）
     pub fn add_tape(&mut self, tape: CassetteTape, _app: &Application) {
         self.tapes.push(tape);

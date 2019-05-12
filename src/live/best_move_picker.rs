@@ -2,7 +2,8 @@ use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
-use live::ohashi_player::OHASHI_NOTE_LEN;
+use live::base_performer::*;
+use live::ohashi_performer::OHASHI_NOTE_LEN;
 use musician::best_move::BestMove;
 use musician::best_thread::*;
 use musician::best_thread_buffer::*;
@@ -224,7 +225,10 @@ impl BestMovePicker {
                     }
 
                     // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
-                    position.seek_a_player(deck, &app);
+                    position.seek_a_player(
+                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                        &app,
+                    );
 
                     // 現局面の盤上の自駒の番地。
                     if let Some((my_idp, my_addr_obj)) =
@@ -243,7 +247,10 @@ impl BestMovePicker {
 
                         // 進めた盤面は、戻すぜ☆（＾～＾）
                         deck.look_back_caret(Slot::Learning, &app);
-                        position.seek_a_player(deck, &app);
+                        position.seek_a_player(
+                            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                            &app,
+                        );
                         deck.look_back_caret(Slot::Learning, &app);
 
                         // １手ずつ、テープを最後尾に向かってスキャン。
@@ -279,14 +286,16 @@ impl BestMovePicker {
                                     ));
                                 }
 
-                                // 以下の３択☆（＾～＾）
-                                // （１）１手分。局面もキャレットも進んでいる。
-                                // （２）テープをオーバーしていた。キャレットを動かさなかった状態に戻す。
-                                // （３）実現しない操作だった。局面とキャレットを動かさなかった状態に戻す。
-                                let (sought_move_result, rmove) =
-                                    deck.replay_a_move(Slot::Training, position, &app);
+                                // トレーニング・テープを再生しようぜ☆（＾～＾）
+                                let (sought_move_result, rmove) = BasePerformer::replay_a_move(
+                                    deck,
+                                    Slot::Training,
+                                    position,
+                                    &app,
+                                );
                                 moved_notes += rmove.len();
 
+                                // 再生した結果☆（＾～＾）
                                 if rmove.is_empty() {
                                     match sought_move_result {
                                         SoughtMoveResult::Forever => {
@@ -462,7 +471,10 @@ impl BestMovePicker {
 
                         // 進めた分、戻すぜ☆（＾～＾）
                         deck.look_back_caret(Slot::Learning, &app);
-                        position.seek_a_player(deck, &app);
+                        position.seek_a_player(
+                            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                            &app,
+                        );
                         deck.look_back_caret(Slot::Learning, &app);
                     }
                 } // ピースの for

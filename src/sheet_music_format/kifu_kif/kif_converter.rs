@@ -1,7 +1,7 @@
 use audio_compo::cassette_deck::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
-use live::ohashi_player::*;
+use live::ohashi_performer::*;
 use sheet_music_format::kifu_kif::kif_move::*;
 use sheet_music_format::kifu_kif::kif_tape::*;
 use sound::shogi_note_operation::*;
@@ -20,7 +20,7 @@ impl KifConverter {
         let board_size = position.get_board_size();
 
         // 大橋流を指すところから☆（*＾～＾*）
-        OhashiPlayer::improvise_ohashi_starting(deck, position, &app);
+        OhashiPerformer::improvise_ohashi_starting(deck, position, &app);
 
         let mut ply = 1;
         for kmove in &ktape.items {

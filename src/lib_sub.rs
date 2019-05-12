@@ -1,13 +1,9 @@
 use audio_compo::cassette_deck::*;
-use human::human_interface::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
-use live::best_move_picker::*;
-use live::ohashi_player::*;
 use media::cassette_tape::*;
 use media::two_heads_vec::*;
-use regex::Regex;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
 use sheet_music_format::kifu_usi::fen::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
@@ -21,152 +17,6 @@ use studio::common::caret::*;
 
 pub struct LibSub {}
 impl LibSub {
-    // #####
-    // # B #
-    // #####
-
-    pub fn back_1_note(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        if app.is_debug() {
-            app.comm.println("[#back_1_note]")
-        }
-
-        // ルックバックする。
-        deck.look_back_caret(Slot::Learning, &app);
-
-        // 棋譜上で１つ進む。
-        let (taken_overflow, awareness, rnote_opt) =
-            deck.slots[Slot::Learning as usize].seek_a_note(&app);
-
-        if let Some(rnote) = rnote_opt {
-            if app.is_debug() {
-                app.comm.println(&format!(
-                    "[#back_1_note: {}{}, Note:{}]",
-                    if taken_overflow {
-                        "Overflow, ".to_string()
-                    } else {
-                        "".to_string()
-                    },
-                    awareness.to_human_presentable(),
-                    rnote.to_human_presentable(position.get_board_size(), &app)
-                ));
-            }
-
-            // 局面上でそのノートをタッチする。ログも出力する。
-            if !position.try_beautiful_touch(deck, &rnote, &app) {
-                // タッチできないのはおかしい。
-                app.comm.println("Touch fail.");
-            }
-        } else if app.is_debug() {
-            // 戻れなかったというのはおかしい。
-            app.comm.println(&format!(
-                "[#back_1_note fail: {}{}, Note:None]",
-                if taken_overflow {
-                    "Overflow, ".to_string()
-                } else {
-                    "".to_string()
-                },
-                awareness.to_human_presentable()
-            ));
-        }
-
-        // ルックバックする。
-        deck.look_back_caret(Slot::Learning, &app);
-    }
-
-    pub fn back_1_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
-        deck.replay_a_move(Slot::Learning, position, &app);
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    pub fn back_10_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
-        for _i in 0..10 {
-            let (sought_move_result, _rmove) = deck.replay_a_move(Slot::Learning, position, &app);
-            match sought_move_result {
-                SoughtMoveResult::Aware => {}
-                _ => {
-                    break;
-                }
-            }
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    pub fn back_400_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_negative_infinity(Slot::Learning, &app);
-        for _i in 0..400 {
-            let (sought_move_result, _rmove) = deck.replay_a_move(Slot::Learning, position, &app);
-            match sought_move_result {
-                SoughtMoveResult::Aware => {}
-                _ => {
-                    break;
-                }
-            }
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    // #####
-    // # F #
-    // #####
-
-    pub fn forward_1_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        // 非合法タッチは自動で戻します。
-        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        deck.replay_a_move(Slot::Learning, position, &app);
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    pub fn forward_10_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        for _i in 0..10 {
-            deck.replay_a_move(Slot::Learning, position, &app);
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    pub fn forward_400_move(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        for _i in 0..400 {
-            deck.replay_a_move(Slot::Learning, position, &app);
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    // #####
-    // # G #
-    // #####
-
-    pub fn go(
-        best_move_picker: &mut BestMovePicker,
-        deck: &mut CassetteDeck,
-        position: &mut Position,
-        app: &Application,
-    ) {
-        let board_size = position.get_board_size();
-
-        deck.slots[Slot::Learning as usize].turn_caret_towards_positive_infinity(&app);
-
-        let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
-        // Examples.
-        // println!("bestmove 7g7f");
-        // println!("bestmove win");
-        // println!("bestmove resign");
-        app.comm
-            .println(&format!("bestmove {}", best_umove.to_sign(&app)));
-
-        // USI を再翻訳して再生するぜ☆（＾～＾）
-        let rnote_opes =
-            UsiConverter::convert_move(best_umove, &position, deck.get_ply(Slot::Learning), &app);
-        for rnote_ope in rnote_opes {
-            // app.comm.println("lib.rs:go: touch_1note_ope");
-
-            // 非合法手はいったん出力し、将棋所の方でエラーにする☆（＾～＾）
-            position.touch_1note_ope(deck, &rnote_ope, true, board_size, &app);
-        }
-    }
-
     pub fn gameover(deck: &mut CassetteDeck, board_size: BoardSize, app: &Application) {
         // TODO とりあえず、テープが１個入った　テープ・ボックス形式で書きだし☆（＾～＾）
         deck.write_tape_box(board_size, &app);
@@ -211,14 +61,6 @@ impl LibSub {
     }
 
     // #####
-    // # O #
-    // #####
-
-    pub fn ohashi(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        OhashiPlayer::improvise_ohashi_starting(deck, position, &app)
-    }
-
-    // #####
     // # P #
     // #####
 
@@ -250,62 +92,6 @@ impl LibSub {
             deck.clear_of_tapes(Slot::Training, &app);
             UsiConverter::play_out_usi_tape(position, &urecord, deck, &app);
         }
-    }
-
-    // #####
-    // # S #
-    // #####
-
-    pub fn seek_a_note(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
-        deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
-        if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
-            if !position.try_beautiful_touch(&deck, &rnote, &app) {
-                app.comm.println("Touch fail.");
-            }
-        }
-        HumanInterface::bo(deck, &position, &app);
-    }
-
-    pub fn scan_pid(
-        line: &str,
-        deck: &mut CassetteDeck,
-        position: &mut Position,
-        app: &Application,
-    ) {
-        let re = Regex::new(r"scan-pid\s+(\d+)")
-            .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
-        let matched = re
-            .captures(line)
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. parse.")));
-        let pnum_str = matched.get(1).map_or("", |m| m.as_str());
-        let pnum: i8 = pnum_str.parse().unwrap();
-        let pid = if let Some(pid) = PieceIdentify::from_number(pnum) {
-            pid
-        } else {
-            app.comm
-                .println(&format!("[#Scan pid fail: Pnum: {}]", pnum));
-            return;
-        };
-
-        // 記録係フェーズなんで、もう１つ先に進めるぜ☆（＾～＾）
-        position.seek_a_player(deck, &app);
-
-        if let Some((idp, addr)) = position.scan_pid(position.get_phase().get_state(), pid) {
-            app.comm.println(&format!(
-                "[#Scan pid: Found pnum:{}, Idp:{}, Addr:{}]",
-                pnum,
-                idp.to_human_presentable(),
-                addr.to_human_presentable(position.get_board_size())
-            ));
-        } else {
-            app.comm
-                .println(&format!("[#Scan pid: Not found pnum: {}]", pnum));
-        }
-
-        // 進めた分を戻すぜ☆（＾～＾）
-        deck.look_back_caret(Slot::Learning, &app);
-        position.seek_a_player(deck, &app);
-        deck.look_back_caret(Slot::Learning, &app);
     }
 
     // #####
