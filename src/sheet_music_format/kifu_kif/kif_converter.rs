@@ -1,6 +1,8 @@
 use audio_compo::cassette_deck::*;
+use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
+use live::base_performer::*;
 use live::ohashi_performer::*;
 use sheet_music_format::kifu_kif::kif_move::*;
 use sheet_music_format::kifu_kif::kif_tape::*;
@@ -17,8 +19,6 @@ impl KifConverter {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
-        let board_size = position.get_board_size();
-
         // 大橋流を指すところから☆（*＾～＾*）
         OhashiPerformer::improvise_ohashi_starting(deck, position, &app);
 
@@ -27,7 +27,8 @@ impl KifConverter {
             let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &rnote_ope, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
             }
 
             ply += 1;

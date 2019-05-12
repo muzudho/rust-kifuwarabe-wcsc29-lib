@@ -1,5 +1,7 @@
 use audio_compo::cassette_deck::*;
+use human::human_interface::*;
 use instrument::position::*;
+use live::base_performer::*;
 use live::best_move_picker::*;
 use sheet_music_format::kifu_usi::usi_converter::*;
 use studio::application::*;
@@ -16,8 +18,6 @@ impl ComputerPerformer {
         position: &mut Position,
         app: &Application,
     ) {
-        let board_size = position.get_board_size();
-
         deck.slots[Slot::Learning as usize].turn_caret_towards_positive_infinity(&app);
 
         let best_umove = best_move_picker.get_mut_best_move(position, deck, &app);
@@ -35,7 +35,8 @@ impl ComputerPerformer {
             // app.comm.println("lib.rs:go: touch_1note_ope");
 
             // 非合法手はいったん出力し、将棋所の方でエラーにする☆（＾～＾）
-            position.touch_1note_ope(deck, &rnote_ope, true, board_size, &app);
+            BasePerformer::improvise_note_ope_no_log(deck, &rnote_ope, true, position, &app);
+            HumanInterface::bo(deck, position, &app);
         }
     }
 }

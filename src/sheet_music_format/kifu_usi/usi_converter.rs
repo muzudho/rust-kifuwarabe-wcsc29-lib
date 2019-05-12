@@ -1,5 +1,7 @@
 use audio_compo::cassette_deck::*;
+use human::human_interface::*;
 use instrument::position::*;
+use live::base_performer::*;
 use sheet_music_format::kifu_usi::usi_move::*;
 use sheet_music_format::kifu_usi::usi_tape::*;
 use sound::shogi_note_operation::*;
@@ -18,8 +20,6 @@ impl UsiConverter {
         deck: &mut CassetteDeck,
         app: &Application,
     ) {
-        let board_size = position.get_board_size();
-
         // 局面を動かしながら変換していく。
         let mut ply = 1;
         for umove in &utape.moves {
@@ -27,7 +27,8 @@ impl UsiConverter {
             //comm.println(&format!("Pmoves len: {}.", rpm_move.len()));
 
             for rnote_ope in rnote_opes {
-                position.touch_1note_ope(deck, &rnote_ope, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &rnote_ope, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
             }
 
             ply += 1;

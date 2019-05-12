@@ -6,11 +6,132 @@ use instrument::position::*;
 use regex::Regex;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
+use sound::shogi_note_operation::*;
 use studio::application::Application;
 use studio::common::caret::SoughtMoveResult;
+use studio::common::caret::*;
 
 pub struct BasePerformer {}
 impl BasePerformer {
+    // #####
+    // # I #
+    // #####
+
+    /// Operation トラック文字列読取。
+    pub fn improvise_by_line(
+        line: &str,
+        deck: &mut CassetteDeck,
+        is_ok_illegal: bool,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        let mut caret = Caret::new_facing_right_caret();
+
+        loop {
+            if caret.is_greater_than_or_equal_to(line.len() as i16) {
+                return;
+            }
+
+            if let (_last_used_caret, Some(rnote_ope)) =
+                ShogiNoteOpe::parse_1ope(&line, &mut caret, position.get_board_size(), &app)
+            {
+                if app.is_debug() {
+                    app.comm.println(&format!(
+                        "[#toush_by_line: {}]",
+                        rnote_ope.to_human_presentable(position.get_board_size(), &app)
+                    ));
+                }
+                BasePerformer::improvise_note_ope_no_log(
+                    deck,
+                    &rnote_ope,
+                    is_ok_illegal,
+                    position,
+                    &app,
+                );
+
+                HumanInterface::bo(deck, &position, &app);
+            }
+        }
+    }
+
+    /// 棋譜を作る☆（＾～＾）
+    /// 盤に触れて、
+    /// ラーニング・テープに　棋譜も書くぜ☆（＾～＾）
+    pub fn improvise_note_ope_no_log(
+        deck: &mut CassetteDeck,
+        rnote_ope: &ShogiNoteOpe,
+        is_ok_illegal: bool,
+        position: &mut Position,
+        app: &Application,
+    ) {
+        // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
+        let id = match position.try_beautiful_touch_no_log(
+            deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+            &rnote_ope,
+            &app,
+        ) {
+            (is_legal_touch, Some(piece_identify)) => {
+                if !is_legal_touch && !is_ok_illegal {
+                    panic!(
+                        "Illegal touch. PID: {}, Rnote: '{}'.",
+                        piece_identify.to_human_presentable(),
+                        rnote_ope.to_human_presentable(position.get_board_size(), &app)
+                    )
+                }
+
+                PieceIdentify::from_number(piece_identify.get_id().get_number())
+            }
+            (is_legal_touch, None) => {
+                // フェーズチェンジなどはここ。
+                if !is_legal_touch && !is_ok_illegal {
+                    panic!(
+                        "Illegal touch. Rnote: '{}'.",
+                        rnote_ope.to_human_presentable(position.get_board_size(), &app)
+                    )
+                }
+
+                None
+            }
+        };
+
+        let rnote = ShogiNote::from_id_ope(
+            id,
+            *rnote_ope,
+            deck.is_facing_left_of_current_tape(Slot::Learning, &app),
+        );
+
+        // ラーニング・テープに１ノート挿入します。
+        deck.insert_note(Slot::Learning, rnote, position.get_board_size(), app);
+        // キャレットを１つ進めます。
+        let (taken_overflow, awareness, note_opt) = deck.seek_a_note(Slot::Learning, &app);
+        // 動作チェック。
+        if let Some(aware_note) = note_opt {
+            if aware_note != rnote {
+                panic!(
+                    "挿入失敗。expected:{}, actual:{}, {}{}.",
+                    rnote,
+                    aware_note,
+                    if taken_overflow {
+                        "Overflow, ".to_string()
+                    } else {
+                        "".to_string()
+                    },
+                    awareness.to_human_presentable()
+                );
+            }
+        } else {
+            panic!(
+                "挿入失敗。None, {}{}.",
+                if taken_overflow {
+                    "Overflow, ".to_string()
+                } else {
+                    "".to_string()
+                },
+                awareness.to_human_presentable()
+            );
+        }
+    }
+
     // #####
     // # P #
     // #####
@@ -29,8 +150,11 @@ impl BasePerformer {
         HumanInterface::bo(deck, position, &app);
 
         if let Some(rpm_note) = deck.delete_1note(Slot::Learning, &app) {
-            let (_is_legal_touch, _piece_identify_opt) =
-                position.try_beautiful_touch_no_log(&deck, &rpm_note.get_ope(), &app);
+            let (_is_legal_touch, _piece_identify_opt) = position.try_beautiful_touch_no_log(
+                deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                &rpm_note.get_ope(),
+                &app,
+            );
             Some(rpm_note)
         } else {
             None
@@ -95,7 +219,11 @@ impl BasePerformer {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match deck.seek_a_note(slot, &app) {
                 (_taken_overflow, awareness, Some(rnote)) => {
-                    if position.try_beautiful_touch(&deck, &rnote, &app) {
+                    if position.try_beautiful_touch(
+                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                        &rnote,
+                        &app,
+                    ) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
                         /*
                         app.comm.println(&format!(
@@ -253,7 +381,11 @@ impl BasePerformer {
                 rnote.to_human_presentable(position.get_board_size())
             ));
             */
-            is_legal_touch = position.try_beautiful_touch(&deck, &rnote, &app);
+            is_legal_touch = position.try_beautiful_touch(
+                deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                &rnote,
+                &app,
+            );
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -368,7 +500,11 @@ impl BasePerformer {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(&deck, &note, &app) {
+                if !position.try_beautiful_touch(
+                    deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                    &note,
+                    &app,
+                ) {
                     /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",
@@ -434,7 +570,11 @@ impl BasePerformer {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(&deck, &rnote, &app) {
+                if !position.try_beautiful_touch(
+                    deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
+                    &rnote,
+                    &app,
+                ) {
                     /*
                     app.comm.println(&format!(
                         "Touch fail, permissive. Note: {}, Caret: {}.",

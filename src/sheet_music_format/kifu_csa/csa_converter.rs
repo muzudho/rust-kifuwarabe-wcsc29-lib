@@ -2,6 +2,7 @@ use audio_compo::cassette_deck::*;
 use human::human_interface::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
+use live::base_performer::*;
 use live::ohashi_performer::*;
 use sheet_music_format::kifu_csa::csa_move::*;
 use sheet_music_format::kifu_csa::csa_tape::*;
@@ -64,8 +65,6 @@ impl CsaConverter {
         }
         */
 
-        let board_size = position.get_board_size();
-
         // ####################
         // # (0) Change phase #
         // ####################
@@ -82,7 +81,8 @@ impl CsaConverter {
             }
             */
 
-            position.touch_1note_ope(deck, &change_phase, false, board_size, &app);
+            BasePerformer::improvise_note_ope_no_log(deck, &change_phase, false, position, &app);
+            HumanInterface::bo(deck, position, &app);
 
             /*
             if app.is_debug() {
@@ -114,7 +114,8 @@ impl CsaConverter {
                     position.get_phase().get_state(),
                     drop,
                 ));
-                position.touch_1note_ope(deck, &hand_off, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &hand_off, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -127,7 +128,8 @@ impl CsaConverter {
             // ################
             {
                 let hand_on = ShogiNoteOpe::from_address(destination_address);
-                position.touch_1note_ope(deck, &hand_on, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &hand_on, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -146,7 +148,10 @@ impl CsaConverter {
                 // #################
                 {
                     let hand_off = ShogiNoteOpe::from_address(destination_address);
-                    position.touch_1note_ope(deck, &hand_off, false, board_size, &app);
+                    BasePerformer::improvise_note_ope_no_log(
+                        deck, &hand_off, false, position, &app,
+                    );
+                    HumanInterface::bo(deck, position, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -159,7 +164,10 @@ impl CsaConverter {
                 // #################
                 if capture_id_piece.is_promoted() {
                     let hand_turn = ShogiNoteOpe::turn_over();
-                    position.touch_1note_ope(deck, &hand_turn, false, board_size, &app);
+                    BasePerformer::improvise_note_ope_no_log(
+                        deck, &hand_turn, false, position, &app,
+                    );
+                    HumanInterface::bo(deck, position, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -172,7 +180,14 @@ impl CsaConverter {
                 // ###################
                 {
                     let hand_rotate = ShogiNoteOpe::rotate();
-                    position.touch_1note_ope(deck, &hand_rotate, false, board_size, &app);
+                    BasePerformer::improvise_note_ope_no_log(
+                        deck,
+                        &hand_rotate,
+                        false,
+                        position,
+                        &app,
+                    );
+                    HumanInterface::bo(deck, position, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -197,7 +212,8 @@ impl CsaConverter {
                         ));
                     }
                     */
-                    position.touch_1note_ope(deck, &hand_on, false, board_size, &app);
+                    BasePerformer::improvise_note_ope_no_log(deck, &hand_on, false, position, &app);
+                    HumanInterface::bo(deck, position, &app);
                     /*
                     if app.is_debug() {
                         HumanInterface::bo(deck, &position, &app);
@@ -228,7 +244,8 @@ impl CsaConverter {
                         .unwrap_or_else(|| panic!(app.comm.panic("Fail. cmove.source."))),
                     position.get_board_size(),
                 ));
-                position.touch_1note_ope(deck, &board_off, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &board_off, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -252,7 +269,8 @@ impl CsaConverter {
             let cur_promoted = is_promoted_piece_type(cmove.koma);
             if !pre_promoted && cur_promoted {
                 let board_turn = ShogiNoteOpe::turn_over();
-                position.touch_1note_ope(deck, &board_turn, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &board_turn, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -265,7 +283,8 @@ impl CsaConverter {
             // ################
             {
                 let board_on = ShogiNoteOpe::from_address(destination_address);
-                position.touch_1note_ope(deck, &board_on, false, board_size, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &board_on, false, position, &app);
+                HumanInterface::bo(deck, position, &app);
                 /*
                 if app.is_debug() {
                     HumanInterface::bo(deck, &position, &app);
@@ -297,7 +316,8 @@ impl CsaConverter {
                 HumanInterface::bo(deck, &position, &app);
             }
             */
-            position.touch_1note_ope(deck, &change_phase, false, board_size, &app);
+            BasePerformer::improvise_note_ope_no_log(deck, &change_phase, false, position, &app);
+            HumanInterface::bo(deck, position, &app);
             /*
             if app.is_debug() {
                 HumanInterface::bo(deck, &position, &app);

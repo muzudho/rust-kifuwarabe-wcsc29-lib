@@ -1,6 +1,3 @@
-use audio_compo::cassette_deck::CassetteDeck;
-use audio_compo::cassette_deck::Slot;
-use human::human_interface::*;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use sound::shogi_note::*;
@@ -9,7 +6,6 @@ use std::*;
 use studio::address::*;
 use studio::application::*;
 use studio::board_size::*;
-use studio::common::caret::*;
 use studio::parser::*;
 
 pub const BOARD_START: usize = 0;
@@ -598,150 +594,19 @@ impl Position {
         }
     }
 
-    /// Operation トラック文字列読取。
-    pub fn touch_by_line(
-        &mut self,
-        line: &str,
-        deck: &mut CassetteDeck,
-        is_ok_illegal: bool,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        let mut caret = Caret::new_facing_right_caret();
-
-        loop {
-            if caret.is_greater_than_or_equal_to(line.len() as i16) {
-                return;
-            }
-
-            if let (_last_used_caret, Some(rnote_ope)) =
-                ShogiNoteOpe::parse_1ope(&line, &mut caret, self.get_board_size(), &app)
-            {
-                if app.is_debug() {
-                    app.comm.println(&format!(
-                        "[#toush_by_line: {}]",
-                        rnote_ope.to_human_presentable(self.get_board_size(), &app)
-                    ));
-                }
-                self.touch_1note_ope(deck, &rnote_ope, is_ok_illegal, board_size, &app);
-
-                HumanInterface::bo(deck, &self, &app);
-            }
-        }
-    }
-
-    /// 棋譜を作る☆（＾～＾）
-    /// 盤に触れて、棋譜も書くぜ☆（＾～＾）
-    pub fn touch_1note_ope(
-        &mut self,
-        deck: &mut CassetteDeck,
-        rnote_ope: &ShogiNoteOpe,
-        is_ok_illegal: bool,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Touch 1note ope:{}]",
-                rnote_ope.to_human_presentable(self.get_board_size(), &app)
-            ));
-        }
-
-        self.touch_1note_ope_no_log(deck, &rnote_ope, is_ok_illegal, board_size, &app);
-
-        /*
-        comm.println(&format!(
-            "End     :touch_1note_ope. Rnote: {}.",
-            rnote.to_human_presentable(board_size)
-        ));
-         */
-        HumanInterface::bo(deck, self, &app);
-    }
-
-    /// 棋譜を作る☆（＾～＾）
-    /// 盤に触れて、
-    /// ラーニング・テープに　棋譜も書くぜ☆（＾～＾）
-    pub fn touch_1note_ope_no_log(
-        &mut self,
-        deck: &mut CassetteDeck,
-        rnote_ope: &ShogiNoteOpe,
-        is_ok_illegal: bool,
-        board_size: BoardSize,
-        app: &Application,
-    ) {
-        // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-        let id = match self.try_beautiful_touch_no_log(&deck, &rnote_ope, &app) {
-            (is_legal_touch, Some(piece_identify)) => {
-                if !is_legal_touch && !is_ok_illegal {
-                    panic!(
-                        "Illegal touch. PID: {}, Rnote: '{}'.",
-                        piece_identify.to_human_presentable(),
-                        rnote_ope.to_human_presentable(board_size, &app)
-                    )
-                }
-
-                PieceIdentify::from_number(piece_identify.get_id().get_number())
-            }
-            (is_legal_touch, None) => {
-                // フェーズチェンジなどはここ。
-                if !is_legal_touch && !is_ok_illegal {
-                    panic!(
-                        "Illegal touch. Rnote: '{}'.",
-                        rnote_ope.to_human_presentable(board_size, &app)
-                    )
-                }
-
-                None
-            }
-        };
-
-        let rnote = ShogiNote::from_id_ope(
-            id,
-            *rnote_ope,
-            deck.is_facing_left_of_current_tape(Slot::Learning, &app),
-        );
-
-        // ラーニング・テープに１ノート挿入します。
-        deck.insert_note(Slot::Learning, rnote, board_size, app);
-        // キャレットを１つ進めます。
-        let (taken_overflow, awareness, note_opt) = deck.seek_a_note(Slot::Learning, &app);
-        // 動作チェック。
-        if let Some(aware_note) = note_opt {
-            if aware_note != rnote {
-                panic!(
-                    "挿入失敗。expected:{}, actual:{}, {}{}.",
-                    rnote,
-                    aware_note,
-                    if taken_overflow {
-                        "Overflow, ".to_string()
-                    } else {
-                        "".to_string()
-                    },
-                    awareness.to_human_presentable()
-                );
-            }
-        } else {
-            panic!(
-                "挿入失敗。None, {}{}.",
-                if taken_overflow {
-                    "Overflow, ".to_string()
-                } else {
-                    "".to_string()
-                },
-                awareness.to_human_presentable()
-            );
-        }
-    }
-
     /// seek_a_note メソッドと一緒に使う。
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
+    ///
+    /// # Arguments
+    ///
+    /// * `facing_left` - ラーニング・テープのキャレットの向き。
     ///
     /// # Returns
     ///
     /// (合法タッチか否か)
     pub fn try_beautiful_touch(
         &mut self,
-        deck: &CassetteDeck,
+        facing_left: bool,
         rnote: &ShogiNote,
         app: &Application,
     ) -> bool {
@@ -752,8 +617,8 @@ impl Position {
             ));
         }
         let (is_legal_touch, _piece_identify_opt) =
-            self.try_beautiful_touch_no_log(&deck, &rnote.get_ope(), &app);
-        HumanInterface::bo(deck, self, &app);
+            self.try_beautiful_touch_no_log(facing_left, &rnote.get_ope(), &app);
+        //HumanInterface::bo(deck, self, &app);
 
         is_legal_touch
     }
@@ -766,12 +631,16 @@ impl Position {
     /// トグルと考えてよい。もう一度実行すると、前の状態に戻ります。
     /// 操作が完遂できなかった場合、何もしなかった状態に戻し、偽を返す。完遂か、未着手の二者一択。
     ///
+    /// # Arguments
+    ///
+    /// * `facing_left` - ラーニング・テープのキャレットの向き。
+    ///
     /// # Returns
     ///
     /// (complete, Identified piece)
     pub fn try_beautiful_touch_no_log(
         &mut self,
-        deck: &CassetteDeck,
+        facing_left: bool,
         rnote_ope: &ShogiNoteOpe,
         app: &Application,
     ) -> (bool, Option<IdentifiedPiece>) {
@@ -890,10 +759,7 @@ impl Position {
             None => {
                 // 盤上や駒台の、どこも指していない。
                 if rnote_ope.is_phase_change() {
-                    self.seek_a_player(
-                        deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                        &app,
-                    );
+                    self.seek_a_player(facing_left, &app);
                     // （完遂） phase change.
                     (true, None)
                 } else if let Some(ref mut fingertip) = self.fingertip {

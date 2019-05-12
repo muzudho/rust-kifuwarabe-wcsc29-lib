@@ -114,8 +114,7 @@ pub fn main_loop() {
             || line.starts_with('-')
             || line.starts_with('|')
         {
-            let board_size = position.get_board_size();
-            position.touch_by_line(&line, &mut deck, true, board_size, &app);
+            BasePerformer::improvise_by_line(&line, &mut deck, true, &mut position, &app);
 
         // #####
         // # B #
@@ -263,8 +262,7 @@ pub fn main_loop() {
             | line.starts_with('S')
             | line.starts_with('R')
         {
-            let board_size = position.get_board_size();
-            position.touch_by_line(&line, &mut deck, true, board_size, &app);
+            BasePerformer::improvise_by_line(&line, &mut deck, true, &mut position, &app);
 
         // #####
         // # P #

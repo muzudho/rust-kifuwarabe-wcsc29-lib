@@ -2,6 +2,7 @@ use audio_compo::cassette_deck::CassetteDeck;
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
 use instrument::position::*;
+use live::base_performer::*;
 use sound::shogi_note_operation::*;
 use std::*;
 use studio::address::*;
@@ -94,22 +95,22 @@ impl OhashiPerformer {
             // キャレットを動かして、盤をタッチする、というのを繰り返せだぜ☆（＾～＾）
             {
                 // タッチすれば、ラーニング・テープに１ノート挿入される。勝手にシークしてくれる☆（＾～＾）
-                position.touch_1note_ope_no_log(deck, &element.0, false, bs, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &element.0, false, position, &app);
                 //HumanInterface::bo(deck, position, &app);
             }
 
             {
-                position.touch_1note_ope_no_log(deck, &element.1, false, bs, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &element.1, false, position, &app);
                 //HumanInterface::bo(deck, position, &app);
             }
 
             {
-                position.touch_1note_ope_no_log(deck, &element.2, false, bs, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &element.2, false, position, &app);
                 //HumanInterface::bo(deck, position, &app);
             }
 
             {
-                position.touch_1note_ope_no_log(deck, &element.3, false, bs, &app);
+                BasePerformer::improvise_note_ope_no_log(deck, &element.3, false, position, &app);
                 //HumanInterface::bo(deck, position, &app);
             }
         }
