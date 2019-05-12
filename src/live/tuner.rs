@@ -37,9 +37,9 @@ impl Tuner {
             }
 
             // 局面上でそのノートをタッチする。ログも出力する。
-            if !position.try_beautiful_touch(
+            if let (false, _) = position.touch_ope(
                 deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                &rnote,
+                &rnote.get_ope(),
                 &app,
             ) {
                 // タッチできないのはおかしい。
@@ -132,9 +132,9 @@ impl Tuner {
     pub fn replay_a_note(deck: &mut CassetteDeck, position: &mut Position, app: &Application) {
         deck.turn_caret_towards_positive_infinity(Slot::Learning, &app);
         if let (_taken_overflow, _awareness, Some(rnote)) = deck.seek_a_note(Slot::Learning, &app) {
-            if !position.try_beautiful_touch(
+            if let (false, _) = position.touch_ope(
                 deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                &rnote,
+                &rnote.get_ope(),
                 &app,
             ) {
                 app.comm.println("Touch fail.");

@@ -1,6 +1,5 @@
 use instrument::half_player_phase::*;
 use instrument::piece_etc::*;
-use sound::shogi_note::*;
 use sound::shogi_note_operation::*;
 use std::*;
 use studio::address::*;
@@ -594,39 +593,10 @@ impl Position {
         }
     }
 
-    /// seek_a_note メソッドと一緒に使う。
     /// 指定のノートを実行（タッチ）するだけ。（非合法タッチでも行います）
     ///
-    /// # Arguments
-    ///
-    /// * `facing_left` - ラーニング・テープのキャレットの向き。
-    ///
-    /// # Returns
-    ///
-    /// (合法タッチか否か)
-    pub fn try_beautiful_touch(
-        &mut self,
-        facing_left: bool,
-        rnote: &ShogiNote,
-        app: &Application,
-    ) -> bool {
-        if app.is_debug() {
-            app.comm.println(&format!(
-                "[#Try touch:{}]",
-                rnote.to_human_presentable(self.get_board_size(), &app)
-            ));
-        }
-        let (is_legal_touch, _piece_identify_opt) =
-            self.try_beautiful_touch_no_log(facing_left, &rnote.get_ope(), &app);
-        //HumanInterface::bo(deck, self, &app);
-
-        is_legal_touch
-    }
-
     /// 盤、駒台（Ａ）と、スカイ升（Ｂ）の間で駒を移動する。
     /// ＡとＢは、両方空っぽか、片方だけ駒があるかの　どちらかとする。両方に駒があるケースはないものとする。
-    ///
-    /// 棋譜には記録しない。
     ///
     /// トグルと考えてよい。もう一度実行すると、前の状態に戻ります。
     /// 操作が完遂できなかった場合、何もしなかった状態に戻し、偽を返す。完遂か、未着手の二者一択。
@@ -638,7 +608,7 @@ impl Position {
     /// # Returns
     ///
     /// (complete, Identified piece)
-    pub fn try_beautiful_touch_no_log(
+    pub fn touch_ope(
         &mut self,
         facing_left: bool,
         rnote_ope: &ShogiNoteOpe,

@@ -65,7 +65,7 @@ impl BasePerformer {
         app: &Application,
     ) {
         // 盤を操作する。盤を触ると駒IDが分かる。それも返す。
-        let id = match position.try_beautiful_touch_no_log(
+        let id = match position.touch_ope(
             deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
             &rnote_ope,
             &app,
@@ -150,7 +150,7 @@ impl BasePerformer {
         HumanInterface::bo(deck, position, &app);
 
         if let Some(rpm_note) = deck.delete_1note(Slot::Learning, &app) {
-            let (_is_legal_touch, _piece_identify_opt) = position.try_beautiful_touch_no_log(
+            let (_is_legal_touch, _piece_identify_opt) = position.touch_ope(
                 deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
                 &rpm_note.get_ope(),
                 &app,
@@ -219,9 +219,9 @@ impl BasePerformer {
             // とりあえず、キャレットを１ノートずつ進めてみるぜ☆（*＾～＾*）
             match deck.seek_a_note(slot, &app) {
                 (_taken_overflow, awareness, Some(rnote)) => {
-                    if position.try_beautiful_touch(
+                    if let (true, _) = position.touch_ope(
                         deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                        &rnote,
+                        &rnote.get_ope(),
                         &app,
                     ) {
                         // ここに来たら、着手は成立☆（*＾～＾*）
@@ -381,11 +381,16 @@ impl BasePerformer {
                 rnote.to_human_presentable(position.get_board_size())
             ));
             */
-            is_legal_touch = position.try_beautiful_touch(
+            if let (true, _) = position.touch_ope(
                 deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                &rnote,
+                &rnote.get_ope(),
                 &app,
-            );
+            ) {
+                is_legal_touch = true;
+            } else {
+                is_legal_touch = false;
+            }
+
             forwarding_count += 1;
 
             if !is_legal_touch {
@@ -500,9 +505,9 @@ impl BasePerformer {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(
+                if let (false, _) = position.touch_ope(
                     deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                    &note,
+                    &note.get_ope(),
                     &app,
                 ) {
                     /*
@@ -570,9 +575,9 @@ impl BasePerformer {
                     rnote.to_human_presentable(position.get_board_size())
                 ));
                 */
-                if !position.try_beautiful_touch(
+                if let (false, _) = position.touch_ope(
                     deck.slots[Slot::Learning as usize].is_facing_left_of_current_tape(),
-                    &rnote,
+                    &rnote.get_ope(),
                     &app,
                 ) {
                     /*
