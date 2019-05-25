@@ -1,3 +1,2 @@
 pub mod kifuwarabe_wcsc29_exe_config;
-pub mod kifuwarabe_wcsc29_converter_master_config;
 pub mod kifuwarabe_wcsc29_master_config;

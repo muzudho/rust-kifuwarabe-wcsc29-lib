@@ -17,8 +17,6 @@ pub struct Logging {
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct KifuwarabeWcsc29ExeConfig {
-    // 棋譜変換設定ファイルへのパス。
-    pub kifuwarabe_wcsc29_converter_master_config_path: String,
     // 統一設定ファイルへのパス。
     pub kifuwarabe_wcsc29_master_config_path: String,
 
@@ -43,7 +41,7 @@ impl KifuwarabeWcsc29ExeConfig {
 
         match serde_json::from_str(&contents) {
             Ok(x) => x,
-            Err(err) => panic!("Unexpected wcsc29 lib config: {}", err), // ログ取らない。
+            Err(err) => panic!("Unexpected wcsc29 exe config: {}", err), // ログ取らない。
         }
     }
 }

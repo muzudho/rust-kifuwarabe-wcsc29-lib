@@ -2,7 +2,6 @@ extern crate getopts;
 extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
-//use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::human::human_interface::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_usi::fen::*;

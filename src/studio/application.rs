@@ -1,6 +1,5 @@
 use chrono::Utc;
 use conf::kifuwarabe_wcsc29_exe_config::KifuwarabeWcsc29ExeConfig;
-use conf::kifuwarabe_wcsc29_converter_master_config::KifuwarabeWcsc29ConverterMasterConfig;
 use conf::kifuwarabe_wcsc29_master_config::KifuwarabeWcsc29MasterConfig;
 use std::path::PathBuf;
 use studio::communication::Communication;
@@ -10,7 +9,6 @@ pub struct Application {
     pub comm: Communication,
     // Config.
     pub exe_conf: KifuwarabeWcsc29ExeConfig,
-    pub conv_conf: KifuwarabeWcsc29ConverterMasterConfig,
     pub kw29_conf: KifuwarabeWcsc29MasterConfig,
     // デバッグ出力のフラグ。usiの邪魔になる出力がいっぱい出るぜ☆（*＾～＾*）
     pub kifuwarabe_flag: bool,
@@ -18,7 +16,6 @@ pub struct Application {
 impl Application {
     pub fn new() -> Self {
         let exe_config = KifuwarabeWcsc29ExeConfig::load();
-        let conv_config = KifuwarabeWcsc29ConverterMasterConfig::load(&exe_config);
         let kw29_config = KifuwarabeWcsc29MasterConfig::load(&exe_config);
 
         // logger, logging, log file.
@@ -36,7 +33,6 @@ impl Application {
         Application {
             comm: Communication::from_file(path_name),
             exe_conf: exe_config,
-            conv_conf: conv_config,
             kw29_conf: kw29_config,
             kifuwarabe_flag: true,
         }
