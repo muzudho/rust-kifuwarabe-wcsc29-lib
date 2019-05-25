@@ -8,8 +8,8 @@ use std::io::Read;
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct KifuwarabeWcsc29MasterConfig {
     pub converter_input: String,
-    pub converter_expand: String,
-    pub converter_working: String,
+    pub converter_expanded: String,
+    pub converter_encoded: String,
     pub converter_output: String,
     pub converter_error: String,
     pub training: String,
