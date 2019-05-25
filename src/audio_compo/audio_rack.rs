@@ -156,6 +156,10 @@ impl AudioRack {
         );
     }
 
+    pub fn set_source_file_of_tape_label(&mut self, slot: Slot, tape_label: String) {
+        self.deck.set_source_file_of_tape_label(slot, tape_label);
+    }
+
     /// 次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）
     ///

@@ -228,6 +228,10 @@ impl CassetteTape {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
+    pub fn set_source_file_of_label(&mut self, source_file_text: String) {
+        self.label.source_file = source_file_text;
+    }
+
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)

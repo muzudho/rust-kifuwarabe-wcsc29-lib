@@ -9,11 +9,13 @@ pub struct KifTape {
 }
 impl KifTape {
     pub fn new() -> KifTape {
-        KifTape { items: Vec::new() }
+        KifTape {
+            items: Vec::new(),
+        }
     }
 
     pub fn from_file(file: &str, app: &Application) -> KifTape {
-        // バージョンがいろいろあるようだ。
+        // .kif形式には、バージョンがいろいろあるようだ。
         Kaki189::from_file(file, &app)
     }
 

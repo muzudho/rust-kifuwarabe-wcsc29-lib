@@ -43,8 +43,12 @@ impl Arguments {
     }
 }
 
-fn get_extension_from_filename(filename: &str) -> Option<&str> {
-    Path::new(filename).extension().and_then(OsStr::to_str)
+fn get_extension_from_file_path(file_path: &str) -> Option<&str> {
+    Path::new(file_path).extension().and_then(OsStr::to_str)
+}
+
+fn get_file_stem_from_file_path(file_path: &str) -> Option<&str> {
+    Path::new(file_path).file_stem().and_then(OsStr::to_str)
 }
 
 fn main() {
@@ -58,7 +62,7 @@ fn main() {
         .input_file
         .unwrap_or_else(|| panic!(app.comm.panic("Fail. args.input_file.")));
 
-    // 保存先のテープ・フラグメント名☆（＾～＾）　ラーニング・テープと想定☆（＾～＾）
+    // 保存先のファイル名を作るのに使う☆（＾～＾）
     let tape_file_name_without_extension = args
         .output_file
         .unwrap_or_else(|| panic!(app.comm.panic("Fail. args.output_file.")));
@@ -79,24 +83,30 @@ fn main() {
 
     if !in_file.is_empty() {
         // 棋譜解析。
-        let extension = get_extension_from_filename(&in_file)
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_extension_from_filename.")))
+        let file_stem = get_file_stem_from_file_path(&in_file)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
+
+        let extension = get_extension_from_file_path(&in_file)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_extension_from_file_path.")))
             .to_uppercase();
 
         match extension.as_str() {
             "KIF" => {
                 // Training data.
-                let ktape = KifTape::from_file(&in_file, &app);
+                let mut ktape = KifTape::from_file(&in_file, &app);
 
                 // Play out.
                 KifConverter::play_out_kifu_tape(&ktape, &mut rack, &mut position, &app);
+
+                // Tape label
+                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             "CSA" => {
                 // Training data.
-                let ctape = CsaTape::from_file(&in_file, &app);
+                let mut ctape = CsaTape::from_file(&in_file, &app);
 
                 if app.is_debug() {
                     app.comm
@@ -105,6 +115,9 @@ fn main() {
 
                 // Play out.
                 CsaConverter::play_out_csa_tape(&ctape, &mut rack, &mut position, &app);
+
+                // Tape label
+                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);

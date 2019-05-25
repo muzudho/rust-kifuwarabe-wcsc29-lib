@@ -28,7 +28,7 @@ use studio::application::Application;
 pub struct Kaki189 {}
 impl Kaki189 {
     pub fn from_file(file: &str, app: &Application) -> KifTape {
-        let mut record = KifTape::new();
+        let mut tape = KifTape::new();
 
         for result in
             BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
@@ -47,7 +47,7 @@ impl Kaki189 {
                 match first_ch.parse::<i8>() {
                     Ok(_x) => {
                         if let Some(kif_move) = KifMove::parse(&line, &app) {
-                            record.push(kif_move);
+                            tape.push(kif_move);
                         }
                     }
                     Err(_err) => {
@@ -59,7 +59,7 @@ impl Kaki189 {
 
         // '同'を解決する。
         let mut pre_cell = None;
-        for mov in &mut record.items {
+        for mov in &mut tape.items {
             if mov.is_same {
                 mov.destination = pre_cell;
             }
@@ -67,7 +67,7 @@ impl Kaki189 {
             pre_cell = mov.destination;
         }
 
-        // これでレコードはできあがり。
-        record
+        // これでテープはできあがり。
+        tape
     }
 }
