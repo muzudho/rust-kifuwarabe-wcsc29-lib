@@ -3,21 +3,15 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::Read;
 
-#[derive(Deserialize)]
-#[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct Kw29Directories {
-    pub go: String,
-    pub went: String,
-    pub output: String,
-}
-
 /// 統一設定ファイル。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct KifuwarabeWcsc29MasterConfig {
-    pub expansion: Kw29Directories,
-    pub formation: Kw29Directories,
-    pub eating: Kw29Directories,
+    pub converter_input: String,
+    pub converter_expand: String,
+    pub converter_working: String,
+    pub converter_output: String,
+    pub converter_error: String,
     pub training: String,
     pub learning: String,
     pub book: String,

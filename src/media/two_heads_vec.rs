@@ -645,13 +645,13 @@ impl TwoHeadsVec {
             for note in notes {
                 if is_first {
                     // 最初。
-                    facing_left = ShogiNote::to_facing_left_str(note.is_facing_left());
+                    facing_left = ShogiNote::convert_facing_left_str(note.is_facing_left());
                 } else {
                     // ２つ目からスペース区切り。
                     facing_left = format!(
                         "{} {}",
                         facing_left,
-                        ShogiNote::to_facing_left_str(note.is_facing_left())
+                        ShogiNote::convert_facing_left_str(note.is_facing_left())
                     );
                 }
 

@@ -146,7 +146,7 @@ impl ShogiNote {
     // # T #
     // #####
 
-    pub fn to_facing_left_str(facing_left: bool) -> String {
+    pub fn convert_facing_left_str(facing_left: bool) -> String {
         if facing_left { "L" } else { "." }.to_string()
     }
 
