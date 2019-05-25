@@ -34,6 +34,7 @@ extern crate serde;
 extern crate serde_json;
 pub mod audio_compo;
 pub mod conf;
+pub mod conv;
 pub mod human;
 pub mod instrument;
 pub mod lib_sub;

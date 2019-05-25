@@ -4,17 +4,12 @@ extern crate kifuwarabe_wcsc29_lib;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
 use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
+use kifuwarabe_wcsc29_lib::conv::converter::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::media::cassette_tape::*;
-use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_converter::CsaConverter;
-use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_csa::csa_tape::*;
-use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::KifConverter;
-use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_tape::*;
 use kifuwarabe_wcsc29_lib::studio::application::*;
 use kifuwarabe_wcsc29_lib::*;
 use std::env;
-use std::ffi::OsStr;
-use std::path::Path;
 
 #[derive(Debug)]
 pub struct Arguments {
@@ -41,14 +36,6 @@ impl Arguments {
             debug: matches.opt_present("debug"),
         }
     }
-}
-
-fn get_extension_from_file_path(file_path: &str) -> Option<&str> {
-    Path::new(file_path).extension().and_then(OsStr::to_str)
-}
-
-fn get_file_stem_from_file_path(file_path: &str) -> Option<&str> {
-    Path::new(file_path).file_stem().and_then(OsStr::to_str)
 }
 
 fn main() {
@@ -83,47 +70,7 @@ fn main() {
 
     if !in_file.is_empty() {
         // 棋譜解析。
-        let file_stem = get_file_stem_from_file_path(&in_file)
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
-
-        let extension = get_extension_from_file_path(&in_file)
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_extension_from_file_path.")))
-            .to_uppercase();
-
-        match extension.as_str() {
-            "KIF" => {
-                // Training data.
-                let mut ktape = KifTape::from_file(&in_file, &app);
-
-                // Play out.
-                KifConverter::play_out_kifu_tape(&ktape, &mut rack, &mut position, &app);
-
-                // Tape label
-                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
-
-                // Write.
-                rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
-            }
-            "CSA" => {
-                // Training data.
-                let mut ctape = CsaTape::from_file(&in_file, &app);
-
-                if app.is_debug() {
-                    app.comm
-                        .println(&format!("Ctape: '{}'", ctape.to_human_presentable()));
-                }
-
-                // Play out.
-                CsaConverter::play_out_csa_tape(&ctape, &mut rack, &mut position, &app);
-
-                // Tape label
-                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
-
-                // Write.
-                rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
-            }
-            _ => print!("Pass extension: {}", extension),
-        }
+        Converter::convert(in_file, &mut rack, &mut position, &app);
     } else {
         main_loop();
     }
