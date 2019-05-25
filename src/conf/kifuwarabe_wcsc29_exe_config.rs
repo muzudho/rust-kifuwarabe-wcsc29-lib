@@ -16,17 +16,19 @@ pub struct Logging {
 /// このライブラリの設定。
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct KifuwarabeWcsc29AppConfig {
+pub struct KifuwarabeWcsc29ExeConfig {
+    // 棋譜変換設定ファイルへのパス。
+    pub kifuwarabe_wcsc29_converter_master_config_path: String,
     // 統一設定ファイルへのパス。
     pub kifuwarabe_wcsc29_master_config_path: String,
 
     // ログ・ファイル。
     pub logging: Logging,
 }
-impl KifuwarabeWcsc29AppConfig {
+impl KifuwarabeWcsc29ExeConfig {
     /// 設定ファイル読込。
-    pub fn load() -> KifuwarabeWcsc29AppConfig {
-        let path = Path::new("./kifuwarabe-wcsc29-app-config.json");
+    pub fn load() -> KifuwarabeWcsc29ExeConfig {
+        let path = Path::new("./kifuwarabe-wcsc29-exe-config.json");
 
         let mut file = match File::open(path) {
             Ok(x) => x,
