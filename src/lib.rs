@@ -229,18 +229,6 @@ pub fn main_loop() {
             app.comm.println("readyok");
 
         // #####
-        // # K #
-        // #####
-        } else if line == "kifut" {
-            if !rack.is_none_current_tape(Slot::Training) {
-                HumanInterface::kifu(&rack, Slot::Training, &position, &app);
-            } else {
-                app.comm.println("スロット０が空っぽです。");
-            }
-        } else if line == "kiful" {
-            HumanInterface::kifu(&rack, Slot::Learning, &position, &app);
-
-        // #####
         // # L #
         // #####
         } else if line == "lbl" {
@@ -293,6 +281,18 @@ pub fn main_loop() {
         // #####
         // # T #
         // #####
+        } else if line == "tape-t" {
+            if !rack.is_none_current_tape(Slot::Training) {
+                HumanInterface::show_tape(&rack, Slot::Training, &position, &app);
+            } else {
+                app.comm.println("スロットt が空っぽです。");
+            }
+        } else if line == "tape-l" {
+            if !rack.is_none_current_tape(Slot::Learning) {
+                HumanInterface::show_tape(&rack, Slot::Learning, &position, &app);
+            } else {
+                app.comm.println("スロットl が空っぽです。");
+            }
         } else if line.starts_with("test-2heads-vec") {
             LibSub::test_2heads_vec(position.get_board_size(), &app);
 

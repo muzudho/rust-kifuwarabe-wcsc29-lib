@@ -20,15 +20,15 @@ impl HumanInterface {
         }
     }
 
-    /// 棋譜の表示。
-    pub fn kifu(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
+    /// テープの表示。
+    pub fn show_tape(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
         if app.is_debug() {
             let (_numbers, operations) =
                 &rack.get_sign_of_current_tape(slot, position.get_board_size());
 
             use audio_compo::cassette_deck::Slot::*;
             app.comm.println(&format!(
-                "{}-Score: {}",
+                "Tape-{}: {}",
                 match slot {
                     Training => "T",
                     Learning => "L",

@@ -122,12 +122,6 @@ impl AudioRack {
     pub fn look_back_caret(&mut self, slot: Slot, app: &Application) {
         self.deck.look_back_caret(slot, &app);
     }
-    pub fn turn_caret_towards_positive_infinity(&mut self, slot: Slot, app: &Application) {
-        self.deck.turn_caret_towards_positive_infinity(slot, &app);
-    }
-    pub fn turn_caret_towards_negative_infinity(&mut self, slot: Slot, app: &Application) {
-        self.deck.turn_caret_towards_negative_infinity(slot, &app);
-    }
 
     // #####
     // # P #
@@ -156,8 +150,8 @@ impl AudioRack {
         );
     }
 
-    pub fn set_source_file_of_tape_label(&mut self, slot: Slot, tape_label: String) {
-        self.deck.set_source_file_of_tape_label(slot, tape_label);
+    pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
+        self.deck.set_name_of_tape(slot, name);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）
@@ -223,6 +217,12 @@ impl AudioRack {
     }
     pub fn to_human_presentable_of_tape_box(&self, slot: Slot) -> String {
         self.deck.to_human_presentable_of_tape_box(slot)
+    }
+    pub fn turn_caret_towards_positive_infinity(&mut self, slot: Slot, app: &Application) {
+        self.deck.turn_caret_towards_positive_infinity(slot, &app);
+    }
+    pub fn turn_caret_towards_negative_infinity(&mut self, slot: Slot, app: &Application) {
+        self.deck.turn_caret_towards_negative_infinity(slot, &app);
     }
 
     // #####

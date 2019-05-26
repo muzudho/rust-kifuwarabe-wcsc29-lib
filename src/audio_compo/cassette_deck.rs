@@ -238,8 +238,8 @@ impl CassetteDeck {
             .set_file_name_without_extension(tape_box_file_name_without_extension);
     }
 
-    pub fn set_source_file_of_tape_label(&mut self, slot: Slot, tape_label: String) {
-        self.slots[slot as usize].set_source_file_of_tape_label(tape_label);
+    pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
+        self.slots[slot as usize].set_name_of_tape(name);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）

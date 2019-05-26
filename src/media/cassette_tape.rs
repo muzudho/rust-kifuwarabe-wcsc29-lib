@@ -17,28 +17,29 @@ use studio::common::closed_interval::ClosedInterval;
 
 /// 対局情報。
 pub struct CassetteTapeLabel {
+    // テープの名前。
+    pub name: String,
     pub date: String,
     pub event: String,
     pub player1: String,
     pub player2: String,
-    pub source_file: String,
 }
 impl CassetteTapeLabel {
     pub fn clear(&mut self) {
+        self.name = "".to_string();
         self.date = "".to_string();
         self.event = "".to_string();
         self.player1 = "".to_string();
         self.player2 = "".to_string();
-        self.source_file = "".to_string();
     }
 
     pub fn to_rpm(&self) -> RpmTapeLabel {
         RpmTapeLabel {
+            name: self.name.to_string(),
             date: self.date.to_string(),
             event: self.event.to_string(),
             player1: self.player1.to_string(),
             player2: self.player2.to_string(),
-            source_file: self.source_file.to_string(),
         }
     }
 }
@@ -63,11 +64,11 @@ impl CassetteTape {
             ),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
+                name: "".to_string(),
                 date: "".to_string(),
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
-                source_file: "".to_string(),
             },
             tracks: TwoHeadsVec::default(),
         }
@@ -228,8 +229,8 @@ impl CassetteTape {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
-    pub fn set_source_file_of_label(&mut self, source_file_text: String) {
-        self.label.source_file = source_file_text;
+    pub fn set_name(&mut self, name_text: String) {
+        self.label.name = name_text;
     }
 
     /// # Returns

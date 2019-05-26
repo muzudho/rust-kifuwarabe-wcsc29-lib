@@ -9,20 +9,21 @@ use studio::common::caret::*;
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTapeLabel {
+    // テープの名前。
+    pub name: String,
     pub date: String,
     pub event: String,
     pub player1: String,
     pub player2: String,
-    pub source_file: String,
 }
 impl RpmTapeLabel {
     pub fn new() -> Self {
         RpmTapeLabel {
+            name: "".to_string(),
             date: "".to_string(),
             event: "".to_string(),
             player1: "".to_string(),
             player2: "".to_string(),
-            source_file: "".to_string(),
         }
     }
 }
@@ -58,11 +59,11 @@ impl RpmTape {
             ),
             caret: Caret::new_facing_right_caret(),
             label: CassetteTapeLabel {
+                name: "".to_string(),
                 date: "".to_string(),
                 event: "".to_string(),
                 player1: "".to_string(),
                 player2: "".to_string(),
-                source_file: "".to_string(),
             },
             tracks: TwoHeadsVec::from_vector(
                 self.tracks.to_positive_vec(board_size, &app),

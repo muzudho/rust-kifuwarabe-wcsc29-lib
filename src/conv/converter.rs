@@ -42,7 +42,7 @@ impl Converter {
                 KifConverter::play_out_kifu_tape(&ktape, rack, position, &app);
 
                 // Tape label
-                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
+                rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
@@ -60,7 +60,7 @@ impl Converter {
                 CsaConverter::play_out_csa_tape(&ctape, rack, position, &app);
 
                 // Tape label
-                rack.set_source_file_of_tape_label(Slot::Learning, file_stem.to_string());
+                rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);

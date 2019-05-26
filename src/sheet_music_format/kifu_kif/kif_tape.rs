@@ -9,9 +9,7 @@ pub struct KifTape {
 }
 impl KifTape {
     pub fn new() -> KifTape {
-        KifTape {
-            items: Vec::new(),
-        }
+        KifTape { items: Vec::new() }
     }
 
     pub fn from_file(file: &str, app: &Application) -> KifTape {
@@ -36,7 +34,7 @@ impl KifTape {
             // TODO drop
 
         } else {
-            let source_id_piece_opt = position.remove_id_piece(cmove.source_file, cmove.source_rank);
+            let source_id_piece_opt = position.remove_id_piece(cmove.name, cmove.source_rank);
 
             // CSAの棋譜では、成ったかどうかは分からない。
             /*

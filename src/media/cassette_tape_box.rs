@@ -308,12 +308,12 @@ impl CassetteTapeBox {
         self.file_name = format!("{}-tape-box.json", file_name_without_extension).to_string()
     }
 
-    pub fn set_source_file_of_tape_label(&mut self, source_file: String) {
+    pub fn set_name_of_tape(&mut self, name: String) {
         if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_source_file_of_label(source_file);
+            self.tapes[index].set_name(name);
         } else {
             panic!(
-                "#set_source_file_of_tape_label: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#set_name_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }
