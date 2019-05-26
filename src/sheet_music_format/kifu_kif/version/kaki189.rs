@@ -24,6 +24,22 @@ use studio::application::Application;
  154 ４四金打     ( 0:31/ 0:43:56)
  155 中断         ( 0:07/ 0:46:39)
  */
+/* Example
+# ----  Kifu for Windows V6.00 棋譜ファイル  ----
+開始日時：2007/03/21
+終了日時：2007/03/21
+持ち時間：２時間
+棋戦：大和証券杯特別対局
+戦型：四間飛車
+場所：品川プリンスホテル，クラブ eX
+手合割：平手
+先手：Bonanza
+後手：渡辺明
+手数----指手---------消費時間--
+   1 ７六歩(77)   ( 0:01/00:00:01)
+   2 ８四歩(83)   ( 2:32/00:02:32)
+   3 ６六歩(67)   ( 0:01/00:00:02)
+ */
 /// Kifファイルには色んなパターンがあるようだ。
 /// 柿木将棋 V1.89 棋譜ファイル
 pub struct Kaki189 {}
@@ -37,16 +53,40 @@ impl Kaki189 {
         {
             let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-            // 4文字以上で。
             if line.starts_with("# 対  局  日：") {
                 let re = Regex::new(r"# 対  局  日：(.*)")
                     .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
                 let matched = re
                     .captures(&line)
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
-                let date_text = matched.get(1).map_or("", |m| m.as_str());
-                tape.set_game_date(&date_text);
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_game_date(&matched_text);
+            } else if line.starts_with("棋戦：") {
+                let re = Regex::new(r"棋戦：(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_event(&matched_text);
+            } else if line.starts_with("先手：") {
+                let re = Regex::new(r"先手：(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_player1(&matched_text);
+            } else if line.starts_with("後手：") {
+                let re = Regex::new(r"後手：(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_player2(&matched_text);
             } else if 4 < line.len() {
+                // 4文字以上で。
                 // 先頭の空白を省き。
                 let mut first_ch = line.trim_start().to_string();
                 first_ch = first_ch
