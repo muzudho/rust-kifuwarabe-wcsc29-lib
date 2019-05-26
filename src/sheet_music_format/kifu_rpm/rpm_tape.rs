@@ -11,6 +11,8 @@ use studio::common::caret::*;
 pub struct RpmTapeLabel {
     // テープの名前。
     pub name: String,
+
+    // 対局日。
     pub date: String,
     pub event: String,
     pub player1: String,

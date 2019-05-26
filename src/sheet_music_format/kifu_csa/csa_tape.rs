@@ -42,6 +42,10 @@ impl CsaTape {
                     tape.push_move(csa_move);
                 }
             } else if line.starts_with("$START_TIME:") {
+                // https://www.debuggex.com/
+                // ```
+                // $START_TIME:2018/05/05 09:44:47
+                // ```
                 // $で始まれば情報の行。
                 // 正規表現の $ は行末なので、エスケープします。
                 let re = Regex::new(r"\$START_TIME:(.*)")
