@@ -151,6 +151,11 @@ cargo run --example usi_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/usi-
 
 ディレクトリ構成を設定すること。トレーニング・ファイルが必要。
 
+```
+### Run.
+cargo run --example main
+```
+
 ## Learn
 
 ```

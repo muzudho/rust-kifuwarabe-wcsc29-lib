@@ -92,20 +92,20 @@ impl CsaMove {
     pub fn koma_to_piece_type(koma: &str) -> Option<PieceType> {
         use instrument::piece_etc::PieceType::*;
         match koma {
-            "FU" => Some(P),
-            "KY" => Some(L),
-            "KE" => Some(N),
-            "GI" => Some(S),
+            "OU" => Some(K),
             "KI" => Some(G),
+            "GI" => Some(S),
+            "KE" => Some(N),
+            "KY" => Some(L),
             "KA" => Some(B),
             "HI" => Some(R),
-            "OU" => Some(K),
-            "TO" => Some(PP),
-            "NY" => Some(PL),
-            "NK" => Some(PN),
+            "FU" => Some(P),
             "NG" => Some(PS),
+            "NK" => Some(PN),
+            "NY" => Some(PL),
             "UM" => Some(PB),
             "RY" => Some(PR),
+            "TO" => Some(PP),
             // _ => { None },
             _ => panic!("Unexpected koma: '{}'.", koma),
         }

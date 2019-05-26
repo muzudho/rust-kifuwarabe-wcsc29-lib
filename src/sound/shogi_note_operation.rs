@@ -3,7 +3,8 @@
 //
 // 局面から独立しています。
 //
-use instrument::piece_etc::{PhysicalSign, PieceType};
+use instrument::piece_etc::PieceType;
+use instrument::piece_etc::*;
 use std::fmt;
 use studio::address::{Address, Cell};
 use studio::application::Application;
@@ -175,9 +176,8 @@ impl ShogiNoteOpe {
 
                 if 2 < line.len() {
                     match ch1 {
-                        'P' | 'p' | 'ﾅ' => {
-                            // 成り駒を駒台に置いた、という記号 P,p,ﾅ は読み飛ばします。この経路では 1つずれます。
-                            // ただし、ポーンの P, p と被っているので、次の文字があれば成り駒、なければキャンセルを判断します。
+                        '+' => {
+                            // TODO 成り駒を駒台に置いた、という記号 + は読み飛ばします。この経路では 1つずれます。
 
                             n1 = caret
                                 .seek_a_note(&app)
@@ -193,7 +193,7 @@ impl ShogiNoteOpe {
                 }
 
                 // 駒の種類、フェーズ。
-                let piece = PhysicalSign::default(ch1.to_string()).to_piece();
+                let piece = Piece::from_sign(ch1.to_string());
 
                 //comm.print(&format!("{}{}{}", ch1, text15, ch2));
                 let address =

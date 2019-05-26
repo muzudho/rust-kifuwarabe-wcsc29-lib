@@ -115,6 +115,7 @@ pub fn main_loop() {
             || line.starts_with('+')
             || line.starts_with('-')
             || line.starts_with('|')
+            || line.starts_with('[')
         {
             BasePerformer::improvise_by_line(&line, &mut rack, true, &mut position, &app);
 
