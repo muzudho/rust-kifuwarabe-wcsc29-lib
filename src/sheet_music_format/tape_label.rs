@@ -1,22 +1,36 @@
 use serde::*;
 
 /// 汎用テープ・ラベル。
+/// 元データをそのまま抜き出し、ぴったりした項目がなければ、どこかに入れる。
+/// 内容の順序は、
+/// * 一意性
+///   * テープ名
+///   * 時
+///     対局年月日、開始時刻、終了時刻。
+///   * 場所
+///   * 催し物名
+///   * 先手
+///   * 後手
+/// * ルール
+///   * 持ち時間制
+///   * ハンディキャップ
+/// * ゲーム内容分析情報
+///   * 戦型
+/// * ツール付加情報
+///   * 棋譜の保存形式
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct TapeLabel {
-    // 棋譜の保存形式。
-    format: String,
-
-    // テープ名。
+    // テープ名。一意性があると良い。
     name: String,
 
     // 対局日。
     game_date: String,
 
-    // 開始日。
+    // 開始時刻。
     start_time: String,
 
-    // 終了日。
+    // 終了時刻。
     end_time: String,
 
     // 対局場。
@@ -39,6 +53,9 @@ pub struct TapeLabel {
 
     // 戦型
     battle_type: String,
+
+    // 棋譜の保存形式。
+    format: String,
 }
 impl TapeLabel {
     pub fn new() -> Self {

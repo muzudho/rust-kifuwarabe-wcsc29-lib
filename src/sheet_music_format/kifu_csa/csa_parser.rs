@@ -50,19 +50,19 @@ impl CsaParser {
                     tape.push_move(csa_move);
                 }
             } else if line.starts_with("$START_TIME:") {
-                // https://www.debuggex.com/
                 // ```
                 // $START_TIME:2018/05/05 09:44:47
                 // ```
-                // $で始まれば情報の行。
-                // 正規表現の $ は行末なので、エスケープします。
-                let re = Regex::new(r"\$START_TIME:(.*)")
+                // 対局年月日と開始時刻。
+                let re = Regex::new(r"\$START_TIME:(.+) (.+)")
                     .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
                 let matched = re
                     .captures(&line)
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
-                let matched_text = matched.get(1).map_or("", |m| m.as_str());
-                tape.get_mut_tape_label().set_game_date(&matched_text);
+                tape.get_mut_tape_label()
+                    .set_game_date(&matched.get(1).map_or("", |m| m.as_str()));
+                tape.get_mut_tape_label()
+                    .set_start_time(&matched.get(2).map_or("", |m| m.as_str()));
             } else if line.starts_with("N+") {
                 // 先手プレイヤー名。
                 let re = Regex::new(r"N+(.*)")
