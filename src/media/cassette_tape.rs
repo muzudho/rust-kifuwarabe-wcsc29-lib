@@ -19,12 +19,18 @@ use studio::common::closed_interval::ClosedInterval;
 pub struct CassetteTapeLabel {
     // テープの名前。
     pub name: String,
+
+    // 対局日。
     pub date: String,
     pub event: String,
     pub player1: String,
     pub player2: String,
 }
 impl CassetteTapeLabel {
+    // #####
+    // # C #
+    // #####
+
     pub fn clear(&mut self) {
         self.name = "".to_string();
         self.date = "".to_string();
@@ -32,6 +38,10 @@ impl CassetteTapeLabel {
         self.player1 = "".to_string();
         self.player2 = "".to_string();
     }
+
+    // #####
+    // # T #
+    // #####
 
     pub fn to_rpm(&self) -> RpmTapeLabel {
         RpmTapeLabel {
@@ -229,8 +239,14 @@ impl CassetteTape {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
+    /// テープに名前を書く。
     pub fn set_name(&mut self, name_text: String) {
         self.label.name = name_text;
+    }
+
+    /// テープに対局日を書く。
+    pub fn set_game_date(&mut self, game_date: String) {
+        self.label.date = game_date;
     }
 
     /// # Returns

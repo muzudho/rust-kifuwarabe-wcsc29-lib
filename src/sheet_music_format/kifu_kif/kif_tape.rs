@@ -5,47 +5,51 @@ use studio::application::Application;
 
 #[derive(Default)]
 pub struct KifTape {
-    pub items: Vec<KifMove>,
+    pub moves: Vec<KifMove>,
+    game_date: String,
 }
 impl KifTape {
     pub fn new() -> KifTape {
-        KifTape { items: Vec::new() }
+        KifTape {
+            moves: Vec::new(),
+            game_date: String::new(),
+        }
     }
 
+    // #####
+    // # F #
+    // #####
+
+    /// ファイル読取。
     pub fn from_file(file: &str, app: &Application) -> KifTape {
         // .kif形式には、バージョンがいろいろあるようだ。
         Kaki189::from_file(file, &app)
     }
 
-    pub fn push(&mut self, mov: KifMove) {
-        self.items.push(mov);
+    // #####
+    // # G #
+    // #####
+
+    // 対局日。
+    pub fn get_game_date(&self) -> String {
+        self.game_date.to_string()
     }
 
-    /*
-    pub fn get_current_phase(&self) -> HalfPlayerPhase {
-        match self.items.len() % 2 {
-            0 => HalfPlayerPhase::First,
-            _ => HalfPlayerPhase::Second,
-        }
+    // #####
+    // # P #
+    // #####
+
+    /// 指し手を追加。
+    pub fn push_move(&mut self, mov: KifMove) {
+        self.moves.push(mov);
     }
 
-    pub fn make_move(&mut self, cmove:KifMove, position:&mut Position){
-        if cmove.is_drop() {
-            // TODO drop
+    // #####
+    // # S #
+    // #####
 
-        } else {
-            let source_id_piece_opt = position.remove_id_piece(cmove.name, cmove.source_rank);
-
-            // CSAの棋譜では、成ったかどうかは分からない。
-            /*
-            if cmove.promotion {
-                source_piece = promotion_piece(source_piece);
-            }
-            */
-
-            position.set_id_piece(cmove.destination_file, cmove.destination_rank, source_id_piece_opt);
-            self.push(cmove);
-        }
+    /// 対局日を記述。
+    pub fn set_game_date(&mut self, date: &str) {
+        self.game_date = date.to_string();
     }
-    */
 }

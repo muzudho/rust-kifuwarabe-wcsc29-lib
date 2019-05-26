@@ -238,8 +238,14 @@ impl CassetteDeck {
             .set_file_name_without_extension(tape_box_file_name_without_extension);
     }
 
+    /// テープに名前を書く。
     pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
         self.slots[slot as usize].set_name_of_tape(name);
+    }
+
+    /// テープに対局日を書く。
+    pub fn set_game_date_of_tape(&mut self, slot: Slot, game_date: String) {
+        self.slots[slot as usize].set_game_date_of_tape(game_date);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）

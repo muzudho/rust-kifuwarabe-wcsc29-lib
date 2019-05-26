@@ -1,3 +1,4 @@
+use regex::Regex;
 use sheet_music_format::kifu_kif::kif_move::*;
 use sheet_music_format::kifu_kif::kif_tape::*;
 use std::fs::File;
@@ -36,8 +37,17 @@ impl Kaki189 {
         {
             let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-            // スペースを除く、先頭が数字で始まる行は　指し手。
-            if 4 < line.len() {
+            // 4文字以上で。
+            if line.starts_with("# 対  局  日：") {
+                let re = Regex::new(r"# 対  局  日：(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let date_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.set_game_date(&date_text);
+            } else if 4 < line.len() {
+                // 先頭の空白を省き。
                 let mut first_ch = line.trim_start().to_string();
                 first_ch = first_ch
                     .chars()
@@ -46,8 +56,9 @@ impl Kaki189 {
                     .to_string();
                 match first_ch.parse::<i8>() {
                     Ok(_x) => {
+                        // 数字で始まる行は　指し手。
                         if let Some(kif_move) = KifMove::parse(&line, &app) {
-                            tape.push(kif_move);
+                            tape.push_move(kif_move);
                         }
                     }
                     Err(_err) => {
@@ -59,7 +70,7 @@ impl Kaki189 {
 
         // '同'を解決する。
         let mut pre_cell = None;
-        for mov in &mut tape.items {
+        for mov in &mut tape.moves {
             if mov.is_same {
                 mov.destination = pre_cell;
             }

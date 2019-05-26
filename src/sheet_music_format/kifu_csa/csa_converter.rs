@@ -31,7 +31,7 @@ impl CsaConverter {
         }
 
         let mut ply = 1;
-        for cmove in &ctape.items {
+        for cmove in &ctape.moves {
             if app.is_debug() {
                 app.comm
                     .println(&format!("[#play_out_csa_tape: Ply: {}]", ply));

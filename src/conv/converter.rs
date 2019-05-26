@@ -43,6 +43,7 @@ impl Converter {
 
                 // Tape label
                 rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
+                rack.set_game_date_of_tape(Slot::Learning, ktape.get_game_date());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
@@ -61,6 +62,7 @@ impl Converter {
 
                 // Tape label
                 rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
+                rack.set_game_date_of_tape(Slot::Learning, ctape.get_game_date());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);

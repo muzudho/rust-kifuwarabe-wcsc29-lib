@@ -308,12 +308,25 @@ impl CassetteTapeBox {
         self.file_name = format!("{}-tape-box.json", file_name_without_extension).to_string()
     }
 
+    /// テープに名前を書く。
     pub fn set_name_of_tape(&mut self, name: String) {
         if let Some(index) = self.awareness_of_tapes.index {
             self.tapes[index].set_name(name);
         } else {
             panic!(
                 "#set_name_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    /// テープに対局日を書く。
+    pub fn set_game_date_of_tape(&mut self, game_date: String) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].set_game_date(game_date);
+        } else {
+            panic!(
+                "#set_game_date_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }

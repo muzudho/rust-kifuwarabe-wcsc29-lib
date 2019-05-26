@@ -150,8 +150,14 @@ impl AudioRack {
         );
     }
 
+    /// テープに名前を書く。
     pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
         self.deck.set_name_of_tape(slot, name);
+    }
+
+    /// テープに対局日を書く。
+    pub fn set_game_date_of_tape(&mut self, slot: Slot, game_date: String) {
+        self.deck.set_game_date_of_tape(slot, game_date);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）

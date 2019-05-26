@@ -23,7 +23,7 @@ impl KifConverter {
         OhashiPerformer::improvise_ohashi_starting(rack, position, &app);
 
         let mut ply = 1;
-        for kmove in &ktape.items {
+        for kmove in &ktape.moves {
             let rnote_opes = KifConverter::convert_move(kmove, position, ply, &app);
 
             for rnote_ope in rnote_opes {

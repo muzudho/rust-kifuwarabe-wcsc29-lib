@@ -1,6 +1,29 @@
 # rust-kifuwarabe-wcsc29-lib
 コンピューター将棋ソフトきふわらべ 第29回世界コンピューター将棋選手権に向けたバージョン☆（＾～＾）
 
+## いっぱつコンパイル
+
+ディレクトリ構成を合わせろ。設定ファイルを書け。
+
+いっぱつコンパイルセット☆（＾～＾）
+
+```Shell
+set RUST_BACKTRACE=1
+cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
+cls
+cargo update
+cargo clippy --example main
+cargo build --release
+cd C:/muzudho/projects_rust/kifuwarabe-wcsc29
+cls
+cargo update
+cargo clippy
+cargo build --release
+```
+
+合わせて読め☆（＾～＾）
+[rust-kifuwarabe-wcsc29.](https://github.com/muzudho/kifuwarabe-wcsc29)
+
 ## 用語集
 
 ### ［テープ・ボックス］
@@ -127,26 +150,7 @@ cargo run --example usi_to_rpm -- --path C:/muzudho/kifuwarabe-wcsc29-learn/usi-
 
 ## How to use engine?
 
-[rust-kifuwarabe-wcsc29.](https://github.com/muzudho/kifuwarabe-wcsc29)
-
 ディレクトリ構成を設定すること。トレーニング・ファイルが必要。
-
-## Test
-
-```Shell
-### Example.
-cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
-cls
- 
-### Compile.
-set RUST_BACKTRACE=1
-cargo update
-cargo clippy --example main
-cargo build --release
- 
-### Run.
-cargo run --example main
-```
 
 ## Learn
 

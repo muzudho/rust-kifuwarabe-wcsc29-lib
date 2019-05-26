@@ -3,7 +3,6 @@ extern crate kifuwarabe_wcsc29_lib;
 extern crate regex;
 use getopts::Options;
 use kifuwarabe_wcsc29_lib::audio_compo::audio_rack::*;
-//use kifuwarabe_wcsc29_lib::audio_compo::cassette_deck::*;
 use kifuwarabe_wcsc29_lib::instrument::position::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_converter::*;
 use kifuwarabe_wcsc29_lib::sheet_music_format::kifu_kif::kif_tape::*;
