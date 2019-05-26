@@ -82,6 +82,7 @@ impl KifParser {
                 let matched_text = matched.get(1).map_or("", |m| m.as_str());
                 tape.get_mut_tape_label().set_event(&matched_text);
             } else if line.starts_with("先手：") {
+                // 先手プレイヤー名。
                 let re = Regex::new(r"先手：(.*)")
                     .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
                 let matched = re
@@ -90,6 +91,7 @@ impl KifParser {
                 let matched_text = matched.get(1).map_or("", |m| m.as_str());
                 tape.get_mut_tape_label().set_player1(&matched_text);
             } else if line.starts_with("後手：") {
+                // 後手プレイヤー名。
                 let re = Regex::new(r"後手：(.*)")
                     .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
                 let matched = re

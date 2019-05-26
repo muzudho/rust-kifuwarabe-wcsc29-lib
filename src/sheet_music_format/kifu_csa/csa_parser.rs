@@ -38,7 +38,7 @@ impl CsaParser {
         {
             let line = line_result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-            if num == 0 && line.starts_with("V") {
+            if num == 0 && line.starts_with('V') {
                 // 最初の行で V で始まれば バージョン番号と予想。
                 tape.get_mut_tape_label().set_format(&line);
             } else if (line.starts_with('+') | line.starts_with('-') | line.starts_with('%'))
@@ -63,6 +63,24 @@ impl CsaParser {
                     .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
                 let matched_text = matched.get(1).map_or("", |m| m.as_str());
                 tape.get_mut_tape_label().set_game_date(&matched_text);
+            } else if line.starts_with("N+") {
+                // 先手プレイヤー名。
+                let re = Regex::new(r"N+(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_player1(&matched_text);
+            } else if line.starts_with("N-") {
+                // 後手プレイヤー名。
+                let re = Regex::new(r"N-(.*)")
+                    .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
+                let matched = re
+                    .captures(&line)
+                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
+                let matched_text = matched.get(1).map_or("", |m| m.as_str());
+                tape.get_mut_tape_label().set_player2(&matched_text);
             }
 
             num += 1;
