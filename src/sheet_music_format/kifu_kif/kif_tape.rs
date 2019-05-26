@@ -1,5 +1,5 @@
 use sheet_music_format::kifu_kif::kif_move::*;
-use sheet_music_format::kifu_kif::version::kaki189::*;
+use sheet_music_format::kifu_kif::kif_parser::*;
 use sheet_music_format::tape_label::*;
 use std::*;
 use studio::application::Application;
@@ -27,7 +27,7 @@ impl KifTape {
     /// ファイル読取。
     pub fn from_file(file: &str, app: &Application) -> KifTape {
         // .kif形式には、バージョンがいろいろあるようだ。
-        Kaki189::from_file(file, &app)
+        KifParser::from_file(file, &app)
     }
 
     // #####

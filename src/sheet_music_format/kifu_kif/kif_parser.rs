@@ -44,8 +44,8 @@ use studio::application::Application;
  */
 /// Kifファイルには色んなパターンがあるようだ。
 /// 柿木将棋 V1.89 棋譜ファイル
-pub struct Kaki189 {}
-impl Kaki189 {
+pub struct KifParser {}
+impl KifParser {
     pub fn from_file(file: &str, app: &Application) -> KifTape {
         let mut tape = KifTape::new();
 
@@ -55,13 +55,17 @@ impl Kaki189 {
             .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
         tape.get_mut_tape_label().set_name(file_stem);
 
+        let mut num = 0;
         for result in
             BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))
                 .lines()
         {
             let line = result.unwrap_or_else(|err| panic!(app.comm.panic_io(&err)));
 
-            if line.starts_with("# 対  局  日：") {
+            if num == 0 && line.contains("棋譜ファイル") {
+                // 最初の行で「棋譜ファイル」の文字があれば、バージョン番号が含まれていると予想。
+                tape.get_mut_tape_label().set_format(&line);
+            } else if line.starts_with("# 対  局  日：") {
                 let re = Regex::new(r"# 対  局  日：(.*)")
                     .unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
                 let matched = re
@@ -114,6 +118,8 @@ impl Kaki189 {
                     }
                 }
             }
+
+            num += 1;
         }
 
         // '同'を解決する。
