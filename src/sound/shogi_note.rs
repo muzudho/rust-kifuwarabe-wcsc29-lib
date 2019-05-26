@@ -25,7 +25,7 @@ impl fmt::Display for ShogiNote {
             f,
             "{}'{}'",
             match self.identify {
-                Some(pid) => pid.to_human_presentable(),
+                Some(pid) => pid.to_human_presentable_4width(),
                 None => "--".to_string(),
             },
             self.operation
@@ -154,11 +154,30 @@ impl ShogiNote {
         format!(
             "'{}'{}",
             match self.identify {
-                Some(pid) => pid.to_human_presentable(),
+                Some(pid) => pid.to_human_presentable_4width(),
                 None => "--".to_string(),
             },
             self.operation.to_human_presentable(board_size, &app)
         )
+    }
+
+    pub fn to_human_presentable_id_5width(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
+        match self.identify {
+            Some(pid) => format!(" {}", pid.to_human_presentable_4width()),
+            None => "/////".to_string(),
+        }
+    }
+
+    pub fn to_human_presentable_ope_5width(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
+        self.operation.to_human_presentable_5width(board_size, &app)
     }
 
     pub fn create_human_presentable_of_vec(

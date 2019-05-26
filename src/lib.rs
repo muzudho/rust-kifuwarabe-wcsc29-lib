@@ -47,6 +47,7 @@ pub mod studio;
 use audio_compo::audio_rack::*;
 use audio_compo::cassette_deck::*;
 use human::human_interface::*;
+use human::track_view::*;
 use instrument::position::*;
 use lib_sub::*;
 use live::base_performer::*;
@@ -282,20 +283,35 @@ pub fn main_loop() {
         // #####
         // # T #
         // #####
-        } else if line == "tape-t" {
-            if !rack.is_none_current_tape(Slot::Training) {
-                HumanInterface::show_tape(&rack, Slot::Training, &position, &app);
-            } else {
-                app.comm.println("スロットt が空っぽです。");
-            }
         } else if line == "tape-l" {
             if !rack.is_none_current_tape(Slot::Learning) {
                 HumanInterface::show_tape(&rack, Slot::Learning, &position, &app);
             } else {
                 app.comm.println("スロットl が空っぽです。");
             }
+        } else if line == "tape-p" {
+            if !rack.is_none_current_tape(Slot::Principal) {
+                HumanInterface::show_tape(&rack, Slot::Principal, &position, &app);
+            } else {
+                app.comm.println("スロットp が空っぽです。");
+            }
+        } else if line == "tape-t" {
+            if !rack.is_none_current_tape(Slot::Training) {
+                HumanInterface::show_tape(&rack, Slot::Training, &position, &app);
+            } else {
+                app.comm.println("スロットt が空っぽです。");
+            }
         } else if line.starts_with("test-2heads-vec") {
             LibSub::test_2heads_vec(position.get_board_size(), &app);
+        } else if line == "track-l" {
+            // トラック・ビュー。
+            TrackView::show_track_by_slot(&mut rack, Slot::Learning, &mut position, &app);
+        } else if line == "track-p" {
+            // トラック・ビュー。
+            TrackView::show_track_by_slot(&mut rack, Slot::Principal, &mut position, &app);
+        } else if line == "track-t" {
+            // トラック・ビュー。
+            TrackView::show_track_by_slot(&mut rack, Slot::Training, &mut position, &app);
 
         // #####
         // # U #

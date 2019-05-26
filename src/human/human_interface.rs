@@ -32,6 +32,7 @@ impl HumanInterface {
                 match slot {
                     Training => "T",
                     Learning => "L",
+                    Principal => "P",
                 }
                 .to_string(),
                 operations

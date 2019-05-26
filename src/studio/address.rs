@@ -43,6 +43,10 @@ impl Cell {
     pub fn to_human_presentable(self) -> String {
         self.to_scalar().to_string()
     }
+
+    pub fn to_human_presentable_5width(self) -> String {
+        format!("{:>5}", self.to_scalar().to_string())
+    }
 }
 
 /// Vector に入れるときコピーする。

@@ -283,7 +283,6 @@ impl ShogiNoteOpe {
     // # T #
     // #####
 
-    /// Human presentable.
     pub fn to_human_presentable(&self, board_size: BoardSize, app: &Application) -> String {
         match self.address {
             Some(address) => {
@@ -298,7 +297,7 @@ impl ShogiNoteOpe {
                     address
                         .get_hand_piece()
                         .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
-                        .to_human_presentable()
+                        .to_human_presentable_4width()
                 } else {
                     panic!(
                         "Unexpected address: {}.",
@@ -321,6 +320,49 @@ impl ShogiNoteOpe {
                     "%resign".to_string()
                 } else {
                     "PANIC!".to_string()
+                }
+            }
+        }
+    }
+
+    /// 幅は5。
+    pub fn to_human_presentable_5width(&self, board_size: BoardSize, app: &Application) -> String {
+        match self.address {
+            Some(address) => {
+                // 人に読みやすいセル表記にします。
+                if address.is_fingertip() {
+                    "Fingt".to_string()
+                } else if address.is_on_board(board_size) {
+                    board_size
+                        .address_to_cell(address.get_index())
+                        .to_human_presentable_5width()
+                } else if address.is_hand() {
+                    address
+                        .get_hand_piece()
+                        .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_hand_piece.")))
+                        .to_human_presentable_5width()
+                } else {
+                    panic!(
+                        "Unexpected address: {}.",
+                        address.to_human_presentable(board_size)
+                    )
+                }
+            }
+            None => {
+                if self.fingertip_turn {
+                    "  +  ".to_string()
+                } else if self.fingertip_rotate {
+                    "  -  ".to_string()
+                } else if let Some(ply) = self.phase_change {
+                    if ply > -1 {
+                        format!("[{:>3}]", ply).to_string()
+                    } else {
+                        "[ - ]".to_string()
+                    }
+                } else if self.resign {
+                    "%resi".to_string()
+                } else {
+                    "PANI!".to_string()
                 }
             }
         }

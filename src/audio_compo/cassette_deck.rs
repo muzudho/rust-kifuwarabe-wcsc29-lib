@@ -16,12 +16,14 @@ pub enum Slot {
     Training,
     /// ラーニング。
     Learning,
+    /// プリンキパル。
+    Principal,
 }
 
 /// カセット・デッキ。
 pub struct CassetteDeck {
-    // カセットのスロット。トレーニング、ラーニングの順。
-    pub slots: [CassetteTapeBox; 2],
+    // カセットのスロット。
+    pub slots: [CassetteTapeBox; 3],
 }
 impl CassetteDeck {
     // ###############
@@ -44,8 +46,13 @@ impl CassetteDeck {
             &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
         );
 
+        let mut principal_tape_box = CassetteTapeBox::new_empty_tape_box(Slot::Principal, &app);
+        principal_tape_box.set_file_name_without_extension(
+            &RpmTapeBox::create_file_full_name_without_extension(&app.kw29_conf, &app),
+        );
+
         CassetteDeck {
-            slots: [training_tape_box, learning_tape_box],
+            slots: [training_tape_box, learning_tape_box, principal_tape_box],
         }
     }
 

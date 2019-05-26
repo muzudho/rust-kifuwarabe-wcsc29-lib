@@ -53,7 +53,7 @@ pub enum PieceIdentify {
 }
 impl fmt::Display for PieceIdentify {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_human_presentable())
+        write!(f, "{}", self.to_human_presentable_4width())
     }
 }
 impl PieceIdentify {
@@ -177,7 +177,8 @@ impl PieceIdentify {
         }
     }
 
-    pub fn to_human_presentable(self) -> String {
+    /// 幅は4。
+    pub fn to_human_presentable_4width(self) -> String {
         use instrument::piece_etc::PieceIdentify::*;
         match self {
             K00 => "王00",
@@ -500,7 +501,7 @@ impl IdentifiedPiece {
                     .to_string()
                 } else {
                     // 成りや、先後を含まない表示。
-                    self.get_id().to_human_presentable()
+                    self.get_id().to_human_presentable_4width()
                 }
             }
             ZeroPointFive | OnePointFive => {
@@ -1088,7 +1089,7 @@ impl Piece {
     }
 
     // Human presentable.
-    pub fn to_human_presentable(self) -> String {
+    pub fn to_human_presentable_4width(self) -> String {
         use instrument::piece_etc::Piece::*;
         match self {
             K1 => "▼玉",
@@ -1148,6 +1149,10 @@ impl Piece {
             PP3 => "外と",
         }
         .to_string()
+    }
+
+    pub fn to_human_presentable_5width(self) -> String {
+        format!(" {}", self.to_human_presentable_4width())
     }
 
     // Computer readable.

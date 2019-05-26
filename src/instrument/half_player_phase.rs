@@ -143,6 +143,7 @@ impl HalfPlayerPhaseObject {
             }
         };
 
+        /*
         if app.is_debug() {
             if is_facing_left {
                 app.comm.println(&format!(
@@ -158,5 +159,6 @@ impl HalfPlayerPhaseObject {
                 ));
             }
         }
+        */
     }
 }

@@ -261,10 +261,12 @@ impl Caret {
             negative: aware_negative,
         };
 
+        /*
         if app.is_debug() {
             app.comm
                 .println(&format!("[#SeekN: {}]", awareness.to_human_presentable()))
         }
+        */
 
         awareness
     }

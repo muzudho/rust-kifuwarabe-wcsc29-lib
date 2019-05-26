@@ -422,52 +422,9 @@ impl CassetteTapeBox {
         }
     }
 
-    /*
-    pub fn set_note_to_current_tape(&mut self, caret_number: i16, note: ShogiNote) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            if -1 < caret_number {
-                self.tapes[index].tracks.positive_notes[caret_number as usize] = note;
-            } else {
-                self.tapes[index].tracks.negative_notes
-                    [get_index_from_caret_numbers(caret_number)] = note;
-            }
-        } else {
-            panic!(
-                "#set_note_to_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-    */
-
     // #####
     // # T #
     // #####
-
-    /*
-    /// 正の数では、（キャレット番号＋１）と、（要素の個数）は等しい。
-    pub fn truncate_positive_of_current_tape(&mut self, len: usize) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].tracks.positive_notes.truncate(len);
-        } else {
-            panic!(
-                "#truncate_positive_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-    /// 負の数では、（キャレット番号の絶対値）と、（要素の個数）は等しい。
-    pub fn truncate_negative_of_current_tape(&mut self, len: usize) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].tracks.negative_notes.truncate(len);
-        } else {
-            panic!(
-                "#truncate_negative_of_current_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-    */
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTapeBox {
         let mut tape_box = RpmTapeBox::new();
@@ -488,6 +445,7 @@ impl CassetteTapeBox {
                 match self.role_as_slot {
                     Training => "T",
                     Learning => "Learnig",
+                    Principal => "P",
                 }
                 .to_string(),
                 self.file_name,
@@ -513,6 +471,7 @@ impl CassetteTapeBox {
                 match self.role_as_slot {
                     Training => "T",
                     Learning => "Learnig",
+                    Principal => "P",
                 }
                 .to_string(),
                 index,

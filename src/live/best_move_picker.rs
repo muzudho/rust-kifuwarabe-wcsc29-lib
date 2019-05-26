@@ -56,7 +56,7 @@ impl BestMovePicker {
             if app.is_debug() {
                 app.comm.println(&format!(
                     "[#Change thread: subject:{}, not empty]",
-                    subject_piece_id.to_human_presentable(),
+                    subject_piece_id.to_human_presentable_4width(),
                 ));
             }
             // 中身が残っていれば、まず確定☆（＾～＾）
@@ -70,7 +70,7 @@ impl BestMovePicker {
         } else if app.is_debug() {
             app.comm.println(&format!(
                 "[#Change thread: subject:{}, is empty]",
-                subject_piece_id.to_human_presentable(),
+                subject_piece_id.to_human_presentable_4width(),
             ));
         }
     }
@@ -221,7 +221,7 @@ impl BestMovePicker {
                         // 駒を１つ選択☆（＾～＾）
                         app.comm.println(&format!(
                             "\n----------------------------------------------------------------------------------------------------------------------------------------------------------------#Subject piece: {}",
-                            subject_piece_id.to_human_presentable()
+                            subject_piece_id.to_human_presentable_4width()
                         ));
                     }
 
@@ -468,7 +468,7 @@ impl BestMovePicker {
                             app.comm.println(&format!(
                                 "[#パターン・マッチ失敗, Phase:{:?}, Pid:{}]",
                                 position.get_phase().get_state(),
-                                subject_piece_id.to_human_presentable()
+                                subject_piece_id.to_human_presentable_4width()
                             ));
                         }
 
@@ -598,8 +598,8 @@ impl BestMovePicker {
                 bmove.subject_pid.get_number(),
                 bmove.subject_addr.get_index(),
                 my_addr_obj.get_index() as usize,
-                subject_piece_id.to_human_presentable(),
-                bmove.subject_pid.to_human_presentable(),
+                subject_piece_id.to_human_presentable_4width(),
+                bmove.subject_pid.to_human_presentable_4width(),
                 bmove.subject_addr.to_human_presentable(board_size),
                 my_addr_obj.to_human_presentable(board_size)
             ));

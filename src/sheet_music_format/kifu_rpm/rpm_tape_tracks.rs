@@ -50,7 +50,7 @@ impl RpmTapeTracks {
                     "".to_string()
                 },
                 if let Some(pid) = PieceIdentify::from_number(id) {
-                    pid.to_human_presentable()
+                    pid.to_human_presentable_4width()
                 } else {
                     "|".to_string()
                 },
