@@ -6,6 +6,10 @@ use studio::application::Application;
 
 pub struct HumanInterface {}
 impl HumanInterface {
+    // #####
+    // # B #
+    // #####
+
     /// 局面の表示。
     pub fn bo(rack: &AudioRack, position: &Position, app: &Application) {
         if app.is_debug() {
@@ -20,8 +24,26 @@ impl HumanInterface {
         }
     }
 
+    /// 局面と、テープ中の棋譜　の表示。
+    /// トレーニング用。
+    pub fn bo_with_tape(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
+        if app.is_debug() {
+            // 局面。
+            HumanInterface::bo(rack, position, &app);
+
+            // 棋譜。
+            let (_numbers, operations) =
+                rack.get_sign_of_current_tape(slot, position.get_board_size());
+            app.comm.println(&format!("TAPE: {}", operations));
+        }
+    }
+
+    // #####
+    // # D #
+    // #####
+
     /// テープの表示。
-    pub fn show_tape(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
+    pub fn dump_tape(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
         if app.is_debug() {
             let (_numbers, operations) =
                 &rack.get_sign_of_current_tape(slot, position.get_board_size());
@@ -37,20 +59,6 @@ impl HumanInterface {
                 .to_string(),
                 operations
             ));
-        }
-    }
-
-    /// 局面と、テープ中の棋譜　の表示。
-    /// トレーニング用。
-    pub fn bo_with_tape(rack: &AudioRack, slot: Slot, position: &Position, app: &Application) {
-        if app.is_debug() {
-            // 局面。
-            HumanInterface::bo(rack, position, &app);
-
-            // 棋譜。
-            let (_numbers, operations) =
-                rack.get_sign_of_current_tape(slot, position.get_board_size());
-            app.comm.println(&format!("TAPE: {}", operations));
         }
     }
 }

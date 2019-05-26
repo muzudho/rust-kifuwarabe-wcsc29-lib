@@ -180,6 +180,18 @@ impl ShogiNote {
         self.operation.to_human_presentable_5width(board_size, &app)
     }
 
+    pub fn to_human_presentable_facing_5width(
+        &self,
+        board_size: BoardSize,
+        app: &Application,
+    ) -> String {
+        if self.facing_left {
+            "  L  ".to_string()
+        } else {
+            "  .  ".to_string()
+        }
+    }
+
     pub fn create_human_presentable_of_vec(
         vec: Vec<ShogiNote>,
         board_size: BoardSize,
