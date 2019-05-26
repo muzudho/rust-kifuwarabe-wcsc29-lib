@@ -161,14 +161,10 @@ impl ShogiNote {
         )
     }
 
-    pub fn to_human_presentable_id_5width(
-        &self,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> String {
+    pub fn to_human_presentable_id_5width(&self) -> String {
         match self.identify {
             Some(pid) => format!(" {}", pid.to_human_presentable_4width()),
-            None => "/////".to_string(),
+            None => "  .  ".to_string(),
         }
     }
 
@@ -180,11 +176,7 @@ impl ShogiNote {
         self.operation.to_human_presentable_5width(board_size, &app)
     }
 
-    pub fn to_human_presentable_facing_5width(
-        &self,
-        board_size: BoardSize,
-        app: &Application,
-    ) -> String {
+    pub fn to_human_presentable_facing_5width(&self) -> String {
         if self.facing_left {
             "  L  ".to_string()
         } else {

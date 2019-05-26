@@ -192,7 +192,7 @@ impl Caret {
 
     /// 要素を返してから、向きの通りに移動します。境界チェックは行いません。
     /// 境界なんかないから、どんどん　進んでいくぜ☆（＾～＾）
-    pub fn seek_a_note(&mut self, app: &Application) -> Awareness {
+    pub fn seek_a_note(&mut self, _app: &Application) -> Awareness {
         let passed = self.unconscious_number;
         // ゼロおよび正の数では、（キャレット番号）と、（要素の個数＋１）と、（インデックス）は等しい。
         // 負の数では、（キャレット番号の絶対値）と、（要素の個数）と、（インデックス－１）は等しい。

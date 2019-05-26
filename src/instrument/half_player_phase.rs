@@ -121,8 +121,8 @@ impl HalfPlayerPhaseObject {
     /// # Arguments
     ///
     /// * `is_facing_left` - ラーニング・テープのキャレットの向き。
-    pub fn seek_a_player_for_position(&mut self, is_facing_left: bool, app: &Application) {
-        let old_state = self.get_state();
+    pub fn seek_a_player_for_position(&mut self, is_facing_left: bool, _app: &Application) {
+        let _old_state = self.get_state();
 
         use instrument::half_player_phase::HalfPlayerPhaseValue::*;
         self.state = if is_facing_left {

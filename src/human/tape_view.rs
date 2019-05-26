@@ -15,9 +15,9 @@ impl TapeView {
         let (_taken_overflow, _awareness, note_opt) = rack.seek_a_note(slot, &app);
         if let Some(note) = note_opt {
             (
-                note.to_human_presentable_id_5width(position.get_board_size(), &app),
+                note.to_human_presentable_id_5width(),
                 note.to_human_presentable_ope_5width(position.get_board_size(), &app),
-                note.to_human_presentable_facing_5width(position.get_board_size(), &app),
+                note.to_human_presentable_facing_5width(),
             )
         } else {
             (
@@ -36,8 +36,17 @@ impl TapeView {
         app: &Application,
     ) {
         if app.is_debug() {
-            let (_numbers, operations) =
-                &rack.get_sign_of_current_tape(slot, position.get_board_size());
+            if rack.is_none_current_tape(slot) {
+                app.comm.println("There is no tape.");
+                return;
+            }
+
+            // キャレットの向き。
+            let caret_text = if rack.is_facing_left_of_current_tape(slot, app) {
+                "<#".to_string()
+            } else {
+                "#>".to_string()
+            };
 
             // 1セルは 5width。
             let (id10, op10, fc10) = TapeView::seek(rack, slot, position, app);
@@ -75,10 +84,10 @@ impl TapeView {
             }
 
             app.comm.println(
-                "+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+ # +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+",
+                &format!("+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+ {} +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+",caret_text),
             );
             app.comm.println(&format!(
-                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| # |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
+                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| {20} |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
                 id00.to_string(),
                 id01.to_string(),
                 id02.to_string(),
@@ -99,9 +108,10 @@ impl TapeView {
                 id17.to_string(),
                 id18.to_string(),
                 id19.to_string(),
+                caret_text
             ));
             app.comm.println(&format!(
-                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| # |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
+                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| {20} |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
                 op00.to_string(),
                 op01.to_string(),
                 op02.to_string(),
@@ -122,9 +132,10 @@ impl TapeView {
                 op17.to_string(),
                 op18.to_string(),
                 op19.to_string(),
+                caret_text
             ));
             app.comm.println(&format!(
-                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| # |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
+                "|{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}| {20} |{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}+",
                 fc00.to_string(),
                 fc01.to_string(),
                 fc02.to_string(),
@@ -145,9 +156,10 @@ impl TapeView {
                 fc17.to_string(),
                 fc18.to_string(),
                 fc19.to_string(),
+                caret_text
             ));
             app.comm.println(
-                "+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+ # +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+",
+                &format!("+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+ {} +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+",caret_text),
             );
         }
     }
