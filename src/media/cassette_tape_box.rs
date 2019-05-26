@@ -332,6 +332,42 @@ impl CassetteTapeBox {
         }
     }
 
+    /// テープにイベント名を書く。
+    pub fn set_event_of_tape(&mut self, name: String) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].set_event(name);
+        } else {
+            panic!(
+                "#set_event_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    /// テープに先手名を書く。
+    pub fn set_player1_of_tape(&mut self, name: String) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].set_player1(name);
+        } else {
+            panic!(
+                "#set_player1_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
+    /// テープに後手名を書く。
+    pub fn set_player2_of_tape(&mut self, name: String) {
+        if let Some(index) = self.awareness_of_tapes.index {
+            self.tapes[index].set_player2(name);
+        } else {
+            panic!(
+                "#set_player2_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                self.role_as_slot
+            );
+        }
+    }
+
     /// ◆次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）
     ///

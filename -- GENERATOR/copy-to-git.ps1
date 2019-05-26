@@ -5,9 +5,9 @@
 $original = "C:\muzudho\projects_rust\rust-kifuwarabe-wcsc29-lib"
 $deploy   = "C:\Users\むずでょ\Documents\GitHub\rust-kifuwarabe-wcsc29-lib";
 
-######
-# Go #
-######
+#######
+# Lib #
+#######
 
 # ファイルの削除。
 function Remove-File($dst) {
@@ -36,6 +36,26 @@ function Copy-Dir($src, $dst) {
 	Write-Host "Copy    : [$($src)] --> [$($dst)] directory."
 	Copy-Item $src $dst -Recurse
 }
+
+# ファイルの移動。
+function Move-File($src, $dst) {
+	if (Test-Path $src) {
+		Write-Host "Move    : [$($src)] --> [$($dst)]."
+		Move-Item $src $dst
+	}
+}
+
+# ディレクトリーの移動。
+function Move-File($src, $dst) {
+	if (Test-Path $src) {
+		Write-Host "Move    : [$($src)] --> [$($dst)]."
+		Move-Item $src $dst -Recurse
+	}
+}
+
+######
+# Go #
+######
 
 ##
  # Note: Not trailer slash.

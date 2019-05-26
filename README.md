@@ -8,14 +8,13 @@
 いっぱつコンパイルセット☆（＾～＾）
 
 ```Shell
+cls
 set RUST_BACKTRACE=1
 cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
-cls
 cargo update
 cargo clippy --example main
 cargo build --release
 cd C:/muzudho/projects_rust/kifuwarabe-wcsc29
-cls
 cargo update
 cargo clippy
 cargo build --release

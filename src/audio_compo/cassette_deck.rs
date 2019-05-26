@@ -238,7 +238,7 @@ impl CassetteDeck {
             .set_file_name_without_extension(tape_box_file_name_without_extension);
     }
 
-    /// テープに名前を書く。
+    /// テープ名を書く。
     pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
         self.slots[slot as usize].set_name_of_tape(name);
     }
@@ -246,6 +246,21 @@ impl CassetteDeck {
     /// テープに対局日を書く。
     pub fn set_game_date_of_tape(&mut self, slot: Slot, game_date: String) {
         self.slots[slot as usize].set_game_date_of_tape(game_date);
+    }
+
+    /// テープにイベント名を書く。
+    pub fn set_event_of_tape(&mut self, slot: Slot, event: String) {
+        self.slots[slot as usize].set_event_of_tape(event);
+    }
+
+    /// テープに先手名を書く。
+    pub fn set_player1_of_tape(&mut self, slot: Slot, player1: String) {
+        self.slots[slot as usize].set_player1_of_tape(player1);
+    }
+
+    /// テープに後手名を書く。
+    pub fn set_player2_of_tape(&mut self, slot: Slot, player2: String) {
+        self.slots[slot as usize].set_player2_of_tape(player2);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）

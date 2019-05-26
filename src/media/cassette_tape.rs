@@ -249,6 +249,21 @@ impl CassetteTape {
         self.label.date = game_date;
     }
 
+    /// テープにイベント名を書く。
+    pub fn set_event(&mut self, event_text: String) {
+        self.label.event = event_text;
+    }
+
+    /// テープに先手名を書く。
+    pub fn set_player1(&mut self, player1_text: String) {
+        self.label.player1 = player1_text;
+    }
+
+    /// テープに後手名を書く。
+    pub fn set_player2(&mut self, player2_text: String) {
+        self.label.player2 = player2_text;
+    }
+
     /// # Returns
     ///
     /// (taken overflow, caret number, フェーズ・チェンジを含み、オーバーフローを含まない１手の範囲)

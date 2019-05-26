@@ -160,6 +160,21 @@ impl AudioRack {
         self.deck.set_game_date_of_tape(slot, game_date);
     }
 
+    /// テープにイベント名を書く。
+    pub fn set_event_of_tape(&mut self, slot: Slot, event: String) {
+        self.deck.set_event_of_tape(slot, event);
+    }
+
+    /// テープに先手名を書く。
+    pub fn set_player1_of_tape(&mut self, slot: Slot, player1: String) {
+        self.deck.set_event_of_tape(slot, player1);
+    }
+
+    /// テープに後手名を書く。
+    pub fn set_player2_of_tape(&mut self, slot: Slot, player2: String) {
+        self.deck.set_event_of_tape(slot, player2);
+    }
+
     /// 次のテープを利用するぜ☆（＾～＾）
     /// 次のテープが無ければ、おわり☆（＾ｑ＾）
     ///

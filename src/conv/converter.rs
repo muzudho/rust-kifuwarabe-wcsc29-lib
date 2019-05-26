@@ -36,33 +36,39 @@ impl Converter {
         match extension.as_str() {
             "KIF" => {
                 // Training data.
-                let mut ktape = KifTape::from_file(&in_file, &app);
+                let mut tape = KifTape::from_file(&in_file, &app);
 
                 // Play out.
-                KifConverter::play_out_kifu_tape(&ktape, rack, position, &app);
+                KifConverter::play_out_kifu_tape(&tape, rack, position, &app);
 
                 // Tape label
                 rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
-                rack.set_game_date_of_tape(Slot::Learning, ktape.get_game_date());
+                rack.set_game_date_of_tape(Slot::Learning, tape.get_game_date());
+                rack.set_event_of_tape(Slot::Learning, tape.get_event());
+                rack.set_player1_of_tape(Slot::Learning, tape.get_player1());
+                rack.set_player2_of_tape(Slot::Learning, tape.get_player2());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
             }
             "CSA" => {
                 // Training data.
-                let mut ctape = CsaTape::from_file(&in_file, &app);
+                let mut tape = CsaTape::from_file(&in_file, &app);
 
                 if app.is_debug() {
                     app.comm
-                        .println(&format!("Ctape: '{}'", ctape.to_human_presentable()));
+                        .println(&format!("Ctape: '{}'", tape.to_human_presentable()));
                 }
 
                 // Play out.
-                CsaConverter::play_out_csa_tape(&ctape, rack, position, &app);
+                CsaConverter::play_out_csa_tape(&tape, rack, position, &app);
 
                 // Tape label
                 rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
-                rack.set_game_date_of_tape(Slot::Learning, ctape.get_game_date());
+                rack.set_game_date_of_tape(Slot::Learning, tape.get_game_date());
+                rack.set_event_of_tape(Slot::Learning, tape.get_event());
+                rack.set_player1_of_tape(Slot::Learning, tape.get_player1());
+                rack.set_player2_of_tape(Slot::Learning, tape.get_player2());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
