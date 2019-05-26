@@ -2,6 +2,7 @@ extern crate rand;
 use audio_compo::cassette_deck::Slot;
 use media::cassette_tape::*;
 use sheet_music_format::kifu_rpm::rpm_tape_box::*;
+use sheet_music_format::tape_label::TapeLabel;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
 use std::*;
@@ -308,61 +309,13 @@ impl CassetteTapeBox {
         self.file_name = format!("{}-tape-box.json", file_name_without_extension).to_string()
     }
 
-    /// テープに名前を書く。
-    pub fn set_name_of_tape(&mut self, name: String) {
+    /// テープのラベルを書く。
+    pub fn set_label_of_tape(&mut self, label: &TapeLabel) {
         if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_name(name);
+            self.tapes[index].set_label(label);
         } else {
             panic!(
-                "#set_name_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
-    /// テープに対局日を書く。
-    pub fn set_game_date_of_tape(&mut self, game_date: String) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_game_date(game_date);
-        } else {
-            panic!(
-                "#set_game_date_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
-    /// テープにイベント名を書く。
-    pub fn set_event_of_tape(&mut self, name: String) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_event(name);
-        } else {
-            panic!(
-                "#set_event_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
-    /// テープに先手名を書く。
-    pub fn set_player1_of_tape(&mut self, name: String) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_player1(name);
-        } else {
-            panic!(
-                "#set_player1_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
-                self.role_as_slot
-            );
-        }
-    }
-
-    /// テープに後手名を書く。
-    pub fn set_player2_of_tape(&mut self, name: String) {
-        if let Some(index) = self.awareness_of_tapes.index {
-            self.tapes[index].set_player2(name);
-        } else {
-            panic!(
-                "#set_player2_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
+                "#set_label_of_tape: Please seek tapes. It is none. Slot: '{:?}'.",
                 self.role_as_slot
             );
         }

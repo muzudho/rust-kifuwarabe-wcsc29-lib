@@ -1,8 +1,10 @@
 use regex::Regex;
 use sheet_music_format::kifu_kif::kif_move::*;
 use sheet_music_format::kifu_kif::kif_tape::*;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 use std::*;
 use studio::application::Application;
 
@@ -46,6 +48,12 @@ pub struct Kaki189 {}
 impl Kaki189 {
     pub fn from_file(file: &str, app: &Application) -> KifTape {
         let mut tape = KifTape::new();
+
+        let file_stem = Path::new(&file)
+            .file_stem()
+            .and_then(OsStr::to_str)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
+        tape.get_mut_tape_label().set_name(file_stem);
 
         for result in
             BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))

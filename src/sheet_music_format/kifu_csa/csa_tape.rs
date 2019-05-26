@@ -3,8 +3,10 @@ use instrument::position::*;
 use regex::Regex;
 use sheet_music_format::kifu_csa::csa_move::*;
 use sheet_music_format::tape_label::*;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::Path;
 use std::*;
 use studio::application::Application;
 
@@ -30,6 +32,12 @@ impl CsaTape {
 
     pub fn from_file(file: &str, app: &Application) -> CsaTape {
         let mut tape = CsaTape::new();
+
+        let file_stem = Path::new(&file)
+            .file_stem()
+            .and_then(OsStr::to_str)
+            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
+        tape.get_mut_tape_label().set_name(file_stem);
 
         for line_result in
             BufReader::new(File::open(file).unwrap_or_else(|err| panic!(app.comm.panic_io(&err))))

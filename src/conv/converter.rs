@@ -12,24 +12,15 @@ use studio::application::*;
 pub struct Converter {}
 
 impl Converter {
-    fn get_extension_from_file_path(file_path: &str) -> Option<&str> {
-        Path::new(file_path).extension().and_then(OsStr::to_str)
-    }
-
-    fn get_file_stem_from_file_path(file_path: &str) -> Option<&str> {
-        Path::new(file_path).file_stem().and_then(OsStr::to_str)
-    }
-
     pub fn convert(
         in_file: String,
         rack: &mut AudioRack,
         position: &mut Position,
         app: &Application,
     ) {
-        let file_stem = Converter::get_file_stem_from_file_path(&in_file)
-            .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_file_stem_from_file_path.")));
-
-        let extension = Converter::get_extension_from_file_path(&in_file)
+        let extension = Path::new(&in_file)
+            .extension()
+            .and_then(OsStr::to_str)
             .unwrap_or_else(|| panic!(app.comm.panic("Fail. get_extension_from_file_path.")))
             .to_uppercase();
 
@@ -42,14 +33,7 @@ impl Converter {
                 KifConverter::play_out_kifu_tape(&tape, rack, position, &app);
 
                 // Tape label
-                rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
-                rack.set_game_date_of_tape(
-                    Slot::Learning,
-                    tape.get_mut_tape_label().get_game_date(),
-                );
-                rack.set_event_of_tape(Slot::Learning, tape.get_mut_tape_label().get_event());
-                rack.set_player1_of_tape(Slot::Learning, tape.get_mut_tape_label().get_player1());
-                rack.set_player2_of_tape(Slot::Learning, tape.get_mut_tape_label().get_player2());
+                rack.set_label_of_tape(Slot::Learning, tape.get_mut_tape_label());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);
@@ -67,14 +51,7 @@ impl Converter {
                 CsaConverter::play_out_csa_tape(&tape, rack, position, &app);
 
                 // Tape label
-                rack.set_name_of_tape(Slot::Learning, file_stem.to_string());
-                rack.set_game_date_of_tape(
-                    Slot::Learning,
-                    tape.get_mut_tape_label().get_game_date(),
-                );
-                rack.set_event_of_tape(Slot::Learning, tape.get_mut_tape_label().get_event());
-                rack.set_player1_of_tape(Slot::Learning, tape.get_mut_tape_label().get_player1());
-                rack.set_player2_of_tape(Slot::Learning, tape.get_mut_tape_label().get_player2());
+                rack.set_label_of_tape(Slot::Learning, tape.get_mut_tape_label());
 
                 // Write.
                 rack.write_leaning_tapes_fragment(position.get_board_size(), &app);

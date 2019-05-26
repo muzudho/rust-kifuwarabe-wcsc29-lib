@@ -1,5 +1,6 @@
 use audio_compo::cassette_deck::*;
 use media::cassette_tape::*;
+use sheet_music_format::tape_label::TapeLabel;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::ShogiNote;
 use studio::application::Application;
@@ -150,29 +151,9 @@ impl AudioRack {
         );
     }
 
-    /// テープに名前を書く。
-    pub fn set_name_of_tape(&mut self, slot: Slot, name: String) {
-        self.deck.set_name_of_tape(slot, name);
-    }
-
-    /// テープに対局日を書く。
-    pub fn set_game_date_of_tape(&mut self, slot: Slot, game_date: String) {
-        self.deck.set_game_date_of_tape(slot, game_date);
-    }
-
-    /// テープにイベント名を書く。
-    pub fn set_event_of_tape(&mut self, slot: Slot, event: String) {
-        self.deck.set_event_of_tape(slot, event);
-    }
-
-    /// テープに先手名を書く。
-    pub fn set_player1_of_tape(&mut self, slot: Slot, player1: String) {
-        self.deck.set_event_of_tape(slot, player1);
-    }
-
-    /// テープに後手名を書く。
-    pub fn set_player2_of_tape(&mut self, slot: Slot, player2: String) {
-        self.deck.set_event_of_tape(slot, player2);
+    /// テープのラベルを書く。
+    pub fn set_label_of_tape(&mut self, slot: Slot, label: &TapeLabel) {
+        self.deck.set_label_of_tape(slot, label);
     }
 
     /// 次のテープを利用するぜ☆（＾～＾）

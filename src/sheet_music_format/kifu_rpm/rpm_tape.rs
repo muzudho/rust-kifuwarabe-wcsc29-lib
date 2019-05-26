@@ -2,44 +2,21 @@ use media::cassette_tape::*;
 use media::two_heads_vec::*;
 use serde::*;
 use sheet_music_format::kifu_rpm::rpm_tape_tracks::RpmTapeTracks;
+use sheet_music_format::tape_label::*;
 use studio::application::Application;
 use studio::board_size::*;
 use studio::common::caret::*;
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
-pub struct RpmTapeLabel {
-    // テープの名前。
-    pub name: String,
-
-    // 対局日。
-    pub date: String,
-    pub event: String,
-    pub player1: String,
-    pub player2: String,
-}
-impl RpmTapeLabel {
-    pub fn new() -> Self {
-        RpmTapeLabel {
-            name: "".to_string(),
-            date: "".to_string(),
-            event: "".to_string(),
-            player1: "".to_string(),
-            player2: "".to_string(),
-        }
-    }
-}
-
-#[derive(Debug, Default, Deserialize, Serialize)]
-#[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct RpmTape {
-    pub label: RpmTapeLabel,
+    pub label: TapeLabel,
     pub tracks: RpmTapeTracks,
 }
 impl RpmTape {
     pub fn new() -> Self {
         RpmTape {
-            label: RpmTapeLabel::new(),
+            label: TapeLabel::new(),
             tracks: RpmTapeTracks::new(),
         }
     }
@@ -60,13 +37,7 @@ impl RpmTape {
                 &app,
             ),
             caret: Caret::new_facing_right_caret(),
-            label: CassetteTapeLabel {
-                name: "".to_string(),
-                date: "".to_string(),
-                event: "".to_string(),
-                player1: "".to_string(),
-                player2: "".to_string(),
-            },
+            label: TapeLabel::new(),
             tracks: TwoHeadsVec::from_vector(
                 self.tracks.to_positive_vec(board_size, &app),
                 Vec::new(),

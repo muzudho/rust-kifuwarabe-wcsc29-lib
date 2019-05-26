@@ -3,6 +3,7 @@ use conf::kifuwarabe_wcsc29_master_config::*;
 use media::two_heads_vec::*;
 use rand::Rng;
 use sheet_music_format::kifu_rpm::rpm_tape::*;
+use sheet_music_format::tape_label::TapeLabel;
 use sound::shogi_move::ShogiMove;
 use sound::shogi_note::*;
 use std::fs;
@@ -15,51 +16,12 @@ use studio::board_size::*;
 use studio::common::caret::*;
 use studio::common::closed_interval::ClosedInterval;
 
-/// 対局情報。
-pub struct CassetteTapeLabel {
-    // テープの名前。
-    pub name: String,
-
-    // 対局日。
-    pub date: String,
-    pub event: String,
-    pub player1: String,
-    pub player2: String,
-}
-impl CassetteTapeLabel {
-    // #####
-    // # C #
-    // #####
-
-    pub fn clear(&mut self) {
-        self.name = "".to_string();
-        self.date = "".to_string();
-        self.event = "".to_string();
-        self.player1 = "".to_string();
-        self.player2 = "".to_string();
-    }
-
-    // #####
-    // # T #
-    // #####
-
-    pub fn to_rpm(&self) -> RpmTapeLabel {
-        RpmTapeLabel {
-            name: self.name.to_string(),
-            date: self.date.to_string(),
-            event: self.event.to_string(),
-            player1: self.player1.to_string(),
-            player2: self.player2.to_string(),
-        }
-    }
-}
-
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1752788
 /// 説明 https://ch.nicovideo.jp/kifuwarabe/blomaga/ar1753122
 pub struct CassetteTape {
     pub fragment_file_name: String,
     pub caret: Caret,
-    pub label: CassetteTapeLabel,
+    pub label: TapeLabel,
     pub tracks: TwoHeadsVec,
 }
 impl CassetteTape {
@@ -73,13 +35,7 @@ impl CassetteTape {
                 &app,
             ),
             caret: Caret::new_facing_right_caret(),
-            label: CassetteTapeLabel {
-                name: "".to_string(),
-                date: "".to_string(),
-                event: "".to_string(),
-                player1: "".to_string(),
-                player2: "".to_string(),
-            },
+            label: TapeLabel::new(),
             tracks: TwoHeadsVec::default(),
         }
     }
@@ -239,29 +195,9 @@ impl CassetteTape {
         self.fragment_file_name = format!("{}.tapesfrag", file_name_without_extension).to_string();
     }
 
-    /// テープに名前を書く。
-    pub fn set_name(&mut self, name_text: String) {
-        self.label.name = name_text;
-    }
-
-    /// テープに対局日を書く。
-    pub fn set_game_date(&mut self, game_date: String) {
-        self.label.date = game_date;
-    }
-
-    /// テープにイベント名を書く。
-    pub fn set_event(&mut self, event_text: String) {
-        self.label.event = event_text;
-    }
-
-    /// テープに先手名を書く。
-    pub fn set_player1(&mut self, player1_text: String) {
-        self.label.player1 = player1_text;
-    }
-
-    /// テープに後手名を書く。
-    pub fn set_player2(&mut self, player2_text: String) {
-        self.label.player2 = player2_text;
+    /// テープのラベルを書く。
+    pub fn set_label(&mut self, tape_label: &TapeLabel) {
+        self.label = tape_label.clone();
     }
 
     /// # Returns
@@ -299,7 +235,7 @@ impl CassetteTape {
 
     pub fn to_rpm(&self, board_size: BoardSize) -> RpmTape {
         RpmTape {
-            label: self.label.to_rpm(),
+            label: self.label.clone(),
             tracks: self.tracks.to_rpm_tracks(board_size),
         }
     }

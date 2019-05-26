@@ -1,5 +1,8 @@
+use serde::*;
+
 /// 汎用テープ・ラベル。
-#[derive(Default)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")] // プロパティ名が JSON 側でスネークケースであることを指定
 pub struct TapeLabel {
     // 棋譜の保存形式。
     format: String,
