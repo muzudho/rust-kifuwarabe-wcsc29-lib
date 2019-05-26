@@ -40,13 +40,7 @@ impl CsaParser {
 
             if num == 0 && line.starts_with("V") {
                 // 最初の行で V で始まれば バージョン番号と予想。
-                let re =
-                    Regex::new(r"V(.*)").unwrap_or_else(|f| panic!(app.comm.panic(&f.to_string())));
-                let matched = re
-                    .captures(&line)
-                    .unwrap_or_else(|| panic!(app.comm.panic("Fail. regex parse.")));
-                let matched_text = matched.get(1).map_or("", |m| m.as_str());
-                tape.get_mut_tape_label().set_format(&matched_text);
+                tape.get_mut_tape_label().set_format(&line);
             } else if (line.starts_with('+') | line.starts_with('-') | line.starts_with('%'))
                 && line.len() == 7
             {
