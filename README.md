@@ -12,11 +12,11 @@ lib と 無印の２つがあるぜ☆（＾～＾）
 ```Shell
 cls
 set RUST_BACKTRACE=1
-cd C:/muzudho/projects_rust/rust-kifuwarabe-wcsc29-lib
+cd C:/Users/むずでょ/Documents/GitHub/kifuwarabe-collection/rust-kifuwarabe-wcsc29-lib
 cargo update
 cargo clippy --example main
 cargo build --release
-cd C:/muzudho/projects_rust/kifuwarabe-wcsc29
+cd C:/Users/むずでょ/Documents/GitHub/kifuwarabe-collection/kifuwarabe-wcsc29
 cargo update
 cargo clippy
 cargo build --release

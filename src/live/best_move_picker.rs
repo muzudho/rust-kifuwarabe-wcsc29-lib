@@ -97,8 +97,9 @@ impl BestMovePicker {
         if app.is_debug() {
             // RPMを検索。
             println!(
-                "[#get_mut_best_move start. Phase: {:?}]",
-                position.get_phase().get_state()
+                "[#get_mut_best_move start. Phase:={:?} training={}]",
+                position.get_phase().get_state(),
+                &app.kw29_conf.training
             );
         }
 
@@ -110,7 +111,13 @@ impl BestMovePicker {
 
         // とりあえず テープ・ボックス・ファイルを１個読む。
         'tape_box_dir_loop: for tape_box_file in fs::read_dir(&app.kw29_conf.training)
-            .unwrap_or_else(|err| panic!(app.comm.panic_io(&err)))
+            .unwrap_or_else(|err| {
+                std::panic::panic_any(format!(
+                    "training={} error={}",
+                    &app.kw29_conf.training,
+                    app.comm.panic_io(&err)
+                ))
+            })
         {
             // JSONファイルを元にオブジェクト化☆（＾～＾）
             let box_file_name = &tape_box_file
@@ -190,9 +197,7 @@ impl BestMovePicker {
                     app.comm.println(&cur_pos_text);
                     app.comm.println("[#Actual position]");
                     app.comm.println(&position.to_text());
-                    panic!(app
-                        .comm
-                        .panic("初期局面に戻せていないぜ☆（＾～＾）！"));
+                    panic!(app.comm.panic("初期局面に戻せていないぜ☆（＾～＾）！"));
                 }
 
                 if app.is_debug() {
@@ -369,9 +374,8 @@ impl BestMovePicker {
                                     if app.is_debug() {
                                         // 手筋の１個めが、主体となる駒で始まっていない☆（＾～＾）
                                         // 抜ける☆（＾～＾）
-                                        app.comm.println(
-                                            "[主体となる駒のものではないぜ☆（＾～＾）]",
-                                        );
+                                        app.comm
+                                            .println("[主体となる駒のものではないぜ☆（＾～＾）]");
                                     }
 
                                     // これは、主体の駒の手筋にならない☆（＾～＾）抜けて続行するぜ☆（＾～＾）
